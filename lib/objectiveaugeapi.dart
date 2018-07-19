@@ -4,7 +4,6 @@
 import 'dart:async';
 
 import 'package:rpc/rpc.dart';
-import 'package:uuid/uuid.dart';
 import 'package:postgres/postgres.dart';
 
 import 'package:auge_server/augeconnection.dart';
@@ -164,7 +163,7 @@ class ObjectiveAugeApi {
   @ApiMethod( method: 'POST', path: 'objetives/{objectiveid}/measures')
   Future<VoidMessage> createMeasure(String objectiveid, Measure measure) async {
 
-    measure.id = new Uuid().v4();
+  //  measure.id = new Uuid().v4();
     try {
       await  AugeConnection.getConnection().query("INSERT INTO auge_objective.measures(id, name, description, metric, decimals_number, start_value, end_value, current_value, measure_unit_id, objective_id) VALUES"
           "(@id,"
@@ -387,8 +386,10 @@ class ObjectiveAugeApi {
     /// Create (insert) a new objective
   @ApiMethod( method: 'POST', path: 'objectives')
   Future<VoidMessage> createObjective(Objective objective) async {
+    print('createObjective');
+    print(objective.id);
 
-    objective.id = new Uuid().v4();
+   // objective.id = new Uuid().v4();
     try {
       await  AugeConnection.getConnection().query("INSERT INTO auge_objective.objectives(id, name, description, start_date, end_date, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
             "(@id,"
@@ -399,17 +400,19 @@ class ObjectiveAugeApi {
             "@aligned_to_objective_id, "
             "@organization_id,"
             "@leader_user_id,"
-            "@gropu_id)"
+            "@group_id)"
             , substitutionValues: {
               "id": objective.id,
               "name": objective.name,
               "description": objective.description,
               "start_date": objective.startDate,
               "end_date": objective.endDate,
-              "aligned_to_objective_id": objective?.alignedTo?.id,
-              "organization_id": objective.organization.id,
-              "leader_user_id": objective.leader.id,
-              "group_id": objective?.group?.id});
+              "aligned_to_objective_id": objective.alignedTo?.id,
+              "organization_id": objective.organization?.id,
+              "leader_user_id": objective.leader?.id,
+              "group_id": objective.group?.id});
+
+      print('createObjective 2');
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
