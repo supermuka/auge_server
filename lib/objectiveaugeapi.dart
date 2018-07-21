@@ -181,7 +181,7 @@ class ObjectiveAugeApi {
             "name": measure.name,
             "description": measure.description,
             "metric": measure.metric,
-            "decilmas_number": measure.decimalsNumber,
+            "decimals_number": measure.decimalsNumber,
             "start_value": measure.startValue,
             "end_value": measure.endValue,
             "current_value": measure.currentValue,
