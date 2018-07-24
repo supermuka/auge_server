@@ -13,6 +13,8 @@ import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/user_profile_organization.dart';
 import 'package:auge_server/model/group.dart';
 
+import 'package:auge_server/message_type/id_message.dart';
+
 //import 'package:auge_shared/message/messages.dart';
 
 /// Api for Shared Domain
@@ -86,9 +88,10 @@ class AugeApi {
 
   /// Create (insert) a new organization
   @ApiMethod( method: 'POST', path: 'organizations')
-  Future<VoidMessage> createOrganization(Organization organization) async {
+  Future<IdMessage> createOrganization(Organization organization) async {
 
-    organization.id = new Uuid().v4();
+    if (organization.id == null)
+       organization.id = new Uuid().v4();
     try {
       await AugeConnection.getConnection().query(
           "INSERT INTO auge.organizations(id, name, code) VALUES"
@@ -102,6 +105,7 @@ class AugeApi {
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
+    return new IdMessage()..id = organization.id;
   }
 
   /// Update an organization passing an instance of [Organization]
