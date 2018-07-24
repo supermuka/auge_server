@@ -7,11 +7,13 @@ import 'package:rpc/rpc.dart';
 import 'package:postgres/postgres.dart';
 import 'package:uuid/uuid.dart';
 import 'package:auge_server/augeconnection.dart';
-import 'package:auge_shared/model/organization.dart';
-import 'package:auge_shared/model/user.dart';
-import 'package:auge_shared/model/user_profile_organization.dart';
-import 'package:auge_shared/model/group.dart';
-import 'package:auge_shared/message/messages.dart';
+
+import 'package:auge_server/model/organization.dart';
+import 'package:auge_server/model/user.dart';
+import 'package:auge_server/model/user_profile_organization.dart';
+import 'package:auge_server/model/group.dart';
+
+//import 'package:auge_shared/message/messages.dart';
 
 /// Api for Shared Domain
 @ApiClass(version: 'v1')
@@ -574,21 +576,21 @@ class AugeApi {
 
     groupTypes.add(new GroupType()
       ..id = '1dce85a6-f876-4f96-8342-5890457d5154'
-      ..name = GroupMessage.groupTypeLabel('Company')
+      ..name = 'Company' // GroupMessage.groupTypeLabel('Company')
     );
     groupTypes.add(new GroupType()
       ..id = '97611ed6-895e-4aa9-afe7-88f1238e21e5'
-      ..name =  GroupMessage.groupTypeLabel('Business Unit')
+      ..name = 'Business Unit'  // GroupMessage.groupTypeLabel('Business Unit')
     );
 
     groupTypes.add(new GroupType()
       ..id = 'df25232f-3f85-4c1a-b685-3b958b486dcf'
-      ..name = GroupMessage.groupTypeLabel('Department')
+      ..name = 'Department' // GroupMessage.groupTypeLabel('Department')
     );
 
     groupTypes.add(new GroupType()
       ..id = '0a3614a3-887e-45eb-9464-30ccf4be6c65'
-      ..name = GroupMessage.groupTypeLabel('Team')
+      ..name = 'Team' // GroupMessage.groupTypeLabel('Team')
     );
 
     return id != null ? groupTypes.where((t) => (t.id == id)) : groupTypes;

@@ -9,14 +9,15 @@ environment:
 
 dependencies:
   args: ^1.4.2
+  intl: ^0.15.6
   shelf: ^0.7.3+1
   rpc: ^0.5.10
   postgres: ^1.0.0-beta.1
   uuid: ^1.0.0
   http: '>=0.11.1 <0.12.0'
   _discoveryapis_commons: '>=0.1.0 <0.2.0'
-  auge_shared:
-    path: ../auge_shared/
+  #auge_shared:
+  #  path: ../auge_shared/
 
 #dev_dependencies:
 #  test: ^0.12.30

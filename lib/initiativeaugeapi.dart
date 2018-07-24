@@ -12,15 +12,15 @@ import 'package:auge_server/augeconnection.dart';
 import 'package:auge_server/augeapi.dart';
 import 'package:auge_server/objectiveaugeapi.dart';
 
-import 'package:auge_shared/model/initiative/initiative.dart';
-import 'package:auge_shared/model/initiative/state.dart';
-import 'package:auge_shared/model/initiative/work_item.dart';
-import 'package:auge_shared/model/initiative/stage.dart';
-import 'package:auge_shared/model/initiative/work_item_check_item.dart';
-import 'package:auge_shared/model/organization.dart';
-import 'package:auge_shared/model/user.dart';
-import 'package:auge_shared/model/objective/objective.dart';
-import 'package:auge_shared/model/group.dart';
+import 'package:auge_server/model/initiative/initiative.dart';
+import 'package:auge_server/model/initiative/state.dart';
+import 'package:auge_server/model/initiative/work_item.dart';
+import 'package:auge_server/model/initiative/stage.dart';
+import 'package:auge_server/model/initiative/work_item_check_item.dart';
+import 'package:auge_server/model/organization.dart';
+import 'package:auge_server/model/user.dart';
+import 'package:auge_server/model/objective/objective.dart';
+import 'package:auge_server/model/group.dart';
 
 /// Api for Initiative Domain
 @ApiClass(version: 'v1')

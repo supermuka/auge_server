@@ -9,13 +9,13 @@ import 'package:postgres/postgres.dart';
 import 'package:auge_server/augeconnection.dart';
 import 'package:auge_server/augeapi.dart';
 
-import 'package:auge_shared/model/objective/objective.dart';
-import 'package:auge_shared/model/objective/measure.dart';
-import 'package:auge_shared/model/organization.dart';
-import 'package:auge_shared/model/user.dart';
-import 'package:auge_shared/model/group.dart';
+import 'package:auge_server/model/objective/objective.dart';
+import 'package:auge_server/model/objective/measure.dart';
+import 'package:auge_server/model/organization.dart';
+import 'package:auge_server/model/user.dart';
+import 'package:auge_server/model/group.dart';
 
-import 'package:auge_shared/message/messages.dart';
+//import 'package:auge_shared/message/messages.dart';
 
 /// Api for Objective Domain
 @ApiClass(version: 'v1')
@@ -37,24 +37,24 @@ class ObjectiveAugeApi {
     mesuareUnits.add(new MeasureUnit()
       ..id = 'f748d3ad-b533-4a2d-b4ae-0ae1e255cf81'
       ..symbol = '%'
-      ..name = MeasureMessage.measureUnitLabel('Percent')
+      ..name = 'Percent' // MeasureMessage.measureUnitLabel('Percent')
     );
     mesuareUnits.add(new MeasureUnit()
       ..id = 'fad0dc86-0124-4caa-9954-7526814efc3a'
       ..symbol = '\$'
-      ..name =  MeasureMessage.measureUnitLabel('Money')
+      ..name = 'Money' // MeasureMessage.measureUnitLabel('Money')
     );
 
     mesuareUnits.add(new MeasureUnit()
       ..id = 'fad0dc86-0124-4caa-9954-7526814efc3a'
       ..symbol = ''
-      ..name = MeasureMessage.measureUnitLabel('Index')
+      ..name = 'Index' // MeasureMessage.measureUnitLabel('Index')
     );
 
     mesuareUnits.add(new MeasureUnit()
       ..id = '723f1387-d5da-44f7-8373-17de31921cae'
       ..symbol = ''
-      ..name = MeasureMessage.measureUnitLabel('Unitary')
+      ..name = 'Unitary' // MeasureMessage.measureUnitLabel('Unitary')
     );
 
     return mesuareUnits;
@@ -411,8 +411,6 @@ class ObjectiveAugeApi {
               "organization_id": objective.organization?.id,
               "leader_user_id": objective.leader?.id,
               "group_id": objective.group?.id});
-
-      print('createObjective 2');
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
