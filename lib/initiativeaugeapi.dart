@@ -22,6 +22,9 @@ import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/group.dart';
 
+import 'package:auge_server/message_type/id_message.dart';
+
+
 /// Api for Initiative Domain
 @ApiClass(version: 'v1')
 class InitiativeAugeApi {
@@ -314,8 +317,12 @@ class InitiativeAugeApi {
 
   /// Create (insert) a new initiative
   @ApiMethod( method: 'POST', path: 'initiatives')
-  Future<VoidMessage> createInitiative(Initiative initiative) async {
-    initiative.id = new Uuid().v4();
+  Future<IdMessage> createInitiative(Initiative initiative) async {
+
+    if (initiative.id == null) {
+      initiative.id = new Uuid().v4();
+    }
+
     try {
       await AugeConnection.getConnection().transaction((ctx) async {
         await ctx.query(
@@ -356,6 +363,8 @@ class InitiativeAugeApi {
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
+
+    return new IdMessage()..id = initiative.id;
   }
 
   /// Update an initiative passing an instance of [Initiative]
@@ -467,9 +476,11 @@ class InitiativeAugeApi {
 
   /// Create (insert) a new instance of [WorkItem]
   @ApiMethod(method: 'POST', path: 'initiatives/{initiativeId}/workitems')
-  Future<VoidMessage> createWorkItem(String initiativeId, WorkItem workItem) async {
+  Future<IdMessage> createWorkItem(String initiativeId, WorkItem workItem) async {
 
-    workItem.id = new Uuid().v4();
+    if (workItem.id == null) {
+      workItem.id = new Uuid().v4();
+    }
 
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
@@ -535,6 +546,8 @@ class InitiativeAugeApi {
         throw new ApplicationError(e);
       }
     });
+
+    return new IdMessage()..id = workItem.id;
   }
 
   /// Update an initiative passing an instance of [WorkItem]

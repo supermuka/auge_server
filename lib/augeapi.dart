@@ -90,8 +90,10 @@ class AugeApi {
   @ApiMethod( method: 'POST', path: 'organizations')
   Future<IdMessage> createOrganization(Organization organization) async {
 
-    if (organization.id == null)
-       organization.id = new Uuid().v4();
+    if (organization.id == null) {
+      organization.id = new Uuid().v4();
+    }
+
     try {
       await AugeConnection.getConnection().query(
           "INSERT INTO auge.organizations(id, name, code) VALUES"
@@ -251,9 +253,11 @@ class AugeApi {
 
   /// Create (insert) a new user
   @ApiMethod( method: 'POST', path: 'users')
-  Future<VoidMessage> createUser(User user) async {
+  Future<IdMessage> createUser(User user) async {
 
-    user.id = new Uuid().v4();
+    if (user.id == null) {
+      user.id = new Uuid().v4();
+    }
 
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
@@ -290,7 +294,7 @@ class AugeApi {
       }
     });
 
-    return null;
+    return new IdMessage()..id = user.id;
 
   }
 
@@ -438,6 +442,7 @@ class AugeApi {
     results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: _substitutionValues);
 
     List<Group> groups = new List();
+    User leader;
     Group superGroup;
     List<Group> superGroups;
     GroupType groupType;
@@ -449,6 +454,10 @@ class AugeApi {
 
         if (organization == null || organization.id != row[3]) {
           organization = await getOrganizationById(row[3]);
+        }
+
+        if (row[5] != null) {
+          leader = await getUserById(row[5]);
         }
 
         if (row[6] != null && alignedToRecursive > 0) {
@@ -465,7 +474,8 @@ class AugeApi {
           ..active = row[2]
           ..organization = organization
           ..groupType = groupType
-          ..superGroup = superGroup;
+          ..superGroup = superGroup
+          ..leader = leader;
 
         groups.add(group);
       }
@@ -497,9 +507,11 @@ class AugeApi {
 
   /// Create (insert) a new group
   @ApiMethod( method: 'POST', path: 'groups')
-  Future<VoidMessage> createGroup(Group group) async {
+  Future<IdMessage> createGroup(Group group) async {
 
-    group.id = new Uuid().v4();
+    if (group.id == null) {
+      group.id = new Uuid().v4();
+    }
 
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
@@ -517,14 +529,15 @@ class AugeApi {
           "name": group.name,
           "active": group.active,
           "organization_id": group.organization.id,
-          "group_type_id": group.groupType.id,
-          "super_group_id": group?.superGroup == null ? null : group.superGroup.id,
-          "leader_user_id": group?.leader == null ? null : group?.leader.id});
+          "group_type_id": group.groupType?.id,
+          "super_group_id": group.superGroup?.id,
+          "leader_user_id": group.leader?.id});
       } on PostgreSQLException catch (e) {
         throw new ApplicationError(e);
       }
     });
-    return null;
+
+    return new IdMessage()..id = group.id;
 
   }
 
@@ -547,9 +560,9 @@ class AugeApi {
           "name": group.name,
           "active": group.active,
           "organization_id": group.organization.id,
-          "group_type_id": group.groupType.id,
-          "super_group_id": group.superGroup.id,
-          "leader_user_id": group.leader.id});
+          "group_type_id": group.groupType?.id,
+          "super_group_id": group.superGroup?.id,
+          "leader_user_id": group.leader?.id});
       } on PostgreSQLException catch (e) {
         throw new ApplicationError(e);
       }
@@ -600,7 +613,6 @@ class AugeApi {
     return id != null ? groupTypes.where((t) => (t.id == id)) : groupTypes;
   }
 
-
   /// Return [GroupType] list.
   @ApiMethod( method: 'GET', path: 'group_types')
   Future<List<GroupType>> getGroupTypes() async {
@@ -622,8 +634,4 @@ class AugeApi {
       throw new ApplicationError(e);
     }
   }
-
-
-
 }
-

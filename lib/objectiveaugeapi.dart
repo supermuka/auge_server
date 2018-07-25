@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'package:rpc/rpc.dart';
 import 'package:postgres/postgres.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:auge_server/augeconnection.dart';
 import 'package:auge_server/augeapi.dart';
@@ -14,6 +15,8 @@ import 'package:auge_server/model/objective/measure.dart';
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/group.dart';
+
+import 'package:auge_server/message_type/id_message.dart';
 
 //import 'package:auge_shared/message/messages.dart';
 
@@ -161,9 +164,12 @@ class ObjectiveAugeApi {
 
   /// Create (insert) a new measures
   @ApiMethod( method: 'POST', path: 'objetives/{objectiveid}/measures')
-  Future<VoidMessage> createMeasure(String objectiveid, Measure measure) async {
+  Future<IdMessage> createMeasure(String objectiveid, Measure measure) async {
 
-  //  measure.id = new Uuid().v4();
+    if (measure.id == null) {
+      measure.id = new Uuid().v4();
+    }
+
     try {
       await  AugeConnection.getConnection().query("INSERT INTO auge_objective.measures(id, name, description, metric, decimals_number, start_value, end_value, current_value, measure_unit_id, objective_id) VALUES"
           "(@id,"
@@ -191,6 +197,8 @@ class ObjectiveAugeApi {
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
+
+    return IdMessage()..id = measure.id;
   }
 
   /// Update an initiative passing an instance of [Measure]
@@ -385,11 +393,12 @@ class ObjectiveAugeApi {
 
     /// Create (insert) a new objective
   @ApiMethod( method: 'POST', path: 'objectives')
-  Future<VoidMessage> createObjective(Objective objective) async {
-    print('createObjective');
-    print(objective.id);
+  Future<IdMessage> createObjective(Objective objective) async {
 
-   // objective.id = new Uuid().v4();
+    if (objective.id == null) {
+      objective.id = new Uuid().v4();
+    }
+
     try {
       await  AugeConnection.getConnection().query("INSERT INTO auge_objective.objectives(id, name, description, start_date, end_date, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
             "(@id,"
@@ -414,6 +423,9 @@ class ObjectiveAugeApi {
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
+
+    return new IdMessage()..id = objective.id;
+
   }
 
   /// Update an initiative passing an instance of [Objective]
