@@ -24,7 +24,6 @@ import 'package:auge_server/model/group.dart';
 
 import 'package:auge_server/message_type/id_message.dart';
 
-
 /// Api for Initiative Domain
 @ApiClass(version: 'v1')
 class InitiativeAugeApi {
