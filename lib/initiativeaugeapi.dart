@@ -45,7 +45,13 @@ class InitiativeAugeApi {
 
     String queryStatement;
 
-    queryStatement = "SELECT initiative.id::VARCHAR, initiative.name, initiative.description, initiative.organization_id, initiative.leader_user_id, initiative.objective_id, initiative.group_id"
+    queryStatement = "SELECT initiative.id::VARCHAR, " //0
+    "initiative.name, " //1
+    "initiative.description, " //2
+    "initiative.organization_id, " //3
+    "initiative.leader_user_id, " //4
+    "initiative.objective_id, " //5
+    "initiative.group_id" //6
         " FROM auge_initiative.initiatives initiative";
 
     Map<String, dynamic> substitutionValues;
@@ -81,6 +87,7 @@ class InitiativeAugeApi {
       stages = await getStages(row[0]);
 
       objective = row[5] == null ? null : await _objectiveAugeApi.getObjectiveById(row[5]);
+
       group =  row[6] == null ? null : await _augeApi.getGroupById(row[6]);
       initiatives.add(new Initiative()..id = row[0]..name = row[1]..description = row[2]..workItems = workItems..organization = organization..leader = user..stages = stages..objective = objective..group = group);
 
@@ -340,8 +347,8 @@ class InitiativeAugeApi {
           "description": initiative.description,
           "organization_id": initiative.organization.id,
           "leader_user_id": initiative.leader.id,
-          "objective_id": initiative?.objective == null ? null : initiative.objective.id,
-          "group_id": initiative?.group == null ? null : initiative.group.id});
+          "objective_id": initiative?.objective,
+          "group_id": initiative?.group});
 
         for (Stage stage in initiative.stages) {
           stage.id = new Uuid().v4();
@@ -371,6 +378,9 @@ class InitiativeAugeApi {
   @ApiMethod( method: 'PUT', path: 'initiatives')
   Future<VoidMessage> updateInitiative(Initiative initiative) async {
 
+    print('***');
+    print(initiative?.objective.id);
+
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
         await ctx.query("UPDATE auge_initiative.initiatives "
@@ -387,8 +397,8 @@ class InitiativeAugeApi {
               "description": initiative.description,
               "organization_id": initiative.organization.id,
               "leader_user_id": initiative.leader.id,
-              "objective_id": initiative.objective.id,
-              "group_id": initiative.group.id});
+              "objective_id": initiative?.objective.id,
+              "group_id": initiative?.group.id});
 
         // Stages
         StringBuffer stagesId = new StringBuffer();
