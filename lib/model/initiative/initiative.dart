@@ -91,11 +91,13 @@ class Initiative extends Object {
     }
 
     if (this.stages != null && this.stages.length >= 0) {
+      to.stages.clear();
       this.stages.forEach((s) =>
           to.stages.add(s.clone()));
     }
 
     if (this.workItems != null && this.workItems.length >= 0) {
+      to.workItems.clear();
       this.workItems.forEach((wi) {
         to.workItems.add( wi.clone());
       });

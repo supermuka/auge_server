@@ -64,6 +64,7 @@ class Objective {
     }
 
     if (this.alignedWithChildren != null && this.alignedWithChildren.length != 0) {
+      to.alignedWithChildren.clear();
       this.alignedWithChildren.forEach((o) =>
           to.alignedWithChildren.add(o.clone()));
 

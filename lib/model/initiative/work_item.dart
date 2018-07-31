@@ -50,13 +50,14 @@ class WorkItem {
     }
 
     if (this.checkItems != null && this.checkItems.length != 0) {
+      to.checkItems.clear();
       this.checkItems.forEach((ci) {
         to.checkItems.add(ci.clone());
       });
     }
 
     if (this.assignedTo != null && this.assignedTo.length >= 0) {
-
+      to.assignedTo.clear();
       this.assignedTo.forEach((at) {
         to.assignedTo.add(at.clone());
       });

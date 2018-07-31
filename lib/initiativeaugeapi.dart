@@ -377,8 +377,6 @@ class InitiativeAugeApi {
   @ApiMethod( method: 'PUT', path: 'initiatives')
   Future<VoidMessage> updateInitiative(Initiative initiative) async {
 
-    print('***');
-    print(initiative?.objective.id);
 
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
@@ -443,7 +441,10 @@ class InitiativeAugeApi {
 
         if (stagesId.isNotEmpty) {
           await ctx.query("DELETE FROM auge_initiative.stages "
-              " WHERE id NOT IN (${stagesId.toString()})");
+              " WHERE id NOT IN (${stagesId.toString()}) "
+              " AND initiative_id  = @initiative_id "
+              , substitutionValues: {
+                "initiative_id": initiative.id});
         }
       } on PostgreSQLException catch (e) {
         throw new ApplicationError(e);
