@@ -9,6 +9,8 @@ import 'package:rpc/rpc.dart';
 import 'package:auge_server/augeapi.dart';
 import 'package:auge_server/initiativeaugeapi.dart';
 import 'package:auge_server/objectiveaugeapi.dart';
+import 'package:auge_server/augeconf.dart';
+
 
 const _API_PREFIX = '/'; // '/api';
 final ApiServer _apiServer =
@@ -41,6 +43,8 @@ main(List<String> args) async {
 
   var handler = const shelf.Pipeline()
       .addMiddleware(shelf.logRequests())
+      .addMiddleware(createCorsHeadersMiddleware(corsHeaders: {'Access-Control-Allow-Origin': '*',  'Access-Control-Allow-Methods': '*', 'Access-Control-Allow-Headers': '*'}))
+      .addMiddleware(auth(AugeConf.basicAuth))
       .addHandler(apiHandler);
 
   var server = await io.serve(handler, 'localhost', port);
@@ -70,4 +74,86 @@ shelf.Handler createRpcHandler(ApiServer apiServer) {
       return new shelf.Response.internalServerError(body: e.toString());
     }
   };
+}
+
+// reference: https://github.com/butlermatt/basic-error
+/*
+shelf.Middleware authenticateApiCliente2() =>
+  (innerHandler) {
+    return (request) {
+      var aHeader = request.headers['authorization'];
+      print('Auth: $aHeader');
+      if (aHeader == null) {
+        var resp = new shelf.Response(
+            HttpStatus.unauthorized, body: 'unauthorized',
+            headers: {'www-authenticate': 'Basic realm="superRealm"'});
+        return resp;
+      }
+
+      var auth = aHeader.split(' ');
+      if (auth[0] != 'Basic') {
+        return new shelf.Response(HttpStatus.unauthorized, body: 'unauthorized',
+            headers: {'www-authenticate': 'Basic realm="superRealm"'});
+      }
+
+      var userInfo = utf8.decode(base64.decode(auth[1]));
+      if (userInfo != 'muka:123') {
+        return new shelf.Response(HttpStatus.unauthorized, body: 'unauthorized',
+            headers: {'www-authenticate': 'Basic realm="superRealm"'});
+      }
+
+
+      var reqBody = request.readAsString();
+      print('Body was: $reqBody');
+      return new shelf.Response.ok(
+          'Request for "${request.url}"\nBody: $reqBody');
+    };
+  };
+  */
+
+
+/// Middleware which adds [CORS headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS)
+/// to shelf responses. Also handles preflight (OPTIONS) requests.
+shelf.Middleware createCorsHeadersMiddleware({Map<String, String> corsHeaders}) {
+  if (corsHeaders == null) {
+    // By default allow access from everywhere.
+    corsHeaders = {'Access-Control-Allow-Origin': '*'};
+  }
+
+  // Handle preflight (OPTIONS) requests by just adding headers and an empty
+  // response.
+  shelf.Response handleOptionsRequest(shelf.Request request) {
+    if (request.method == 'OPTIONS') {
+      return new shelf.Response.ok(null, headers: corsHeaders);
+    } else {
+      return null;
+    }
+  }
+
+  shelf.Response addCorsHeaders(shelf.Response response) => response.change(headers: corsHeaders);
+
+  return shelf.createMiddleware(requestHandler: handleOptionsRequest, responseHandler: addCorsHeaders);
+}
+
+
+// TODO (Levius) review CORS definition and a better form to implement authorization (if exists)
+
+/// Authorization Middleware
+shelf.Middleware auth(basicAuth) {
+
+  // Handle preflight (OPTIONS) requests by just adding headers and an empty
+  // response.
+  shelf.Response handleRequest(shelf.Request request) {
+
+    if (request.headers['authorization'] != basicAuth) {
+      return new shelf.Response(HttpStatus.unauthorized, body: 'unauthorized' /*,
+          headers: {'www-authenticate': 'Basic realm="superRealm"'} */);
+    } else {
+      return null;
+    }
+  }
+
+ /* shelf.Response addCorsHeaders(shelf.Response response) => response; */
+
+  return shelf.createMiddleware(requestHandler: handleRequest /*, responseHandler: addCorsHeaders */);
 }

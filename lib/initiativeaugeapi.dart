@@ -51,7 +51,7 @@ class InitiativeAugeApi {
     "initiative.leader_user_id, " //4
     "initiative.objective_id, " //5
     "initiative.group_id" //6
-        " FROM auge_initiative.initiatives initiative";
+    " FROM auge_initiative.initiatives initiative";
 
     Map<String, dynamic> substitutionValues;
 
