@@ -205,7 +205,7 @@ class AugeApi {
 
   /// Return [User] list. Whether `withProfile` arg is `true`, it is returned profile information like (avatar image, etc.)
   @ApiMethod( method: 'GET', path: 'users')
-  Future<List<User>> getUsers({bool withProfile}) async {
+  Future<List<User>> getUsers({bool withProfile = false}) async {
     try {
       return _queryGetUsers(withProfile: withProfile);
     } on PostgreSQLException catch (e) {
@@ -215,7 +215,7 @@ class AugeApi {
 
   /// Return a [User] by Id key. Whether `withProfile` arg is `true`, it is returned profile information like (avatar image, etc.)
   @ApiMethod( method: 'GET', path: 'users/{id}')
-  Future<User> getUserById(String id, {bool withProfile}) async {
+  Future<User> getUserById(String id, {bool withProfile = false}) async {
     try {
       List<User> users;
       users = await _queryGetUsers(id: id, withProfile: withProfile);
@@ -227,7 +227,7 @@ class AugeApi {
 
   /// Return a [User] authenticated by eMail and password key. Whether `withProfile` arg is `true`, it is returned profile information like (avatar image, etc.)
   @ApiMethod( method: 'GET', path: 'users/{eMail}/{password}')
-  Future<User> getAuthenticatedUserWithEmail(String eMail, String password, {bool withProfile}) async {
+  Future<User> getAuthenticatedUserWithEmail(String eMail, String password, {bool withProfile = false}) async {
 
     try {
       List<User> users;
@@ -242,7 +242,7 @@ class AugeApi {
 
   /// Return [User] list by Id Organization
   @ApiMethod( method: 'GET', path: 'organizations/{organizationId}/users')
-  Future<List<User>> getUsersByOrganizationId(String organizationId, {bool withProfile}) async {
+  Future<List<User>> getUsersByOrganizationId(String organizationId, {bool withProfile = false}) async {
     try {
       return await _queryGetUsers(
           organizationId: organizationId, withProfile: withProfile);

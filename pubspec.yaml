@@ -5,17 +5,21 @@ description: A web server built using the shelf package.
 # author: Samuel <email@example.com>
 
 environment:
-  sdk: '>=2.0.0-dev.55.0 <2.0.0'
+  sdk: '>=2.0.0-dev <3.0.0'
 
 dependencies:
-  args: ^1.4.2
-  intl: ^0.15.6
-  shelf: ^0.7.3+1
-  rpc: ^0.5.10
+  args: ^1.5.0
+  intl: ^0.15.7
+  #gcloud: ^0.6.0+1
+  shelf: ^0.7.3+3
+  rpc: ^0.6.0
+  #rpc: ^0.5.10
   postgres: ^1.0.0-beta.1
-  uuid: ^1.0.0
-  http: '>=0.11.1 <0.12.0'
-  _discoveryapis_commons: '>=0.1.0 <0.2.0'
+  uuid: ^1.0.1
+  http: ^0.11.3+17
+  _discoveryapis_commons: ^0.1.6+1
+  #http: '>=0.11.1 <0.12.0'
+  #_discoveryapis_commons: '>=0.1.0 <0.2.0'
   #auge_shared:
   #  path: ../auge_shared/
 

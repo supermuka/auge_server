@@ -355,7 +355,7 @@ class ObjectiveAugeApi {
 
   /// Return all objectives from an organization
   @ApiMethod( method: 'GET', path: 'organization/{organizationId}/objetives')
-  Future<List<Objective>> getObjectives(String organizationId, {bool withMeasures, bool treeAlignedWithChildren, bool withProfile}) async {
+  Future<List<Objective>> getObjectives(String organizationId, {bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false}) async {
     try {
       return _queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
     } on PostgreSQLException catch (e) {
@@ -365,7 +365,7 @@ class ObjectiveAugeApi {
 
   /// Return an [Objective] from an organization by Id
   @ApiMethod( method: 'GET', path: 'objectives/{id}')
-  Future<Objective> getObjectiveById(String id, {bool withMeasures}) async {
+  Future<Objective> getObjectiveById(String id, {bool withMeasures = false}) async {
     try {
       List<Objective> objectives = await _queryGetObjectives(id: id, withMeasures: withMeasures);
       return objectives.first;

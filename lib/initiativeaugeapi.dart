@@ -38,7 +38,7 @@ class InitiativeAugeApi {
   }
 
   // *** INITIATIVES ***
-  Future<List<Initiative>> _queryGetInitiatives({String organizationId, String id, bool withWorkItems = true}) async {
+  Future<List<Initiative>> _queryGetInitiatives({String organizationId, String id, bool withWorkItems = false}) async {
 
     List<List> results;
 
@@ -257,7 +257,7 @@ class InitiativeAugeApi {
 
   /// Return all initiatives from an organization
   @ApiMethod( method: 'GET', path: 'organizations/{organizationId}/initiatives')
-  Future<List<Initiative>> getInitiatives(String organizationId, {bool withWorkItems}) async {
+  Future<List<Initiative>> getInitiatives(String organizationId, {bool withWorkItems = false}) async {
     try {
       return _queryGetInitiatives(organizationId: organizationId, withWorkItems: withWorkItems);
     } on PostgreSQLException catch (e) {
@@ -267,7 +267,7 @@ class InitiativeAugeApi {
 
   /// Return an initiative from by Id
   @ApiMethod( method: 'GET', path: 'initiatives/{id}')
-  Future<Initiative> getInitiativeById(String id, {bool withWorkItems}) async {
+  Future<Initiative> getInitiativeById(String id, {bool withWorkItems = false}) async {
     try {
       List<Initiative> initiatives = await _queryGetInitiatives(
           id: id, withWorkItems: withWorkItems);

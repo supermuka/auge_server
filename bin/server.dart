@@ -43,18 +43,20 @@ main(List<String> args) async {
 
   var handler = const shelf.Pipeline()
       .addMiddleware(shelf.logRequests())
-      .addMiddleware(createCorsHeadersMiddleware(corsHeaders: {'Access-Control-Allow-Origin': '*',  'Access-Control-Allow-Methods': '*', 'Access-Control-Allow-Headers': '*'}))
-      .addMiddleware(auth(AugeConf.basicAuth))
+    //  .addMiddleware(createCorsHeadersMiddleware(corsHeaders: {'Access-Control-Allow-Origin': '*',  'Access-Control-Allow-Methods': '*', 'Access-Control-Allow-Headers': '*'}))
+    //  .addMiddleware(auth(AugeConf.basicAuth))
       .addHandler(apiHandler);
 
-  var server = await io.serve(handler, 'localhost', port);
+  //var server = await io.serve(handler, 'localhost', port);
+  var server = await io.serve(handler, '0.0.0.0', port);
   print('Serving at http://${server.address.host}:${server.port}');
 }
 
 shelf.Response _echoRequest(shelf.Request request) =>
     new shelf.Response.ok('Request for "${request.url}"');
 
-/// shelf_rpc (archived)
+// Reference: shelf_rpc package (archived)
+
 /// Creates a Shelf [Handler] that translates Shelf [Request]s to rpc's
 /// [HttpApiRequest] executes the request on the given [ApiServer] and then
 /// translates the returned rpc's [HttpApiResponse] to a Shelf [Response].
@@ -65,8 +67,16 @@ shelf.Handler createRpcHandler(ApiServer apiServer) {
           request.headers, request.read());
       return apiServer.handleHttpApiRequest(apiRequest).then(
               (apiResponse) {
+
+                Map<String, String> dynamicToStringHeaders = new Map();
+
+                // To correct the inconsistence, dynamic value to String value;
+                apiResponse.headers.forEach((f, g) => dynamicToStringHeaders.putIfAbsent(f, () => g.toString()));
+/*
             return new shelf.Response(apiResponse.status, body: apiResponse.body,
                 headers: apiResponse.headers);
+                */
+                return new shelf.Response(apiResponse.status, body: apiResponse.body, headers: dynamicToStringHeaders);
           });
     } catch (e) {
       // Should never happen since the apiServer.handleHttpRequest method
