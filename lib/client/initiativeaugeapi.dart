@@ -866,7 +866,7 @@ class StateFactory {
     var message = new State();
     if (_json.containsKey("color")) {
       message.color =
-          (_json["color"] as core.Map).cast<core.String, core.String>();
+          (_json["color"] as core.Map).cast<core.String, core.int>();
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];

@@ -40,7 +40,7 @@ class InitiativeAugeApi {
   // *** INITIATIVES ***
   Future<List<Initiative>> _queryGetInitiatives({String organizationId, String id, bool withWorkItems = false}) async {
 
-    List<List> results;
+    List<List<dynamic>> results;
 
     String queryStatement;
 
@@ -65,7 +65,7 @@ class InitiativeAugeApi {
 
     results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
 
-    List<Initiative> initiatives = new List();
+    List<Initiative> initiatives = List<Initiative>();
     List<WorkItem> workItems;
 
     Objective objective;
@@ -77,7 +77,6 @@ class InitiativeAugeApi {
     for (var row in results) {
       // Work Items
       workItems = (withWorkItems) ? await _queryGetWorkItems(initiativeId: row[0]) : [];
-
       if (organization == null || organization.id != row[3]) {
         organization = await _augeApi.getOrganizationById(row[3]);
       }
@@ -88,15 +87,15 @@ class InitiativeAugeApi {
       objective = row[5] == null ? null : await _objectiveAugeApi.getObjectiveById(row[5]);
 
       group =  row[6] == null ? null : await _augeApi.getGroupById(row[6]);
-      initiatives.add(new Initiative()..id = row[0]..name = row[1]..description = row[2]..workItems = workItems..organization = organization..leader = user..stages = stages..objective = objective..group = group);
 
+      initiatives.add(new Initiative()..id = row[0]..name = row[1]..description = row[2]..workItems = workItems..organization = organization..leader = user..stages = stages..objective = objective..group = group);
     }
     return initiatives;
   }
 
   Future<List<State>> _queryGetStates({String id}) async {
 
-    List<List> results;
+    List<List<dynamic>> results;
 
     String queryStatement;
 
@@ -112,15 +111,16 @@ class InitiativeAugeApi {
 
     results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
     List<State> states = new List();
-
     for (var row in results) {
-      states.add(new State()..id = row[0]..name = row[1]..color = json.decode(row[2]));
+      states.add(new State()..id = row[0]..name = row[1]..color = (json.decode(row[2]) as Map).cast<String, int>());
     }
+
     return states;
   }
 
   Future<List<Stage>> _queryGetStages({String initiativeId, String id}) async {
-    List<List> results;
+
+    List<List<dynamic>> results;
 
     String queryStatement;
 
@@ -160,7 +160,7 @@ class InitiativeAugeApi {
 
   Future<List<WorkItem>> _queryGetWorkItems({String initiativeId, String id}) async {
 
-    List<List> results;
+    List<List<dynamic>> results;
 
     String queryStatement;
 
@@ -197,7 +197,9 @@ class InitiativeAugeApi {
       assignedToUsers = await _queryGetWorkItemAssignedToUsers(row[0]);
 
       checkItems = await _queryGetWorkItemCheckItems(row[0]);
+
       workItems.add(new WorkItem()..id = row[0]..name = row[1]..description = row[2]..dueDate = row[3]..completed = row[4]..stage = stages?.first..assignedTo = assignedToUsers..checkItems = checkItems);
+
 
     }
     return workItems;
@@ -205,7 +207,7 @@ class InitiativeAugeApi {
 
   Future<List<User>> _queryGetWorkItemAssignedToUsers(String workItemId) async {
 
-    List<List> results;
+    List<List<dynamic>> results;
 
     String queryStatement;
 
@@ -261,6 +263,7 @@ class InitiativeAugeApi {
     try {
       return _queryGetInitiatives(organizationId: organizationId, withWorkItems: withWorkItems);
     } on PostgreSQLException catch (e) {
+      print(e);
       throw new ApplicationError(e);
     }
   }
@@ -271,7 +274,7 @@ class InitiativeAugeApi {
     try {
       List<Initiative> initiatives = await _queryGetInitiatives(
           id: id, withWorkItems: withWorkItems);
-      return initiatives.first;
+      return initiatives?.first;
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
@@ -459,7 +462,7 @@ class InitiativeAugeApi {
   Future<WorkItem> getWorkItemById(String id) async {
     try {
       List<WorkItem> workItems = await _queryGetWorkItems(id: id);
-      return workItems.first;
+      return workItems?.first;
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }

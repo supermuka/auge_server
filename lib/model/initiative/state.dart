@@ -11,16 +11,16 @@ const _colorLightness = 'lightness';
 class State extends Object {
   String id;
   String name;
-  Map<String, String> color;
+  Map<String, int> color;
 
   // Define initiative stage order
   int index;
 
-  String get colorHue => color[_colorHue];
+  String get colorHue => color[_colorHue].toString();
 
-  String get colorSaturation => color[_colorSaturation];
+  String get colorSaturation => color[_colorSaturation].toString();
 
-  String get colorLightness => color[_colorLightness];
+  String get colorLightness => color[_colorLightness].toString();
 
   State() {
     color = new Map();

@@ -29,7 +29,7 @@ class Initiative extends Object {
     stages = new List<Stage>();
     workItems = new List<WorkItem>();
   }
-
+/*
   Map<State, int> get stateWorkItemsCount {
     Map<State, int> m = new Map();
     Map<String, State> mSameState = new Map();
@@ -58,7 +58,7 @@ class Initiative extends Object {
     });
     return m;
   }
-
+*/
   int get workItemsCount   {
     return workItems.length;
   }

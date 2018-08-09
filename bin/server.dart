@@ -71,12 +71,21 @@ shelf.Handler createRpcHandler(ApiServer apiServer) {
                 Map<String, String> dynamicToStringHeaders = new Map();
 
                 // To correct the inconsistence, dynamic value to String value;
+
                 apiResponse.headers.forEach((f, g) => dynamicToStringHeaders.putIfAbsent(f, () => g.toString()));
+
+
+
+
 /*
             return new shelf.Response(apiResponse.status, body: apiResponse.body,
                 headers: apiResponse.headers);
-                */
+  */
+
+
                 return new shelf.Response(apiResponse.status, body: apiResponse.body, headers: dynamicToStringHeaders);
+
+
           });
     } catch (e) {
       // Should never happen since the apiServer.handleHttpRequest method

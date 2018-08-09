@@ -583,7 +583,6 @@ class AugeApi {
       } on PostgreSQLException catch (e) {
         throw new ApplicationError(e);
       }
-
     });
   }
 
@@ -610,14 +609,14 @@ class AugeApi {
       ..name = 'Team' // GroupMessage.groupTypeLabel('Team')
     );
 
-    return id != null ? groupTypes.where((t) => (t.id == id)) : groupTypes;
+    return null; // (id != null) ? await groupTypes.singleWhere((t) => (t.id == id)) : groupTypes;
   }
 
   /// Return [GroupType] list.
   @ApiMethod( method: 'GET', path: 'group_types')
   Future<List<GroupType>> getGroupTypes() async {
     try {
-      return _queryGetGroupTypes();
+      return await _queryGetGroupTypes();
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
@@ -629,7 +628,7 @@ class AugeApi {
     try {
       List<GroupType> groupTypes;
       groupTypes = await _queryGetGroupTypes(id: id);
-      return groupTypes.first;
+      return await groupTypes?.first;
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }

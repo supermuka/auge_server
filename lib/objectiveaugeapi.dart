@@ -135,7 +135,7 @@ class ObjectiveAugeApi {
   Future<Measure> getMeasureById(String id) async {
     try {
       List<Measure> measures = await _queryGetMeasures(id: id);
-      return measures.first;
+      return measures?.first;
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
@@ -156,7 +156,7 @@ class ObjectiveAugeApi {
   Future<MeasureUnit> getMeasureUnitById(String id) async {
     try {
       List<MeasureUnit> measureUnits = await _queryGetMeasureUnits(id: id);
-      return measureUnits.first;
+      return measureUnits?.first;
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
@@ -313,7 +313,7 @@ class ObjectiveAugeApi {
         if (row[6] != null && alignedToRecursive > 0) {
           alignedToObjectives = await _queryGetObjectives(id: row[6],
               alignedToRecursive: --alignedToRecursive);
-          alignedToObjective = alignedToObjectives.first;
+          alignedToObjective = alignedToObjectives?.first;
         }
 
         group = row[8] == null ? null : await _augeApi.getGroupById(row[8]);
@@ -350,7 +350,7 @@ class ObjectiveAugeApi {
       }
     }
 
-    return (treeAlignedWithChildren) ? objectivesTree : objectives;
+    return (treeAlignedWithChildren) ? objectivesTree ?? [] : objectives ?? [];
   }
 
   /// Return all objectives from an organization
@@ -368,7 +368,7 @@ class ObjectiveAugeApi {
   Future<Objective> getObjectiveById(String id, {bool withMeasures = false}) async {
     try {
       List<Objective> objectives = await _queryGetObjectives(id: id, withMeasures: withMeasures);
-      return objectives.first;
+      return objectives?.first;
     } on PostgreSQLException catch (e) {
       throw new ApplicationError(e);
     }
