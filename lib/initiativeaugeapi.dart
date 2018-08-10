@@ -38,7 +38,7 @@ class InitiativeAugeApi {
   }
 
   // *** INITIATIVES ***
-  Future<List<Initiative>> _queryGetInitiatives({String organizationId, String id, bool withWorkItems = false}) async {
+  Future<List<Initiative>> _queryGetInitiatives({String organizationId, String id, String objectiveId, bool withWorkItems = false}) async {
 
     List<List<dynamic>> results;
 
@@ -61,6 +61,12 @@ class InitiativeAugeApi {
     } else {
       queryStatement += " WHERE initiative.organization_id = @organization_id";
       substitutionValues = {"organization_id": organizationId};
+    }
+
+    if (objectiveId != null) {
+      queryStatement += " AND initiative.objective_id = @objective_id";
+      substitutionValues.putIfAbsent("objective_id", () => objectiveId);
+
     }
 
     results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
@@ -259,9 +265,9 @@ class InitiativeAugeApi {
 
   /// Return all initiatives from an organization
   @ApiMethod( method: 'GET', path: 'organizations/{organizationId}/initiatives')
-  Future<List<Initiative>> getInitiatives(String organizationId, {bool withWorkItems = false}) async {
+  Future<List<Initiative>> getInitiatives(String organizationId, {String objectiveId, bool withWorkItems = false}) async {
     try {
-      return _queryGetInitiatives(organizationId: organizationId, withWorkItems: withWorkItems);
+      return _queryGetInitiatives(organizationId: organizationId, objectiveId: objectiveId, withWorkItems: withWorkItems);
     } on PostgreSQLException catch (e) {
       print(e);
       throw new ApplicationError(e);

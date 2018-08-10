@@ -223,6 +223,8 @@ class InitiativeAugeApi {
   ///
   /// [organizationId] - Path parameter: 'organizationId'.
   ///
+  /// [objectiveId] - Query parameter: 'objectiveId'.
+  ///
   /// [withWorkItems] - Query parameter: 'withWorkItems'.
   ///
   /// Completes with a [core.List<Initiative>].
@@ -233,7 +235,7 @@ class InitiativeAugeApi {
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
   async.Future<core.List<Initiative>> getInitiatives(core.String organizationId,
-      {core.bool withWorkItems}) {
+      {core.String objectiveId, core.bool withWorkItems}) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -243,6 +245,9 @@ class InitiativeAugeApi {
 
     if (organizationId == null) {
       throw new core.ArgumentError("Parameter organizationId is required.");
+    }
+    if (objectiveId != null) {
+      _queryParams["objectiveId"] = [objectiveId];
     }
     if (withWorkItems != null) {
       _queryParams["withWorkItems"] = ["${withWorkItems}"];
