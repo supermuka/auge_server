@@ -61,3 +61,8 @@ https://certbot.eff.org/lets-encrypt/debianstretch-apache
 
 cd bin
 dart --snapshot=auge-server.dart.snapshot server.dart
+
+API RETURN
+
+Collection always return a list instance that maybe empty, not a error.
+Object/Message if not found, return a error because it is considerated a resource.

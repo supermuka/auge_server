@@ -181,46 +181,6 @@ class InitiativeAugeApi {
 
   /// Request parameters:
   ///
-  /// [id] - Path parameter: 'id'.
-  ///
-  /// [withWorkItems] - Query parameter: 'withWorkItems'.
-  ///
-  /// Completes with a [Initiative].
-  ///
-  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
-  /// error.
-  ///
-  /// If the used [http.Client] completes with an error when making a REST call,
-  /// this method will complete with the same error.
-  async.Future<Initiative> getInitiativeById(core.String id,
-      {core.bool withWorkItems}) {
-    var _url = null;
-    var _queryParams = new core.Map<core.String, core.List<core.String>>();
-    var _uploadMedia = null;
-    var _uploadOptions = null;
-    var _downloadOptions = commons.DownloadOptions.Metadata;
-    var _body = null;
-
-    if (id == null) {
-      throw new core.ArgumentError("Parameter id is required.");
-    }
-    if (withWorkItems != null) {
-      _queryParams["withWorkItems"] = ["${withWorkItems}"];
-    }
-
-    _url = 'initiatives/' + commons.Escaper.ecapeVariable('$id');
-
-    var _response = _requester.request(_url, "GET",
-        body: _body,
-        queryParams: _queryParams,
-        uploadOptions: _uploadOptions,
-        uploadMedia: _uploadMedia,
-        downloadOptions: _downloadOptions);
-    return _response.then((data) => InitiativeFactory.fromJson(data));
-  }
-
-  /// Request parameters:
-  ///
   /// [organizationId] - Path parameter: 'organizationId'.
   ///
   /// [objectiveId] - Query parameter: 'objectiveId'.
@@ -334,40 +294,6 @@ class InitiativeAugeApi {
     return _response.then((data) => (data as core.List)
         .map<State>((value) => StateFactory.fromJson(value))
         .toList());
-  }
-
-  /// Request parameters:
-  ///
-  /// [id] - Path parameter: 'id'.
-  ///
-  /// Completes with a [WorkItem].
-  ///
-  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
-  /// error.
-  ///
-  /// If the used [http.Client] completes with an error when making a REST call,
-  /// this method will complete with the same error.
-  async.Future<WorkItem> getWorkItemById(core.String id) {
-    var _url = null;
-    var _queryParams = new core.Map<core.String, core.List<core.String>>();
-    var _uploadMedia = null;
-    var _uploadOptions = null;
-    var _downloadOptions = commons.DownloadOptions.Metadata;
-    var _body = null;
-
-    if (id == null) {
-      throw new core.ArgumentError("Parameter id is required.");
-    }
-
-    _url = 'workitems/' + commons.Escaper.ecapeVariable('$id');
-
-    var _response = _requester.request(_url, "GET",
-        body: _body,
-        queryParams: _queryParams,
-        uploadOptions: _uploadOptions,
-        uploadMedia: _uploadMedia,
-        downloadOptions: _downloadOptions);
-    return _response.then((data) => WorkItemFactory.fromJson(data));
   }
 
   /// [request] - The metadata request object.

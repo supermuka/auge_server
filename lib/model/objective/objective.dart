@@ -48,6 +48,7 @@ class Objective {
   }
 
   void cloneTo(Objective to) {
+    to.id = this.id;
     to.name = this.name;
     to.description = this.description;
     to.startDate = this.startDate;

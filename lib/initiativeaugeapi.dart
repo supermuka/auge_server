@@ -6,7 +6,6 @@ import 'dart:convert';
 
 import 'package:rpc/rpc.dart';
 import 'package:uuid/uuid.dart';
-import 'package:postgres/postgres.dart';
 
 import 'package:auge_server/augeconnection.dart';
 import 'package:auge_server/augeapi.dart';
@@ -24,21 +23,18 @@ import 'package:auge_server/model/group.dart';
 
 import 'package:auge_server/message_type/id_message.dart';
 
+import 'package:auge_server/shared/rpc_error_message.dart';
+
 /// Api for Initiative Domain
 @ApiClass(version: 'v1')
 class InitiativeAugeApi {
 
-  AugeApi _augeApi;
-  ObjectiveAugeApi _objectiveAugeApi;
-
   InitiativeAugeApi() {
-    _augeApi = new AugeApi();
-    _objectiveAugeApi = new ObjectiveAugeApi();
     AugeConnection.createConnection();
   }
 
   // *** INITIATIVES ***
-  Future<List<Initiative>> _queryGetInitiatives({String organizationId, String id, String objectiveId, bool withWorkItems = false}) async {
+  static Future<List<Initiative>> queryGetInitiatives({String organizationId, String id, String objectiveId, bool withWorkItems = false}) async {
 
     List<List<dynamic>> results;
 
@@ -77,29 +73,56 @@ class InitiativeAugeApi {
     Objective objective;
     Organization organization;
     User user;
+    List<User> users;
     List<Stage> stages;
     Group group;
+    List<Organization> organizations;
+    List<Objective> objectives;
+    List<Group> groups;
 
     for (var row in results) {
       // Work Items
-      workItems = (withWorkItems) ? await _queryGetWorkItems(initiativeId: row[0]) : [];
+      workItems = (withWorkItems) ? await queryGetWorkItems(initiativeId: row[0]) : [];
       if (organization == null || organization.id != row[3]) {
-        organization = await _augeApi.getOrganizationById(row[3]);
+
+        // organization = await _augeApi.getOrganizationById(row[3]);
+
+        organizations = await AugeApi.queryGetOrganizations(id: row[3]);
+
+        if (organizations.isNotEmpty) {
+          organization = organizations.first;
+        }
       }
 
-      user = await _augeApi.getUserById(row[4]);
-      stages = await getStages(row[0]);
+     // user = (await _augeApi.getUsers(id: row[4])).first;
+      users = await AugeApi.queryGetUsers(id: row[4]);
 
-      objective = row[5] == null ? null : await _objectiveAugeApi.getObjectiveById(row[5]);
+      if (users != null && users.length != 0) {
+        user = users.first;
+      }
 
-      group =  row[6] == null ? null : await _augeApi.getGroupById(row[6]);
+      //stages = await getStages(row[0]);
+      stages = await queryGetStages(initiativeId: row[0]);
+
+      // objective = row[5] == null ? null : await _objectiveAugeApi.getObjectiveById(row[5]);
+      objectives = row[5] == null ? null : await ObjectiveAugeApi.queryGetObjectives(id: row[5]);
+      if (objectives != null && objectives.length != 0) {
+        objective = objectives.first;
+      }
+
+      // group =  row[6] == null ? null : await _augeApi.getGroupById(row[6]);
+      groups = row[6] == null ? null : await AugeApi.queryGetGroups(id: row[6]);
+      if (groups != null && groups.length != 0) {
+        group = groups.first;
+      }
 
       initiatives.add(new Initiative()..id = row[0]..name = row[1]..description = row[2]..workItems = workItems..organization = organization..leader = user..stages = stages..objective = objective..group = group);
     }
     return initiatives;
   }
 
-  Future<List<State>> _queryGetStates({String id}) async {
+  // *** INITIATIVE STATES ***
+  static Future<List<State>> queryGetStates({String id}) async {
 
     List<List<dynamic>> results;
 
@@ -124,7 +147,8 @@ class InitiativeAugeApi {
     return states;
   }
 
-  Future<List<Stage>> _queryGetStages({String initiativeId, String id}) async {
+  // *** INITIATIVE STAGES ***
+  static Future<List<Stage>> queryGetStages({String initiativeId, String id}) async {
 
     List<List<dynamic>> results;
 
@@ -152,7 +176,7 @@ class InitiativeAugeApi {
 
     List<Stage> stages = new List();
     for (var row in results) {
-      List<State> states = await _queryGetStates(
+      List<State> states = await queryGetStates(
           id: row[4]);
 
       stages.add(new Stage()
@@ -164,7 +188,8 @@ class InitiativeAugeApi {
     return stages;
   }
 
-  Future<List<WorkItem>> _queryGetWorkItems({String initiativeId, String id}) async {
+  // *** INITIATIVE WORK ITEMS ***
+  static Future<List<WorkItem>> queryGetWorkItems({String initiativeId, String id}) async {
 
     List<List<dynamic>> results;
 
@@ -198,11 +223,11 @@ class InitiativeAugeApi {
 
     for (var row in results) {
 
-      stages = await _queryGetStages(initiativeId: row[0], id: row[5]);
+      stages = await queryGetStages(initiativeId: row[0], id: row[5]);
 
-      assignedToUsers = await _queryGetWorkItemAssignedToUsers(row[0]);
+      assignedToUsers = await queryGetWorkItemAssignedToUsers(row[0]);
 
-      checkItems = await _queryGetWorkItemCheckItems(row[0]);
+      checkItems = await queryGetWorkItemCheckItems(row[0]);
 
       workItems.add(new WorkItem()..id = row[0]..name = row[1]..description = row[2]..dueDate = row[3]..completed = row[4]..stage = stages?.first..assignedTo = assignedToUsers..checkItems = checkItems);
 
@@ -211,7 +236,8 @@ class InitiativeAugeApi {
     return workItems;
   }
 
-  Future<List<User>> _queryGetWorkItemAssignedToUsers(String workItemId) async {
+  // *** INITIATIVE WORK ITEMS ASSIGNED ***
+  static Future<List<User>> queryGetWorkItemAssignedToUsers(String workItemId) async {
 
     List<List<dynamic>> results;
 
@@ -228,9 +254,16 @@ class InitiativeAugeApi {
     results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
 
     List<User> assignedToUsers = new List();
+    List<User> users;
+    User user;
+
     for (var row in results) {
 
-      User user = await _augeApi.getUserById(row[0], withProfile: true);
+      users = await AugeApi.queryGetUsers(id: row[0], withProfile: true);
+
+      if (users != null && users.length != 0) {
+        user = users.first;
+      }
 
       assignedToUsers.add(user);
     }
@@ -238,7 +271,8 @@ class InitiativeAugeApi {
     return assignedToUsers;
   }
 
-  Future<List<WorkItemCheckItem>> _queryGetWorkItemCheckItems(String workItemId) async {
+  // *** INITIATIVE WORK ITEMS CHECKED ITEMS ***
+  static Future<List<WorkItemCheckItem>> queryGetWorkItemCheckItems(String workItemId) async {
 
     List<List> results;
 
@@ -264,27 +298,42 @@ class InitiativeAugeApi {
   }
 
   /// Return all initiatives from an organization
+  /// Its possible to filter as a [id] key, [organizationId], [objectiveId] and [withWorkItems]
   @ApiMethod( method: 'GET', path: 'organizations/{organizationId}/initiatives')
   Future<List<Initiative>> getInitiatives(String organizationId, {String objectiveId, bool withWorkItems = false}) async {
     try {
-      return _queryGetInitiatives(organizationId: organizationId, objectiveId: objectiveId, withWorkItems: withWorkItems);
-    } on PostgreSQLException catch (e) {
-      print(e);
-      throw new ApplicationError(e);
+      List<Initiative> initiatives;
+      initiatives = await queryGetInitiatives(organizationId: organizationId, objectiveId: objectiveId, withWorkItems: withWorkItems);
+      return initiatives;
+
+      /*
+      if (initiatives != null && initiatives.length != 0) {
+        return initiatives;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.initiativesDataNotFoundReason));
+      }
+      */
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
-
+/*
   /// Return an initiative from by Id
   @ApiMethod( method: 'GET', path: 'initiatives/{id}')
   Future<Initiative> getInitiativeById(String id, {bool withWorkItems = false}) async {
     try {
-      List<Initiative> initiatives = await _queryGetInitiatives(
+      List<Initiative> initiatives = await queryGetInitiatives(
           id: id, withWorkItems: withWorkItems);
       return initiatives?.first;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
+  */
 
   /// Delete an initiative by [id]
   @ApiMethod( method: 'DELETE', path: 'initiatives/{id}')
@@ -304,8 +353,9 @@ class InitiativeAugeApi {
             , substitutionValues: {
           "id": id});
       });
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
 
   }
@@ -314,9 +364,23 @@ class InitiativeAugeApi {
   @ApiMethod( method: 'GET', path: 'states')
   Future<List<State>> getStates() async {
     try {
-      return _queryGetStates();
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+      // return queryGetStates();
+
+      List<State> states;
+      states = await queryGetStates();
+      return states;
+
+      /*
+      if (states != null && states.length != 0) {
+        return states;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.statesDataNotFoundReason));
+      }
+*/
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
@@ -324,9 +388,23 @@ class InitiativeAugeApi {
   @ApiMethod( method: 'GET', path: 'initiatives/{initiativeid}/stages')
   Future<List<Stage>> getStages(String initiativeid) async {
     try {
-      return _queryGetStages(initiativeId: initiativeid);
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+      //return queryGetStages(initiativeId: initiativeid);
+
+      List<Stage> stages;
+      stages = await queryGetStages(initiativeId: initiativeid);
+      return stages;
+      /*
+      if (stages != null && stages.length != 0) {
+        return stages;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.userDataNotFoundReason));
+      }
+      */
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
@@ -375,8 +453,9 @@ class InitiativeAugeApi {
             "initiative_id": initiative.id});
         }
       });
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
 
     return new IdMessage()..id = initiative.id;
@@ -455,24 +534,27 @@ class InitiativeAugeApi {
               , substitutionValues: {
                 "initiative_id": initiative.id});
         }
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
     });
   }
 
   // *** INITIATIVE WORK ITEM ***
-
+/*
   /// Return an initiative from by Id
   @ApiMethod( method: 'GET', path: 'workitems/{id}')
   Future<WorkItem> getWorkItemById(String id) async {
     try {
-      List<WorkItem> workItems = await _queryGetWorkItems(id: id);
+      List<WorkItem> workItems = await queryGetWorkItems(id: id);
       return workItems?.first;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
+  */
 
   /// Delete an initiative by [id]
   @ApiMethod(method: 'DELETE', path: 'workitems/{id}')
@@ -485,12 +567,12 @@ class InitiativeAugeApi {
                 " WHERE work_item.id = @id"
             , substitutionValues: {
           "id": id});
-      }
-      on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
-      }
 
-      });
+      } catch (e) {
+          print('${e.runtimeType}, ${e}');
+          rethrow;
+      }
+    });
   }
 
   /// Create (insert) a new instance of [WorkItem]
@@ -561,8 +643,9 @@ class InitiativeAugeApi {
                 "finished": checkItem.finished,
                 "work_item_id": workItem.id});
         }
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
     });
 
@@ -668,8 +751,9 @@ class InitiativeAugeApi {
           await ctx.query("DELETE FROM auge_initiative.work_item_check_items"
               " WHERE id NOT IN (${checkItemsId.toString()})");
         }
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
     });
   }

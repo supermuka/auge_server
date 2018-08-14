@@ -351,74 +351,6 @@ class AugeApi {
 
   /// Request parameters:
   ///
-  /// [id] - Path parameter: 'id'.
-  ///
-  /// Completes with a [Group].
-  ///
-  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
-  /// error.
-  ///
-  /// If the used [http.Client] completes with an error when making a REST call,
-  /// this method will complete with the same error.
-  async.Future<Group> getGroupById(core.String id) {
-    var _url = null;
-    var _queryParams = new core.Map<core.String, core.List<core.String>>();
-    var _uploadMedia = null;
-    var _uploadOptions = null;
-    var _downloadOptions = commons.DownloadOptions.Metadata;
-    var _body = null;
-
-    if (id == null) {
-      throw new core.ArgumentError("Parameter id is required.");
-    }
-
-    _url = 'groups/' + commons.Escaper.ecapeVariable('$id');
-
-    var _response = _requester.request(_url, "GET",
-        body: _body,
-        queryParams: _queryParams,
-        uploadOptions: _uploadOptions,
-        uploadMedia: _uploadMedia,
-        downloadOptions: _downloadOptions);
-    return _response.then((data) => GroupFactory.fromJson(data));
-  }
-
-  /// Request parameters:
-  ///
-  /// [id] - Path parameter: 'id'.
-  ///
-  /// Completes with a [GroupType].
-  ///
-  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
-  /// error.
-  ///
-  /// If the used [http.Client] completes with an error when making a REST call,
-  /// this method will complete with the same error.
-  async.Future<GroupType> getGroupTypeById(core.String id) {
-    var _url = null;
-    var _queryParams = new core.Map<core.String, core.List<core.String>>();
-    var _uploadMedia = null;
-    var _uploadOptions = null;
-    var _downloadOptions = commons.DownloadOptions.Metadata;
-    var _body = null;
-
-    if (id == null) {
-      throw new core.ArgumentError("Parameter id is required.");
-    }
-
-    _url = 'group_types/' + commons.Escaper.ecapeVariable('$id');
-
-    var _response = _requester.request(_url, "GET",
-        body: _body,
-        queryParams: _queryParams,
-        uploadOptions: _uploadOptions,
-        uploadMedia: _uploadMedia,
-        downloadOptions: _downloadOptions);
-    return _response.then((data) => GroupTypeFactory.fromJson(data));
-  }
-
-  /// Request parameters:
-  ///
   /// Completes with a [core.List<GroupType>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -487,40 +419,6 @@ class AugeApi {
 
   /// Request parameters:
   ///
-  /// [id] - Path parameter: 'id'.
-  ///
-  /// Completes with a [Organization].
-  ///
-  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
-  /// error.
-  ///
-  /// If the used [http.Client] completes with an error when making a REST call,
-  /// this method will complete with the same error.
-  async.Future<Organization> getOrganizationById(core.String id) {
-    var _url = null;
-    var _queryParams = new core.Map<core.String, core.List<core.String>>();
-    var _uploadMedia = null;
-    var _uploadOptions = null;
-    var _downloadOptions = commons.DownloadOptions.Metadata;
-    var _body = null;
-
-    if (id == null) {
-      throw new core.ArgumentError("Parameter id is required.");
-    }
-
-    _url = 'organizations/' + commons.Escaper.ecapeVariable('$id');
-
-    var _response = _requester.request(_url, "GET",
-        body: _body,
-        queryParams: _queryParams,
-        uploadOptions: _uploadOptions,
-        uploadMedia: _uploadMedia,
-        downloadOptions: _downloadOptions);
-    return _response.then((data) => OrganizationFactory.fromJson(data));
-  }
-
-  /// Request parameters:
-  ///
   /// Completes with a [core.List<Organization>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -551,81 +449,6 @@ class AugeApi {
 
   /// Request parameters:
   ///
-  /// [id] - Path parameter: 'id'.
-  ///
-  /// [withProfile] - Query parameter: 'withProfile'.
-  ///
-  /// Completes with a [User].
-  ///
-  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
-  /// error.
-  ///
-  /// If the used [http.Client] completes with an error when making a REST call,
-  /// this method will complete with the same error.
-  async.Future<User> getUserById(core.String id, {core.bool withProfile}) {
-    var _url = null;
-    var _queryParams = new core.Map<core.String, core.List<core.String>>();
-    var _uploadMedia = null;
-    var _uploadOptions = null;
-    var _downloadOptions = commons.DownloadOptions.Metadata;
-    var _body = null;
-
-    if (id == null) {
-      throw new core.ArgumentError("Parameter id is required.");
-    }
-    if (withProfile != null) {
-      _queryParams["withProfile"] = ["${withProfile}"];
-    }
-
-    _url = 'users/' + commons.Escaper.ecapeVariable('$id');
-
-    var _response = _requester.request(_url, "GET",
-        body: _body,
-        queryParams: _queryParams,
-        uploadOptions: _uploadOptions,
-        uploadMedia: _uploadMedia,
-        downloadOptions: _downloadOptions);
-    return _response.then((data) => UserFactory.fromJson(data));
-  }
-
-  /// Request parameters:
-  ///
-  /// [withProfile] - Query parameter: 'withProfile'.
-  ///
-  /// Completes with a [core.List<User>].
-  ///
-  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
-  /// error.
-  ///
-  /// If the used [http.Client] completes with an error when making a REST call,
-  /// this method will complete with the same error.
-  async.Future<core.List<User>> getUsers({core.bool withProfile}) {
-    var _url = null;
-    var _queryParams = new core.Map<core.String, core.List<core.String>>();
-    var _uploadMedia = null;
-    var _uploadOptions = null;
-    var _downloadOptions = commons.DownloadOptions.Metadata;
-    var _body = null;
-
-    if (withProfile != null) {
-      _queryParams["withProfile"] = ["${withProfile}"];
-    }
-
-    _url = 'users';
-
-    var _response = _requester.request(_url, "GET",
-        body: _body,
-        queryParams: _queryParams,
-        uploadOptions: _uploadOptions,
-        uploadMedia: _uploadMedia,
-        downloadOptions: _downloadOptions);
-    return _response.then((data) => (data as core.List)
-        .map<User>((value) => UserFactory.fromJson(value))
-        .toList());
-  }
-
-  /// Request parameters:
-  ///
   /// [organizationId] - Path parameter: 'organizationId'.
   ///
   /// [withProfile] - Query parameter: 'withProfile'.
@@ -637,8 +460,7 @@ class AugeApi {
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<core.List<User>> getUsersByOrganizationId(
-      core.String organizationId,
+  async.Future<core.List<User>> getUsers(core.String organizationId,
       {core.bool withProfile}) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
@@ -654,7 +476,7 @@ class AugeApi {
       _queryParams["withProfile"] = ["${withProfile}"];
     }
 
-    _url = 'organizations/' +
+    _url = 'organization/' +
         commons.Escaper.ecapeVariable('$organizationId') +
         '/users';
 

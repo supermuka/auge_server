@@ -4,7 +4,6 @@
 import 'dart:async';
 
 import 'package:rpc/rpc.dart';
-import 'package:postgres/postgres.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:auge_server/augeconnection.dart';
@@ -18,21 +17,23 @@ import 'package:auge_server/model/group.dart';
 
 import 'package:auge_server/message_type/id_message.dart';
 
+import 'package:auge_server/shared/rpc_error_message.dart';
+
 //import 'package:auge_shared/message/messages.dart';
 
 /// Api for Objective Domain
 @ApiClass(version: 'v1')
 class ObjectiveAugeApi {
 
-  AugeApi _augeApi;
+ // AugeApi _augeApi;
 
   ObjectiveAugeApi() {
-    _augeApi = new AugeApi();
+  //  _augeApi = new AugeApi();
     AugeConnection.createConnection();
   }
 
-  // *** MEASURES ***
-  Future<List<MeasureUnit>> _queryGetMeasureUnits({String id}) async {
+  // *** MEASURE UNITS ***
+  static Future<List<MeasureUnit>> queryGetMeasureUnits({String id}) async {
     List<List> results;
 
     List<MeasureUnit> mesuareUnits = new List();
@@ -63,7 +64,8 @@ class ObjectiveAugeApi {
     return mesuareUnits;
   }
 
-  Future<List<Measure>> _queryGetMeasures({String objectiveId, String id}) async {
+  // *** MEASURES ***
+  static Future<List<Measure>> queryGetMeasures({String objectiveId, String id}) async {
     List<List> results;
 
     String queryStatement;
@@ -85,6 +87,7 @@ class ObjectiveAugeApi {
         queryStatement, substitutionValues: substitutionValues);
 
     List<Measure> mesuares = new List();
+    List<MeasureUnit> measureUnits;
 
     if (results != null && results.isNotEmpty) {
 
@@ -93,7 +96,11 @@ class ObjectiveAugeApi {
       for (var row in results) {
 
         if (row[8] != null)
-          measureUnit = await getMeasureUnitById(row[8]);
+         //  measureUnit = await getMeasureUnitById(row[8]);
+          measureUnits = await queryGetMeasureUnits(id: row[8]);
+          if (measureUnits != null && measureUnits != 0) {
+            measureUnit = measureUnits.first;
+          }
         else
           measureUnit = null;
 
@@ -123,21 +130,53 @@ class ObjectiveAugeApi {
                 " WHERE measure.id = @id"
             , substitutionValues: {
           "id": id});
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
     });
 
   }
 
+/*
   /// Return a [Measure] by Id
   @ApiMethod( method: 'GET', path: 'measures/{id}')
   Future<Measure> getMeasureById(String id) async {
     try {
-      List<Measure> measures = await _queryGetMeasures(id: id);
+      List<Measure> measures = await queryGetMeasures(id: id);
+      if (measures == null || measures.length == 0) {
+        throw new RpcError(204,  'DataNotFound', 'Data not Found')
+          ..errors.add(new RpcErrorDetail(reason: 'MeasuereDataNotFound'));
+      }
       return measures?.first;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+  }
+  */
+
+
+  /// Return [Measure] list
+  @ApiMethod( method: 'GET', path: 'measures')
+  Future<List<Measure>> getMeasures() async {
+    try {
+
+      List<Measure> measures;
+      measures = await queryGetMeasures();
+      return measures;
+      /*
+      if (measures != null && measures.length != 0) {
+        return measures;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.userDataNotFoundReason));
+      }
+      */
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
@@ -145,22 +184,39 @@ class ObjectiveAugeApi {
   @ApiMethod( method: 'GET', path: 'measure_units')
   Future<List<MeasureUnit>> getMeasureUnits() async {
     try {
-       return  await _queryGetMeasureUnits();
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+     // return  await queryGetMeasureUnits();
+
+      List<MeasureUnit> measureUnits;
+      measureUnits = await queryGetMeasureUnits();
+      return measureUnits;
+      /*
+      if (measureUnits != null && measureUnits.length != 0) {
+        return measureUnits;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.measureUnitsDataNotFoundReason));
+      }
+      */
+
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
-
+/*
   /// Return a [MeasureUnit] by Id
   @ApiMethod( method: 'GET', path: 'measure_units/{id}')
   Future<MeasureUnit> getMeasureUnitById(String id) async {
     try {
-      List<MeasureUnit> measureUnits = await _queryGetMeasureUnits(id: id);
+      List<MeasureUnit> measureUnits = await queryGetMeasureUnits(id: id);
       return measureUnits?.first;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
+  */
 
   /// Create (insert) a new measures
   @ApiMethod( method: 'POST', path: 'objetives/{objectiveid}/measures')
@@ -194,8 +250,9 @@ class ObjectiveAugeApi {
             "measure_unit_id": measure?.measureUnit?.id,
             "objective_id": objectiveid
           });
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
 
     return IdMessage()..id = measure.id;
@@ -228,15 +285,16 @@ class ObjectiveAugeApi {
             "measure_unit_id": measure?.measureUnit?.id,
             "objective_id": objectiveid
           });
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
 
   }
 
   // *** OBJECTIVES ***
   // alignedToRecursiveDeep: 0 not call; 1 call once; 2 call tow, etc...
-  Future<List<Objective>> _queryGetObjectives({String organizationId, String id, int alignedToRecursive = 1, bool withMeasures = true, bool treeAlignedWithChildren = false, bool withProfile = false}) async {
+  static Future<List<Objective>> queryGetObjectives({String organizationId, String id, int alignedToRecursive = 1, bool withMeasures = true, bool treeAlignedWithChildren = false, bool withProfile = false}) async {
     List<List> results;
 
    // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
@@ -299,24 +357,42 @@ class ObjectiveAugeApi {
       Objective objective;
       Group group;
 
+      List<Organization> organizations;
+      List<User> users;
+      List<Group> groups;
+
       for (var row in results) {
         // Measures
 
         if (organization == null || organization.id != row[7]) {
-          organization = await _augeApi.getOrganizationById(row[7]);
+
+          organizations = await AugeApi.queryGetOrganizations(id: row[7]);
+          if (organizations != null && organizations.length != 0) {
+            organization = organizations.first;
+          }
         }
 
-        measures = (withMeasures) ? await _queryGetMeasures(objectiveId: row[0]) : [];
+        measures = (withMeasures) ? await queryGetMeasures(objectiveId: row[0]) : [];
 
-        leaderUser = await _augeApi.getUserById(row[5], withProfile: withProfile);
+        users = await AugeApi.queryGetUsers(id: row[5], withProfile: withProfile);
+
+        if (users != null && users.length != 0) {
+          leaderUser = users.first;
+        }
+        ///leaderUser = (await AugeApi.getUsers(id: row[5], withProfile: withProfile)).first;
 
         if (row[6] != null && alignedToRecursive > 0) {
-          alignedToObjectives = await _queryGetObjectives(id: row[6],
+          alignedToObjectives = await queryGetObjectives(id: row[6],
               alignedToRecursive: --alignedToRecursive);
           alignedToObjective = alignedToObjectives?.first;
         }
 
-        group = row[8] == null ? null : await _augeApi.getGroupById(row[8]);
+        //group = row[8] == null ? null : await _augeApi.getGroupById(row[8]);
+        groups = await AugeApi.queryGetGroups(id: row[8]);
+        if (groups != null && groups.length != 0) {
+          group = groups.first;
+        }
+
 
         objective = new Objective()
           ..id = row[0]
@@ -355,22 +431,43 @@ class ObjectiveAugeApi {
 
   /// Return all objectives from an organization
   @ApiMethod( method: 'GET', path: 'organization/{organizationId}/objetives')
-  Future<List<Objective>> getObjectives(String organizationId, {bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false}) async {
+  Future<List<Objective>> getObjectives(String organizationId, {String id, bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false}) async {
     try {
-      return _queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+      // return queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
+
+      List<Objective> objectives;
+      objectives = await queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
+      return objectives;
+      /*
+      if (objectives != null && objectives.length != 0) {
+        return objectives;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.objectivesDataNotFoundReason));
+      }
+      */
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
+
 
   /// Return an [Objective] from an organization by Id
   @ApiMethod( method: 'GET', path: 'objectives/{id}')
   Future<Objective> getObjectiveById(String id, {bool withMeasures = false}) async {
     try {
-      List<Objective> objectives = await _queryGetObjectives(id: id, withMeasures: withMeasures);
-      return objectives?.first;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+      List<Objective> objectives = await queryGetObjectives(id: id, withMeasures: withMeasures);
+
+      if (objectives != null && objectives.length != 0) {
+        return objectives.first;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.objectiveDataNotFoundReason));
+      }
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
@@ -385,8 +482,9 @@ class ObjectiveAugeApi {
                 " WHERE objective.id = @id"
             , substitutionValues: {
           "id": id});
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
     });
   }
@@ -420,12 +518,12 @@ class ObjectiveAugeApi {
               "organization_id": objective.organization?.id,
               "leader_user_id": objective.leader?.id,
               "group_id": objective.group?.id});
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
 
     return new IdMessage()..id = objective.id;
-
   }
 
   /// Update an initiative passing an instance of [Objective]
@@ -453,8 +551,9 @@ class ObjectiveAugeApi {
         "organization_id": objective.organization.id,
         "leader_user_id": objective.leader.id,
         "group_id": objective?.group?.id});
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 }

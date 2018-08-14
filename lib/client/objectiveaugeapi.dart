@@ -176,74 +176,6 @@ class ObjectiveAugeApi {
 
   /// Request parameters:
   ///
-  /// [id] - Path parameter: 'id'.
-  ///
-  /// Completes with a [Measure].
-  ///
-  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
-  /// error.
-  ///
-  /// If the used [http.Client] completes with an error when making a REST call,
-  /// this method will complete with the same error.
-  async.Future<Measure> getMeasureById(core.String id) {
-    var _url = null;
-    var _queryParams = new core.Map<core.String, core.List<core.String>>();
-    var _uploadMedia = null;
-    var _uploadOptions = null;
-    var _downloadOptions = commons.DownloadOptions.Metadata;
-    var _body = null;
-
-    if (id == null) {
-      throw new core.ArgumentError("Parameter id is required.");
-    }
-
-    _url = 'measures/' + commons.Escaper.ecapeVariable('$id');
-
-    var _response = _requester.request(_url, "GET",
-        body: _body,
-        queryParams: _queryParams,
-        uploadOptions: _uploadOptions,
-        uploadMedia: _uploadMedia,
-        downloadOptions: _downloadOptions);
-    return _response.then((data) => MeasureFactory.fromJson(data));
-  }
-
-  /// Request parameters:
-  ///
-  /// [id] - Path parameter: 'id'.
-  ///
-  /// Completes with a [MeasureUnit].
-  ///
-  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
-  /// error.
-  ///
-  /// If the used [http.Client] completes with an error when making a REST call,
-  /// this method will complete with the same error.
-  async.Future<MeasureUnit> getMeasureUnitById(core.String id) {
-    var _url = null;
-    var _queryParams = new core.Map<core.String, core.List<core.String>>();
-    var _uploadMedia = null;
-    var _uploadOptions = null;
-    var _downloadOptions = commons.DownloadOptions.Metadata;
-    var _body = null;
-
-    if (id == null) {
-      throw new core.ArgumentError("Parameter id is required.");
-    }
-
-    _url = 'measure_units/' + commons.Escaper.ecapeVariable('$id');
-
-    var _response = _requester.request(_url, "GET",
-        body: _body,
-        queryParams: _queryParams,
-        uploadOptions: _uploadOptions,
-        uploadMedia: _uploadMedia,
-        downloadOptions: _downloadOptions);
-    return _response.then((data) => MeasureUnitFactory.fromJson(data));
-  }
-
-  /// Request parameters:
-  ///
   /// Completes with a [core.List<MeasureUnit>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -269,6 +201,36 @@ class ObjectiveAugeApi {
         downloadOptions: _downloadOptions);
     return _response.then((data) => (data as core.List)
         .map<MeasureUnit>((value) => MeasureUnitFactory.fromJson(value))
+        .toList());
+  }
+
+  /// Request parameters:
+  ///
+  /// Completes with a [core.List<Measure>].
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future<core.List<Measure>> getMeasures() {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    _url = 'measures';
+
+    var _response = _requester.request(_url, "GET",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => (data as core.List)
+        .map<Measure>((value) => MeasureFactory.fromJson(value))
         .toList());
   }
 
@@ -316,6 +278,8 @@ class ObjectiveAugeApi {
   ///
   /// [organizationId] - Path parameter: 'organizationId'.
   ///
+  /// [id] - Query parameter: 'id'.
+  ///
   /// [withMeasures] - Query parameter: 'withMeasures'.
   ///
   /// [treeAlignedWithChildren] - Query parameter: 'treeAlignedWithChildren'.
@@ -330,7 +294,8 @@ class ObjectiveAugeApi {
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
   async.Future<core.List<Objective>> getObjectives(core.String organizationId,
-      {core.bool withMeasures,
+      {core.String id,
+      core.bool withMeasures,
       core.bool treeAlignedWithChildren,
       core.bool withProfile}) {
     var _url = null;
@@ -342,6 +307,9 @@ class ObjectiveAugeApi {
 
     if (organizationId == null) {
       throw new core.ArgumentError("Parameter organizationId is required.");
+    }
+    if (id != null) {
+      _queryParams["id"] = [id];
     }
     if (withMeasures != null) {
       _queryParams["withMeasures"] = ["${withMeasures}"];

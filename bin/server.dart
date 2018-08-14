@@ -90,6 +90,7 @@ shelf.Handler createRpcHandler(ApiServer apiServer) {
     } catch (e) {
       // Should never happen since the apiServer.handleHttpRequest method
       // always returns a response.
+      print('${e.runtimeType}, ${e}');
       return new shelf.Response.internalServerError(body: e.toString());
     }
   };

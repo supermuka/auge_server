@@ -15,7 +15,7 @@ import 'package:auge_server/model/group.dart';
 
 import 'package:auge_server/message_type/id_message.dart';
 
-//import 'package:auge_shared/message/messages.dart';
+import 'package:auge_server/shared/rpc_error_message.dart';
 
 /// Api for Shared Domain
 @ApiClass(version: 'v1')
@@ -34,13 +34,14 @@ class AugeApi {
           .isClosed) {
         await AugeConnection.getConnection().close();
       }
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
   // *** ORGANIZATIONS ***
-  Future<List<Organization>> _queryGetOrganizations({String id}) async {
+  static Future<List<Organization>> queryGetOrganizations({String id}) async {
     //List<List> results;
     var results;
 
@@ -68,23 +69,43 @@ class AugeApi {
   @ApiMethod( method: 'GET', path: 'organizations')
   Future<List<Organization>> getOrganizations() async {
     try {
-      return _queryGetOrganizations();
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+
+      List<Organization> organizations = await queryGetOrganizations();
+      return organizations;
+
+      /*
+      if (organizations != null && organizations.length != 0) {
+        return organizations;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.organizationsDataNotFoundReason));
+      }
+      */
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
-  /// Return an organization by UUID
+  /// Return an organization by [id] key
+ /*
   @ApiMethod( method: 'GET', path: 'organizations/{id}')
   Future<Organization> getOrganizationById(String id) async {
     try {
-      List<Organization> organizations = await _queryGetOrganizations(id: id);
 
-      return organizations.first;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+      List<Organization> organizations = await queryGetOrganizations(id: id);
+      if (organizations != null && organizations.length != 0) {
+        return organizations.first;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.organizationDataNotFoundReason));
+      }
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
+  */
 
   /// Create (insert) a new organization
   @ApiMethod( method: 'POST', path: 'organizations')
@@ -104,8 +125,9 @@ class AugeApi {
         "id": organization.id,
         "name": organization.name,
         "code": organization.code});
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
     return new IdMessage()..id = organization.id;
   }
@@ -122,8 +144,9 @@ class AugeApi {
         "id": organization.id,
         "name": organization.name,
         "code": organization.code});
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
@@ -136,13 +159,14 @@ class AugeApi {
               .id("id")}"
           , substitutionValues: {
         "id": id});
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
   // *** USERS ***
-  Future<List<User>> _queryGetUsers({String id, String eMail, String password, String organizationId, bool withProfile = false}) async {
+  static Future<List<User>> queryGetUsers({String id, String eMail, String password, String organizationId, bool withProfile = false}) async {
     List<List> results;
 
     String queryStatement = '';
@@ -159,27 +183,31 @@ class AugeApi {
           " JOIN auge.users_profile user_profile on user_profile.user_id = u.id";
     }
 
-    Map<String, dynamic> _substitutionValues;
-
+    Map<String, dynamic> _substitutionValues = Map();
+    String whereAnd = "WHERE";
     if (id != null) {
-       queryStatement = queryStatement + " WHERE u.id = @id";
-       _substitutionValues = {
-         "id": id
-       };
-    } else if (eMail != null && password != null) {
+       queryStatement = queryStatement + " ${whereAnd} u.id = @id";
+       _substitutionValues.putIfAbsent("id", () => id);
+       whereAnd = "AND";
+    }
+    if (eMail != null) {
       queryStatement = queryStatement +
-          " WHERE u.email = @email AND u.password = @password";
+          " ${whereAnd} u.email = @email";
 
-      _substitutionValues = {
-        "email": eMail,
-        "password": password
-      };
-    } else if (organizationId != null) {
+      _substitutionValues.putIfAbsent("email", () => eMail);
+      whereAnd = "AND";
+    }
+    if (password != null) {
+      queryStatement = queryStatement +
+          " ${whereAnd} u.password = @password";
+      _substitutionValues.putIfAbsent("password", () => password);
+      whereAnd = "AND";
+    }
+    if (organizationId != null) {
       queryStatement = queryStatement + " JOIN auge.users_profile_organizations user_profile_organization ON user_profile_organization.user_id = u.id";
-          queryStatement = queryStatement + " WHERE user_profile_organization.organization_id = @organization_id";
-      _substitutionValues = {
-        "organization_id": organizationId
-      };
+          queryStatement = queryStatement + " ${whereAnd} user_profile_organization.organization_id = @organization_id";
+      _substitutionValues.putIfAbsent("organization_id", () => organizationId);
+      whereAnd = "AND";
     }
 
     results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: _substitutionValues);
@@ -203,53 +231,77 @@ class AugeApi {
     return users;
   }
 
+  /*
   /// Return [User] list. Whether `withProfile` arg is `true`, it is returned profile information like (avatar image, etc.)
   @ApiMethod( method: 'GET', path: 'users')
   Future<List<User>> getUsers({bool withProfile = false}) async {
     try {
       return _queryGetUsers(withProfile: withProfile);
-    } on PostgreSQLException catch (e) {
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
       throw new ApplicationError(e);
     }
   }
+  */
 
-  /// Return a [User] by Id key. Whether `withProfile` arg is `true`, it is returned profile information like (avatar image, etc.)
-  @ApiMethod( method: 'GET', path: 'users/{id}')
-  Future<User> getUserById(String id, {bool withProfile = false}) async {
+  /// Return [User] list.
+  /// Return [User] list by [id] key of the organization
+  /// Whether `withProfile` arg is `true`, it is returned profile information like (avatar image, etc.)
+  @ApiMethod( method: 'GET', path: 'organization/{organizationId}/users')
+  Future<List<User>> getUsers(String organizationId, {bool withProfile = false}) async {
     try {
-      List<User> users;
-      users = await _queryGetUsers(id: id, withProfile: withProfile);
-      return users.first;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+      //return queryGetUsers(organizationId: organizationId, withProfile: withProfile);
+
+      List<User> users = await queryGetUsers(organizationId: organizationId, withProfile: withProfile);
+      return users;
+
+      /*
+      if (users != null && users.length != 0) {
+        return users;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.usersDataNotFoundReason));
+      }
+      */
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
   /// Return a [User] authenticated by eMail and password key. Whether `withProfile` arg is `true`, it is returned profile information like (avatar image, etc.)
-  @ApiMethod( method: 'GET', path: 'users/{eMail}/{password}')
+  @ApiMethod(method: 'GET', path: 'users/{eMail}/{password}')
   Future<User> getAuthenticatedUserWithEmail(String eMail, String password, {bool withProfile = false}) async {
-
     try {
       List<User> users;
-      users = await _queryGetUsers(
+      users = await queryGetUsers(
           eMail: eMail, password: password, withProfile: withProfile);
-
-      return users.first;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+      if (users != null && users.length != 0) {
+        return users.first;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.userDataNotFoundReason));
+      }
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;;
     }
   }
 
+  /*
   /// Return [User] list by Id Organization
   @ApiMethod( method: 'GET', path: 'organizations/{organizationId}/users')
   Future<List<User>> getUsersByOrganizationId(String organizationId, {bool withProfile = false}) async {
     try {
       return await _queryGetUsers(
           organizationId: organizationId, withProfile: withProfile);
-    } on PostgreSQLException catch (e) {
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
       throw new ApplicationError(e);
     }
   }
+  */
 
   /// Create (insert) a new user
   @ApiMethod( method: 'POST', path: 'users')
@@ -289,8 +341,9 @@ class AugeApi {
             "image": user.userProfile.image,
             "is_super_admin": user.userProfile.isSuperAdmin,
             "idiom_locale": user.userProfile.idiomLocale});
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
     });
 
@@ -324,8 +377,9 @@ class AugeApi {
           "image": user.userProfile.image,
           "is_super_admin": user.userProfile.isSuperAdmin,
           "idiom_locale": user.userProfile.idiomLocale});
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
     });
   }
@@ -348,23 +402,24 @@ class AugeApi {
                 "id")}"
             , substitutionValues: {
           "id": id});
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
 
     });
   }
 
   // *** USERS AND ORGANIZATIONS  ***
-  Future<List<UserProfileOrganization>> _queryAuthorizatedOrganizationsByUserId(String user_id) async {
+  static Future<List<UserProfileOrganization>> queryAuthorizatedOrganizationsByUserId(String user_id) async {
 
-   List<List> results;
+    List<List> results;
 
     String queryStatement = '';
     queryStatement = "SELECT uo.organization_id::VARCHAR, uo.authorization_level "
         "FROM auge.users_profile_organizations uo ";
 
-   Map<String, dynamic> _substitutionValues;
+    Map<String, dynamic> _substitutionValues;
 
     if (user_id != null) {
       queryStatement = queryStatement + "WHERE uo.user_id = @id";
@@ -376,15 +431,30 @@ class AugeApi {
 
     List<UserProfileOrganization> usersOrganizations = new List();
 
+    List<Organization> organizations;
+    List<User> users;
+    User user;
+
     if (results.isNotEmpty) {
-      User user = await getUserById(user_id);
+      // User user = await getUserById(user_id);
+      //User user = (await getUsers(id: user_id))?.first;
+      users = await queryGetUsers(id: user_id);
+      if (users != null && users != 0) {
+        user = users.first;
+      }
 
       for (var row in results) {
 
         UserProfileOrganization userOrganization = new UserProfileOrganization();
 
         userOrganization.userProfile = user.userProfile;
-        userOrganization.organization = await getOrganizationById(row[0]);
+
+        organizations = await queryGetOrganizations(id: row[0]);
+
+        if (organizations != null && organizations.length != 0) {
+          userOrganization.organization = organizations.first;
+        }
+
         userOrganization.authorizationLevel = row[1];
 
         usersOrganizations.add(userOrganization);
@@ -401,15 +471,25 @@ class AugeApi {
     try {
       List<UserProfileOrganization> usersOrganizations;
       usersOrganizations =
-      await _queryAuthorizatedOrganizationsByUserId(user_id);
+      await queryAuthorizatedOrganizationsByUserId(user_id);
       return usersOrganizations;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+
+      /*
+      if (usersOrganizations != null && usersOrganizations.length != 0) {
+        return usersOrganizations;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.organizationsDataNotFoundReason));
+      }
+      */
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
    // *** GROUP  ***
-  Future<List<Group>> _queryGetGroups({String id, String organizationId, int alignedToRecursive = 1}) async {
+  static Future<List<Group>> queryGetGroups({String id, String organizationId, int alignedToRecursive = 1}) async {
     List<List> results;
 
     String queryStatement = '';
@@ -446,6 +526,9 @@ class AugeApi {
     Group superGroup;
     List<Group> superGroups;
     GroupType groupType;
+    List<Organization> organizations;
+    List<User> users;
+    List<GroupType> groupTypes;
 
     if (results.length > 0) {
       Organization organization;
@@ -453,20 +536,35 @@ class AugeApi {
       for (var row in results) {
 
         if (organization == null || organization.id != row[3]) {
-          organization = await getOrganizationById(row[3]);
+
+          organizations = await queryGetOrganizations(id: row[3]);
+
+          if (organizations.isNotEmpty) {
+            organization = organizations.first;
+          }
+
+          // organization = await getOrganizationById(row[3]);
         }
 
         if (row[5] != null) {
-          leader = await getUserById(row[5]);
+          // leader = (await getUsers(id: row[5])).first;
+          users = await queryGetUsers(id: row[5]);
+          if (users != null && users.length != 0) {
+            leader = users.first;
+          }
         }
 
         if (row[6] != null && alignedToRecursive > 0) {
-          superGroups = await _queryGetGroups(id: row[6],
+          superGroups = await queryGetGroups(id: row[6],
               alignedToRecursive: --alignedToRecursive);
           superGroup = superGroups.first;
         }
 
-        groupType = await getGroupTypeById(row[4]);
+        //groupType = await getGroupTypeById(row[4]);
+        groupTypes = await queryGetGroupTypes(id: row[4]);
+        if (groupTypes != null && groupTypes.length != 0) {
+          groupType = groupTypes.first;
+        }
 
         Group group = new Group()
           ..id = row[0]
@@ -487,21 +585,20 @@ class AugeApi {
   @ApiMethod( method: 'GET', path: 'organization/{organizationId}/groups')
   Future<List<Group>> getGroups(String organizationId) async {
     try {
-      return _queryGetGroups(organizationId: organizationId);
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
-    }
-  }
+      List<Group> groups = await queryGetGroups(organizationId: organizationId);
+      return groups;
 
-  /// Return a [Group] by Id key.
-  @ApiMethod( method: 'GET', path: 'groups/{id}')
-  Future<Group> getGroupById(String id) async {
-    try {
-      List<Group> groups;
-      groups = await _queryGetGroups(id: id);
-      return groups.first;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+      /*
+      if (groups != null && groups.length != 0) {
+        return groups;
+      } else {
+        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
+          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.groupsDataNotFoundReason));
+      }
+      */
+     } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 
@@ -532,8 +629,9 @@ class AugeApi {
           "group_type_id": group.groupType?.id,
           "super_group_id": group.superGroup?.id,
           "leader_user_id": group.leader?.id});
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
     });
 
@@ -563,8 +661,9 @@ class AugeApi {
           "group_type_id": group.groupType?.id,
           "super_group_id": group.superGroup?.id,
           "leader_user_id": group.leader?.id});
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
     });
   }
@@ -580,13 +679,15 @@ class AugeApi {
             , substitutionValues: {
           "id": id});
 
-      } on PostgreSQLException catch (e) {
-        throw new ApplicationError(e);
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
       }
     });
   }
 
-  Future<List<GroupType>> _queryGetGroupTypes({String id}) async {
+  // *** GROUP TYPES ***
+  static Future<List<GroupType>> queryGetGroupTypes({String id}) async {
 
     List<GroupType> groupTypes = new List();
 
@@ -609,28 +710,17 @@ class AugeApi {
       ..name = 'Team' // GroupMessage.groupTypeLabel('Team')
     );
 
-    return null; // (id != null) ? await groupTypes.singleWhere((t) => (t.id == id)) : groupTypes;
+    return (id != null) ? [groupTypes.singleWhere((t) => (t.id == id))] : groupTypes;
   }
 
   /// Return [GroupType] list.
   @ApiMethod( method: 'GET', path: 'group_types')
   Future<List<GroupType>> getGroupTypes() async {
     try {
-      return await _queryGetGroupTypes();
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
-    }
-  }
-
-  /// Return a [GroupType] by Id key.
-  @ApiMethod( method: 'GET', path: 'group_types/{id}')
-  Future<GroupType> getGroupTypeById(String id) async {
-    try {
-      List<GroupType> groupTypes;
-      groupTypes = await _queryGetGroupTypes(id: id);
-      return await groupTypes?.first;
-    } on PostgreSQLException catch (e) {
-      throw new ApplicationError(e);
+      return await queryGetGroupTypes();
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
   }
 }
