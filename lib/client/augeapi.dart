@@ -159,6 +159,42 @@ class AugeApi {
     return _response.then((data) => IdMessageFactory.fromJson(data));
   }
 
+  /// [request] - The metadata request object.
+  ///
+  /// Request parameters:
+  ///
+  /// Completes with a [IdMessage].
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future<IdMessage> createUserProfileOrganization(
+      UserProfileOrganization request) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (request != null) {
+      _body =
+          convert.json.encode(UserProfileOrganizationFactory.toJson(request));
+    }
+
+    _url = 'users_profile_organizations';
+
+    var _response = _requester.request(_url, "POST",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => IdMessageFactory.fromJson(data));
+  }
+
   /// Request parameters:
   ///
   /// [id] - Path parameter: 'id'.
@@ -263,6 +299,76 @@ class AugeApi {
 
   /// Request parameters:
   ///
+  /// [id] - Path parameter: 'id'.
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future deleteUserProfileOrganization(core.String id) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (id == null) {
+      throw new core.ArgumentError("Parameter id is required.");
+    }
+
+    _downloadOptions = null;
+
+    _url =
+        'users_profile_organizations/' + commons.Escaper.ecapeVariable('$id');
+
+    var _response = _requester.request(_url, "DELETE",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => null);
+  }
+
+  /// Request parameters:
+  ///
+  /// [userId] - Path parameter: 'user_id'.
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future deleteUserProfileOrganizationByUserId(core.String userId) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (userId == null) {
+      throw new core.ArgumentError("Parameter userId is required.");
+    }
+
+    _downloadOptions = null;
+
+    _url = 'users_profile_organizations/users/' +
+        commons.Escaper.ecapeVariable('$userId');
+
+    var _response = _requester.request(_url, "DELETE",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => null);
+  }
+
+  /// Request parameters:
+  ///
   /// [eMail] - Path parameter: 'eMail'.
   ///
   /// [password] - Path parameter: 'password'.
@@ -334,7 +440,7 @@ class AugeApi {
       throw new core.ArgumentError("Parameter userId is required.");
     }
 
-    _url = 'users_profile_organizations/' +
+    _url = 'users_profile_organizations/users/' +
         commons.Escaper.ecapeVariable('$userId');
 
     var _response = _requester.request(_url, "GET",
@@ -491,6 +597,49 @@ class AugeApi {
         .toList());
   }
 
+  /// Request parameters:
+  ///
+  /// [userId] - Query parameter: 'userId'.
+  ///
+  /// [organizationId] - Query parameter: 'organizationId'.
+  ///
+  /// Completes with a [core.List<UserProfileOrganization>].
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future<core.List<UserProfileOrganization>> getUsersProfileOrganizations(
+      {core.String userId, core.String organizationId}) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (userId != null) {
+      _queryParams["userId"] = [userId];
+    }
+    if (organizationId != null) {
+      _queryParams["organizationId"] = [organizationId];
+    }
+
+    _url = 'users_profile_organizations';
+
+    var _response = _requester.request(_url, "GET",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => (data as core.List)
+        .map<UserProfileOrganization>(
+            (value) => UserProfileOrganizationFactory.fromJson(value))
+        .toList());
+  }
+
   /// [request] - The metadata request object.
   ///
   /// Request parameters:
@@ -583,6 +732,41 @@ class AugeApi {
     _downloadOptions = null;
 
     _url = 'users';
+
+    var _response = _requester.request(_url, "PUT",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => null);
+  }
+
+  /// [request] - The metadata request object.
+  ///
+  /// Request parameters:
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future updateUserProfileOrganization(UserProfileOrganization request) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (request != null) {
+      _body =
+          convert.json.encode(UserProfileOrganizationFactory.toJson(request));
+    }
+
+    _downloadOptions = null;
+
+    _url = 'users_profile_organizations';
 
     var _response = _requester.request(_url, "PUT",
         body: _body,
@@ -775,9 +959,6 @@ class UserProfileFactory {
     if (_json.containsKey("isSuperAdmin")) {
       message.isSuperAdmin = _json["isSuperAdmin"];
     }
-    if (_json.containsKey("user")) {
-      message.user = UserFactory.fromJson(_json["user"]);
-    }
     return message;
   }
 
@@ -792,9 +973,6 @@ class UserProfileFactory {
     if (message.isSuperAdmin != null) {
       _json["isSuperAdmin"] = message.isSuperAdmin;
     }
-    if (message.user != null) {
-      _json["user"] = UserFactory.toJson(message.user);
-    }
     return _json;
   }
 }
@@ -805,12 +983,15 @@ class UserProfileOrganizationFactory {
     if (_json.containsKey("authorizationLevel")) {
       message.authorizationLevel = _json["authorizationLevel"];
     }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
     if (_json.containsKey("organization")) {
       message.organization =
           OrganizationFactory.fromJson(_json["organization"]);
     }
-    if (_json.containsKey("userProfile")) {
-      message.userProfile = UserProfileFactory.fromJson(_json["userProfile"]);
+    if (_json.containsKey("user")) {
+      message.user = UserFactory.fromJson(_json["user"]);
     }
     return message;
   }
@@ -820,11 +1001,14 @@ class UserProfileOrganizationFactory {
     if (message.authorizationLevel != null) {
       _json["authorizationLevel"] = message.authorizationLevel;
     }
+    if (message.id != null) {
+      _json["id"] = message.id;
+    }
     if (message.organization != null) {
       _json["organization"] = OrganizationFactory.toJson(message.organization);
     }
-    if (message.userProfile != null) {
-      _json["userProfile"] = UserProfileFactory.toJson(message.userProfile);
+    if (message.user != null) {
+      _json["user"] = UserFactory.toJson(message.user);
     }
     return _json;
   }

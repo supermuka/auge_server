@@ -41,8 +41,7 @@ class AugeApi {
   }
 
   // *** ORGANIZATIONS ***
-  static Future<List<Organization>> queryGetOrganizations({String id}) async {
-    //List<List> results;
+  static Future<List<Organization>> queryOrganizations({String id}) async {
     var results;
 
     String queryStatement;
@@ -70,42 +69,14 @@ class AugeApi {
   Future<List<Organization>> getOrganizations() async {
     try {
 
-      List<Organization> organizations = await queryGetOrganizations();
+      List<Organization> organizations = await queryOrganizations();
       return organizations;
 
-      /*
-      if (organizations != null && organizations.length != 0) {
-        return organizations;
-      } else {
-        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
-          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.organizationsDataNotFoundReason));
-      }
-      */
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
   }
-
-  /// Return an organization by [id] key
- /*
-  @ApiMethod( method: 'GET', path: 'organizations/{id}')
-  Future<Organization> getOrganizationById(String id) async {
-    try {
-
-      List<Organization> organizations = await queryGetOrganizations(id: id);
-      if (organizations != null && organizations.length != 0) {
-        return organizations.first;
-      } else {
-        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
-          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.organizationDataNotFoundReason));
-      }
-    } catch (e) {
-      print('${e.runtimeType}, ${e}');
-      rethrow;
-    }
-  }
-  */
 
   /// Create (insert) a new organization
   @ApiMethod( method: 'POST', path: 'organizations')
@@ -166,13 +137,13 @@ class AugeApi {
   }
 
   // *** USERS ***
-  static Future<List<User>> queryGetUsers({String id, String eMail, String password, String organizationId, bool withProfile = false}) async {
+  static Future<List<User>> queryUsers({String id, String eMail, String password, String organizationId, bool withProfile = false}) async {
     List<List> results;
 
     String queryStatement = '';
     if (withProfile == false) {
       queryStatement = "SELECT u.id::VARCHAR, u.name, u.email, u.password "
-          "FROM auge.users u";
+          "FROM auge.users u ";
     }
     else {
       queryStatement = "SELECT u.id::VARCHAR, u.name, u.email, u.password, "
@@ -231,39 +202,14 @@ class AugeApi {
     return users;
   }
 
-  /*
-  /// Return [User] list. Whether `withProfile` arg is `true`, it is returned profile information like (avatar image, etc.)
-  @ApiMethod( method: 'GET', path: 'users')
-  Future<List<User>> getUsers({bool withProfile = false}) async {
-    try {
-      return _queryGetUsers(withProfile: withProfile);
-    } catch (e) {
-      print('${e.runtimeType}, ${e}');
-      throw new ApplicationError(e);
-    }
-  }
-  */
-
   /// Return [User] list.
   /// Return [User] list by [id] key of the organization
   /// Whether `withProfile` arg is `true`, it is returned profile information like (avatar image, etc.)
   @ApiMethod( method: 'GET', path: 'organization/{organizationId}/users')
   Future<List<User>> getUsers(String organizationId, {bool withProfile = false}) async {
     try {
-      //return queryGetUsers(organizationId: organizationId, withProfile: withProfile);
-
-      List<User> users = await queryGetUsers(organizationId: organizationId, withProfile: withProfile);
+      List<User> users = await queryUsers(organizationId: organizationId, withProfile: withProfile);
       return users;
-
-      /*
-      if (users != null && users.length != 0) {
-        return users;
-      } else {
-        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
-          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.usersDataNotFoundReason));
-      }
-      */
-
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -275,7 +221,7 @@ class AugeApi {
   Future<User> getAuthenticatedUserWithEmail(String eMail, String password, {bool withProfile = false}) async {
     try {
       List<User> users;
-      users = await queryGetUsers(
+      users = await queryUsers(
           eMail: eMail, password: password, withProfile: withProfile);
       if (users != null && users.length != 0) {
         return users.first;
@@ -289,28 +235,12 @@ class AugeApi {
     }
   }
 
-  /*
-  /// Return [User] list by Id Organization
-  @ApiMethod( method: 'GET', path: 'organizations/{organizationId}/users')
-  Future<List<User>> getUsersByOrganizationId(String organizationId, {bool withProfile = false}) async {
-    try {
-      return await _queryGetUsers(
-          organizationId: organizationId, withProfile: withProfile);
-    } catch (e) {
-      print('${e.runtimeType}, ${e}');
-      throw new ApplicationError(e);
-    }
-  }
-  */
-
   /// Create (insert) a new user
   @ApiMethod( method: 'POST', path: 'users')
   Future<IdMessage> createUser(User user) async {
-
     if (user.id == null) {
       user.id = new Uuid().v4();
     }
-
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
         await ctx.query(
@@ -324,12 +254,6 @@ class AugeApi {
             "name": user.name,
             "email": user.eMail,
             "password": user.password});
-            /*
-                "'${user.id}',"
-                "'${user.name}',"
-                "'${user.eMail}',"
-                "'${user.password}')");
-*/
         if (user.userProfile != null)
           await ctx.query(
               "INSERT INTO auge.users_profile(user_id, image, is_super_admin, idiom_locale) VALUES("
@@ -346,9 +270,7 @@ class AugeApi {
         rethrow;
       }
     });
-
     return new IdMessage()..id = user.id;
-
   }
 
   /// Update a [User]
@@ -406,25 +328,41 @@ class AugeApi {
         print('${e.runtimeType}, ${e}');
         rethrow;
       }
-
     });
   }
 
   // *** USERS AND ORGANIZATIONS  ***
-  static Future<List<UserProfileOrganization>> queryAuthorizatedOrganizationsByUserId(String user_id) async {
+  static Future<List<UserProfileOrganization>> queryUsersProfileOrganizations({String id, String userId, String organizationId}) async {
 
     List<List> results;
 
     String queryStatement = '';
-    queryStatement = "SELECT uo.organization_id::VARCHAR, uo.authorization_level "
+    queryStatement = "SELECT "
+        "uo.id::VARCHAR, " // 0
+        "uo.user_id::VARCHAR, " // 1
+        "uo.organization_id::VARCHAR, " //2
+        "uo.authorization_level " // 3
         "FROM auge.users_profile_organizations uo ";
 
-    Map<String, dynamic> _substitutionValues;
+    Map<String, dynamic> _substitutionValues = Map<String, dynamic>();
+    String whereAnd = 'WHERE';
 
-    if (user_id != null) {
-      queryStatement = queryStatement + "WHERE uo.user_id = @id";
-      _substitutionValues = {"id": user_id};
+    if (id != null) {
+      queryStatement = queryStatement + " ${whereAnd} uo.id = @id";
+      _substitutionValues.putIfAbsent("id", () => id);
+      whereAnd = 'AND';
+    }
 
+    if (userId != null) {
+      queryStatement = queryStatement + " ${whereAnd} uo.user_id = @user_id";
+      _substitutionValues.putIfAbsent("user_id", () => userId);
+      whereAnd = 'AND';
+    }
+
+    if (organizationId != null) {
+      queryStatement = queryStatement + " ${whereAnd} uo.organization_id = @id";
+      _substitutionValues.putIfAbsent("organization_id", () => organizationId);
+     //The last, not need... whereAnd = 'AND';
     }
 
     results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: _substitutionValues);
@@ -434,30 +372,33 @@ class AugeApi {
     List<Organization> organizations;
     List<User> users;
     User user;
+    Organization organization;
 
     if (results.isNotEmpty) {
-      // User user = await getUserById(user_id);
-      //User user = (await getUsers(id: user_id))?.first;
-      users = await queryGetUsers(id: user_id);
-      if (users != null && users != 0) {
-        user = users.first;
-      }
-
       for (var row in results) {
 
-        UserProfileOrganization userOrganization = new UserProfileOrganization();
-
-        userOrganization.userProfile = user.userProfile;
-
-        organizations = await queryGetOrganizations(id: row[0]);
-
-        if (organizations != null && organizations.length != 0) {
-          userOrganization.organization = organizations.first;
+        if (user?.id != row[1]) {
+          users = await queryUsers(id: row[1], withProfile: true);
+          if (users != null && users != 0) {
+            user = users.first;
+          }
         }
 
-        userOrganization.authorizationLevel = row[1];
+        if (organization?.id != row[2]) {
+          organizations = await queryOrganizations(id: row[2]);
+          if (organizations != null && organizations.length != 0) {
+            organization = organizations.first;
+          }
+        }
 
-        usersOrganizations.add(userOrganization);
+        UserProfileOrganization userProfileOrganization = new UserProfileOrganization();
+
+        userProfileOrganization.id = row[0];
+        userProfileOrganization.user = user;
+        userProfileOrganization.organization = organization;
+        userProfileOrganization.authorizationLevel = row[3];
+
+        usersOrganizations.add(userProfileOrganization);
       }
     }
 
@@ -465,31 +406,129 @@ class AugeApi {
   }
 
   /// Return an [Organizations] authorizated by User Id
-  @ApiMethod( method: 'GET', path: 'users_profile_organizations/{user_id}')
+  @ApiMethod( method: 'GET', path: 'users_profile_organizations/users/{user_id}')
   Future<List<UserProfileOrganization>> getAuthorizatedOrganizationsByUserId(String user_id) async {
 
     try {
       List<UserProfileOrganization> usersOrganizations;
       usersOrganizations =
-      await queryAuthorizatedOrganizationsByUserId(user_id);
+      await queryUsersProfileOrganizations(userId: user_id);
       return usersOrganizations;
 
-      /*
-      if (usersOrganizations != null && usersOrganizations.length != 0) {
-        return usersOrganizations;
-      } else {
-        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
-          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.organizationsDataNotFoundReason));
-      }
-      */
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
   }
 
+  /// Return an [Organizations] authorizated by User Id
+  @ApiMethod( method: 'GET', path: 'users_profile_organizations')
+  Future<List<UserProfileOrganization>> getUsersProfileOrganizations({String userId, String organizationId}) async {
+
+    try {
+      List<UserProfileOrganization> usersOrganizations;
+      usersOrganizations =
+      await queryUsersProfileOrganizations(userId: userId, organizationId: organizationId);
+      return usersOrganizations;
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+  }
+
+  /// Create (insert) a new user profile and organization
+  @ApiMethod( method: 'POST', path: 'users_profile_organizations')
+  Future<IdMessage> createUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
+
+    if (userProfileOrganization.id == null) {
+      userProfileOrganization.id = new Uuid().v4();
+    }
+
+    await AugeConnection.getConnection().transaction((ctx) async {
+      try {
+
+        await ctx.query(
+            "INSERT INTO auge.users_profile_organizations(id, user_id, organization_id, authorization_level) VALUES("
+                "@id,"
+                "@user_id,"
+                "@organization_id,"
+                "@authorization_level)"
+            , substitutionValues: {
+          "id": userProfileOrganization.id,
+          "user_id": userProfileOrganization.user.id,
+          "organization_id": userProfileOrganization.organization.id,
+          "authorization_level": userProfileOrganization.authorizationLevel});
+
+           return new IdMessage()..id = userProfileOrganization.id;
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
+      }
+    });
+  }
+
+  /// Update a [User]
+  @ApiMethod( method: 'PUT', path: 'users_profile_organizations')
+  Future<VoidMessage> updateUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
+
+    await AugeConnection.getConnection().transaction((ctx) async {
+      try {
+        await ctx.query(
+            "UPDATE auge.users_profile_organizations "
+                "SET authorization_level = @authorization_level, "
+                "user_id = @user_id, "
+                "organization_id = @organization_id "
+                "WHERE id = @id", substitutionValues: {
+          "id": userProfileOrganization.id,
+          "user_id": userProfileOrganization.user.id,
+          "organization_id": userProfileOrganization.organization.id,
+          "authorization_level": userProfileOrganization.authorizationLevel});
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
+      }
+    });
+  }
+
+  /// Delete by [UserProfileOrganization.id]
+  @ApiMethod( method: 'DELETE', path: 'users_profile_organizations/{id}')
+  Future<VoidMessage> deleteUserProfileOrganization(String id) async {
+
+    await AugeConnection.getConnection().transaction((ctx) async {
+      try {
+        await ctx.query(
+            "DELETE FROM auge.users_profile_organizations user_profile_organization "
+            "WHERE user_profile_organization.id = @id "
+            , substitutionValues: {
+            "id": id});
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
+      }
+    });
+  }
+
+  /// Delete all UserProfileOrganization by [User.id]
+  @ApiMethod( method: 'DELETE', path: 'users_profile_organizations/users/{user_id}')
+  Future<VoidMessage> deleteUserProfileOrganizationByUserId(String user_id) async {
+
+    await AugeConnection.getConnection().transaction((ctx) async {
+      try {
+        await ctx.query(
+            "DELETE FROM auge.users_profile_organizations user_profile_organization "
+                "WHERE user_profile_organization.user_id = @user_id "
+            , substitutionValues: {
+          "user_id": user_id});
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
+      }
+    });
+  }
+
    // *** GROUP  ***
-  static Future<List<Group>> queryGetGroups({String id, String organizationId, int alignedToRecursive = 1}) async {
+  static Future<List<Group>> queryGroups({String id, String organizationId, int alignedToRecursive = 1}) async {
     List<List> results;
 
     String queryStatement = '';
@@ -534,34 +573,29 @@ class AugeApi {
       Organization organization;
 
       for (var row in results) {
-
         if (organization == null || organization.id != row[3]) {
 
-          organizations = await queryGetOrganizations(id: row[3]);
+          organizations = await queryOrganizations(id: row[3]);
 
           if (organizations.isNotEmpty) {
             organization = organizations.first;
           }
-
-          // organization = await getOrganizationById(row[3]);
         }
 
         if (row[5] != null) {
-          // leader = (await getUsers(id: row[5])).first;
-          users = await queryGetUsers(id: row[5]);
+          users = await queryUsers(id: row[5]);
           if (users != null && users.length != 0) {
             leader = users.first;
           }
         }
 
         if (row[6] != null && alignedToRecursive > 0) {
-          superGroups = await queryGetGroups(id: row[6],
+          superGroups = await queryGroups(id: row[6],
               alignedToRecursive: --alignedToRecursive);
           superGroup = superGroups.first;
         }
 
-        //groupType = await getGroupTypeById(row[4]);
-        groupTypes = await queryGetGroupTypes(id: row[4]);
+        groupTypes = await queryGroupTypes(id: row[4]);
         if (groupTypes != null && groupTypes.length != 0) {
           groupType = groupTypes.first;
         }
@@ -585,17 +619,9 @@ class AugeApi {
   @ApiMethod( method: 'GET', path: 'organization/{organizationId}/groups')
   Future<List<Group>> getGroups(String organizationId) async {
     try {
-      List<Group> groups = await queryGetGroups(organizationId: organizationId);
+      List<Group> groups = await queryGroups(organizationId: organizationId);
       return groups;
 
-      /*
-      if (groups != null && groups.length != 0) {
-        return groups;
-      } else {
-        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
-          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.groupsDataNotFoundReason));
-      }
-      */
      } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -636,7 +662,6 @@ class AugeApi {
     });
 
     return new IdMessage()..id = group.id;
-
   }
 
   /// Update a [Group]
@@ -687,7 +712,7 @@ class AugeApi {
   }
 
   // *** GROUP TYPES ***
-  static Future<List<GroupType>> queryGetGroupTypes({String id}) async {
+  static Future<List<GroupType>> queryGroupTypes({String id}) async {
 
     List<GroupType> groupTypes = new List();
 
@@ -717,7 +742,7 @@ class AugeApi {
   @ApiMethod( method: 'GET', path: 'group_types')
   Future<List<GroupType>> getGroupTypes() async {
     try {
-      return await queryGetGroupTypes();
+      return await queryGroupTypes();
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;

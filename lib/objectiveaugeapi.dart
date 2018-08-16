@@ -33,7 +33,7 @@ class ObjectiveAugeApi {
   }
 
   // *** MEASURE UNITS ***
-  static Future<List<MeasureUnit>> queryGetMeasureUnits({String id}) async {
+  static Future<List<MeasureUnit>> queryMeasureUnits({String id}) async {
     List<List> results;
 
     List<MeasureUnit> mesuareUnits = new List();
@@ -65,7 +65,7 @@ class ObjectiveAugeApi {
   }
 
   // *** MEASURES ***
-  static Future<List<Measure>> queryGetMeasures({String objectiveId, String id}) async {
+  static Future<List<Measure>> queryMeasures({String objectiveId, String id}) async {
     List<List> results;
 
     String queryStatement;
@@ -97,7 +97,7 @@ class ObjectiveAugeApi {
 
         if (row[8] != null)
          //  measureUnit = await getMeasureUnitById(row[8]);
-          measureUnits = await queryGetMeasureUnits(id: row[8]);
+          measureUnits = await queryMeasureUnits(id: row[8]);
           if (measureUnits != null && measureUnits != 0) {
             measureUnit = measureUnits.first;
           }
@@ -163,7 +163,7 @@ class ObjectiveAugeApi {
     try {
 
       List<Measure> measures;
-      measures = await queryGetMeasures();
+      measures = await queryMeasures();
       return measures;
       /*
       if (measures != null && measures.length != 0) {
@@ -187,7 +187,7 @@ class ObjectiveAugeApi {
      // return  await queryGetMeasureUnits();
 
       List<MeasureUnit> measureUnits;
-      measureUnits = await queryGetMeasureUnits();
+      measureUnits = await queryMeasureUnits();
       return measureUnits;
       /*
       if (measureUnits != null && measureUnits.length != 0) {
@@ -294,7 +294,7 @@ class ObjectiveAugeApi {
 
   // *** OBJECTIVES ***
   // alignedToRecursiveDeep: 0 not call; 1 call once; 2 call tow, etc...
-  static Future<List<Objective>> queryGetObjectives({String organizationId, String id, int alignedToRecursive = 1, bool withMeasures = true, bool treeAlignedWithChildren = false, bool withProfile = false}) async {
+  static Future<List<Objective>> queryObjectives({String organizationId, String id, int alignedToRecursive = 1, bool withMeasures = true, bool treeAlignedWithChildren = false, bool withProfile = false}) async {
     List<List> results;
 
    // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
@@ -366,15 +366,15 @@ class ObjectiveAugeApi {
 
         if (organization == null || organization.id != row[7]) {
 
-          organizations = await AugeApi.queryGetOrganizations(id: row[7]);
+          organizations = await AugeApi.queryOrganizations(id: row[7]);
           if (organizations != null && organizations.length != 0) {
             organization = organizations.first;
           }
         }
 
-        measures = (withMeasures) ? await queryGetMeasures(objectiveId: row[0]) : [];
+        measures = (withMeasures) ? await queryMeasures(objectiveId: row[0]) : [];
 
-        users = await AugeApi.queryGetUsers(id: row[5], withProfile: withProfile);
+        users = await AugeApi.queryUsers(id: row[5], withProfile: withProfile);
 
         if (users != null && users.length != 0) {
           leaderUser = users.first;
@@ -382,13 +382,13 @@ class ObjectiveAugeApi {
         ///leaderUser = (await AugeApi.getUsers(id: row[5], withProfile: withProfile)).first;
 
         if (row[6] != null && alignedToRecursive > 0) {
-          alignedToObjectives = await queryGetObjectives(id: row[6],
+          alignedToObjectives = await queryObjectives(id: row[6],
               alignedToRecursive: --alignedToRecursive);
           alignedToObjective = alignedToObjectives?.first;
         }
 
         //group = row[8] == null ? null : await _augeApi.getGroupById(row[8]);
-        groups = await AugeApi.queryGetGroups(id: row[8]);
+        groups = await AugeApi.queryGroups(id: row[8]);
         if (groups != null && groups.length != 0) {
           group = groups.first;
         }
@@ -436,7 +436,7 @@ class ObjectiveAugeApi {
       // return queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
 
       List<Objective> objectives;
-      objectives = await queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
+      objectives = await queryObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
       return objectives;
       /*
       if (objectives != null && objectives.length != 0) {
@@ -457,7 +457,7 @@ class ObjectiveAugeApi {
   @ApiMethod( method: 'GET', path: 'objectives/{id}')
   Future<Objective> getObjectiveById(String id, {bool withMeasures = false}) async {
     try {
-      List<Objective> objectives = await queryGetObjectives(id: id, withMeasures: withMeasures);
+      List<Objective> objectives = await queryObjectives(id: id, withMeasures: withMeasures);
 
       if (objectives != null && objectives.length != 0) {
         return objectives.first;

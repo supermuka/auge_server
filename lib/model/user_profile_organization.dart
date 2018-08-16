@@ -4,32 +4,31 @@
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/organization.dart';
 
-/// Domain model class to represent a relationshipt between users and organizations
+/// Domain model class to represent a relationship between users and organizations
 class UserProfileOrganization extends Object  {
 
-  UserProfile userProfile;
+  String id;
+  User user;
   Organization organization;
   int authorizationLevel;
 
   void cloneTo(UserProfileOrganization to) {
-
     if (to == null) return;
 
-    if (this.userProfile != null) {
-      to.userProfile = this.userProfile.clone();
+    to.id = this.id;
+
+    if (this.user != null) {
+      to.user = this.user.clone();
     }
     if (this.organization != null) {
       to.organization = this.organization.clone();
     }
     to.authorizationLevel = this.authorizationLevel;
-
   }
 
   UserProfileOrganization clone() {
-
     UserProfileOrganization to = UserProfileOrganization();
     cloneTo(to);
     return to;
-
   }
 }

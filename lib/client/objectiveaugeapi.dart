@@ -776,9 +776,6 @@ class UserProfileFactory {
     if (_json.containsKey("isSuperAdmin")) {
       message.isSuperAdmin = _json["isSuperAdmin"];
     }
-    if (_json.containsKey("user")) {
-      message.user = UserFactory.fromJson(_json["user"]);
-    }
     return message;
   }
 
@@ -792,9 +789,6 @@ class UserProfileFactory {
     }
     if (message.isSuperAdmin != null) {
       _json["isSuperAdmin"] = message.isSuperAdmin;
-    }
-    if (message.user != null) {
-      _json["user"] = UserFactory.toJson(message.user);
     }
     return _json;
   }

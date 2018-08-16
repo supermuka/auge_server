@@ -3,6 +3,8 @@
 
 /// Domain model class to represent an user account
 
+import 'package:auge_server/model/user_profile_organization.dart';
+
 enum UserAuthorization { admin, leader, standard }
 
 class User extends Object  {
@@ -17,7 +19,7 @@ class User extends Object  {
   UserProfile userProfile;
 
   User() {
-    userProfile = new UserProfile();
+    userProfile = UserProfile();
   }
 
   void cloneTo(User to) {
@@ -41,8 +43,6 @@ class User extends Object  {
 /// Domain model class to represent an user account profile
 class UserProfile extends Object  {
 
-  User user;
-
   // Super Admin does not need authorization. It is SAAS administration and has access to full data and functions
   bool isSuperAdmin;
 
@@ -52,14 +52,14 @@ class UserProfile extends Object  {
   // pt_BR, en es_ES
   String idiomLocale;
 
+  UserProfile() {
+  }
+
   void cloneTo(UserProfile to) {
     to.idiomLocale = this.idiomLocale;
     to.isSuperAdmin = this.isSuperAdmin;
     to.image = this.image;
 
-    if (this.user != null) {
-      to.user = this.user.clone();
-    }
   }
 
   UserProfile clone() {
