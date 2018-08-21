@@ -151,7 +151,7 @@ class AugeApi {
           " user_profile.is_super_admin, "
           " user_profile.idiom_locale "
           " FROM auge.users u "
-          " JOIN auge.users_profile user_profile on user_profile.user_id = u.id";
+          " LEFT OUTER JOIN auge.users_profile user_profile on user_profile.user_id = u.id";
     }
 
     Map<String, dynamic> _substitutionValues = Map();
@@ -175,7 +175,7 @@ class AugeApi {
       whereAnd = "AND";
     }
     if (organizationId != null) {
-      queryStatement = queryStatement + " JOIN auge.users_profile_organizations user_profile_organization ON user_profile_organization.user_id = u.id";
+      queryStatement = queryStatement + " LEFT OUTER JOIN auge.users_profile_organizations user_profile_organization ON user_profile_organization.user_id = u.id";
           queryStatement = queryStatement + " ${whereAnd} user_profile_organization.organization_id = @organization_id";
       _substitutionValues.putIfAbsent("organization_id", () => organizationId);
       whereAnd = "AND";
@@ -360,7 +360,7 @@ class AugeApi {
     }
 
     if (organizationId != null) {
-      queryStatement = queryStatement + " ${whereAnd} uo.organization_id = @id";
+      queryStatement = queryStatement + " ${whereAnd} uo.organization_id = @organization_id";
       _substitutionValues.putIfAbsent("organization_id", () => organizationId);
      //The last, not need... whereAnd = 'AND';
     }
@@ -401,7 +401,6 @@ class AugeApi {
         usersOrganizations.add(userProfileOrganization);
       }
     }
-
     return usersOrganizations;
   }
 
@@ -426,11 +425,7 @@ class AugeApi {
   Future<List<UserProfileOrganization>> getUsersProfileOrganizations({String userId, String organizationId}) async {
 
     try {
-      List<UserProfileOrganization> usersOrganizations;
-      usersOrganizations =
-      await queryUsersProfileOrganizations(userId: userId, organizationId: organizationId);
-      return usersOrganizations;
-
+      return await queryUsersProfileOrganizations(userId: userId, organizationId: organizationId);
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -442,7 +437,7 @@ class AugeApi {
   Future<IdMessage> createUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
 
     if (userProfileOrganization.id == null) {
-      userProfileOrganization.id = new Uuid().v4();
+      userProfileOrganization.id = Uuid().v4();
     }
 
     await AugeConnection.getConnection().transaction((ctx) async {
@@ -460,12 +455,14 @@ class AugeApi {
           "organization_id": userProfileOrganization.organization.id,
           "authorization_level": userProfileOrganization.authorizationLevel});
 
-           return new IdMessage()..id = userProfileOrganization.id;
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
       }
     });
+
+    return new IdMessage()..id = userProfileOrganization.id;
   }
 
   /// Update a [User]
