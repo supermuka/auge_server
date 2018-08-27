@@ -5,7 +5,7 @@
 
 import 'package:auge_server/model/user_profile_organization.dart';
 
-enum UserAuthorization { admin, leader, standard }
+
 
 class User extends Object  {
   String id;
@@ -44,7 +44,7 @@ class User extends Object  {
 class UserProfile extends Object  {
 
   // Super Admin does not need authorization. It is SAAS administration and has access to full data and functions
-  bool isSuperAdmin;
+  bool isSuperAdmin = false;
 
   // base64
   String image;

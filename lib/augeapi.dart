@@ -341,7 +341,7 @@ class AugeApi {
         "uo.id::VARCHAR, " // 0
         "uo.user_id::VARCHAR, " // 1
         "uo.organization_id::VARCHAR, " //2
-        "uo.authorization_level " // 3
+        "uo.authorization_role " // 3
         "FROM auge.users_profile_organizations uo ";
 
     Map<String, dynamic> _substitutionValues = Map<String, dynamic>();
@@ -396,7 +396,7 @@ class AugeApi {
         userProfileOrganization.id = row[0];
         userProfileOrganization.user = user;
         userProfileOrganization.organization = organization;
-        userProfileOrganization.authorizationLevel = row[3];
+        userProfileOrganization.authorizationRole = row[3];
 
         usersOrganizations.add(userProfileOrganization);
       }
@@ -444,16 +444,16 @@ class AugeApi {
       try {
 
         await ctx.query(
-            "INSERT INTO auge.users_profile_organizations(id, user_id, organization_id, authorization_level) VALUES("
+            "INSERT INTO auge.users_profile_organizations(id, user_id, organization_id, authorization_role) VALUES("
                 "@id,"
                 "@user_id,"
                 "@organization_id,"
-                "@authorization_level)"
+                "@authorization_role)"
             , substitutionValues: {
           "id": userProfileOrganization.id,
           "user_id": userProfileOrganization.user.id,
           "organization_id": userProfileOrganization.organization.id,
-          "authorization_level": userProfileOrganization.authorizationLevel});
+          "authorization_role": userProfileOrganization.authorizationRole});
 
 
       } catch (e) {
@@ -473,14 +473,14 @@ class AugeApi {
       try {
         await ctx.query(
             "UPDATE auge.users_profile_organizations "
-                "SET authorization_level = @authorization_level, "
+                "SET authorization_role = @authorization_role, "
                 "user_id = @user_id, "
                 "organization_id = @organization_id "
                 "WHERE id = @id", substitutionValues: {
           "id": userProfileOrganization.id,
           "user_id": userProfileOrganization.user.id,
           "organization_id": userProfileOrganization.organization.id,
-          "authorization_level": userProfileOrganization.authorizationLevel});
+          "authorization_role": userProfileOrganization.authorizationRole});
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

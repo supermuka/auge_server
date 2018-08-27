@@ -980,8 +980,8 @@ class UserProfileFactory {
 class UserProfileOrganizationFactory {
   static UserProfileOrganization fromJson(core.Map _json) {
     var message = new UserProfileOrganization();
-    if (_json.containsKey("authorizationLevel")) {
-      message.authorizationLevel = _json["authorizationLevel"];
+    if (_json.containsKey("authorizationRole")) {
+      message.authorizationRole = _json["authorizationRole"];
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
@@ -998,8 +998,8 @@ class UserProfileOrganizationFactory {
 
   static core.Map toJson(UserProfileOrganization message) {
     var _json = new core.Map();
-    if (message.authorizationLevel != null) {
-      _json["authorizationLevel"] = message.authorizationLevel;
+    if (message.authorizationRole != null) {
+      _json["authorizationRole"] = message.authorizationRole;
     }
     if (message.id != null) {
       _json["id"] = message.id;
