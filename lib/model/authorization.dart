@@ -32,13 +32,34 @@ abstract class AuthorizationPolicy {
   }
 
   bool isAuthorizated(AuthorizationRole authorizationRole, AuthorizationObject authorizationObject, dynamic authorizationFunction, {dynamic authorizationConstraint}) {
-    Iterable<Authorization> allowAuthorizations = authorizations.where((allow) => allow.authorizationRole == authorizationRole && allow.authorizationObject == authorizationObject && allow.authorizationFunction == authorizationFunction);
-    Iterable<Authorization> denyAuthorizations;
-    if (allowAuthorizations.isNotEmpty && authorizationConstraint != null) {
-      denyAuthorizations = allowAuthorizations.where((deny) => deny.authorizationConstraint == authorizationConstraint);
+
+    bool allow = false;
+    bool deny = true;
+
+    // Find Role and Object - Needs to be single.
+    Authorization allowAuthorizationRoleObject = authorizations.singleWhere((allow) => allow.authorizationRole == authorizationRole && allow.authorizationObject == authorizationObject);
+
+    // Find Function
+    if (allowAuthorizationRoleObject != null) {
+      if (allowAuthorizationRoleObject.authorizationFunctionContraints
+          .containsKey(authorizationFunction)) {
+        allow = true;
+
+        // Find Constraints
+        if (allowAuthorizationRoleObject
+            .authorizationFunctionContraints[authorizationFunction] != null) {
+          if (allowAuthorizationRoleObject
+              .authorizationFunctionContraints[authorizationFunction]
+              .indexWhere((deny) => deny == authorizationConstraint) != -1) {
+            deny = false;
+          }
+        } else {
+          deny = false;
+        }
+      }
     }
 
-    return allowAuthorizations.isNotEmpty && (denyAuthorizations == null || denyAuthorizations.isEmpty);
+    return allow && !deny;
   }
 
 }
@@ -46,72 +67,58 @@ abstract class AuthorizationPolicy {
 class GeneralAuthorizationPolicy extends AuthorizationPolicy {
 
   GeneralAuthorizationPolicy() {
-
     // Role: Super Admin
     // Object:  User
     // Function: All (*)
     authorizations.add(new Authorization()
       ..authorizationRole = AuthorizationRole.superAdmin
       ..authorizationObject = AuthorizationObject.user
-      ..authorizationFunction = UserAuthorizationFunction.all);
+      ..authorizationFunctionContraints = {UserAuthorizationFunction.all: null}
+
+    );
 
     // Role: Standard
     // Object:  User
     authorizations.add(new Authorization()
       ..authorizationRole = AuthorizationRole.standard
       ..authorizationObject = AuthorizationObject.user
-      ..authorizationFunction = UserAuthorizationFunction.recovery);
-
-    authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.standard
-      ..authorizationObject = AuthorizationObject.user
-      ..authorizationFunction = UserAuthorizationFunction.update);
-
-    authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.standard
-      ..authorizationObject = AuthorizationObject.user
-      ..authorizationFunction = UserAuthorizationFunction.update
-      ..authorizationConstraint = AuthorizationRole.superAdmin);
-
-    authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.standard
-      ..authorizationObject = AuthorizationObject.user
-      ..authorizationFunction = UserAuthorizationFunction.update
-      ..authorizationConstraint = AuthorizationRole.admin);
-
-    authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.standard
-      ..authorizationObject = AuthorizationObject.user
-      ..authorizationFunction = UserAuthorizationFunction.update
-      ..authorizationConstraint = AuthorizationRole.leader);
+      ..authorizationFunctionContraints = {UserAuthorizationFunction.all: []}
+    );
 
     // Role: Leader
     // Object:  User
     authorizations.add(new Authorization()
       ..authorizationRole = AuthorizationRole.leader
       ..authorizationObject = AuthorizationObject.user
-      ..authorizationFunction = UserAuthorizationFunction.all
-      ..authorizationConstraint = AuthorizationRole.superAdmin);
+      ..authorizationFunctionContraints = {UserAuthorizationFunction.all: [
+        AuthorizationRole.standard
+      ]}
+    );
 
+    // Role: Admin
+    // Object:  User
     authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.leader
+      ..authorizationRole = AuthorizationRole.admin
       ..authorizationObject = AuthorizationObject.user
-      ..authorizationFunction = UserAuthorizationFunction.all
-      ..authorizationConstraint = AuthorizationRole.admin);
+      ..authorizationFunctionContraints = {UserAuthorizationFunction.all: [
+        AuthorizationRole.standard,
+        AuthorizationRole.leader
+      ]}
+    );
+  }
 
-    authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.leader
-      ..authorizationObject = AuthorizationObject.user
-      ..authorizationFunction = UserAuthorizationFunction.all
-      ..authorizationConstraint = AuthorizationRole.leader);
-    }
 }
 
 class Authorization {
 
   AuthorizationRole authorizationRole;
   AuthorizationObject authorizationObject;
-  dynamic authorizationFunction;
-  dynamic authorizationConstraint;
+  // Key is the function
+  // Value contain constraints, if exist.
+  Map<dynamic, List<dynamic>> authorizationFunctionContraints;
+
+  Authorization() {
+    authorizationFunctionContraints = Map();
+  }
 
 }
