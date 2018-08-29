@@ -406,7 +406,7 @@ class AugeApi {
 
   /// Return an [Organizations] authorizated by User Id
   @ApiMethod( method: 'GET', path: 'users_profile_organizations/users/{user_id}')
-  Future<List<UserProfileOrganization>> getAuthorizatedOrganizationsByUserId(String user_id) async {
+  Future<List<UserProfileOrganization>> getAuthorizedOrganizationsByUserId(String user_id) async {
 
     try {
       List<UserProfileOrganization> usersOrganizations;

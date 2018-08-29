@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 
+import 'package:auge_server/shared/authorization_policy.dart';
 import 'package:auge_server/model/authorization.dart';
 
 void main() {
@@ -8,117 +9,169 @@ void main() {
 
   setUp(() {
     authorizationPolicy = new GeneralAuthorizationPolicy();
+
   });
 
+  // Role: superAdmin
+  // Object: users
   group('Role: superAdmin,', () {
-    group('Object: user,', () {
-      test('Function: all, Constraint: null to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
+    group('Object: users,', () {
+
+      test('Function: null, Constraint: null >>> Authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.superAdmin,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all), isTrue);
+            AuthorizationObject.users), isTrue);
       });
 
+      test('Function: UserAuthorizationFunction.create, Constraint: null >>> Authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.superAdmin,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.create), isTrue);
+      });
+
+      test('Function: UserAuthorizationFunction.recovery, Constraint: null >>> Authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.superAdmin,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.recovery), isTrue);
+      });
+
+      test('Function: UserAuthorizationFunction.update, Constraint: null >>> Authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.superAdmin,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.update), isTrue);
+      });
+
+      test('Function: UserAuthorizationFunction.delete, Constraint: null >>> Authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.superAdmin,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.delete), isTrue);
+      });
     });
   });
 
-
+  // Role: leader
+  // Object: users
   group('Role: leader,', () {
-    group('Object: user,', () {
+    group('Object: users,', () {
 
-      test('Function: all, Constraint: superAdmin can NOT to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
+      test('Function: create, Constraint: superAdmin >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.create,
             authorizationConstraint: AuthorizationRole.superAdmin), isFalse);
       });
 
-      test('Function: all, Constraint: admin can NOT to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
+      test('Function: recovery, Constraint: superAdmin >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.recovery,
+            authorizationConstraint: AuthorizationRole.superAdmin), isFalse);
+      });
+
+      test('Function: update, Constraint: superAdmin >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.leader,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.update,
+            authorizationConstraint: AuthorizationRole.superAdmin), isFalse);
+      });
+
+      test('Function: delete, Constraint: superAdmin >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.leader,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.delete,
+            authorizationConstraint: AuthorizationRole.superAdmin), isFalse);
+      });
+
+      test('Function: create, Constraint: admin >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.leader,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.create,
             authorizationConstraint: AuthorizationRole.admin), isFalse);
       });
 
-      test('Function: all, Constraint: leader CAN to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
+      test('Function: recovery, Constraint: admin >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.recovery,
+            authorizationConstraint: AuthorizationRole.admin), isFalse);
+      });
+
+      test('Function: update, Constraint: admin >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.leader,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.update,
+            authorizationConstraint: AuthorizationRole.admin), isFalse);
+      });
+
+      test('Function: delete, Constraint: admin >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.leader,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.delete,
+            authorizationConstraint: AuthorizationRole.admin), isFalse);
+      });
+
+      test('Function: create, Constraint: leader >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.leader,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.create,
             authorizationConstraint: AuthorizationRole.leader), isFalse);
       });
 
-      test('Function: all, Constraint: [] CAN to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
+      test('Function: recovery, Constraint: leader >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all,
-            authorizationConstraint: AuthorizationRole.standard), isTrue);
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.recovery,
+            authorizationConstraint: AuthorizationRole.leader), isFalse);
       });
 
+      test('Function: update, Constraint: leader >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.leader,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.update,
+            authorizationConstraint: AuthorizationRole.leader), isFalse);
+      });
+
+      test('Function: delete, Constraint: leader >>> NOT authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.leader,
+            AuthorizationObject.users,
+            authorizationFunction: UserAuthorizationFunction.delete,
+            authorizationConstraint: AuthorizationRole.leader), isFalse);
+      });
     });
   });
-
 
   group('Role: standard,', () {
-    group('Object: user,', () {
+    group('Object: user_profile,', () {
 
-      test('Function: all, Constraint: [] can NOT to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
-            AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all), isFalse);
+      test('Function: recovery, Constraint: null >>> Authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.standard,
+            AuthorizationObject.user_profile,
+            authorizationFunction:  UserAuthorizationFunction.recovery), isTrue);
       });
 
-      test('Function: all, Constraint: superAdmin can NOT to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
-            AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all,
-            authorizationConstraint: AuthorizationRole.superAdmin), isFalse);
+      test('Function: update, Constraint: null >>> Authorizated.', () {
+        expect(authorizationPolicy.isAuthorized(
+            AuthorizationRole.standard,
+            AuthorizationObject.user_profile,
+            authorizationFunction:  UserAuthorizationFunction.update), isTrue);
       });
-
-      test('Function: all, Constraint: admin can NOT to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
-            AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all,
-            authorizationConstraint: AuthorizationRole.admin), isFalse);
-      });
-
-      test('Function: all, Constraint: leader CAN to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
-            AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all,
-            authorizationConstraint: AuthorizationRole.leader), isFalse);
-      });
-
-      test('Function: all, Constraint: standard CAN to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
-            AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all,
-            authorizationConstraint: AuthorizationRole.standard), isTrue);
-      });
-
-      test('Function: all, Constraint: [] can NOT to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
-            AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all,
-            authorizationConstraint: []), isFalse);
-      });
-
-      test('Function: all, Constraint: null can NOT to be authorizated.', () {
-        expect(authorizationPolicy.isAuthorizated(
-            AuthorizationRole.leader,
-            AuthorizationObject.user,
-            UserAuthorizationFunction.all), isFalse);
-      });
-
     });
   });
 

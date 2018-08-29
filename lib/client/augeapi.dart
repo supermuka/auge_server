@@ -428,7 +428,7 @@ class AugeApi {
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
   async.Future<core.List<UserProfileOrganization>>
-      getAuthorizatedOrganizationsByUserId(core.String userId) {
+      getAuthorizedOrganizationsByUserId(core.String userId) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
