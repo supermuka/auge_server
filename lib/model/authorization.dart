@@ -8,6 +8,7 @@ enum AuthorizationObject { users,
                            user_profile,
                            groups,
                            organizations,
+                           organization_profile,
                            objectives,
                            initiatives }
 

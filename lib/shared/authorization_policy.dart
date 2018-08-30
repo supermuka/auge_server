@@ -59,7 +59,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
   GeneralAuthorizationPolicy() {
     // Role: Super Admin
     // Object:  User
-    // Function: All (*)
+    // Function: CRUD
     authorizations.add(new Authorization()
       ..authorizationRole = AuthorizationRole.superAdmin
       ..authorizationObject = AuthorizationObject.users
@@ -70,6 +70,8 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
        UserAuthorizationFunction.delete: []
       });
 
+    // Object:  Groups
+    // Function: CRUD
     authorizations.add(new Authorization()
       ..authorizationRole = AuthorizationRole.superAdmin
       ..authorizationObject = AuthorizationObject.groups
@@ -80,6 +82,8 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
         UserAuthorizationFunction.delete: []
       });
 
+    // Object:  Organizations
+    // Function: CRUD
     authorizations.add(new Authorization()
       ..authorizationRole = AuthorizationRole.superAdmin
       ..authorizationObject = AuthorizationObject.organizations
@@ -108,6 +112,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
          AuthorizationRole.leader]
       });
 
+    // Object:  Groups
     authorizations.add(new Authorization()
       ..authorizationRole = AuthorizationRole.admin
       ..authorizationObject = AuthorizationObject.groups
@@ -116,6 +121,16 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
         UserAuthorizationFunction.recovery: [],
         UserAuthorizationFunction.update: [],
         UserAuthorizationFunction.delete: []
+      });
+
+    // Object:  Organization Profile (detail)
+    authorizations.add(new Authorization()
+      ..authorizationRole = AuthorizationRole.admin
+      ..authorizationObject = AuthorizationObject.organization_profile
+      ..authorizationFunctionContraints =
+      {
+        UserAuthorizationFunction.recovery: [],
+        UserAuthorizationFunction.update: []
       });
 
     // Role: leader
@@ -131,6 +146,16 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
           AuthorizationRole.standard],
         UserAuthorizationFunction.delete: [
           AuthorizationRole.standard]
+      });
+
+    authorizations.add(new Authorization()
+      ..authorizationRole = AuthorizationRole.leader
+      ..authorizationObject = AuthorizationObject.groups
+      ..authorizationFunctionContraints =
+      {UserAuthorizationFunction.create: [],
+        UserAuthorizationFunction.recovery: [],
+        UserAuthorizationFunction.update: [],
+        UserAuthorizationFunction.delete: []
       });
 
     // Role: standard
