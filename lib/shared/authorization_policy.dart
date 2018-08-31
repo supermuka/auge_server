@@ -94,6 +94,16 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
         UserAuthorizationFunction.delete: []
       });
 
+    // Object:  Organization Profile (detail)
+    authorizations.add(new Authorization()
+      ..authorizationRole = AuthorizationRole.superAdmin
+      ..authorizationObject = AuthorizationObject.organization_profile
+      ..authorizationFunctionContraints =
+      {
+        UserAuthorizationFunction.recovery: [],
+        UserAuthorizationFunction.update: []
+      });
+
     // Role: Admin
     // Object:  User
     authorizations.add(new Authorization()

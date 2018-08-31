@@ -108,9 +108,9 @@ class AugeApi {
   Future<VoidMessage> updateOrganization(Organization organization) async {
     try {
       await AugeConnection.getConnection().query(
-          "UPDATE auge.organizations organization SET organization.name = @name,"
-              "organization.code = @code"
-              "WHERE id = @id "
+          "UPDATE auge.organizations SET name = @name,"
+              " code = @code"
+              " WHERE id = @id "
           , substitutionValues: {
         "id": organization.id,
         "name": organization.name,
