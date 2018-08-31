@@ -49,14 +49,14 @@ class WorkItem {
       to.stage = this.stage.clone();
     }
 
-    if (this.checkItems != null && this.checkItems.length != 0) {
+    if (this.checkItems != null) {
       to.checkItems.clear();
       this.checkItems.forEach((ci) {
         to.checkItems.add(ci.clone());
       });
     }
 
-    if (this.assignedTo != null && this.assignedTo.length >= 0) {
+    if (this.assignedTo != null) {
       to.assignedTo.clear();
       this.assignedTo.forEach((at) {
         to.assignedTo.add(at.clone());

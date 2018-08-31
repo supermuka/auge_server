@@ -727,7 +727,6 @@ class InitiativeAugeApi {
                   "finished": checkItem.finished,
                   "work_item_id": workItem.id});
           } else {
-
             await ctx.query("UPDATE auge_initiative.work_item_check_items SET"
                 " name = @name,"
                 " finished = @finished,"
@@ -747,10 +746,14 @@ class InitiativeAugeApi {
           checkItemsId.write("'");
         }
 
+        String queryDelete;
+        queryDelete = "DELETE FROM auge_initiative.work_item_check_items";
         if (checkItemsId.isNotEmpty) {
-          await ctx.query("DELETE FROM auge_initiative.work_item_check_items"
-              " WHERE id NOT IN (${checkItemsId.toString()})");
+          queryDelete = queryDelete + " WHERE id NOT IN (${checkItemsId.toString()})";
         }
+
+        await ctx.query(queryDelete);
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
