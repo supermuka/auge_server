@@ -58,21 +58,26 @@ class Objective {
     }
     if (this.group != null) {
       to.group = this.group.clone();
+    } else {
+      to.group = null;
     }
 
     if (this.alignedTo != null) {
       to.alignedTo = this.alignedTo.clone();
+    } else {
+      to.alignedTo = null;
     }
 
     if (this.alignedWithChildren != null && this.alignedWithChildren.length != 0) {
       to.alignedWithChildren.clear();
       this.alignedWithChildren.forEach((o) =>
           to.alignedWithChildren.add(o.clone()));
-
     }
 
     if (this.leader != null) {
       to.leader = this.leader.clone();
+    } else {
+      to.leader = null;
     }
   }
 

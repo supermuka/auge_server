@@ -529,6 +529,7 @@ class ObjectiveAugeApi {
   /// Update an initiative passing an instance of [Objective]
   @ApiMethod( method: 'PUT', path: 'objectives')
   Future<VoidMessage> updateObjective(Objective objective) async {
+
     try {
       await AugeConnection.getConnection().query(
           "UPDATE auge_objective.objectives "
@@ -549,7 +550,7 @@ class ObjectiveAugeApi {
         "end_date": objective.endDate,
         "aligned_to_objective_id": objective?.alignedTo?.id,
         "organization_id": objective.organization.id,
-        "leader_user_id": objective.leader.id,
+        "leader_user_id": objective?.leader?.id,
         "group_id": objective?.group?.id});
     } catch (e) {
       print('${e.runtimeType}, ${e}');
