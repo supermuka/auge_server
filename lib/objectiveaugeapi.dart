@@ -405,7 +405,6 @@ class ObjectiveAugeApi {
           ..measures = measures
           ..alignedTo = alignedToObjective
           ..group = group;
-
         objectives.add(objective);
 
         if (treeAlignedWithChildren) {

@@ -23,18 +23,26 @@ class Group {
 
     if (this.organization != null) {
       to.organization = this.organization.clone();
+    } else {
+      to.organization = null;
     }
 
     if (this.groupType != null) {
       to.groupType = this.groupType.clone();
+    } else {
+      to.groupType = null;
     }
 
     if (this.superGroup != null) {
       to.superGroup = this.superGroup.clone();
+    } else {
+      to.superGroup = null;
     }
 
     if (this.leader != null) {
       to.leader = this.leader.clone();
+    } else {
+      to.leader = null;
     }
   }
 
