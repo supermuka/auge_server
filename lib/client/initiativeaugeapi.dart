@@ -187,6 +187,8 @@ class InitiativeAugeApi {
   ///
   /// [withWorkItems] - Query parameter: 'withWorkItems'.
   ///
+  /// [withProfile] - Query parameter: 'withProfile'.
+  ///
   /// Completes with a [core.List<Initiative>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -195,7 +197,9 @@ class InitiativeAugeApi {
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
   async.Future<core.List<Initiative>> getInitiatives(core.String organizationId,
-      {core.String objectiveId, core.bool withWorkItems}) {
+      {core.String objectiveId,
+      core.bool withWorkItems,
+      core.bool withProfile}) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -211,6 +215,9 @@ class InitiativeAugeApi {
     }
     if (withWorkItems != null) {
       _queryParams["withWorkItems"] = ["${withWorkItems}"];
+    }
+    if (withProfile != null) {
+      _queryParams["withProfile"] = ["${withProfile}"];
     }
 
     _url = 'organizations/' +

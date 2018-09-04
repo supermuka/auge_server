@@ -13,7 +13,7 @@ class State extends Object {
   String name;
   Map<String, int> color;
 
-  // Define initiative stage order
+  // Define initiative state order
   int index;
 
   String get colorHue => color[_colorHue].toString();

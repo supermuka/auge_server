@@ -21,33 +21,24 @@ class Measure {
     decimalsNumber = 0; // default
   }
 
-  int get startValueInt => startValue?.toInt();
-  set startValueInt(int value) => startValue = value?.toDouble();
+  double get minValue => startValue == null ? null : endValue == null ? endValue : startValue <= endValue ? startValue : endValue;
+  set minValue(double value) => startValue <= endValue ? startValue = value : endValue = value;
 
-  int get endValueInt => endValue?.toInt();
-  set endValueInt(int value) => endValue = value?.toDouble();
+  double get maxValue => startValue == null ? null : endValue == null ? endValue : startValue <= endValue ? endValue : startValue;
+  set maxValue(double value) => startValue <= endValue ? endValue = value: startValue = value;
 
-  int get currentValueInt => currentValue?.toInt();
-  set currentValueInt(int value) => currentValue = value?.toDouble();
+  double get valueRelatedMinMax => startValue == null ? null : endValue == null ? endValue : currentValue == null ? null : startValue <= endValue ? currentValue : startValue + endValue - currentValue;
+ // set valueRelatedMinMax(double value) => startValue <= endValue ? currentValue = value : currentValue = startValue + endValue - value;
 
-  double get startValueDecimal => startValue == null ? null : double.parse(startValue.toStringAsFixed(decimalsNumber));
-  set startValueDecimal(double value) => startValue = value;
+  num get progress {
 
-  double get endValueDecimal => endValue == null ? null : double.parse(endValue.toStringAsFixed(decimalsNumber));
-  set endValueDecimal(double value) => endValue = value;
-
-  double get currentValueDecimal => currentValue == null ? null : double.parse(currentValue.toStringAsFixed(decimalsNumber));
-  set currentValueDecimal(double value) => currentValue = value;
-
-  int get progress {
-
-    int progress = 0;
-    if (endValueInt != null || startValueInt != null) {
-      int endMinusStartValue = (endValueInt - startValueInt);
+    num progress = 0;
+    if (endValue != null || startValue != null) {
+      num endMinusStartValue = (endValue - startValue);
 
       if (endMinusStartValue != null && endMinusStartValue != 0) {
         progress =
-            (((currentValueInt ?? 0) - (startValueInt ?? 0)) /
+            (((currentValue ?? 0) - (startValue ?? 0)) /
                 endMinusStartValue * 100)
                 ?.toInt();
       }
@@ -59,6 +50,7 @@ class Measure {
     to.name = this.name;
     to.id = this.id;
     to.description = this.description;
+    to.metric = this.metric;
     to.decimalsNumber = this.decimalsNumber;
     to.startValue = this.startValue;
     to.endValue = this.endValue;

@@ -34,7 +34,7 @@ class InitiativeAugeApi {
   }
 
   // *** INITIATIVES ***
-  static Future<List<Initiative>> queryInitiatives({String organizationId, String id, String objectiveId, bool withWorkItems = false}) async {
+  static Future<List<Initiative>> queryInitiatives({String organizationId, String id, String objectiveId, bool withWorkItems = false, bool withProfile = false}) async {
 
     List<List<dynamic>> results;
 
@@ -46,8 +46,8 @@ class InitiativeAugeApi {
     "initiative.organization_id, " //3
     "initiative.leader_user_id, " //4
     "initiative.objective_id, " //5
-    "initiative.group_id" //6
-    " FROM auge_initiative.initiatives initiative";
+    "initiative.group_id " //6
+    "FROM auge_initiative.initiatives initiative";
 
     Map<String, dynamic> substitutionValues;
 
@@ -95,7 +95,7 @@ class InitiativeAugeApi {
       }
 
      // user = (await _augeApi.getUsers(id: row[4])).first;
-      users = await AugeApi.queryUsers(id: row[4]);
+      users = await AugeApi.queryUsers(id: row[4], withProfile: withProfile);
 
       if (users != null && users.length != 0) {
         user = users.first;
@@ -128,7 +128,7 @@ class InitiativeAugeApi {
 
     String queryStatement;
 
-    queryStatement = "SELECT state.id::VARCHAR, state.name, state.color"
+    queryStatement = "SELECT state.id::VARCHAR, state.name, state.color, state.index"
         " FROM auge_initiative.states state";
 
     Map<String, dynamic> substitutionValues;
@@ -141,7 +141,7 @@ class InitiativeAugeApi {
     results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
     List<State> states = new List();
     for (var row in results) {
-      states.add(new State()..id = row[0]..name = row[1]..color = (json.decode(row[2]) as Map).cast<String, int>());
+      states.add(new State()..id = row[0]..name = row[1]..color = (json.decode(row[2]) as Map).cast<String, int>()..index = row[3]);
     }
 
     return states;
@@ -300,10 +300,10 @@ class InitiativeAugeApi {
   /// Return all initiatives from an organization
   /// Its possible to filter as a [id] key, [organizationId], [objectiveId] and [withWorkItems]
   @ApiMethod( method: 'GET', path: 'organizations/{organizationId}/initiatives')
-  Future<List<Initiative>> getInitiatives(String organizationId, {String objectiveId, bool withWorkItems = false}) async {
+  Future<List<Initiative>> getInitiatives(String organizationId, {String objectiveId, bool withWorkItems = false, bool withProfile = false}) async {
     try {
       List<Initiative> initiatives;
-      initiatives = await queryInitiatives(organizationId: organizationId, objectiveId: objectiveId, withWorkItems: withWorkItems);
+      initiatives = await queryInitiatives(organizationId: organizationId, objectiveId: objectiveId, withWorkItems: withWorkItems, withProfile: withProfile);
       return initiatives;
 
       /*
@@ -419,22 +419,22 @@ class InitiativeAugeApi {
     try {
       await AugeConnection.getConnection().transaction((ctx) async {
         await ctx.query(
-            "INSERT INTO auge_initiative.initiatives(id, name, description, organization_id, leader_user_id,  objective_id) VALUES"
+            "INSERT INTO auge_initiative.initiatives(id, name, description, organization_id, leader_user_id, objective_id, group_id) VALUES"
                 "(@id,"
                 "@name,"
                 "@description,"
                 "@organization_id,"
                 "@leader_user_id,"
                 "@objective_id,"
-                "group_id)"
+                "@group_id)"
             , substitutionValues: {
           "id": initiative.id,
           "name": initiative.name,
           "description": initiative.description,
           "organization_id": initiative.organization.id,
-          "leader_user_id": initiative.leader.id,
-          "objective_id": initiative?.objective,
-          "group_id": initiative?.group});
+          "leader_user_id": initiative?.leader?.id,
+          "objective_id": initiative?.objective?.id,
+          "group_id": initiative?.group?.id});
 
         for (Stage stage in initiative.stages) {
           stage.id = new Uuid().v4();
@@ -481,9 +481,9 @@ class InitiativeAugeApi {
               "name": initiative.name,
               "description": initiative.description,
               "organization_id": initiative.organization.id,
-              "leader_user_id": initiative.leader.id,
-              "objective_id": initiative?.objective.id,
-              "group_id": initiative?.group.id});
+              "leader_user_id": initiative?.leader?.id,
+              "objective_id": initiative?.objective?.id,
+              "group_id": initiative?.group?.id});
 
         // Stages
         StringBuffer stagesId = new StringBuffer();
@@ -509,7 +509,6 @@ class InitiativeAugeApi {
                 " name = @name,"
                 " index = @index,"
                 " state_id = @state_id,"
-                " work_item_id = @work_item_id,"
                 " initiative_id = @initiative_id"
                 " WHERE id = @id"
                 , substitutionValues: {
