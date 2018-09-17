@@ -36,15 +36,18 @@ class Objective {
 
   int get progress {
 
-    double progress = 0.0;
+    double _progress = 0.0;
 
     for (int i = 0;i < measures?.length;i++) {
-      if ((measures[i]?.endValue ?? 0) - (measures[i]?.startValue ?? 0) != 00) {
-        progress = progress +
-            ((measures[i]?.currentValue ?? 0) - (measures[i]?.startValue ?? 0))  /  ((measures[i]?.endValue ?? 0) - (measures[i]?.startValue ?? 0));
+      if (measures[i].endValue != null && measures[i].startValue != null && measures[i].currentValue != null ) {
+        double endMinusStart = measures[i].endValue - measures[i].startValue;
+        if (endMinusStart != 0) {
+          _progress = _progress +
+              (measures[i].currentValue - measures[i].startValue)  /  endMinusStart;
+        }
       }
     }
-    return measures.length == 0 ? 0 : ((progress * 100) / measures.length ).toInt();
+    return _progress.toInt();
   }
 
   void cloneTo(Objective to) {
