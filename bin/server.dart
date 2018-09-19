@@ -18,11 +18,14 @@ final ApiServer _apiServer =
 
 main(List<String> args) async {
   var parser = new ArgParser()
-    ..addOption('port', abbr: 'p', defaultsTo: '8091');
+    ..addOption('port', abbr: 'p', defaultsTo: '8091')
+    ..addOption('https', abbr: 's', defaultsTo: 'true');
 
   var result = parser.parse(args);
 
   var port = int.tryParse(result['port']);
+
+  bool httpsEnabled = result['https'] == 'true';
 
   if (port == null) {
     stdout.writeln(
@@ -48,8 +51,43 @@ main(List<String> args) async {
       .addHandler(apiHandler);
 
   //var server = await io.serve(handler, 'localhost', port);
-  var server = await io.serve(handler, '0.0.0.0', port);
-  print('Serving at http://${server.address.host}:${server.port}');
+  SecurityContext securityContext;
+  if (httpsEnabled) {
+    String certificateLocalization = '/etc/letsencrypt/live/auge.levius.com.br/';
+    try {
+      securityContext = new SecurityContext()
+        ..useCertificateChain(
+            certificateLocalization + 'fullchain.pem')
+        ..usePrivateKey(certificateLocalization + 'privkey.pem');
+
+      /*
+       ..useCertificateChain('lib/assets/cert/localhost.cert')
+       ..usePrivateKey('lib/assets/cert/localhost.key');
+*/
+    } catch (e) {
+      stdout.writeln('Not found certificate on ${certificateLocalization} or certificate invalid.\nTrying simple http.');
+      securityContext = null;
+    }
+  }
+    // ..useCertificateChain('lib/assets/cert/localhost.cert')
+    // ..usePrivateKey('lib/assets/cert/localhost.key');
+
+    //..useCertificateChain('lib/assets/cert/certificate_ca_bundle.crt')
+    //..usePrivateKey('lib/assets/cert/private.key');
+
+
+    //..usePrivateKey('lib/assets/cert/private-encrypted.key',
+     // password: 'supermuka');
+
+  String host = '0.0.0.0';
+  // String host = '127.0.0.1';
+  //String host = 'localhost';
+
+  HttpServer server = await io.serve(handler, host, port, securityContext: securityContext );
+
+  String httpHttps = (securityContext == null) ? 'http' : 'https';
+
+  print('Serving at ${httpHttps}://${server.address.host}:${server.port}');
 }
 
 shelf.Response _echoRequest(shelf.Request request) =>
