@@ -13,7 +13,7 @@ enum AuthorizationObject { users,
                            initiatives }
 
 // User
-enum UserAuthorizationFunction {
+enum AuthorizationFunction {
   create,
   recovery,
   update,

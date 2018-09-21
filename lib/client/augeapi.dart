@@ -793,6 +793,11 @@ class GroupFactory {
     if (_json.containsKey("leader")) {
       message.leader = UserFactory.fromJson(_json["leader"]);
     }
+    if (_json.containsKey("members")) {
+      message.members = (_json["members"] as core.List)
+          .map<User>((value) => UserFactory.fromJson(value))
+          .toList();
+    }
     if (_json.containsKey("name")) {
       message.name = _json["name"];
     }
@@ -819,6 +824,10 @@ class GroupFactory {
     }
     if (message.leader != null) {
       _json["leader"] = UserFactory.toJson(message.leader);
+    }
+    if (message.members != null) {
+      _json["members"] =
+          message.members.map((value) => UserFactory.toJson(value)).toList();
     }
     if (message.name != null) {
       _json["name"] = message.name;

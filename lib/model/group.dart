@@ -14,7 +14,12 @@ class Group {
   GroupType groupType;
   Group superGroup;
   User leader;
+  List<User> members;
   bool active;
+
+  Group() {
+    members = [];
+  }
 
   void cloneTo(Group to) {
     to.id = this.id;
@@ -43,6 +48,12 @@ class Group {
       to.leader = this.leader.clone();
     } else {
       to.leader = null;
+    }
+
+    if (this.members != null && this.members.length != 0) {
+      to.members.clear();
+      this.members.forEach((o) =>
+          to.members.add(o.clone()));
     }
   }
 

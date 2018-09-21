@@ -27,28 +27,28 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.superAdmin,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.create), isTrue);
+            authorizationFunction: AuthorizationFunction.create), isTrue);
       });
 
       test('Function: UserAuthorizationFunction.recovery, Constraint: null >>> Authorizated.', () {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.superAdmin,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.recovery), isTrue);
+            authorizationFunction: AuthorizationFunction.recovery), isTrue);
       });
 
       test('Function: UserAuthorizationFunction.update, Constraint: null >>> Authorizated.', () {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.superAdmin,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.update), isTrue);
+            authorizationFunction: AuthorizationFunction.update), isTrue);
       });
 
       test('Function: UserAuthorizationFunction.delete, Constraint: null >>> Authorizated.', () {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.superAdmin,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.delete), isTrue);
+            authorizationFunction: AuthorizationFunction.delete), isTrue);
       });
     });
   });
@@ -62,7 +62,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.create,
+            authorizationFunction: AuthorizationFunction.create,
             authorizationConstraint: AuthorizationRole.superAdmin), isFalse);
       });
 
@@ -70,7 +70,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.recovery,
+            authorizationFunction: AuthorizationFunction.recovery,
             authorizationConstraint: AuthorizationRole.superAdmin), isFalse);
       });
 
@@ -78,7 +78,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.update,
+            authorizationFunction: AuthorizationFunction.update,
             authorizationConstraint: AuthorizationRole.superAdmin), isFalse);
       });
 
@@ -86,7 +86,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.delete,
+            authorizationFunction: AuthorizationFunction.delete,
             authorizationConstraint: AuthorizationRole.superAdmin), isFalse);
       });
 
@@ -94,7 +94,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.create,
+            authorizationFunction: AuthorizationFunction.create,
             authorizationConstraint: AuthorizationRole.admin), isFalse);
       });
 
@@ -102,7 +102,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.recovery,
+            authorizationFunction: AuthorizationFunction.recovery,
             authorizationConstraint: AuthorizationRole.admin), isFalse);
       });
 
@@ -110,7 +110,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.update,
+            authorizationFunction: AuthorizationFunction.update,
             authorizationConstraint: AuthorizationRole.admin), isFalse);
       });
 
@@ -118,7 +118,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.delete,
+            authorizationFunction: AuthorizationFunction.delete,
             authorizationConstraint: AuthorizationRole.admin), isFalse);
       });
 
@@ -126,7 +126,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.create,
+            authorizationFunction: AuthorizationFunction.create,
             authorizationConstraint: AuthorizationRole.leader), isFalse);
       });
 
@@ -134,7 +134,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.recovery,
+            authorizationFunction: AuthorizationFunction.recovery,
             authorizationConstraint: AuthorizationRole.leader), isFalse);
       });
 
@@ -142,7 +142,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.update,
+            authorizationFunction: AuthorizationFunction.update,
             authorizationConstraint: AuthorizationRole.leader), isFalse);
       });
 
@@ -150,7 +150,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.leader,
             AuthorizationObject.users,
-            authorizationFunction: UserAuthorizationFunction.delete,
+            authorizationFunction: AuthorizationFunction.delete,
             authorizationConstraint: AuthorizationRole.leader), isFalse);
       });
     });
@@ -163,14 +163,14 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.standard,
             AuthorizationObject.user_profile,
-            authorizationFunction:  UserAuthorizationFunction.recovery), isTrue);
+            authorizationFunction:  AuthorizationFunction.recovery), isTrue);
       });
 
       test('Function: update, Constraint: null >>> Authorizated.', () {
         expect(authorizationPolicy.isAuthorized(
             AuthorizationRole.standard,
             AuthorizationObject.user_profile,
-            authorizationFunction:  UserAuthorizationFunction.update), isTrue);
+            authorizationFunction:  AuthorizationFunction.update), isTrue);
       });
     });
   });

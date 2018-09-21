@@ -565,6 +565,7 @@ class AugeApi {
     List<Organization> organizations;
     List<User> users;
     List<GroupType> groupTypes;
+    List<User> members;
 
     if (results.length > 0) {
       Organization organization;
@@ -597,6 +598,8 @@ class AugeApi {
           groupType = groupTypes.first;
         }
 
+        members = await queryGroupMembers(row[0]);
+
         Group group = new Group()
           ..id = row[0]
           ..name = row[1]
@@ -604,7 +607,8 @@ class AugeApi {
           ..organization = organization
           ..groupType = groupType
           ..superGroup = superGroup
-          ..leader = leader;
+          ..leader = leader
+          ..members = (members != null && members.length != 0) ? members : null;
 
         groups.add(group);
       }
@@ -652,6 +656,19 @@ class AugeApi {
           "group_type_id": group.groupType?.id,
           "super_group_id": group.superGroup?.id,
           "leader_user_id": group.leader?.id});
+
+        // Assigned Members Users
+        for (User user in group.members) {
+          await ctx.query("INSERT INTO auge.groups_users"
+              " (group_id,"
+              " user_id)"
+              " VALUES"
+              " (@id,"
+              " @user_id)"
+              , substitutionValues: {
+                "id": group.id,
+                "user_id": user.id});
+        }
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -683,6 +700,37 @@ class AugeApi {
           "group_type_id": group.groupType?.id,
           "super_group_id": group.superGroup?.id,
           "leader_user_id": group.leader?.id});
+
+      // Members users
+      StringBuffer membersUsersId = new StringBuffer();
+      for (User user in group.members) {
+        await ctx.query("INSERT INTO auge.groups_users"
+        " (group_id,"
+        " user_id)"
+        " VALUES"
+        " (@id,"
+        " @user_id)"
+        " ON CONFLICT (group_id, user_id) DO NOTHING"
+        , substitutionValues: {
+        "id": group.id,
+        "user_id": user.id});
+
+
+        if (membersUsersId.isNotEmpty)
+          membersUsersId.write(',');
+        membersUsersId.write("'");
+        membersUsersId.write(user.id);
+        membersUsersId.write("'");
+      }
+
+      if (membersUsersId.isNotEmpty) {
+      await ctx.query("DELETE FROM auge.groups_users"
+      " WHERE group_id = @id"
+      " AND user_id NOT IN (${membersUsersId.toString()})"
+      , substitutionValues: {
+      "id": group.id});
+      }
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -744,5 +792,40 @@ class AugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
+  }
+
+  // *** GROUP MEMBERS ***
+  static Future<List<User>> queryGroupMembers(String groupId) async {
+
+    List<List<dynamic>> results;
+
+    String queryStatement;
+
+    queryStatement = "SELECT group_users.user_id::VARCHAR"
+        " FROM auge.groups_users group_users";
+
+    Map<String, dynamic> substitutionValues;
+
+    queryStatement += " WHERE group_users.group_id = @group_id";
+    substitutionValues = {"group_id": groupId};
+
+    results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
+
+    List<User> groupMembers = new List();
+    List<User> users;
+    User user;
+
+    for (var row in results) {
+
+      users = await AugeApi.queryUsers(id: row[0], withProfile: true);
+
+      if (users != null && users.length != 0) {
+        user = users.first;
+      }
+
+      groupMembers.add(user);
+    }
+
+    return groupMembers;
   }
 }

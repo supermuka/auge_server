@@ -64,10 +64,10 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationRole = AuthorizationRole.superAdmin
       ..authorizationObject = AuthorizationObject.users
       ..authorizationFunctionContraints =
-      {UserAuthorizationFunction.create: [],
-       UserAuthorizationFunction.recovery: [],
-       UserAuthorizationFunction.update: [],
-       UserAuthorizationFunction.delete: []
+      {AuthorizationFunction.create: [],
+       AuthorizationFunction.recovery: [],
+       AuthorizationFunction.update: [],
+       AuthorizationFunction.delete: []
       });
 
     // Object:  Groups
@@ -76,10 +76,10 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationRole = AuthorizationRole.superAdmin
       ..authorizationObject = AuthorizationObject.groups
       ..authorizationFunctionContraints =
-      {UserAuthorizationFunction.create: [],
-        UserAuthorizationFunction.recovery: [],
-        UserAuthorizationFunction.update: [],
-        UserAuthorizationFunction.delete: []
+      {AuthorizationFunction.create: [],
+        AuthorizationFunction.recovery: [],
+        AuthorizationFunction.update: [],
+        AuthorizationFunction.delete: []
       });
 
     // Object:  Organizations
@@ -88,10 +88,10 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationRole = AuthorizationRole.superAdmin
       ..authorizationObject = AuthorizationObject.organizations
       ..authorizationFunctionContraints =
-      {UserAuthorizationFunction.create: [],
-        UserAuthorizationFunction.recovery: [],
-        UserAuthorizationFunction.update: [],
-        UserAuthorizationFunction.delete: []
+      {AuthorizationFunction.create: [],
+        AuthorizationFunction.recovery: [],
+        AuthorizationFunction.update: [],
+        AuthorizationFunction.delete: []
       });
 
     // Object:  Organization Profile (detail)
@@ -100,8 +100,8 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationObject = AuthorizationObject.organization_profile
       ..authorizationFunctionContraints =
       {
-        UserAuthorizationFunction.recovery: [],
-        UserAuthorizationFunction.update: []
+        AuthorizationFunction.recovery: [],
+        AuthorizationFunction.update: []
       });
 
     // Role: Admin
@@ -110,14 +110,14 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationRole = AuthorizationRole.admin
       ..authorizationObject = AuthorizationObject.users
       ..authorizationFunctionContraints =
-      {UserAuthorizationFunction.create: [
+      {AuthorizationFunction.create: [
         AuthorizationRole.standard,
         AuthorizationRole.leader],
-       UserAuthorizationFunction.recovery: [],
-       UserAuthorizationFunction.update: [
+       AuthorizationFunction.recovery: [],
+       AuthorizationFunction.update: [
         AuthorizationRole.standard,
         AuthorizationRole.leader],
-       UserAuthorizationFunction.delete: [
+       AuthorizationFunction.delete: [
          AuthorizationRole.standard,
          AuthorizationRole.leader]
       });
@@ -127,10 +127,10 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationRole = AuthorizationRole.admin
       ..authorizationObject = AuthorizationObject.groups
       ..authorizationFunctionContraints =
-      {UserAuthorizationFunction.create: [],
-        UserAuthorizationFunction.recovery: [],
-        UserAuthorizationFunction.update: [],
-        UserAuthorizationFunction.delete: []
+      {AuthorizationFunction.create: [],
+        AuthorizationFunction.recovery: [],
+        AuthorizationFunction.update: [],
+        AuthorizationFunction.delete: []
       });
 
     // Object:  Organization Profile (detail)
@@ -139,8 +139,8 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationObject = AuthorizationObject.organization_profile
       ..authorizationFunctionContraints =
       {
-        UserAuthorizationFunction.recovery: [],
-        UserAuthorizationFunction.update: []
+        AuthorizationFunction.recovery: [],
+        AuthorizationFunction.update: []
       });
 
     // Role: leader
@@ -149,12 +149,12 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationRole = AuthorizationRole.leader
       ..authorizationObject = AuthorizationObject.users
       ..authorizationFunctionContraints =
-      {UserAuthorizationFunction.create: [
+      {AuthorizationFunction.create: [
         AuthorizationRole.standard],
-        UserAuthorizationFunction.recovery: [],
-        UserAuthorizationFunction.update: [
+        AuthorizationFunction.recovery: [],
+        AuthorizationFunction.update: [
           AuthorizationRole.standard],
-        UserAuthorizationFunction.delete: [
+        AuthorizationFunction.delete: [
           AuthorizationRole.standard]
       });
 
@@ -162,10 +162,10 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationRole = AuthorizationRole.leader
       ..authorizationObject = AuthorizationObject.groups
       ..authorizationFunctionContraints =
-      {UserAuthorizationFunction.create: [],
-        UserAuthorizationFunction.recovery: [],
-        UserAuthorizationFunction.update: [],
-        UserAuthorizationFunction.delete: []
+      {AuthorizationFunction.create: [],
+        AuthorizationFunction.recovery: [],
+        AuthorizationFunction.update: [],
+        AuthorizationFunction.delete: []
       });
 
     // Role: standard
@@ -173,7 +173,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
     authorizations.add(new Authorization()
       ..authorizationRole = AuthorizationRole.standard
       ..authorizationObject = AuthorizationObject.user_profile
-      ..authorizationFunctionContraints = {UserAuthorizationFunction.recovery: null, UserAuthorizationFunction.update: null}
+      ..authorizationFunctionContraints = {AuthorizationFunction.recovery: null, AuthorizationFunction.update: null}
     );
 
   }
