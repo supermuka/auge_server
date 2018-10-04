@@ -14,8 +14,8 @@ import 'package:auge_server/model/user_profile_organization.dart';
 import 'package:auge_server/model/group.dart';
 
 import 'package:auge_server/message_type/id_message.dart';
-
 import 'package:auge_server/shared/rpc_error_message.dart';
+
 
 /// Api for Shared Domain
 @ApiClass(version: 'v1')

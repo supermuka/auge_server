@@ -2,18 +2,18 @@
 // Author: Samuel C. Schwebel
 
 // Super Admin has a special treatment. When a user is Admin Role, another roles ( admin, leader, standard ) defined on organizations are ignorated.
-enum AuthorizationRole { superAdmin, admin, leader, standard }
+enum SystemRole { superAdmin, admin, standard }
 
-enum AuthorizationObject { users,
-                           user_profile,
-                           groups,
-                           organizations,
-                           organization_profile,
-                           objectives,
-                           initiatives }
+enum SystemModule { users,
+                     user_profile,
+                     groups,
+                     organizations,
+                     organization_profile,
+                     objectives,
+                     initiatives }
 
 // User
-enum AuthorizationFunction {
+enum SystemFunction {
   create,
   recovery,
   update,
@@ -24,12 +24,12 @@ enum AuthorizationFunction {
 
 class Authorization {
 
-  AuthorizationRole authorizationRole;
-  AuthorizationObject authorizationObject;
+  SystemRole authorizationRole;
+  SystemModule authorizationModule;
 
   // Key is the function
   // Value contain constraints, if exist.
-  Map<dynamic, List<dynamic>> authorizationFunctionContraints;
+  Map<SystemFunction, List<dynamic>> authorizationFunctionContraints;
 
   Authorization() {
     authorizationFunctionContraints = Map();

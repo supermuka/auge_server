@@ -63,6 +63,20 @@ class Group {
     return to;
   }
 
+  /// Return a json with field values changed
+    String ChangedValuesComparateTo(Group previousGroup) {
+      String previous = 'previews';
+      String current = 'current';
+      Map changedValues = {};
+
+      if (this.name != previousGroup.name) {
+        changedValues['name'] = {previous: previousGroup.name, current: this.name};
+      }
+
+
+
+  }
+
 }
 
 /// Domain model class to represent a group type

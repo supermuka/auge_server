@@ -3,9 +3,6 @@
 
 /// Domain model class to represent an user account
 
-import 'package:auge_server/model/user_profile_organization.dart';
-
-
 
 class User extends Object  {
   String id;

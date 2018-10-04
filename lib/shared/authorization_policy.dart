@@ -15,33 +15,33 @@ abstract class AuthorizationPolicy {
     authorizations = List<Authorization>();
   }
 
-  bool isAuthorized(AuthorizationRole authorizationRole, AuthorizationObject authorizationObject, {dynamic authorizationFunction, dynamic authorizationConstraint}) {
+  bool isAuthorized(SystemRole systemRole, SystemModule systemModule, {dynamic systemFunction, dynamic systemConstraint}) {
     bool isRoleObjectAuthorized = false;
-    bool isFunctionAuthorized = (authorizationFunction == null);
-    bool isConstraintAuthorized = (authorizationConstraint == null);
+    bool isFunctionAuthorized = (systemFunction == null);
+    bool isConstraintAuthorized = (systemConstraint == null);
 
     // Find Role and Object - Needs to be single.
     Authorization allowAuthorizationRoleObject = authorizations.singleWhere((
         allow) =>
-    allow.authorizationRole == authorizationRole &&
-        allow.authorizationObject == authorizationObject, orElse: () => null);
+    allow.authorizationRole == systemRole &&
+        allow.authorizationModule == systemModule, orElse: () => null);
 
     if (allowAuthorizationRoleObject != null) {
 
       isRoleObjectAuthorized = true;
 
       // Find Function
-      if (authorizationFunction != null && allowAuthorizationRoleObject != null) {
+      if (systemFunction != null && allowAuthorizationRoleObject != null) {
         if (allowAuthorizationRoleObject.authorizationFunctionContraints
-            .containsKey(authorizationFunction)) {
+            .containsKey(systemFunction)) {
           isFunctionAuthorized = true;
 
           // Find Constraints
-          if (authorizationConstraint != null && allowAuthorizationRoleObject
-              .authorizationFunctionContraints[authorizationFunction] != null) {
+          if (systemConstraint != null && allowAuthorizationRoleObject
+              .authorizationFunctionContraints[systemFunction] != null) {
             if (allowAuthorizationRoleObject
-                .authorizationFunctionContraints[authorizationFunction]
-                .indexWhere((allow) => allow == authorizationConstraint) !=
+                .authorizationFunctionContraints[systemFunction]
+                .indexWhere((allow) => allow == systemConstraint) !=
                 -1) {
               isConstraintAuthorized = true;
             }
@@ -61,119 +61,92 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
     // Object:  User
     // Function: CRUD
     authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.superAdmin
-      ..authorizationObject = AuthorizationObject.users
+      ..authorizationRole = SystemRole.superAdmin
+      ..authorizationModule = SystemModule.users
       ..authorizationFunctionContraints =
-      {AuthorizationFunction.create: [],
-       AuthorizationFunction.recovery: [],
-       AuthorizationFunction.update: [],
-       AuthorizationFunction.delete: []
+      {SystemFunction.create: [],
+        SystemFunction.recovery: [],
+        SystemFunction.update: [],
+        SystemFunction.delete: []
       });
 
     // Object:  Groups
     // Function: CRUD
     authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.superAdmin
-      ..authorizationObject = AuthorizationObject.groups
+      ..authorizationRole = SystemRole.superAdmin
+      ..authorizationModule = SystemModule.groups
       ..authorizationFunctionContraints =
-      {AuthorizationFunction.create: [],
-        AuthorizationFunction.recovery: [],
-        AuthorizationFunction.update: [],
-        AuthorizationFunction.delete: []
+      {SystemFunction.create: [],
+        SystemFunction.recovery: [],
+        SystemFunction.update: [],
+        SystemFunction.delete: []
       });
 
     // Object:  Organizations
     // Function: CRUD
     authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.superAdmin
-      ..authorizationObject = AuthorizationObject.organizations
+      ..authorizationRole = SystemRole.superAdmin
+      ..authorizationModule = SystemModule.organizations
       ..authorizationFunctionContraints =
-      {AuthorizationFunction.create: [],
-        AuthorizationFunction.recovery: [],
-        AuthorizationFunction.update: [],
-        AuthorizationFunction.delete: []
+      {SystemFunction.create: [],
+        SystemFunction.recovery: [],
+        SystemFunction.update: [],
+        SystemFunction.delete: []
       });
 
     // Object:  Organization Profile (detail)
     authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.superAdmin
-      ..authorizationObject = AuthorizationObject.organization_profile
+      ..authorizationRole = SystemRole.superAdmin
+      ..authorizationModule = SystemModule.organization_profile
       ..authorizationFunctionContraints =
       {
-        AuthorizationFunction.recovery: [],
-        AuthorizationFunction.update: []
+        SystemFunction.recovery: [],
+        SystemFunction.update: []
       });
 
     // Role: Admin
     // Object:  User
     authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.admin
-      ..authorizationObject = AuthorizationObject.users
+      ..authorizationRole = SystemRole.admin
+      ..authorizationModule = SystemModule.users
       ..authorizationFunctionContraints =
-      {AuthorizationFunction.create: [
-        AuthorizationRole.standard,
-        AuthorizationRole.leader],
-       AuthorizationFunction.recovery: [],
-       AuthorizationFunction.update: [
-        AuthorizationRole.standard,
-        AuthorizationRole.leader],
-       AuthorizationFunction.delete: [
-         AuthorizationRole.standard,
-         AuthorizationRole.leader]
+      {SystemFunction.create: [
+        SystemRole.standard],
+        SystemFunction.recovery: [],
+        SystemFunction.update: [
+         SystemRole.standard],
+        SystemFunction.delete: [
+          SystemRole.standard]
       });
 
     // Object:  Groups
     authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.admin
-      ..authorizationObject = AuthorizationObject.groups
+      ..authorizationRole = SystemRole.admin
+      ..authorizationModule = SystemModule.groups
       ..authorizationFunctionContraints =
-      {AuthorizationFunction.create: [],
-        AuthorizationFunction.recovery: [],
-        AuthorizationFunction.update: [],
-        AuthorizationFunction.delete: []
+      {SystemFunction.create: [],
+        SystemFunction.recovery: [],
+        SystemFunction.update: [],
+        SystemFunction.delete: []
       });
 
     // Object:  Organization Profile (detail)
     authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.admin
-      ..authorizationObject = AuthorizationObject.organization_profile
+      ..authorizationRole = SystemRole.admin
+      ..authorizationModule = SystemModule.organization_profile
       ..authorizationFunctionContraints =
       {
-        AuthorizationFunction.recovery: [],
-        AuthorizationFunction.update: []
+        SystemFunction.recovery: [],
+        SystemFunction.update: []
       });
 
-    // Role: leader
-    // Object:  user
-    authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.leader
-      ..authorizationObject = AuthorizationObject.users
-      ..authorizationFunctionContraints =
-      {AuthorizationFunction.create: [
-        AuthorizationRole.standard],
-        AuthorizationFunction.recovery: [],
-        AuthorizationFunction.update: [
-          AuthorizationRole.standard],
-        AuthorizationFunction.delete: [
-          AuthorizationRole.standard]
-      });
-
-    authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.leader
-      ..authorizationObject = AuthorizationObject.groups
-      ..authorizationFunctionContraints =
-      {AuthorizationFunction.create: [],
-        AuthorizationFunction.recovery: [],
-        AuthorizationFunction.update: [],
-        AuthorizationFunction.delete: []
-      });
 
     // Role: standard
     // Object:  user_profile
     authorizations.add(new Authorization()
-      ..authorizationRole = AuthorizationRole.standard
-      ..authorizationObject = AuthorizationObject.user_profile
-      ..authorizationFunctionContraints = {AuthorizationFunction.recovery: null, AuthorizationFunction.update: null}
+      ..authorizationRole = SystemRole.standard
+      ..authorizationModule = SystemModule.user_profile
+      ..authorizationFunctionContraints = {SystemFunction.recovery: null, SystemFunction.update: null}
     );
 
   }
