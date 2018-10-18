@@ -11,10 +11,11 @@ const _colorLightness = 'lightness';
 class State extends Object {
   String id;
   String name;
-  Map<String, int> color;
-
   // Define initiative state order
   int index;
+  Map<String, int> color;
+
+
 
   String get colorHue => color[_colorHue].toString();
 
@@ -29,6 +30,7 @@ class State extends Object {
   void cloneTo(State to) {
     to.id = this.id;
     to.name = this.name;
+    to.index = this.index;
     if (this.color != null) {
       to.color = new Map.from(this.color);
     }

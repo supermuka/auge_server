@@ -23,8 +23,6 @@ import 'package:auge_server/model/group.dart';
 
 import 'package:auge_server/message_type/id_message.dart';
 
-import 'package:auge_server/shared/rpc_error_message.dart';
-
 /// Api for Initiative Domain
 @ApiClass(version: 'v1')
 class InitiativeAugeApi {
@@ -357,7 +355,7 @@ class InitiativeAugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-
+    return null;
   }
 
   /// Return all initiatives states
@@ -465,7 +463,6 @@ class InitiativeAugeApi {
   @ApiMethod( method: 'PUT', path: 'initiatives')
   Future<VoidMessage> updateInitiative(Initiative initiative) async {
 
-
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
         await ctx.query("UPDATE auge_initiative.initiatives "
@@ -538,6 +535,7 @@ class InitiativeAugeApi {
         rethrow;
       }
     });
+    return null;
   }
 
   // *** INITIATIVE WORK ITEM ***
@@ -572,6 +570,7 @@ class InitiativeAugeApi {
           rethrow;
       }
     });
+    return null;
   }
 
   /// Create (insert) a new instance of [WorkItem]
@@ -758,5 +757,6 @@ class InitiativeAugeApi {
         rethrow;
       }
     });
+    return null;
   }
 }

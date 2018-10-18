@@ -64,6 +64,7 @@ class Group {
   }
 
   /// Return a json with field values changed
+/*
     String ChangedValuesComparateTo(Group previousGroup) {
       String previous = 'previews';
       String current = 'current';
@@ -76,6 +77,7 @@ class Group {
 
 
   }
+  */
 
 }
 

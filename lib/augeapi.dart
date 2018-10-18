@@ -38,6 +38,7 @@ class AugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
+    return null;
   }
 
   // *** ORGANIZATIONS ***
@@ -119,6 +120,7 @@ class AugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
+    return null;
   }
 
   /// Delete an organization by [id]
@@ -134,6 +136,7 @@ class AugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
+    return null;
   }
 
   // *** USERS ***
@@ -231,7 +234,7 @@ class AugeApi {
       }
     } catch (e) {
       print('${e.runtimeType}, ${e}');
-      rethrow;;
+      rethrow;
     }
   }
 
@@ -304,6 +307,7 @@ class AugeApi {
         rethrow;
       }
     });
+    return null;
   }
 
   /// Delete a user by [id]
@@ -329,6 +333,7 @@ class AugeApi {
         rethrow;
       }
     });
+    return null;
   }
 
   // *** USERS AND ORGANIZATIONS  ***
@@ -379,7 +384,7 @@ class AugeApi {
 
         if (user?.id != row[1]) {
           users = await queryUsers(id: row[1], withProfile: true);
-          if (users != null && users != 0) {
+          if (users != null && users.length != 0) {
             user = users.first;
           }
         }
@@ -486,6 +491,7 @@ class AugeApi {
         rethrow;
       }
     });
+    return null;
   }
 
   /// Delete by [UserProfileOrganization.id]
@@ -504,6 +510,7 @@ class AugeApi {
         rethrow;
       }
     });
+    return null;
   }
 
   /// Delete all UserProfileOrganization by [User.id]
@@ -522,6 +529,7 @@ class AugeApi {
         rethrow;
       }
     });
+    return null;
   }
 
    // *** GROUP  ***
@@ -736,6 +744,7 @@ class AugeApi {
         rethrow;
       }
     });
+    return null;
   }
 
   /// Delete a group by [id]
@@ -754,6 +763,7 @@ class AugeApi {
         rethrow;
       }
     });
+    return null;
   }
 
   // *** GROUP TYPES ***

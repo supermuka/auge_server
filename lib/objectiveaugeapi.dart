@@ -34,8 +34,6 @@ class ObjectiveAugeApi {
 
   // *** MEASURE UNITS ***
   static Future<List<MeasureUnit>> queryMeasureUnits({String id}) async {
-    List<List> results;
-
     List<MeasureUnit> mesuareUnits = new List();
 
     mesuareUnits.add(new MeasureUnit()
@@ -98,7 +96,7 @@ class ObjectiveAugeApi {
         if (row[8] != null)
          //  measureUnit = await getMeasureUnitById(row[8]);
           measureUnits = await queryMeasureUnits(id: row[8]);
-          if (measureUnits != null && measureUnits != 0) {
+          if (measureUnits != null && measureUnits.length != 0) {
             measureUnit = measureUnits.first;
           }
         else
@@ -135,6 +133,7 @@ class ObjectiveAugeApi {
         rethrow;
       }
     });
+    return null;
 
   }
 
@@ -289,7 +288,7 @@ class ObjectiveAugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-
+    return null;
   }
 
   // *** OBJECTIVES ***
@@ -486,6 +485,7 @@ class ObjectiveAugeApi {
         rethrow;
       }
     });
+    return null;
   }
 
     /// Create (insert) a new objective
@@ -555,5 +555,6 @@ class ObjectiveAugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
+    return null;
   }
 }

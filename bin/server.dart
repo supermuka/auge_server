@@ -9,8 +9,6 @@ import 'package:rpc/rpc.dart';
 import 'package:auge_server/augeapi.dart';
 import 'package:auge_server/initiativeaugeapi.dart';
 import 'package:auge_server/objectiveaugeapi.dart';
-import 'package:auge_server/augeconf.dart';
-
 
 const _API_PREFIX = '/'; // '/api';
 final ApiServer _apiServer =
@@ -89,10 +87,10 @@ main(List<String> args) async {
 
   print('Serving at ${httpHttps}://${server.address.host}:${server.port}');
 }
-
+/*
 shelf.Response _echoRequest(shelf.Request request) =>
     new shelf.Response.ok('Request for "${request.url}"');
-
+*/
 // Reference: shelf_rpc package (archived)
 
 /// Creates a Shelf [Handler] that translates Shelf [Request]s to rpc's

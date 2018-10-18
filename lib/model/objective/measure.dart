@@ -1,8 +1,6 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-import 'package:intl/intl.dart';
-
 /// Domain model class to represent an measure
 class Measure {
 
