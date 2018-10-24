@@ -10,6 +10,7 @@ import 'dart:convert' as convert;
 
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
+import 'package:auge_server/message_type/datetime_message.dart';
 import 'package:auge_server/model/group.dart';
 import 'package:auge_server/message_type/id_message.dart';
 import 'package:auge_server/model/organization.dart';
@@ -457,6 +458,40 @@ class AugeApi {
 
   /// Request parameters:
   ///
+  /// [isUtc] - Query parameter: 'isUtc'.
+  ///
+  /// Completes with a [DateTimeMessage].
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future<DateTimeMessage> getDateTime({core.bool isUtc}) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (isUtc != null) {
+      _queryParams["isUtc"] = ["${isUtc}"];
+    }
+
+    _url = 'date_time';
+
+    var _response = _requester.request(_url, "GET",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => DateTimeMessageFactory.fromJson(data));
+  }
+
+  /// Request parameters:
+  ///
   /// Completes with a [core.List<GroupType>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -775,6 +810,24 @@ class AugeApi {
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
     return _response.then((data) => null);
+  }
+}
+
+class DateTimeMessageFactory {
+  static DateTimeMessage fromJson(core.Map _json) {
+    var message = new DateTimeMessage();
+    if (_json.containsKey("dateTime")) {
+      message.dateTime = core.DateTime.parse(_json["dateTime"]);
+    }
+    return message;
+  }
+
+  static core.Map toJson(DateTimeMessage message) {
+    var _json = new core.Map();
+    if (message.dateTime != null) {
+      _json["dateTime"] = (message.dateTime).toIso8601String();
+    }
+    return _json;
   }
 }
 

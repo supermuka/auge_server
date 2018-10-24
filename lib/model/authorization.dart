@@ -1,16 +1,16 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-// Super Admin has a special treatment. When a user is Admin Role, another roles ( admin, leader, standard ) defined on organizations are ignorated.
+// Super Admin has a special treatment. When a user is Super Admin Role, another roles ( admin, standard ) defined on organizations are ignorated.
 enum SystemRole { superAdmin, admin, standard }
 
 enum SystemModule { users,
-                     user_profile,
-                     groups,
-                     organizations,
-                     organization_profile,
-                     objectives,
-                     initiatives }
+                    user_profile,
+                    groups,
+                    organizations,
+                    organization_profile,
+                    objectives,
+                    initiatives }
 
 // User
 enum SystemFunction {
@@ -19,8 +19,6 @@ enum SystemFunction {
   update,
   delete,
 }
-
-
 
 class Authorization {
 
@@ -34,5 +32,4 @@ class Authorization {
   Authorization() {
     authorizationFunctionContraints = Map();
   }
-
 }

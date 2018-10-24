@@ -14,8 +14,8 @@ import 'package:auge_server/model/user_profile_organization.dart';
 import 'package:auge_server/model/group.dart';
 
 import 'package:auge_server/message_type/id_message.dart';
+import 'package:auge_server/message_type/datetime_message.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
-
 
 /// Api for Shared Domain
 @ApiClass(version: 'v1')
@@ -838,4 +838,20 @@ class AugeApi {
 
     return groupMembers;
   }
+
+  /// Return [DateTime] from Application Server.
+  ///
+  @ApiMethod( method: 'GET', path: 'date_time')
+  Future<DateTimeMessage> getDateTime({bool isUtc = false}) async {
+    try {
+      if (isUtc)
+        return new DateTimeMessage()..dateTime = DateTime.now().toUtc();
+      else
+        return new DateTimeMessage()..dateTime = DateTime.now();
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+  }
+
 }

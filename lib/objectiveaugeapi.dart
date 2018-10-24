@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:rpc/rpc.dart';
 import 'package:uuid/uuid.dart';
@@ -11,6 +12,7 @@ import 'package:auge_server/augeapi.dart';
 
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/objective/measure.dart';
+import 'package:auge_server/model/objective/timeline_item.dart';
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/group.dart';
@@ -293,7 +295,7 @@ class ObjectiveAugeApi {
 
   // *** OBJECTIVES ***
   // alignedToRecursiveDeep: 0 not call; 1 call once; 2 call tow, etc...
-  static Future<List<Objective>> queryObjectives({String organizationId, String id, int alignedToRecursive = 1, bool withMeasures = true, bool treeAlignedWithChildren = false, bool withProfile = false}) async {
+  static Future<List<Objective>> queryObjectives({String organizationId, String id, int alignedToRecursive = 1, bool withMeasures = true, bool treeAlignedWithChildren = false, bool withProfile = false, bool withTimeline = false}) async {
     List<List> results;
 
    // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
@@ -349,6 +351,7 @@ class ObjectiveAugeApi {
       Organization organization; // = await _augeApi.getOrganizationById(organizationId);
 
       List<Measure> measures;
+      List<TimelineItem> timeline;
       User leaderUser;
       Objective alignedToObjective;
       List<Objective> alignedToObjectives;
@@ -372,6 +375,7 @@ class ObjectiveAugeApi {
         }
 
         measures = (withMeasures) ? await queryMeasures(objectiveId: row[0]) : [];
+        timeline = (withTimeline) ? await queryTimeline(objectiveId: row[0]) : [];
 
         users = await AugeApi.queryUsers(id: row[5], withProfile: withProfile);
 
@@ -392,7 +396,6 @@ class ObjectiveAugeApi {
           group = groups.first;
         }
 
-
         objective = new Objective()
           ..id = row[0]
           ..name = row[1]
@@ -403,7 +406,8 @@ class ObjectiveAugeApi {
           ..leader = leaderUser
           ..measures = measures
           ..alignedTo = alignedToObjective
-          ..group = group;
+          ..group = group
+          ..timeline = timeline;
         objectives.add(objective);
 
         if (treeAlignedWithChildren) {
@@ -429,12 +433,12 @@ class ObjectiveAugeApi {
 
   /// Return all objectives from an organization
   @ApiMethod( method: 'GET', path: 'organization/{organizationId}/objetives')
-  Future<List<Objective>> getObjectives(String organizationId, {String id, bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false}) async {
+  Future<List<Objective>> getObjectives(String organizationId, {String id, bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false, bool withTimeline = false}) async {
     try {
       // return queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
 
       List<Objective> objectives;
-      objectives = await queryObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
+      objectives = await queryObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile, withTimeline: withTimeline);
       return objectives;
       /*
       if (objectives != null && objectives.length != 0) {
@@ -497,26 +501,29 @@ class ObjectiveAugeApi {
     }
 
     try {
-      await  AugeConnection.getConnection().query("INSERT INTO auge_objective.objectives(id, name, description, start_date, end_date, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
-            "(@id,"
-            "@name,"
-            "@description,"
-            "@start_date,"
-            "@end_date,"
-            "@aligned_to_objective_id, "
-            "@organization_id,"
-            "@leader_user_id,"
-            "@group_id)"
-            , substitutionValues: {
-              "id": objective.id,
-              "name": objective.name,
-              "description": objective.description,
-              "start_date": objective.startDate,
-              "end_date": objective.endDate,
-              "aligned_to_objective_id": objective.alignedTo?.id,
-              "organization_id": objective.organization?.id,
-              "leader_user_id": objective.leader?.id,
-              "group_id": objective.group?.id});
+      await AugeConnection.getConnection().query(
+          "INSERT INTO auge_objective.objectives(id, name, description, start_date, end_date, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
+              "(@id,"
+              "@name,"
+              "@description,"
+              "@start_date,"
+              "@end_date,"
+              "@aligned_to_objective_id, "
+              "@organization_id,"
+              "@leader_user_id,"
+              "@group_id)"
+          , substitutionValues: {
+        "id": objective.id,
+        "name": objective.name,
+        "description": objective.description,
+        "start_date": objective.startDate,
+        "end_date": objective.endDate,
+        "aligned_to_objective_id": objective.alignedTo?.id,
+        "organization_id": objective.organization?.id,
+        "leader_user_id": objective.leader?.id,
+        "group_id": objective.group?.id});
+
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -551,10 +558,102 @@ class ObjectiveAugeApi {
         "organization_id": objective.organization.id,
         "leader_user_id": objective?.leader?.id,
         "group_id": objective?.group?.id});
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
+
     return null;
   }
+
+  // *** OBJECTIVE TIMELINE ***
+  static Future<List<TimelineItem>> queryTimeline({String objectiveId, String id}) async {
+    List<List> results;
+
+    String queryStatement;
+
+    queryStatement = "SELECT id::VARCHAR, date_time, system_function_index, data, comment, user_id, objective_id"
+        " FROM auge_objective.objective_timeline ";
+
+    Map<String, dynamic> substitutionValues;
+
+    if (id != null) {
+      queryStatement += " WHERE id = @id";
+      substitutionValues = {"id": id};
+    } else {
+      queryStatement += " WHERE objective_id = @objective_id";
+      substitutionValues = {"objective_id": objectiveId};
+    }
+
+    results = await AugeConnection.getConnection().query(
+        queryStatement, substitutionValues: substitutionValues);
+
+    List<TimelineItem> objectiveTimeline = new List();
+    List<User> users;
+
+    User user;
+
+    if (results != null && results.isNotEmpty) {
+
+      for (var row in results) {
+
+        users = await AugeApi.queryUsers(id: row[5], withProfile: true);
+
+        if (users != null && users.length != 0) {
+          user = users.first;
+        } else {
+          user = null;
+        }
+
+        objectiveTimeline.add(new TimelineItem()
+          ..id = row[0]
+          ..dateTime = row[1]
+          ..systemFunctionIndex = row[2]
+          ..dataChanged = row[3]
+          ..user = user);
+      }
+    }
+    return objectiveTimeline;
+  }
+
+  /// Create (insert) a new timeline item
+  @ApiMethod( method: 'POST', path: 'objetives/{objectiveid}/timeline')
+  Future<IdMessage> createTimelineItem(String objectiveid, TimelineItem timelineItem) async {
+
+    if (timelineItem.id == null) {
+      timelineItem.id = new Uuid().v4();
+    }
+
+    if (timelineItem.dateTime == null) {
+      timelineItem.dateTime = DateTime.now().toUtc(); // Utc pattern, by reasons of the internationalization
+    }
+
+    try {
+
+      await  AugeConnection.getConnection().query(
+          "INSERT INTO auge_objective.objective_timeline(id, date_time, system_function_index, data, comment, user_id, objective_id) VALUES"
+              "(@id,"
+              "@date_time,"
+              "@system_function_index,"
+              "@data,"
+              "@comment,"
+              "@user_id,"
+              "@objective_id)"
+          , substitutionValues: {
+        "id": timelineItem.id,
+        "date_time": timelineItem.dateTime,
+        "system_function_index": timelineItem.systemFunctionIndex,
+        "data": json.encode(timelineItem.dataChanged),
+        "comment": timelineItem.comment,
+        "user_id": timelineItem.user.id,
+        "objective_id": objectiveid});
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+
+    return IdMessage()..id = timelineItem.id;
+  }
+
 }

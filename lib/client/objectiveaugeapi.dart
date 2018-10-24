@@ -15,6 +15,7 @@ import 'package:auge_server/message_type/id_message.dart';
 import 'package:auge_server/model/objective/measure.dart';
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/organization.dart';
+import 'package:auge_server/model/objective/timeline_item.dart';
 import 'package:auge_server/model/user.dart';
 export 'package:_discoveryapis_commons/_discoveryapis_commons.dart'
     show ApiRequestError, DetailedApiRequestError;
@@ -96,6 +97,48 @@ class ObjectiveAugeApi {
     }
 
     _url = 'objectives';
+
+    var _response = _requester.request(_url, "POST",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => IdMessageFactory.fromJson(data));
+  }
+
+  /// [request] - The metadata request object.
+  ///
+  /// Request parameters:
+  ///
+  /// [objectiveid] - Path parameter: 'objectiveid'.
+  ///
+  /// Completes with a [IdMessage].
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future<IdMessage> createTimelineItem(
+      TimelineItem request, core.String objectiveid) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (request != null) {
+      _body = convert.json.encode(TimelineItemFactory.toJson(request));
+    }
+    if (objectiveid == null) {
+      throw new core.ArgumentError("Parameter objectiveid is required.");
+    }
+
+    _url = 'objetives/' +
+        commons.Escaper.ecapeVariable('$objectiveid') +
+        '/timeline';
 
     var _response = _requester.request(_url, "POST",
         body: _body,
@@ -286,6 +329,8 @@ class ObjectiveAugeApi {
   ///
   /// [withProfile] - Query parameter: 'withProfile'.
   ///
+  /// [withTimeline] - Query parameter: 'withTimeline'.
+  ///
   /// Completes with a [core.List<Objective>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -297,7 +342,8 @@ class ObjectiveAugeApi {
       {core.String id,
       core.bool withMeasures,
       core.bool treeAlignedWithChildren,
-      core.bool withProfile}) {
+      core.bool withProfile,
+      core.bool withTimeline}) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -319,6 +365,9 @@ class ObjectiveAugeApi {
     }
     if (withProfile != null) {
       _queryParams["withProfile"] = ["${withProfile}"];
+    }
+    if (withTimeline != null) {
+      _queryParams["withTimeline"] = ["${withTimeline}"];
     }
 
     _url = 'organization/' +
@@ -427,6 +476,11 @@ class GroupFactory {
     if (_json.containsKey("leader")) {
       message.leader = UserFactory.fromJson(_json["leader"]);
     }
+    if (_json.containsKey("members")) {
+      message.members = (_json["members"] as core.List)
+          .map<User>((value) => UserFactory.fromJson(value))
+          .toList();
+    }
     if (_json.containsKey("name")) {
       message.name = _json["name"];
     }
@@ -453,6 +507,10 @@ class GroupFactory {
     }
     if (message.leader != null) {
       _json["leader"] = UserFactory.toJson(message.leader);
+    }
+    if (message.members != null) {
+      _json["members"] =
+          message.members.map((value) => UserFactory.toJson(value)).toList();
     }
     if (message.name != null) {
       _json["name"] = message.name;
@@ -646,6 +704,11 @@ class ObjectiveFactory {
     if (_json.containsKey("startDate")) {
       message.startDate = core.DateTime.parse(_json["startDate"]);
     }
+    if (_json.containsKey("timeline")) {
+      message.timeline = (_json["timeline"] as core.List)
+          .map<TimelineItem>((value) => TimelineItemFactory.fromJson(value))
+          .toList();
+    }
     return message;
   }
 
@@ -688,6 +751,11 @@ class ObjectiveFactory {
     if (message.startDate != null) {
       _json["startDate"] = (message.startDate).toIso8601String();
     }
+    if (message.timeline != null) {
+      _json["timeline"] = message.timeline
+          .map((value) => TimelineItemFactory.toJson(value))
+          .toList();
+    }
     return _json;
   }
 }
@@ -717,6 +785,54 @@ class OrganizationFactory {
     }
     if (message.name != null) {
       _json["name"] = message.name;
+    }
+    return _json;
+  }
+}
+
+class TimelineItemFactory {
+  static TimelineItem fromJson(core.Map _json) {
+    var message = new TimelineItem();
+    if (_json.containsKey("comment")) {
+      message.comment = _json["comment"];
+    }
+    if (_json.containsKey("dataChanged")) {
+      message.dataChanged = _json["dataChanged"];
+    }
+    if (_json.containsKey("dateTime")) {
+      message.dateTime = core.DateTime.parse(_json["dateTime"]);
+    }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    if (_json.containsKey("systemFunctionIndex")) {
+      message.systemFunctionIndex = _json["systemFunctionIndex"];
+    }
+    if (_json.containsKey("user")) {
+      message.user = UserFactory.fromJson(_json["user"]);
+    }
+    return message;
+  }
+
+  static core.Map toJson(TimelineItem message) {
+    var _json = new core.Map();
+    if (message.comment != null) {
+      _json["comment"] = message.comment;
+    }
+    if (message.dataChanged != null) {
+      _json["dataChanged"] = message.dataChanged;
+    }
+    if (message.dateTime != null) {
+      _json["dateTime"] = (message.dateTime).toIso8601String();
+    }
+    if (message.id != null) {
+      _json["id"] = message.id;
+    }
+    if (message.systemFunctionIndex != null) {
+      _json["systemFunctionIndex"] = message.systemFunctionIndex;
+    }
+    if (message.user != null) {
+      _json["user"] = UserFactory.toJson(message.user);
     }
     return _json;
   }
