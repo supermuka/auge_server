@@ -1,6 +1,8 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+
+
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/objective/measure.dart';
@@ -32,8 +34,9 @@ class Objective {
   Objective() {
     initializeDateFormatting(Intl.defaultLocale);
 
-    alignedWithChildren = new List<Objective>();
-    measures = new List();
+    alignedWithChildren = List<Objective>();
+    measures = List<Measure>();
+    timeline = List<TimelineItem>();
   }
 
   int get progress {
@@ -85,6 +88,19 @@ class Objective {
     } else {
       to.leader = null;
     }
+
+    if (this.measures != null && this.measures.length != 0) {
+      to.measures.clear();
+      this.measures.forEach((o) =>
+          to.measures.add(o.clone()));
+    }
+
+    if (this.timeline != null && this.timeline.length != 0) {
+      to.timeline.clear();
+      this.timeline.forEach((o) =>
+          to.timeline.add(o.clone()));
+    }
+
   }
 
   Objective clone() {
@@ -101,8 +117,6 @@ class Objective {
     if (thisTerm == null) thisTerm = 'this';
     if (compareToTerm == null) compareToTerm = 'compareTo';
 
-    print('xxxx');
-
     // String name;
     if (compareTo != null && this.name != compareTo.name) {
       difference['name'] = {thisTerm: this.name, compareToTerm: compareTo.name};
@@ -110,8 +124,6 @@ class Objective {
       difference['name'] = {thisTerm: this.name};
     }
 
-    print(difference.toString());
-    print('zzzz');
 /*
     // String description;
     if (compareTo != null && this.description != compareTo.description) {
@@ -221,6 +233,8 @@ class Objective {
     return difference;
 
   }
+
+
 
 
 }

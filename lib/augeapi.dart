@@ -13,7 +13,7 @@ import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/user_profile_organization.dart';
 import 'package:auge_server/model/group.dart';
 
-import 'package:auge_server/message_type/id_message.dart';
+import 'package:auge_server/message_type/created_message.dart';
 import 'package:auge_server/message_type/datetime_message.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
 
@@ -81,7 +81,7 @@ class AugeApi {
 
   /// Create (insert) a new organization
   @ApiMethod( method: 'POST', path: 'organizations')
-  Future<IdMessage> createOrganization(Organization organization) async {
+  Future<CreatedMessage> createOrganization(Organization organization) async {
 
     if (organization.id == null) {
       organization.id = new Uuid().v4();
@@ -101,7 +101,7 @@ class AugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return new IdMessage()..id = organization.id;
+    return new CreatedMessage()..id = organization.id;
   }
 
   /// Update an organization passing an instance of [Organization]
@@ -240,7 +240,7 @@ class AugeApi {
 
   /// Create (insert) a new user
   @ApiMethod( method: 'POST', path: 'users')
-  Future<IdMessage> createUser(User user) async {
+  Future<CreatedMessage> createUser(User user) async {
     if (user.id == null) {
       user.id = new Uuid().v4();
     }
@@ -273,7 +273,7 @@ class AugeApi {
         rethrow;
       }
     });
-    return new IdMessage()..id = user.id;
+    return new CreatedMessage()..id = user.id;
   }
 
   /// Update a [User]
@@ -439,7 +439,7 @@ class AugeApi {
 
   /// Create (insert) a new user profile and organization
   @ApiMethod( method: 'POST', path: 'users_profile_organizations')
-  Future<IdMessage> createUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
+  Future<CreatedMessage> createUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
 
     if (userProfileOrganization.id == null) {
       userProfileOrganization.id = Uuid().v4();
@@ -467,7 +467,7 @@ class AugeApi {
       }
     });
 
-    return new IdMessage()..id = userProfileOrganization.id;
+    return new CreatedMessage()..id = userProfileOrganization.id;
   }
 
   /// Update a [User]
@@ -639,7 +639,7 @@ class AugeApi {
 
   /// Create (insert) a new group
   @ApiMethod( method: 'POST', path: 'groups')
-  Future<IdMessage> createGroup(Group group) async {
+  Future<CreatedMessage> createGroup(Group group) async {
 
     if (group.id == null) {
       group.id = new Uuid().v4();
@@ -683,7 +683,7 @@ class AugeApi {
       }
     });
 
-    return new IdMessage()..id = group.id;
+    return new CreatedMessage()..id = group.id;
   }
 
   /// Update a [Group]

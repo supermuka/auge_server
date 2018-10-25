@@ -34,7 +34,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             SystemRole.superAdmin,
             SystemModule.users,
-            systemFunction: SystemFunction.recovery), isTrue);
+            systemFunction: SystemFunction.read), isTrue);
       });
 
       test('Function: UserAuthorizationFunction.update, Constraint: null >>> Authorizated.', () {
@@ -60,7 +60,7 @@ void main() {
         expect(authorizationPolicy.isAuthorized(
             SystemRole.standard,
             SystemModule.user_profile,
-            systemFunction:  SystemFunction.recovery), isTrue);
+            systemFunction:  SystemFunction.read), isTrue);
       });
 
       test('Function: update, Constraint: null >>> Authorizated.', () {

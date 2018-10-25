@@ -15,7 +15,7 @@ enum SystemModule { users,
 // User
 enum SystemFunction {
   create,
-  recovery,
+  read,
   update,
   delete,
 }

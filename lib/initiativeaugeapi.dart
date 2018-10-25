@@ -21,7 +21,7 @@ import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/group.dart';
 
-import 'package:auge_server/message_type/id_message.dart';
+import 'package:auge_server/message_type/created_message.dart';
 
 /// Api for Initiative Domain
 @ApiClass(version: 'v1')
@@ -408,7 +408,7 @@ class InitiativeAugeApi {
 
   /// Create (insert) a new initiative
   @ApiMethod( method: 'POST', path: 'initiatives')
-  Future<IdMessage> createInitiative(Initiative initiative) async {
+  Future<CreatedMessage> createInitiative(Initiative initiative) async {
 
     if (initiative.id == null) {
       initiative.id = new Uuid().v4();
@@ -456,7 +456,7 @@ class InitiativeAugeApi {
       rethrow;
     }
 
-    return new IdMessage()..id = initiative.id;
+    return new CreatedMessage()..id = initiative.id;
   }
 
   /// Update an initiative passing an instance of [Initiative]
@@ -575,7 +575,7 @@ class InitiativeAugeApi {
 
   /// Create (insert) a new instance of [WorkItem]
   @ApiMethod(method: 'POST', path: 'initiatives/{initiativeId}/workitems')
-  Future<IdMessage> createWorkItem(String initiativeId, WorkItem workItem) async {
+  Future<CreatedMessage> createWorkItem(String initiativeId, WorkItem workItem) async {
 
     if (workItem.id == null) {
       workItem.id = new Uuid().v4();
@@ -647,7 +647,7 @@ class InitiativeAugeApi {
       }
     });
 
-    return new IdMessage()..id = workItem.id;
+    return new CreatedMessage()..id = workItem.id;
   }
 
   /// Update an initiative passing an instance of [WorkItem]

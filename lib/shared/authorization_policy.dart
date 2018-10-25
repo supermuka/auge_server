@@ -65,7 +65,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationModule = SystemModule.users
       ..authorizationFunctionContraints =
       {SystemFunction.create: [],
-        SystemFunction.recovery: [],
+        SystemFunction.read: [],
         SystemFunction.update: [],
         SystemFunction.delete: []
       });
@@ -77,7 +77,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationModule = SystemModule.groups
       ..authorizationFunctionContraints =
       {SystemFunction.create: [],
-        SystemFunction.recovery: [],
+        SystemFunction.read: [],
         SystemFunction.update: [],
         SystemFunction.delete: []
       });
@@ -89,7 +89,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationModule = SystemModule.organizations
       ..authorizationFunctionContraints =
       {SystemFunction.create: [],
-        SystemFunction.recovery: [],
+        SystemFunction.read: [],
         SystemFunction.update: [],
         SystemFunction.delete: []
       });
@@ -100,7 +100,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationModule = SystemModule.organization_profile
       ..authorizationFunctionContraints =
       {
-        SystemFunction.recovery: [],
+        SystemFunction.read: [],
         SystemFunction.update: []
       });
 
@@ -112,7 +112,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationFunctionContraints =
       {SystemFunction.create: [
         SystemRole.standard],
-        SystemFunction.recovery: [],
+        SystemFunction.read: [],
         SystemFunction.update: [
          SystemRole.standard],
         SystemFunction.delete: [
@@ -125,7 +125,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationModule = SystemModule.groups
       ..authorizationFunctionContraints =
       {SystemFunction.create: [],
-        SystemFunction.recovery: [],
+        SystemFunction.read: [],
         SystemFunction.update: [],
         SystemFunction.delete: []
       });
@@ -136,7 +136,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationModule = SystemModule.organization_profile
       ..authorizationFunctionContraints =
       {
-        SystemFunction.recovery: [],
+        SystemFunction.read: [],
         SystemFunction.update: []
       });
 
@@ -146,7 +146,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
     authorizations.add(new Authorization()
       ..authorizationRole = SystemRole.standard
       ..authorizationModule = SystemModule.user_profile
-      ..authorizationFunctionContraints = {SystemFunction.recovery: null, SystemFunction.update: null}
+      ..authorizationFunctionContraints = {SystemFunction.read: null, SystemFunction.update: null}
     );
 
   }

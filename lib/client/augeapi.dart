@@ -10,9 +10,9 @@ import 'dart:convert' as convert;
 
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
+import 'package:auge_server/message_type/created_message.dart';
 import 'package:auge_server/message_type/datetime_message.dart';
 import 'package:auge_server/model/group.dart';
-import 'package:auge_server/message_type/id_message.dart';
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/user_profile_organization.dart';
@@ -62,14 +62,14 @@ class AugeApi {
   ///
   /// Request parameters:
   ///
-  /// Completes with a [IdMessage].
+  /// Completes with a [CreatedMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<IdMessage> createGroup(Group request) {
+  async.Future<CreatedMessage> createGroup(Group request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -89,21 +89,21 @@ class AugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => IdMessageFactory.fromJson(data));
+    return _response.then((data) => CreatedMessageFactory.fromJson(data));
   }
 
   /// [request] - The metadata request object.
   ///
   /// Request parameters:
   ///
-  /// Completes with a [IdMessage].
+  /// Completes with a [CreatedMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<IdMessage> createOrganization(Organization request) {
+  async.Future<CreatedMessage> createOrganization(Organization request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -123,21 +123,21 @@ class AugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => IdMessageFactory.fromJson(data));
+    return _response.then((data) => CreatedMessageFactory.fromJson(data));
   }
 
   /// [request] - The metadata request object.
   ///
   /// Request parameters:
   ///
-  /// Completes with a [IdMessage].
+  /// Completes with a [CreatedMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<IdMessage> createUser(User request) {
+  async.Future<CreatedMessage> createUser(User request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -157,21 +157,21 @@ class AugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => IdMessageFactory.fromJson(data));
+    return _response.then((data) => CreatedMessageFactory.fromJson(data));
   }
 
   /// [request] - The metadata request object.
   ///
   /// Request parameters:
   ///
-  /// Completes with a [IdMessage].
+  /// Completes with a [CreatedMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<IdMessage> createUserProfileOrganization(
+  async.Future<CreatedMessage> createUserProfileOrganization(
       UserProfileOrganization request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
@@ -193,7 +193,7 @@ class AugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => IdMessageFactory.fromJson(data));
+    return _response.then((data) => CreatedMessageFactory.fromJson(data));
   }
 
   /// Request parameters:
@@ -813,6 +813,30 @@ class AugeApi {
   }
 }
 
+class CreatedMessageFactory {
+  static CreatedMessage fromJson(core.Map _json) {
+    var message = new CreatedMessage();
+    if (_json.containsKey("dataTime")) {
+      message.dataTime = core.DateTime.parse(_json["dataTime"]);
+    }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    return message;
+  }
+
+  static core.Map toJson(CreatedMessage message) {
+    var _json = new core.Map();
+    if (message.dataTime != null) {
+      _json["dataTime"] = (message.dataTime).toIso8601String();
+    }
+    if (message.id != null) {
+      _json["id"] = message.id;
+    }
+    return _json;
+  }
+}
+
 class DateTimeMessageFactory {
   static DateTimeMessage fromJson(core.Map _json) {
     var message = new DateTimeMessage();
@@ -914,24 +938,6 @@ class GroupTypeFactory {
     }
     if (message.name != null) {
       _json["name"] = message.name;
-    }
-    return _json;
-  }
-}
-
-class IdMessageFactory {
-  static IdMessage fromJson(core.Map _json) {
-    var message = new IdMessage();
-    if (_json.containsKey("id")) {
-      message.id = _json["id"];
-    }
-    return message;
-  }
-
-  static core.Map toJson(IdMessage message) {
-    var _json = new core.Map();
-    if (message.id != null) {
-      _json["id"] = message.id;
     }
     return _json;
   }

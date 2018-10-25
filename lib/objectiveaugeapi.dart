@@ -2,7 +2,6 @@
 // Author: Samuel C. Schwebel.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:rpc/rpc.dart';
 import 'package:uuid/uuid.dart';
@@ -17,7 +16,7 @@ import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/group.dart';
 
-import 'package:auge_server/message_type/id_message.dart';
+import 'package:auge_server/message_type/created_message.dart';
 
 import 'package:auge_server/shared/rpc_error_message.dart';
 
@@ -221,7 +220,7 @@ class ObjectiveAugeApi {
 
   /// Create (insert) a new measures
   @ApiMethod( method: 'POST', path: 'objetives/{objectiveid}/measures')
-  Future<IdMessage> createMeasure(String objectiveid, Measure measure) async {
+  Future<CreatedMessage> createMeasure(String objectiveid, Measure measure) async {
 
     if (measure.id == null) {
       measure.id = new Uuid().v4();
@@ -256,7 +255,7 @@ class ObjectiveAugeApi {
       rethrow;
     }
 
-    return IdMessage()..id = measure.id;
+    return CreatedMessage()..id = measure.id;
   }
 
   /// Update an initiative passing an instance of [Measure]
@@ -494,7 +493,7 @@ class ObjectiveAugeApi {
 
     /// Create (insert) a new objective
   @ApiMethod( method: 'POST', path: 'objectives')
-  Future<IdMessage> createObjective(Objective objective) async {
+  Future<CreatedMessage> createObjective(Objective objective) async {
 
     if (objective.id == null) {
       objective.id = new Uuid().v4();
@@ -529,7 +528,7 @@ class ObjectiveAugeApi {
       rethrow;
     }
 
-    return new IdMessage()..id = objective.id;
+    return new CreatedMessage()..id = objective.id;
   }
 
   /// Update an initiative passing an instance of [Objective]
@@ -573,8 +572,9 @@ class ObjectiveAugeApi {
 
     String queryStatement;
 
-    queryStatement = "SELECT id::VARCHAR, date_time, system_function_index, data, comment, user_id, objective_id"
+    queryStatement = "SELECT id::VARCHAR, date_time, system_function_index, class_name, changed_data, comment, user_id, objective_id"
         " FROM auge_objective.objective_timeline ";
+
 
     Map<String, dynamic> substitutionValues;
 
@@ -585,6 +585,8 @@ class ObjectiveAugeApi {
       queryStatement += " WHERE objective_id = @objective_id";
       substitutionValues = {"objective_id": objectiveId};
     }
+
+    queryStatement += " ORDER BY date_time DESC ";
 
     results = await AugeConnection.getConnection().query(
         queryStatement, substitutionValues: substitutionValues);
@@ -610,7 +612,8 @@ class ObjectiveAugeApi {
           ..id = row[0]
           ..dateTime = row[1]
           ..systemFunctionIndex = row[2]
-          ..dataChanged = row[3]
+          ..className = row[3]
+          ..changedData = row[4]
           ..user = user);
       }
     }
@@ -619,7 +622,7 @@ class ObjectiveAugeApi {
 
   /// Create (insert) a new timeline item
   @ApiMethod( method: 'POST', path: 'objetives/{objectiveid}/timeline')
-  Future<IdMessage> createTimelineItem(String objectiveid, TimelineItem timelineItem) async {
+  Future<CreatedMessage> createTimelineItem(String objectiveid, TimelineItem timelineItem) async {
 
     if (timelineItem.id == null) {
       timelineItem.id = new Uuid().v4();
@@ -632,11 +635,12 @@ class ObjectiveAugeApi {
     try {
 
       await  AugeConnection.getConnection().query(
-          "INSERT INTO auge_objective.objective_timeline(id, date_time, system_function_index, data, comment, user_id, objective_id) VALUES"
+          "INSERT INTO auge_objective.objective_timeline(id, date_time, system_function_index, class_name, changed_data, comment, user_id, objective_id) VALUES"
               "(@id,"
               "@date_time,"
               "@system_function_index,"
-              "@data,"
+              "@class_name,"
+              "@changed_data,"
               "@comment,"
               "@user_id,"
               "@objective_id)"
@@ -644,7 +648,8 @@ class ObjectiveAugeApi {
         "id": timelineItem.id,
         "date_time": timelineItem.dateTime,
         "system_function_index": timelineItem.systemFunctionIndex,
-        "data": json.encode(timelineItem.dataChanged),
+        "class_name": timelineItem.className,
+        "changed_data": timelineItem.changedData,
         "comment": timelineItem.comment,
         "user_id": timelineItem.user.id,
         "objective_id": objectiveid});
@@ -653,7 +658,7 @@ class ObjectiveAugeApi {
       rethrow;
     }
 
-    return IdMessage()..id = timelineItem.id;
+    return CreatedMessage()..id = timelineItem.id..dataTime = timelineItem.dateTime;
   }
 
 }

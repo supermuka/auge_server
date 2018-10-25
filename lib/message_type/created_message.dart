@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel.
 
 /// Define api message type
-class IdMessage {
+class CreatedMessage {
   String id;
+  DateTime dataTime;
 }

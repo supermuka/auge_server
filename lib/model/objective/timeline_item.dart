@@ -12,6 +12,25 @@ class TimelineItem {
 
   // from enum SystemFunction
   int systemFunctionIndex;
-  String dataChanged;
+  String className;
+  String changedData;
   String comment;
+
+  void cloneTo(TimelineItem to) {
+    to.id = this.id;
+    to.dateTime = this.dateTime;
+    if (this.user != null) {
+      to.user = this.user.clone();
+    }
+    to.systemFunctionIndex = this.systemFunctionIndex;
+    to.className = this.className;
+    to.changedData = this.changedData;
+    to.comment = this.comment;
+  }
+
+  TimelineItem clone() {
+    TimelineItem to = new TimelineItem();
+    cloneTo(to);
+    return to;
+  }
 }

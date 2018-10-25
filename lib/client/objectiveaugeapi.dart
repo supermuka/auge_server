@@ -10,8 +10,8 @@ import 'dart:convert' as convert;
 
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
+import 'package:auge_server/message_type/created_message.dart';
 import 'package:auge_server/model/group.dart';
-import 'package:auge_server/message_type/id_message.dart';
 import 'package:auge_server/model/objective/measure.dart';
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/organization.dart';
@@ -37,14 +37,14 @@ class ObjectiveAugeApi {
   ///
   /// [objectiveid] - Path parameter: 'objectiveid'.
   ///
-  /// Completes with a [IdMessage].
+  /// Completes with a [CreatedMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<IdMessage> createMeasure(
+  async.Future<CreatedMessage> createMeasure(
       Measure request, core.String objectiveid) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
@@ -70,21 +70,21 @@ class ObjectiveAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => IdMessageFactory.fromJson(data));
+    return _response.then((data) => CreatedMessageFactory.fromJson(data));
   }
 
   /// [request] - The metadata request object.
   ///
   /// Request parameters:
   ///
-  /// Completes with a [IdMessage].
+  /// Completes with a [CreatedMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<IdMessage> createObjective(Objective request) {
+  async.Future<CreatedMessage> createObjective(Objective request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -104,7 +104,7 @@ class ObjectiveAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => IdMessageFactory.fromJson(data));
+    return _response.then((data) => CreatedMessageFactory.fromJson(data));
   }
 
   /// [request] - The metadata request object.
@@ -113,14 +113,14 @@ class ObjectiveAugeApi {
   ///
   /// [objectiveid] - Path parameter: 'objectiveid'.
   ///
-  /// Completes with a [IdMessage].
+  /// Completes with a [CreatedMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<IdMessage> createTimelineItem(
+  async.Future<CreatedMessage> createTimelineItem(
       TimelineItem request, core.String objectiveid) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
@@ -146,7 +146,7 @@ class ObjectiveAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => IdMessageFactory.fromJson(data));
+    return _response.then((data) => CreatedMessageFactory.fromJson(data));
   }
 
   /// Request parameters:
@@ -461,6 +461,30 @@ class ObjectiveAugeApi {
   }
 }
 
+class CreatedMessageFactory {
+  static CreatedMessage fromJson(core.Map _json) {
+    var message = new CreatedMessage();
+    if (_json.containsKey("dataTime")) {
+      message.dataTime = core.DateTime.parse(_json["dataTime"]);
+    }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    return message;
+  }
+
+  static core.Map toJson(CreatedMessage message) {
+    var _json = new core.Map();
+    if (message.dataTime != null) {
+      _json["dataTime"] = (message.dataTime).toIso8601String();
+    }
+    if (message.id != null) {
+      _json["id"] = message.id;
+    }
+    return _json;
+  }
+}
+
 class GroupFactory {
   static Group fromJson(core.Map _json) {
     var message = new Group();
@@ -544,24 +568,6 @@ class GroupTypeFactory {
     }
     if (message.name != null) {
       _json["name"] = message.name;
-    }
-    return _json;
-  }
-}
-
-class IdMessageFactory {
-  static IdMessage fromJson(core.Map _json) {
-    var message = new IdMessage();
-    if (_json.containsKey("id")) {
-      message.id = _json["id"];
-    }
-    return message;
-  }
-
-  static core.Map toJson(IdMessage message) {
-    var _json = new core.Map();
-    if (message.id != null) {
-      _json["id"] = message.id;
     }
     return _json;
   }
@@ -793,11 +799,14 @@ class OrganizationFactory {
 class TimelineItemFactory {
   static TimelineItem fromJson(core.Map _json) {
     var message = new TimelineItem();
+    if (_json.containsKey("changedData")) {
+      message.changedData = _json["changedData"];
+    }
+    if (_json.containsKey("className")) {
+      message.className = _json["className"];
+    }
     if (_json.containsKey("comment")) {
       message.comment = _json["comment"];
-    }
-    if (_json.containsKey("dataChanged")) {
-      message.dataChanged = _json["dataChanged"];
     }
     if (_json.containsKey("dateTime")) {
       message.dateTime = core.DateTime.parse(_json["dateTime"]);
@@ -816,11 +825,14 @@ class TimelineItemFactory {
 
   static core.Map toJson(TimelineItem message) {
     var _json = new core.Map();
+    if (message.changedData != null) {
+      _json["changedData"] = message.changedData;
+    }
+    if (message.className != null) {
+      _json["className"] = message.className;
+    }
     if (message.comment != null) {
       _json["comment"] = message.comment;
-    }
-    if (message.dataChanged != null) {
-      _json["dataChanged"] = message.dataChanged;
     }
     if (message.dateTime != null) {
       _json["dateTime"] = (message.dateTime).toIso8601String();
