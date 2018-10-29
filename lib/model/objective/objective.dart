@@ -1,7 +1,7 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-
+import 'dart:convert';
 
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
@@ -25,11 +25,11 @@ class Objective {
   Organization organization;
   Group group;
   Objective alignedTo;
-  List<Objective> alignedWithChildren;
   User leader;
-
+  List<Objective> alignedWithChildren;
   List<Measure> measures;
   List<TimelineItem> timeline;
+
 
   Objective() {
     initializeDateFormatting(Intl.defaultLocale);
@@ -37,6 +37,8 @@ class Objective {
     alignedWithChildren = List<Objective>();
     measures = List<Measure>();
     timeline = List<TimelineItem>();
+
+
   }
 
   int get progress {
@@ -77,16 +79,16 @@ class Objective {
       to.alignedTo = null;
     }
 
-    if (this.alignedWithChildren != null && this.alignedWithChildren.length != 0) {
-      to.alignedWithChildren.clear();
-      this.alignedWithChildren.forEach((o) =>
-          to.alignedWithChildren.add(o.clone()));
-    }
-
     if (this.leader != null) {
       to.leader = this.leader.clone();
     } else {
       to.leader = null;
+    }
+
+    if (this.alignedWithChildren != null && this.alignedWithChildren.length != 0) {
+      to.alignedWithChildren.clear();
+      this.alignedWithChildren.forEach((o) =>
+          to.alignedWithChildren.add(o.clone()));
     }
 
     if (this.measures != null && this.measures.length != 0) {
@@ -108,133 +110,120 @@ class Objective {
     cloneTo(to);
     return to;
   }
+}
 
-  Map<String, Map<String, dynamic>> differenceComparedTo(Objective compareTo, {String thisTerm, String compareToTerm}) {
+/// Facilities to [Objective] class
+class ObjectiveFacilities {
+
+  /// Delta diff between [current] and [previous] Objective.
+  /// Like a document (json) idea, then just store user readly data, don't have IDs, FKs, etc.
+  /// identification
+  /// dataChanged
+  static String differenceToJson(Objective current, Objective previous) {
 
     Map<String, Map<String, dynamic>> difference = Map();
-    // String id;
 
-    if (thisTerm == null) thisTerm = 'this';
-    if (compareToTerm == null) compareToTerm = 'compareTo';
+    const identificationKey = 'identification';
+    const changedDataKey = 'changedData';
+
+    const idIdentificationKey = 'id';
+    const nameIdentificationKey = 'name';
+
+    const currentDataChangedKey = 'current';
+    const previousDataChangedKey = 'previous';
+
+    difference[identificationKey] = {idIdentificationKey: current.id};
+    difference[identificationKey] = {nameIdentificationKey: current.name};
 
     // String name;
-    if (compareTo != null && this.name != compareTo.name) {
-      difference['name'] = {thisTerm: this.name, compareToTerm: compareTo.name};
-    } else if (compareTo == null && this.name != null) {
-      difference['name'] = {thisTerm: this.name};
+    if (previous != null && current.name != previous.name) {
+      difference[changedDataKey] = {'name': {currentDataChangedKey: current.name, previousDataChangedKey: previous.name}};
+    } else if (previous == null && current.name != null) {
+      difference[changedDataKey] = {'name': {currentDataChangedKey: current.name}};
     }
 
-/*
     // String description;
-    if (compareTo != null && this.description != compareTo.description) {
-      difference['description'] =
-      {thisTerm: this.description, compareToTerm: compareTo.description};
-    } else if (compareTo == null && this.description != null ) {
-      difference['description'] =
-      {thisTerm: this.description};
+    if (previous != null && current.description != previous.description) {
+      difference[changedDataKey] =
+      {'description': {currentDataChangedKey: current.description, previousDataChangedKey: previous.description}};
+    } else if (previous == null && current.description != null ) {
+      difference[changedDataKey] =
+      {'description': {currentDataChangedKey: current.description}};
     }
 
     //DateTime startDate;
-    if (compareTo != null && this.startDate != compareTo?.startDate) {
-      difference['startDate'] =
-      {thisTerm: this.startDate, compareToTerm: compareTo?.startDate};
-    } else if (compareTo == null && this.startDate != null ) {
-      difference['startDate'] =
-      {thisTerm: this.startDate};
+    if (previous != null && current.startDate != previous.startDate) {
+      difference[changedDataKey] =
+      {'startDate': {currentDataChangedKey: current.startDate.toString(), previousDataChangedKey: previous.startDate.toString()}};
+    } else if (previous == null && current.startDate != null ) {
+      difference[changedDataKey] =
+      {'startDate': {currentDataChangedKey: current.startDate}};
     }
 
     //DateTime endDate;
-    if (compareTo != null && this.endDate != compareTo?.endDate) {
-      difference['endDate'] =
-      {thisTerm: this.endDate, compareToTerm: compareTo?.endDate};
-    } else if (compareTo == null && this.endDate != null ) {
-      difference['endDate'] =
-      {thisTerm: this.endDate};
-    }
-
-    //Organization organization;
-    if (compareTo != null && this.organization?.id != compareTo.organization?.id) {
-      difference['organization.id'] = {
-        thisTerm: this.organization?.id,
-        compareToTerm: compareTo.organization?.id
-      };
-
-      //+ name, to have a user readly specification
-      difference['organization.name'] = {
-        thisTerm: this.organization?.name,
-        compareToTerm: compareTo.organization?.name
-      };
-    } else if (compareTo == null && this.organization != null ) {
-      difference['organization.id'] = {
-        thisTerm: this.organization.id};
-
-      //+ name, to have a user readly specification
-      difference['organization.name'] = {
-        thisTerm: this.organization.name
-      };
+    if (previous != null && current.endDate != previous.endDate) {
+      difference[changedDataKey] =
+      {'endDate': {currentDataChangedKey: current.endDate.toString(), previousDataChangedKey: previous.endDate.toString()}};
+    } else if (previous == null && current.endDate != null ) {
+      difference[changedDataKey] =
+      {'endDate': {currentDataChangedKey: current.endDate.toString()}};
     }
 
     //Group group;
-    if (compareTo != null && this.group?.id != compareTo.group?.id) {
-      difference['group.id'] =
-      {thisTerm: this.group?.id, compareToTerm: compareTo.group?.id};
+    if (previous != null && current.group?.id != previous.group?.id) {
+      //difference['group.id'] =
+      //{thisTerm: this.group?.id, compareToTerm: compareTo.group?.id};
 
-      //+ name, to have a user readly specification
-      difference['group.name'] =
-      {thisTerm: this.group?.name, compareToTerm: compareTo.group?.name};
-    } else if (compareTo == null && this.group != null ) {
-      difference['group.id'] =
-      {thisTerm: this.group.id};
+      //Save just specitication.
+      difference[changedDataKey] =
+      {'group.name': {currentDataChangedKey: current.group?.name, previousDataChangedKey: previous.group?.name}};
 
-      //+ name, to have a user readly specification
-      difference['group.name'] =
-      {thisTerm: this.group.name};
+    } else if (previous == null && current.group != null ) {
+      difference[changedDataKey] =
+      {'group.name': {currentDataChangedKey: current.group.name}};
     }
 
     //Objective alignedTo;
-    if (compareTo != null && this.alignedTo?.id != compareTo?.alignedTo?.id) {
-      difference['alignedTo.id'] =
-      {thisTerm: this.alignedTo?.id, compareToTerm: compareTo?.alignedTo?.id};
+    if (previous != null && current.alignedTo.id != previous.alignedTo.id) {
 
-      //+ name, to have a user readly specification
-      difference['alignedTo.name'] = {
-        thisTerm: this.alignedTo?.name,
-        compareToTerm: compareTo?.alignedTo?.name
-      };
-    } else if (compareTo == null && this.alignedTo != null ) {
-      difference['alignedTo.id'] =
-      {thisTerm: this.alignedTo?.id};
+      //Save just specitication.
+      difference[changedDataKey] = {'alignedTo.name': {
+        currentDataChangedKey: current.alignedTo.name,
+        previousDataChangedKey: previous.alignedTo.name
+      }};
+    } else if (previous == null && current.alignedTo != null ) {
 
-      //+ name, to have a user readly specification
-      difference['alignedTo.name'] = {
-        thisTerm: this.alignedTo?.name};
+      difference[changedDataKey] = {'alignedTo.name': {
+        currentDataChangedKey: current.alignedTo.name}};
     }
 
     //User leader;
-    if (compareTo != null && this.leader?.id != compareTo.leader?.id) {
-      difference['leader.id'] =
-      {thisTerm: this.leader?.id, compareToTerm: compareTo.leader?.id};
+    if (previous != null && current.leader.id != previous.leader.id) {
 
-      //+ name, to have a user readly specification
-      difference['leader.name'] =
-      {thisTerm: this.leader?.name, compareToTerm: compareTo.leader?.name};
-    } else if (compareTo == null && this.leader != null ) {
-      difference['leader.id'] =
-      {thisTerm: this.leader?.id};
+      difference[changedDataKey] =
+      {'alignedTo.name': {currentDataChangedKey: current.leader.name, previousDataChangedKey: previous.leader.name}};
+    } else if (previous == null && current.leader != null ) {
 
-      //+ name, to have a user readly specification
-      difference['leader.name'] =
-      {thisTerm: this.leader?.name};
+      difference[changedDataKey] =
+      {'alignedTo.name': {currentDataChangedKey: current.leader.name}};
     }
 
-
     //List<Measure> measures;
-*/
-    return difference;
-
+    return json.encode(difference);
   }
 
-
-
-
+  static Map<String, dynamic> differenceToMap(String jsonDifference) {
+    return json.decode(jsonDifference, reviver: (k, v) {
+      if (k == 'endDate' || k == 'startDate') {
+        try {
+          return Map()..[(v as Map).keys.first] = DateTime.parse((v as Map).values.first)
+            ..[(v as Map).keys.last] = DateTime.parse((v as Map).values.last);
+        } on FormatException {
+          return v;
+        }
+      } else {
+        return v;
+      }
+    });
+  }
 }

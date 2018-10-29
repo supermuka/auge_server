@@ -81,7 +81,7 @@ class AugeApi {
 
   /// Create (insert) a new organization
   @ApiMethod( method: 'POST', path: 'organizations')
-  Future<CreatedMessage> createOrganization(Organization organization) async {
+  Future<IdMessage> createOrganization(Organization organization) async {
 
     if (organization.id == null) {
       organization.id = new Uuid().v4();
@@ -101,7 +101,7 @@ class AugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return new CreatedMessage()..id = organization.id;
+    return new IdMessage()..id = organization.id;
   }
 
   /// Update an organization passing an instance of [Organization]
@@ -116,6 +116,7 @@ class AugeApi {
         "id": organization.id,
         "name": organization.name,
         "code": organization.code});
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -240,7 +241,7 @@ class AugeApi {
 
   /// Create (insert) a new user
   @ApiMethod( method: 'POST', path: 'users')
-  Future<CreatedMessage> createUser(User user) async {
+  Future<IdMessage> createUser(User user) async {
     if (user.id == null) {
       user.id = new Uuid().v4();
     }
@@ -273,7 +274,7 @@ class AugeApi {
         rethrow;
       }
     });
-    return new CreatedMessage()..id = user.id;
+    return new IdMessage()..id = user.id;
   }
 
   /// Update a [User]
@@ -302,6 +303,7 @@ class AugeApi {
           "image": user.userProfile.image,
           "is_super_admin": user.userProfile.isSuperAdmin,
           "idiom_locale": user.userProfile.idiomLocale});
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -439,7 +441,7 @@ class AugeApi {
 
   /// Create (insert) a new user profile and organization
   @ApiMethod( method: 'POST', path: 'users_profile_organizations')
-  Future<CreatedMessage> createUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
+  Future<IdMessage> createUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
 
     if (userProfileOrganization.id == null) {
       userProfileOrganization.id = Uuid().v4();
@@ -467,7 +469,7 @@ class AugeApi {
       }
     });
 
-    return new CreatedMessage()..id = userProfileOrganization.id;
+    return new IdMessage()..id = userProfileOrganization.id;
   }
 
   /// Update a [User]
@@ -486,6 +488,8 @@ class AugeApi {
           "user_id": userProfileOrganization.user.id,
           "organization_id": userProfileOrganization.organization.id,
           "authorization_role": userProfileOrganization.authorizationRole});
+
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -639,7 +643,7 @@ class AugeApi {
 
   /// Create (insert) a new group
   @ApiMethod( method: 'POST', path: 'groups')
-  Future<CreatedMessage> createGroup(Group group) async {
+  Future<IdMessage> createGroup(Group group) async {
 
     if (group.id == null) {
       group.id = new Uuid().v4();
@@ -683,7 +687,7 @@ class AugeApi {
       }
     });
 
-    return new CreatedMessage()..id = group.id;
+    return new IdMessage()..id = group.id;
   }
 
   /// Update a [Group]
@@ -732,11 +736,11 @@ class AugeApi {
       }
 
       if (membersUsersId.isNotEmpty) {
-      await ctx.query("DELETE FROM auge.groups_users"
-      " WHERE group_id = @id"
-      " AND user_id NOT IN (${membersUsersId.toString()})"
-      , substitutionValues: {
-      "id": group.id});
+        await ctx.query("DELETE FROM auge.groups_users"
+        " WHERE group_id = @id"
+        " AND user_id NOT IN (${membersUsersId.toString()})"
+        , substitutionValues: {
+        "id": group.id});
       }
 
       } catch (e) {

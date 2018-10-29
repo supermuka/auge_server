@@ -1,6 +1,9 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'dart:convert';
+
+import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/user.dart';
 
 /// Domain model class to objective timeline
@@ -32,5 +35,13 @@ class TimelineItem {
     TimelineItem to = new TimelineItem();
     cloneTo(to);
     return to;
+  }
+
+  Map<String, dynamic> get changedDataToMap  {
+     if (className == 'Objective') {
+       return ObjectiveFacilities.differenceToMap(changedData);
+     } else {
+       return json.decode(changedData);
+     }
   }
 }

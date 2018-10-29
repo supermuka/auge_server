@@ -1,6 +1,8 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'dart:convert';
+
 /// Domain model class to represent an measure
 class Measure {
 
@@ -10,16 +12,7 @@ class Measure {
   String description;
   String metric;
   MeasureUnit measureUnit;
-
   int decimalsNumber;
-  /*
-  int get decimalsNumber => _decimalsNumber;
-  set decimalsNumber(int decimalsNumber) {
-    _decimalsNumber = decimalsNumber;
-    // _numberFormat = NumberFormat('#,##0' + ((decimalsNumber != null && decimalsNumber > 0) ? '.' .padRight(decimalsNumber + 1, '0') : ''), 'en_US');
-  }
-  */
-
   double startValue;
   double endValue;
   double currentValue;
@@ -109,5 +102,108 @@ class MeasureUnit {
     MeasureUnit to = new MeasureUnit();
     cloneTo(to);
     return to;
+  }
+}
+
+
+/// Facilities to [Measure] class
+class MeasureFacilities {
+
+  /// Delta diff between [current] and [previous].
+  /// Like a document (json) idea, then just store user readly data, don't have IDs, FKs, etc.
+  /// identification
+  /// dataChanged
+  static String differenceToJson(Measure current, Measure previous) {
+
+    Map<String, Map<String, dynamic>> difference = Map();
+
+    const identificationKey = 'identification';
+    const dataChangedKey = 'dataChanged';
+
+    const idIdentificationKey = 'id';
+    const nameIdentificationKey = 'name';
+
+    const currentDataChangedKey = 'current';
+    const previousDataChangedKey = 'previous';
+
+    difference[identificationKey] = {idIdentificationKey: current.id};
+    difference[identificationKey] = {nameIdentificationKey: current.name};
+
+    // String name;
+    if (previous != null && current.name != previous.name) {
+      difference[dataChangedKey] = {'name': {currentDataChangedKey: current.name, previousDataChangedKey: previous.name}};
+    } else if (previous == null && current.name != null) {
+      difference[dataChangedKey] = {'name': {currentDataChangedKey: current.name}};
+    }
+
+    // String description;
+    if (previous != null && current.description != previous.description) {
+      difference[dataChangedKey] =
+      {'description': {currentDataChangedKey: current.description, previousDataChangedKey: previous.description}};
+    } else if (previous == null && current.description != null ) {
+      difference[dataChangedKey] =
+      {'description': {currentDataChangedKey: current.description}};
+    }
+
+    // String metric;
+    if (previous != null && current.metric != previous.metric) {
+      difference[dataChangedKey] =
+      {'metric': {currentDataChangedKey: current.metric, previousDataChangedKey: previous.metric}};
+    } else if (previous == null && current.metric != null ) {
+      difference[dataChangedKey] =
+      {'metric': {currentDataChangedKey: current.metric}};
+    }
+
+    // MeasureUnit measureUnit;
+    if (previous != null && current.measureUnit.name != previous.measureUnit.name) {
+      difference[dataChangedKey] =
+      {'measureUnit.name': {currentDataChangedKey: current.measureUnit.name, previousDataChangedKey: previous.measureUnit.name}};
+    } else if (previous == null && current.measureUnit.name != null ) {
+      difference[dataChangedKey] =
+      {'measureUnit.name': {currentDataChangedKey: current.measureUnit.name}};
+    }
+
+    // int decimalsNumber;
+    if (previous != null && current.decimalsNumber != previous.decimalsNumber) {
+      difference[dataChangedKey] =
+      {'decimalsNumber': {currentDataChangedKey: current.decimalsNumber, previousDataChangedKey: previous.decimalsNumber}};
+    } else if (previous == null && current.decimalsNumber != null ) {
+      difference[dataChangedKey] =
+      {'decimalsNumber': {currentDataChangedKey: current.decimalsNumber}};
+    }
+
+    // double startValue;
+    if (previous != null && current.startValue != previous.startValue) {
+      difference[dataChangedKey] =
+      {'startValue': {currentDataChangedKey: current.startValue, previousDataChangedKey: previous.startValue}};
+    } else if (previous == null && current.startValue != null ) {
+      difference[dataChangedKey] =
+      {'startValue': {currentDataChangedKey: current.startValue}};
+    }
+
+    // double endValue;
+    if (previous != null && current.endValue != previous.endValue) {
+      difference[dataChangedKey] =
+      {'endValue': {currentDataChangedKey: current.endValue, previousDataChangedKey: previous.endValue}};
+    } else if (previous == null && current.endValue != null ) {
+      difference[dataChangedKey] =
+      {'endValue': {currentDataChangedKey: current.endValue}};
+    }
+
+    // double currentValue;
+    if (previous != null && current.currentValue != previous.currentValue) {
+      difference[dataChangedKey] =
+      {'currentValue': {currentDataChangedKey: current.currentValue, previousDataChangedKey: previous.currentValue}};
+    } else if (previous == null && current.currentValue != null ) {
+      difference[dataChangedKey] =
+      {'currentValue': {currentDataChangedKey: current.currentValue}};
+    }
+
+    //List<Measure> measures;
+    return json.encode(difference);
+  }
+
+  static Map<String, dynamic> differenceToMap(String jsonDifference) {
+    return json.decode(jsonDifference);
   }
 }

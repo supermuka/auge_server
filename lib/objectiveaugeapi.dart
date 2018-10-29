@@ -135,7 +135,6 @@ class ObjectiveAugeApi {
       }
     });
     return null;
-
   }
 
 /*
@@ -220,7 +219,7 @@ class ObjectiveAugeApi {
 
   /// Create (insert) a new measures
   @ApiMethod( method: 'POST', path: 'objetives/{objectiveid}/measures')
-  Future<CreatedMessage> createMeasure(String objectiveid, Measure measure) async {
+  Future<IdMessage> createMeasure(String objectiveid, Measure measure) async {
 
     if (measure.id == null) {
       measure.id = new Uuid().v4();
@@ -255,7 +254,7 @@ class ObjectiveAugeApi {
       rethrow;
     }
 
-    return CreatedMessage()..id = measure.id;
+    return IdMessage()..id = measure.id;
   }
 
   /// Update an initiative passing an instance of [Measure]
@@ -285,6 +284,7 @@ class ObjectiveAugeApi {
             "measure_unit_id": measure?.measureUnit?.id,
             "objective_id": objectiveid
           });
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -419,14 +419,12 @@ class ObjectiveAugeApi {
                 ?.alignedWithChildren
                 ?.add(objective);
           }
-
          // objectives.singleWhere((o) => o.id == objective.alignedTo, orElse: )?.alignedWithChildren?.add(objective);
         } else {
 
         }
       }
     }
-
     return (treeAlignedWithChildren) ? objectivesTree ?? [] : objectives ?? [];
   }
 
@@ -493,7 +491,7 @@ class ObjectiveAugeApi {
 
     /// Create (insert) a new objective
   @ApiMethod( method: 'POST', path: 'objectives')
-  Future<CreatedMessage> createObjective(Objective objective) async {
+  Future<IdMessage> createObjective(Objective objective) async {
 
     if (objective.id == null) {
       objective.id = new Uuid().v4();
@@ -521,14 +519,11 @@ class ObjectiveAugeApi {
         "organization_id": objective.organization?.id,
         "leader_user_id": objective.leader?.id,
         "group_id": objective.group?.id});
-
-
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-
-    return new CreatedMessage()..id = objective.id;
+    return new IdMessage()..id = objective.id;
   }
 
   /// Update an initiative passing an instance of [Objective]
@@ -572,9 +567,15 @@ class ObjectiveAugeApi {
 
     String queryStatement;
 
-    queryStatement = "SELECT id::VARCHAR, date_time, system_function_index, class_name, changed_data, comment, user_id, objective_id"
+    queryStatement = "SELECT id::VARCHAR," //0
+        " date_time," //1
+        " system_function_index," //2
+        " class_name," //3
+        " changed_data,"  //4
+        " comment,"  //5
+        " user_id," //6
+        " objective_id" //7
         " FROM auge_objective.objective_timeline ";
-
 
     Map<String, dynamic> substitutionValues;
 
@@ -600,7 +601,7 @@ class ObjectiveAugeApi {
 
       for (var row in results) {
 
-        users = await AugeApi.queryUsers(id: row[5], withProfile: true);
+        users = await AugeApi.queryUsers(id: row[6], withProfile: true);
 
         if (users != null && users.length != 0) {
           user = users.first;
@@ -614,6 +615,7 @@ class ObjectiveAugeApi {
           ..systemFunctionIndex = row[2]
           ..className = row[3]
           ..changedData = row[4]
+          ..comment = row[5]
           ..user = user);
       }
     }
@@ -622,7 +624,7 @@ class ObjectiveAugeApi {
 
   /// Create (insert) a new timeline item
   @ApiMethod( method: 'POST', path: 'objetives/{objectiveid}/timeline')
-  Future<CreatedMessage> createTimelineItem(String objectiveid, TimelineItem timelineItem) async {
+  Future<IdDateTimeMessage> createTimelineItem(String objectiveid, TimelineItem timelineItem) async {
 
     if (timelineItem.id == null) {
       timelineItem.id = new Uuid().v4();
@@ -657,8 +659,6 @@ class ObjectiveAugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-
-    return CreatedMessage()..id = timelineItem.id..dataTime = timelineItem.dateTime;
+    return IdDateTimeMessage()..id = timelineItem.id..dataTime = timelineItem.dateTime;
   }
-
 }

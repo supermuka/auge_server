@@ -10,8 +10,8 @@ import 'dart:convert' as convert;
 
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
-import 'package:auge_server/message_type/created_message.dart';
 import 'package:auge_server/model/group.dart';
+import 'package:auge_server/message_type/created_message.dart';
 import 'package:auge_server/model/objective/measure.dart';
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/organization.dart';
@@ -37,14 +37,14 @@ class ObjectiveAugeApi {
   ///
   /// [objectiveid] - Path parameter: 'objectiveid'.
   ///
-  /// Completes with a [CreatedMessage].
+  /// Completes with a [IdMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<CreatedMessage> createMeasure(
+  async.Future<IdMessage> createMeasure(
       Measure request, core.String objectiveid) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
@@ -70,21 +70,21 @@ class ObjectiveAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => CreatedMessageFactory.fromJson(data));
+    return _response.then((data) => IdMessageFactory.fromJson(data));
   }
 
   /// [request] - The metadata request object.
   ///
   /// Request parameters:
   ///
-  /// Completes with a [CreatedMessage].
+  /// Completes with a [IdMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<CreatedMessage> createObjective(Objective request) {
+  async.Future<IdMessage> createObjective(Objective request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -104,7 +104,7 @@ class ObjectiveAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => CreatedMessageFactory.fromJson(data));
+    return _response.then((data) => IdMessageFactory.fromJson(data));
   }
 
   /// [request] - The metadata request object.
@@ -113,14 +113,14 @@ class ObjectiveAugeApi {
   ///
   /// [objectiveid] - Path parameter: 'objectiveid'.
   ///
-  /// Completes with a [CreatedMessage].
+  /// Completes with a [IdDateTimeMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<CreatedMessage> createTimelineItem(
+  async.Future<IdDateTimeMessage> createTimelineItem(
       TimelineItem request, core.String objectiveid) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
@@ -146,7 +146,7 @@ class ObjectiveAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => CreatedMessageFactory.fromJson(data));
+    return _response.then((data) => IdDateTimeMessageFactory.fromJson(data));
   }
 
   /// Request parameters:
@@ -461,30 +461,6 @@ class ObjectiveAugeApi {
   }
 }
 
-class CreatedMessageFactory {
-  static CreatedMessage fromJson(core.Map _json) {
-    var message = new CreatedMessage();
-    if (_json.containsKey("dataTime")) {
-      message.dataTime = core.DateTime.parse(_json["dataTime"]);
-    }
-    if (_json.containsKey("id")) {
-      message.id = _json["id"];
-    }
-    return message;
-  }
-
-  static core.Map toJson(CreatedMessage message) {
-    var _json = new core.Map();
-    if (message.dataTime != null) {
-      _json["dataTime"] = (message.dataTime).toIso8601String();
-    }
-    if (message.id != null) {
-      _json["id"] = message.id;
-    }
-    return _json;
-  }
-}
-
 class GroupFactory {
   static Group fromJson(core.Map _json) {
     var message = new Group();
@@ -568,6 +544,48 @@ class GroupTypeFactory {
     }
     if (message.name != null) {
       _json["name"] = message.name;
+    }
+    return _json;
+  }
+}
+
+class IdDateTimeMessageFactory {
+  static IdDateTimeMessage fromJson(core.Map _json) {
+    var message = new IdDateTimeMessage();
+    if (_json.containsKey("dataTime")) {
+      message.dataTime = core.DateTime.parse(_json["dataTime"]);
+    }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    return message;
+  }
+
+  static core.Map toJson(IdDateTimeMessage message) {
+    var _json = new core.Map();
+    if (message.dataTime != null) {
+      _json["dataTime"] = (message.dataTime).toIso8601String();
+    }
+    if (message.id != null) {
+      _json["id"] = message.id;
+    }
+    return _json;
+  }
+}
+
+class IdMessageFactory {
+  static IdMessage fromJson(core.Map _json) {
+    var message = new IdMessage();
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    return message;
+  }
+
+  static core.Map toJson(IdMessage message) {
+    var _json = new core.Map();
+    if (message.id != null) {
+      _json["id"] = message.id;
     }
     return _json;
   }

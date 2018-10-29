@@ -10,8 +10,8 @@ import 'dart:convert' as convert;
 
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
-import 'package:auge_server/message_type/created_message.dart';
 import 'package:auge_server/model/group.dart';
+import 'package:auge_server/message_type/created_message.dart';
 import 'package:auge_server/model/initiative/initiative.dart';
 import 'package:auge_server/model/objective/measure.dart';
 import 'package:auge_server/model/objective/objective.dart';
@@ -40,14 +40,14 @@ class InitiativeAugeApi {
   ///
   /// Request parameters:
   ///
-  /// Completes with a [CreatedMessage].
+  /// Completes with a [IdMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<CreatedMessage> createInitiative(Initiative request) {
+  async.Future<IdMessage> createInitiative(Initiative request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -67,7 +67,7 @@ class InitiativeAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => CreatedMessageFactory.fromJson(data));
+    return _response.then((data) => IdMessageFactory.fromJson(data));
   }
 
   /// [request] - The metadata request object.
@@ -76,14 +76,14 @@ class InitiativeAugeApi {
   ///
   /// [initiativeId] - Path parameter: 'initiativeId'.
   ///
-  /// Completes with a [CreatedMessage].
+  /// Completes with a [IdMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<CreatedMessage> createWorkItem(
+  async.Future<IdMessage> createWorkItem(
       WorkItem request, core.String initiativeId) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
@@ -109,7 +109,7 @@ class InitiativeAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => CreatedMessageFactory.fromJson(data));
+    return _response.then((data) => IdMessageFactory.fromJson(data));
   }
 
   /// Request parameters:
@@ -380,30 +380,6 @@ class InitiativeAugeApi {
   }
 }
 
-class CreatedMessageFactory {
-  static CreatedMessage fromJson(core.Map _json) {
-    var message = new CreatedMessage();
-    if (_json.containsKey("dataTime")) {
-      message.dataTime = core.DateTime.parse(_json["dataTime"]);
-    }
-    if (_json.containsKey("id")) {
-      message.id = _json["id"];
-    }
-    return message;
-  }
-
-  static core.Map toJson(CreatedMessage message) {
-    var _json = new core.Map();
-    if (message.dataTime != null) {
-      _json["dataTime"] = (message.dataTime).toIso8601String();
-    }
-    if (message.id != null) {
-      _json["id"] = message.id;
-    }
-    return _json;
-  }
-}
-
 class GroupFactory {
   static Group fromJson(core.Map _json) {
     var message = new Group();
@@ -487,6 +463,24 @@ class GroupTypeFactory {
     }
     if (message.name != null) {
       _json["name"] = message.name;
+    }
+    return _json;
+  }
+}
+
+class IdMessageFactory {
+  static IdMessage fromJson(core.Map _json) {
+    var message = new IdMessage();
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    return message;
+  }
+
+  static core.Map toJson(IdMessage message) {
+    var _json = new core.Map();
+    if (message.id != null) {
+      _json["id"] = message.id;
     }
     return _json;
   }
