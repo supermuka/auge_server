@@ -45,3 +45,35 @@ class TimelineItem {
      }
   }
 }
+
+/// Related to [TimelineItem] data model
+/// Define the [TimelineItem] essential attributes to exchange data between client and server on RPC
+/// Used to POST and PUT
+class TimelineItemMessage {
+
+  String id;
+  DateTime dateTime;
+  String userId;
+
+  // from enum SystemFunction
+  int systemFunctionIndex;
+  String className;
+  String changedData;
+  String comment;
+}
+
+/// Facilities to [TimelineItem] class
+class TimeLineItemFacilities {
+
+  static TimelineItemMessage timelineItemMessageFrom(TimelineItem timeLineItem) {
+    return new TimelineItemMessage()..id = timeLineItem.id
+        ..dateTime = timeLineItem.dateTime
+        ..userId = timeLineItem.user.id
+        ..systemFunctionIndex = timeLineItem.systemFunctionIndex
+        ..className = timeLineItem.className
+        ..changedData = timeLineItem.changedData
+        ..comment = timeLineItem.comment;
+
+  }
+
+}

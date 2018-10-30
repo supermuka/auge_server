@@ -28,8 +28,9 @@ class Objective {
   User leader;
   List<Objective> alignedWithChildren;
   List<Measure> measures;
-  List<TimelineItem> timeline;
 
+  List<TimelineItem> timeline;
+  TimelineItem lastTimelineItem;
 
   Objective() {
     initializeDateFormatting(Intl.defaultLocale);
@@ -37,8 +38,6 @@ class Objective {
     alignedWithChildren = List<Objective>();
     measures = List<Measure>();
     timeline = List<TimelineItem>();
-
-
   }
 
   int get progress {
@@ -64,6 +63,7 @@ class Objective {
     to.description = this.description;
     to.startDate = this.startDate;
     to.endDate = this.endDate;
+    to.lastTimelineItem = this.lastTimelineItem;
     if (this.organization != null) {
       to.organization = this.organization.clone();
     }
@@ -102,7 +102,6 @@ class Objective {
       this.timeline.forEach((o) =>
           to.timeline.add(o.clone()));
     }
-
   }
 
   Objective clone() {
@@ -112,8 +111,40 @@ class Objective {
   }
 }
 
+/// Related to [Objective] data model
+/// Define the [Objective] essential attributes to exchange data between client and server on RPC
+/// Used to POST and PUT
+class ObjectiveMessage {
+  String id;
+
+  String name;
+  String description;
+  DateTime startDate;
+  DateTime endDate;
+
+  String organizationId;
+  String groupId;
+  String alignedToObjectiveId;
+  String leaderId;
+
+  TimelineItemMessage lastTimeLineItemMessage;
+}
+
 /// Facilities to [Objective] class
 class ObjectiveFacilities {
+
+  static ObjectiveMessage objectiveMessageFrom(Objective objective) {
+    return new ObjectiveMessage()..id = objective.id
+        ..name = objective.name
+        ..description = objective.description
+        ..startDate = objective.startDate
+        ..endDate = objective.endDate
+        ..organizationId = objective.organization.id
+        ..groupId = objective.group.id
+        ..alignedToObjectiveId = objective.alignedTo.id
+        ..leaderId = objective.leader.id
+        ..lastTimeLineItemMessage = TimeLineItemFacilities.timelineItemMessageFrom(objective.lastTimelineItem);
+  }
 
   /// Delta diff between [current] and [previous] Objective.
   /// Like a document (json) idea, then just store user readly data, don't have IDs, FKs, etc.

@@ -11,7 +11,7 @@ import 'dart:convert' as convert;
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
 import 'package:auge_server/model/group.dart';
-import 'package:auge_server/message_type/created_message.dart';
+import 'package:auge_server/message/created_message.dart';
 import 'package:auge_server/model/initiative/initiative.dart';
 import 'package:auge_server/model/objective/measure.dart';
 import 'package:auge_server/model/objective/objective.dart';
@@ -679,6 +679,10 @@ class ObjectiveFactory {
     if (_json.containsKey("id")) {
       message.id = _json["id"];
     }
+    if (_json.containsKey("lastTimelineItem")) {
+      message.lastTimelineItem =
+          TimelineItemFactory.fromJson(_json["lastTimelineItem"]);
+    }
     if (_json.containsKey("leader")) {
       message.leader = UserFactory.fromJson(_json["leader"]);
     }
@@ -726,6 +730,10 @@ class ObjectiveFactory {
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.lastTimelineItem != null) {
+      _json["lastTimelineItem"] =
+          TimelineItemFactory.toJson(message.lastTimelineItem);
     }
     if (message.leader != null) {
       _json["leader"] = UserFactory.toJson(message.leader);

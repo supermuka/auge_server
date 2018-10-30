@@ -21,7 +21,7 @@ import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/group.dart';
 
-import 'package:auge_server/message_type/created_message.dart';
+import 'package:auge_server/message/created_message.dart';
 
 /// Api for Initiative Domain
 @ApiClass(version: 'v1')

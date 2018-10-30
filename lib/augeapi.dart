@@ -13,8 +13,8 @@ import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/user_profile_organization.dart';
 import 'package:auge_server/model/group.dart';
 
-import 'package:auge_server/message_type/created_message.dart';
-import 'package:auge_server/message_type/datetime_message.dart';
+import 'package:auge_server/message/created_message.dart';
+import 'package:auge_server/message/datetime_message.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
 
 /// Api for Shared Domain

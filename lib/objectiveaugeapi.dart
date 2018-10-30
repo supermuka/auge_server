@@ -16,7 +16,7 @@ import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/group.dart';
 
-import 'package:auge_server/message_type/created_message.dart';
+import 'package:auge_server/message/created_message.dart';
 
 import 'package:auge_server/shared/rpc_error_message.dart';
 
@@ -32,6 +32,29 @@ class ObjectiveAugeApi {
   //  _augeApi = new AugeApi();
     AugeConnection.createConnection();
   }
+
+  String queryStatementCreateTimelineItem =
+  "INSERT INTO auge_objective.objective_timeline(id, date_time, system_function_index, class_name, changed_data, comment, user_id, objective_id) VALUES"
+  "(@id,"
+  "@date_time,"
+  "@system_function_index,"
+  "@class_name,"
+  "@changed_data,"
+  "@comment,"
+  "@user_id,"
+  "@objective_id)";
+
+  Map<String, dynamic> querySubstitutionValuesCreateTimelineItem(String objectiveId, TimelineItemMessage timelineItemMessage) {
+      return {"id": timelineItemMessage.id,
+              "date_time": timelineItemMessage.dateTime,
+              "system_function_index": timelineItemMessage.systemFunctionIndex,
+              "class_name": timelineItemMessage.className,
+              "changed_data": timelineItemMessage.changedData,
+              "comment": timelineItemMessage.comment,
+              "user_id": timelineItemMessage.userId,
+              "objective_id": objectiveId};
+  }
+
 
   // *** MEASURE UNITS ***
   static Future<List<MeasureUnit>> queryMeasureUnits({String id}) async {
@@ -491,44 +514,58 @@ class ObjectiveAugeApi {
 
     /// Create (insert) a new objective
   @ApiMethod( method: 'POST', path: 'objectives')
-  Future<IdMessage> createObjective(Objective objective) async {
+  Future<Objective> createObjective(ObjectiveMessage objectiveMessage) async {
 
-    if (objective.id == null) {
-      objective.id = new Uuid().v4();
+    if (objectiveMessage.id == null) {
+      objectiveMessage.id = new Uuid().v4();
     }
 
     try {
-      await AugeConnection.getConnection().query(
-          "INSERT INTO auge_objective.objectives(id, name, description, start_date, end_date, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
-              "(@id,"
-              "@name,"
-              "@description,"
-              "@start_date,"
-              "@end_date,"
-              "@aligned_to_objective_id, "
-              "@organization_id,"
-              "@leader_user_id,"
-              "@group_id)"
-          , substitutionValues: {
-        "id": objective.id,
-        "name": objective.name,
-        "description": objective.description,
-        "start_date": objective.startDate,
-        "end_date": objective.endDate,
-        "aligned_to_objective_id": objective.alignedTo?.id,
-        "organization_id": objective.organization?.id,
-        "leader_user_id": objective.leader?.id,
-        "group_id": objective.group?.id});
+
+      await AugeConnection.getConnection().transaction((ctx) async {
+
+        await ctx.query("INSERT INTO auge_objective.objectives(id, name, description, start_date, end_date, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
+            "(@id,"
+            "@name,"
+            "@description,"
+            "@start_date,"
+            "@end_date,"
+            "@aligned_to_objective_id, "
+            "@organization_id,"
+            "@leader_user_id,"
+            "@group_id)"
+        , substitutionValues: {
+        "id": objectiveMessage.id,
+        "name": objectiveMessage.name,
+        "description": objectiveMessage.description,
+        "start_date": objectiveMessage.startDate,
+        "end_date": objectiveMessage.endDate,
+        "aligned_to_objective_id": objectiveMessage.alignedToObjectiveId,
+        "organization_id": objectiveMessage.organizationId,
+        "leader_user_id": objectiveMessage.leaderId,
+        "group_id": objectiveMessage.groupId});
+
+        // TimelineItem
+        if (objectiveMessage.lastTimeLineItemMessage.id == null) {
+          objectiveMessage.lastTimeLineItemMessage.id = new Uuid().v4();
+        }
+        if (objectiveMessage.lastTimeLineItemMessage.dateTime == null) {
+          objectiveMessage.lastTimeLineItemMessage.dateTime = DateTime.now().toUtc();
+        }
+
+        await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objectiveMessage.id, objectiveMessage.lastTimeLineItemMessage));
+
+      });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return new IdMessage()..id = objective.id;
+    return (await queryObjectives(id: objectiveMessage.id, withTimeline: true, withMeasures: true, withProfile: true))?.first;
   }
 
   /// Update an initiative passing an instance of [Objective]
   @ApiMethod( method: 'PUT', path: 'objectives')
-  Future<VoidMessage> updateObjective(Objective objective) async {
+  Future<VoidMessage> updateObjective(ObjectiveMessage objectiveMessage) async {
 
     try {
       await AugeConnection.getConnection().query(
@@ -543,15 +580,15 @@ class ObjectiveAugeApi {
               " group_id = @group_id"
               " WHERE id = @id"
           , substitutionValues: {
-        "id": objective.id,
-        "name": objective.name,
-        "description": objective.description,
-        "start_date": objective.startDate,
-        "end_date": objective.endDate,
-        "aligned_to_objective_id": objective?.alignedTo?.id,
-        "organization_id": objective.organization.id,
-        "leader_user_id": objective?.leader?.id,
-        "group_id": objective?.group?.id});
+        "id": objectiveMessage.id,
+        "name": objectiveMessage.name,
+        "description": objectiveMessage.description,
+        "start_date": objectiveMessage.startDate,
+        "end_date": objectiveMessage.endDate,
+        "aligned_to_objective_id": objectiveMessage.alignedToObjectiveId,
+        "organization_id": objectiveMessage.organizationId,
+        "leader_user_id": objectiveMessage.leaderId,
+        "group_id": objectiveMessage.groupId});
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -622,43 +659,6 @@ class ObjectiveAugeApi {
     return objectiveTimeline;
   }
 
-  /// Create (insert) a new timeline item
-  @ApiMethod( method: 'POST', path: 'objetives/{objectiveid}/timeline')
-  Future<IdDateTimeMessage> createTimelineItem(String objectiveid, TimelineItem timelineItem) async {
 
-    if (timelineItem.id == null) {
-      timelineItem.id = new Uuid().v4();
-    }
 
-    if (timelineItem.dateTime == null) {
-      timelineItem.dateTime = DateTime.now().toUtc(); // Utc pattern, by reasons of the internationalization
-    }
-
-    try {
-
-      await  AugeConnection.getConnection().query(
-          "INSERT INTO auge_objective.objective_timeline(id, date_time, system_function_index, class_name, changed_data, comment, user_id, objective_id) VALUES"
-              "(@id,"
-              "@date_time,"
-              "@system_function_index,"
-              "@class_name,"
-              "@changed_data,"
-              "@comment,"
-              "@user_id,"
-              "@objective_id)"
-          , substitutionValues: {
-        "id": timelineItem.id,
-        "date_time": timelineItem.dateTime,
-        "system_function_index": timelineItem.systemFunctionIndex,
-        "class_name": timelineItem.className,
-        "changed_data": timelineItem.changedData,
-        "comment": timelineItem.comment,
-        "user_id": timelineItem.user.id,
-        "objective_id": objectiveid});
-    } catch (e) {
-      print('${e.runtimeType}, ${e}');
-      rethrow;
-    }
-    return IdDateTimeMessage()..id = timelineItem.id..dataTime = timelineItem.dateTime;
-  }
 }

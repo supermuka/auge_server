@@ -11,7 +11,7 @@ import 'dart:convert' as convert;
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
 import 'package:auge_server/model/group.dart';
-import 'package:auge_server/message_type/created_message.dart';
+import 'package:auge_server/message/created_message.dart';
 import 'package:auge_server/model/objective/measure.dart';
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/organization.dart';
@@ -77,14 +77,14 @@ class ObjectiveAugeApi {
   ///
   /// Request parameters:
   ///
-  /// Completes with a [IdMessage].
+  /// Completes with a [Objective].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<IdMessage> createObjective(Objective request) {
+  async.Future<Objective> createObjective(ObjectiveMessage request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -93,7 +93,7 @@ class ObjectiveAugeApi {
     var _body = null;
 
     if (request != null) {
-      _body = convert.json.encode(ObjectiveFactory.toJson(request));
+      _body = convert.json.encode(ObjectiveMessageFactory.toJson(request));
     }
 
     _url = 'objectives';
@@ -104,49 +104,7 @@ class ObjectiveAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => IdMessageFactory.fromJson(data));
-  }
-
-  /// [request] - The metadata request object.
-  ///
-  /// Request parameters:
-  ///
-  /// [objectiveid] - Path parameter: 'objectiveid'.
-  ///
-  /// Completes with a [IdDateTimeMessage].
-  ///
-  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
-  /// error.
-  ///
-  /// If the used [http.Client] completes with an error when making a REST call,
-  /// this method will complete with the same error.
-  async.Future<IdDateTimeMessage> createTimelineItem(
-      TimelineItem request, core.String objectiveid) {
-    var _url = null;
-    var _queryParams = new core.Map<core.String, core.List<core.String>>();
-    var _uploadMedia = null;
-    var _uploadOptions = null;
-    var _downloadOptions = commons.DownloadOptions.Metadata;
-    var _body = null;
-
-    if (request != null) {
-      _body = convert.json.encode(TimelineItemFactory.toJson(request));
-    }
-    if (objectiveid == null) {
-      throw new core.ArgumentError("Parameter objectiveid is required.");
-    }
-
-    _url = 'objetives/' +
-        commons.Escaper.ecapeVariable('$objectiveid') +
-        '/timeline';
-
-    var _response = _requester.request(_url, "POST",
-        body: _body,
-        queryParams: _queryParams,
-        uploadOptions: _uploadOptions,
-        uploadMedia: _uploadMedia,
-        downloadOptions: _downloadOptions);
-    return _response.then((data) => IdDateTimeMessageFactory.fromJson(data));
+    return _response.then((data) => ObjectiveFactory.fromJson(data));
   }
 
   /// Request parameters:
@@ -435,7 +393,7 @@ class ObjectiveAugeApi {
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future updateObjective(Objective request) {
+  async.Future updateObjective(ObjectiveMessage request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -444,7 +402,7 @@ class ObjectiveAugeApi {
     var _body = null;
 
     if (request != null) {
-      _body = convert.json.encode(ObjectiveFactory.toJson(request));
+      _body = convert.json.encode(ObjectiveMessageFactory.toJson(request));
     }
 
     _downloadOptions = null;
@@ -544,30 +502,6 @@ class GroupTypeFactory {
     }
     if (message.name != null) {
       _json["name"] = message.name;
-    }
-    return _json;
-  }
-}
-
-class IdDateTimeMessageFactory {
-  static IdDateTimeMessage fromJson(core.Map _json) {
-    var message = new IdDateTimeMessage();
-    if (_json.containsKey("dataTime")) {
-      message.dataTime = core.DateTime.parse(_json["dataTime"]);
-    }
-    if (_json.containsKey("id")) {
-      message.id = _json["id"];
-    }
-    return message;
-  }
-
-  static core.Map toJson(IdDateTimeMessage message) {
-    var _json = new core.Map();
-    if (message.dataTime != null) {
-      _json["dataTime"] = (message.dataTime).toIso8601String();
-    }
-    if (message.id != null) {
-      _json["id"] = message.id;
     }
     return _json;
   }
@@ -710,6 +644,10 @@ class ObjectiveFactory {
     if (_json.containsKey("id")) {
       message.id = _json["id"];
     }
+    if (_json.containsKey("lastTimelineItem")) {
+      message.lastTimelineItem =
+          TimelineItemFactory.fromJson(_json["lastTimelineItem"]);
+    }
     if (_json.containsKey("leader")) {
       message.leader = UserFactory.fromJson(_json["leader"]);
     }
@@ -758,6 +696,10 @@ class ObjectiveFactory {
     if (message.id != null) {
       _json["id"] = message.id;
     }
+    if (message.lastTimelineItem != null) {
+      _json["lastTimelineItem"] =
+          TimelineItemFactory.toJson(message.lastTimelineItem);
+    }
     if (message.leader != null) {
       _json["leader"] = UserFactory.toJson(message.leader);
     }
@@ -779,6 +721,80 @@ class ObjectiveFactory {
       _json["timeline"] = message.timeline
           .map((value) => TimelineItemFactory.toJson(value))
           .toList();
+    }
+    return _json;
+  }
+}
+
+class ObjectiveMessageFactory {
+  static ObjectiveMessage fromJson(core.Map _json) {
+    var message = new ObjectiveMessage();
+    if (_json.containsKey("alignedToObjectiveId")) {
+      message.alignedToObjectiveId = _json["alignedToObjectiveId"];
+    }
+    if (_json.containsKey("description")) {
+      message.description = _json["description"];
+    }
+    if (_json.containsKey("endDate")) {
+      message.endDate = core.DateTime.parse(_json["endDate"]);
+    }
+    if (_json.containsKey("groupId")) {
+      message.groupId = _json["groupId"];
+    }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    if (_json.containsKey("lastTimeLineItemMessage")) {
+      message.lastTimeLineItemMessage =
+          TimelineItemMessageFactory.fromJson(_json["lastTimeLineItemMessage"]);
+    }
+    if (_json.containsKey("leaderId")) {
+      message.leaderId = _json["leaderId"];
+    }
+    if (_json.containsKey("name")) {
+      message.name = _json["name"];
+    }
+    if (_json.containsKey("organizationId")) {
+      message.organizationId = _json["organizationId"];
+    }
+    if (_json.containsKey("startDate")) {
+      message.startDate = core.DateTime.parse(_json["startDate"]);
+    }
+    return message;
+  }
+
+  static core.Map toJson(ObjectiveMessage message) {
+    var _json = new core.Map();
+    if (message.alignedToObjectiveId != null) {
+      _json["alignedToObjectiveId"] = message.alignedToObjectiveId;
+    }
+    if (message.description != null) {
+      _json["description"] = message.description;
+    }
+    if (message.endDate != null) {
+      _json["endDate"] = (message.endDate).toIso8601String();
+    }
+    if (message.groupId != null) {
+      _json["groupId"] = message.groupId;
+    }
+    if (message.id != null) {
+      _json["id"] = message.id;
+    }
+    if (message.lastTimeLineItemMessage != null) {
+      _json["lastTimeLineItemMessage"] =
+          TimelineItemMessageFactory.toJson(message.lastTimeLineItemMessage);
+    }
+    if (message.leaderId != null) {
+      _json["leaderId"] = message.leaderId;
+    }
+    if (message.name != null) {
+      _json["name"] = message.name;
+    }
+    if (message.organizationId != null) {
+      _json["organizationId"] = message.organizationId;
+    }
+    if (message.startDate != null) {
+      _json["startDate"] = (message.startDate).toIso8601String();
     }
     return _json;
   }
@@ -863,6 +879,60 @@ class TimelineItemFactory {
     }
     if (message.user != null) {
       _json["user"] = UserFactory.toJson(message.user);
+    }
+    return _json;
+  }
+}
+
+class TimelineItemMessageFactory {
+  static TimelineItemMessage fromJson(core.Map _json) {
+    var message = new TimelineItemMessage();
+    if (_json.containsKey("changedData")) {
+      message.changedData = _json["changedData"];
+    }
+    if (_json.containsKey("className")) {
+      message.className = _json["className"];
+    }
+    if (_json.containsKey("comment")) {
+      message.comment = _json["comment"];
+    }
+    if (_json.containsKey("dateTime")) {
+      message.dateTime = core.DateTime.parse(_json["dateTime"]);
+    }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    if (_json.containsKey("systemFunctionIndex")) {
+      message.systemFunctionIndex = _json["systemFunctionIndex"];
+    }
+    if (_json.containsKey("userId")) {
+      message.userId = _json["userId"];
+    }
+    return message;
+  }
+
+  static core.Map toJson(TimelineItemMessage message) {
+    var _json = new core.Map();
+    if (message.changedData != null) {
+      _json["changedData"] = message.changedData;
+    }
+    if (message.className != null) {
+      _json["className"] = message.className;
+    }
+    if (message.comment != null) {
+      _json["comment"] = message.comment;
+    }
+    if (message.dateTime != null) {
+      _json["dateTime"] = (message.dateTime).toIso8601String();
+    }
+    if (message.id != null) {
+      _json["id"] = message.id;
+    }
+    if (message.systemFunctionIndex != null) {
+      _json["systemFunctionIndex"] = message.systemFunctionIndex;
+    }
+    if (message.userId != null) {
+      _json["userId"] = message.userId;
     }
     return _json;
   }
