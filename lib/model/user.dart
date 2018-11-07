@@ -3,8 +3,11 @@
 
 /// Domain model class to represent an user account
 
+class UserBase {
+ String id;
+}
 
-class User extends Object  {
+class User implements UserBase  {
   String id;
   String name;
   String eMail;
@@ -37,8 +40,41 @@ class User extends Object  {
   }
 }
 
+class UserTest  {
+  String id;
+  String name;
+  String eMail;
+
+  // sha-256
+  String password;
+
+  UserTest() {
+  }
+
+  void cloneTo(UserTest to) {
+    to.id = this.id;
+    to.name = this.name;
+    to.eMail = this.eMail;
+    to.password = this.password;
+
+  }
+
+  UserTest clone() {
+    UserTest to = new UserTest();
+    return to;
+  }
+}
+
 /// Domain model class to represent an user account profile
-class UserProfile extends Object  {
+class UserProfileBase {
+
+}
+
+class UserProfilePersistet extends UserProfileBase {
+
+}
+
+class UserProfile extends UserProfilePersistet  {
 
   // Super Admin does not need authorization. It is SAAS administration and has access to full data and functions
   bool isSuperAdmin = false;

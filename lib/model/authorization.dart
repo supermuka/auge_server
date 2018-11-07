@@ -20,6 +20,7 @@ enum SystemFunction {
   delete,
 }
 
+// In-memory class. It is't persistent
 class Authorization {
 
   SystemRole authorizationRole;

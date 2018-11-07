@@ -5,7 +5,28 @@ import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 
 /// Domain model class to represent a group
-class Group {
+class GroupBase {
+  String id;
+}
+/*
+class GroupPersistent<TOrganization extends OrganizationBase, TGroupType extends GroupTypeBase, TGroup extends GroupBase, TUser extends UserBase> implements GroupBase {
+
+  String id;
+  String name;
+
+  TOrganization organization;
+  TGroupType groupType;
+  TGroup superGroup;
+  TUser leader;
+  List<TUser> members;
+  bool active;
+
+  GroupPersistent() {
+    members = List<TUser>();
+  }
+}
+*/
+class Group /* implements GroupPersistent<Organization, GroupType, Group, User> */ {
 
   String id;
   String name;
@@ -18,7 +39,7 @@ class Group {
   bool active;
 
   Group() {
-    members = [];
+    members = List<User>();
   }
 
   void cloneTo(Group to) {
@@ -62,27 +83,27 @@ class Group {
     cloneTo(to);
     return to;
   }
-
-  /// Return a json with field values changed
-/*
-    String ChangedValuesComparateTo(Group previousGroup) {
-      String previous = 'previews';
-      String current = 'current';
-      Map changedValues = {};
-
-      if (this.name != previousGroup.name) {
-        changedValues['name'] = {previous: previousGroup.name, current: this.name};
-      }
-
-
-
-  }
-  */
-
 }
+/*
+class GroupMessage {
+  String id;
+  String name;
+
+  OrganizationBase organization;
+  GroupTypeBase groupType;
+  GroupBase superGroup;
+  UserBase leader;
+  List<UserBase> members;
+  bool active;
+}
+*/
 
 /// Domain model class to represent a group type
-class GroupType {
+class GroupTypeBase {
+  String id;
+}
+
+class GroupType implements GroupTypeBase {
 
   String id;
   String name;
@@ -97,4 +118,21 @@ class GroupType {
     cloneTo(to);
     return to;
   }
+}
+
+class GroupFacilities {
+/*
+  static GroupMessage messageFrom(Group group) {
+    return GroupMessage()
+      ..id = group.id
+      ..name = group.name
+      ..leader = group.leader
+      ..organization = group.organization
+     // ..superGroup = group.superGroup
+      ..active = group.active
+      ..groupType = group.groupType
+      ..members = group.members;
+
+  }
+  */
 }

@@ -4,7 +4,12 @@
 import 'state.dart';
 
 /// Domain model class to represent an initiative stage (activies, bucket or swimlanes)
-class Stage extends Object {
+
+class StageBase {
+  String id;
+}
+
+class Stage extends StageBase {
   String id;
 
   String name;

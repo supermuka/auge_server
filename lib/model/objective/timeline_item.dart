@@ -7,7 +7,11 @@ import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/user.dart';
 
 /// Domain model class to objective timeline
-class TimelineItem {
+class TimelineItemBase {
+  String id;
+}
+
+class TimelineItem implements TimelineItemBase {
 
   String id;
   DateTime dateTime;
@@ -18,6 +22,7 @@ class TimelineItem {
   String className;
   String changedData;
   String comment;
+
 
   void cloneTo(TimelineItem to) {
     to.id = this.id;

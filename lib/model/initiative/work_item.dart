@@ -9,16 +9,21 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 /// Domain model class to represent an initiative item work (task, issue, feature, etc.)
-class WorkItem {
+class WorkItemBase {
+  String id;
+}
+
+class WorkItem implements WorkItemBase {
   String id;
 
   String name;
   String description;
   DateTime dueDate;
   int completed;
+  List<WorkItemCheckItem> checkItems;
+
   Stage stage;
   List<User> assignedTo;
-  List<WorkItemCheckItem> checkItems;
 
   WorkItem() {
     initializeDateFormatting(Intl.defaultLocale);

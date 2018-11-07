@@ -2,7 +2,11 @@
 // Author: Samuel C. Schwebel
 
 /// Domain model class to represent an check item for a work item
-class WorkItemCheckItem extends Object {
+class WorkItemCheckItemBase {
+  String id;
+}
+
+class WorkItemCheckItem implements WorkItemCheckItemBase {
   String id;
 
   String name;

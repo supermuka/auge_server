@@ -13,10 +13,13 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 /// Domain model class to represent an objective
-class Objective {
+class ObjectiveBase {
+  String id;
+}
+
+class Objective implements ObjectiveBase {
 
   String id;
-
   String name;
   String description;
   DateTime startDate;
@@ -26,11 +29,12 @@ class Objective {
   Group group;
   Objective alignedTo;
   User leader;
+  TimelineItem lastTimelineItem;
+
+  // Transients fields
   List<Objective> alignedWithChildren;
   List<Measure> measures;
-
   List<TimelineItem> timeline;
-  TimelineItem lastTimelineItem;
 
   Objective() {
     initializeDateFormatting(Intl.defaultLocale);
@@ -111,40 +115,52 @@ class Objective {
   }
 }
 
+/*
 /// Related to [Objective] data model
 /// Define the [Objective] essential attributes to exchange data between client and server on RPC
 /// Used to POST and PUT
 class ObjectiveMessage {
-  String id;
 
+  String id;
   String name;
   String description;
   DateTime startDate;
   DateTime endDate;
 
-  String organizationId;
-  String groupId;
-  String alignedToObjectiveId;
-  String leaderId;
+  OrganizationBase organization;
+  GroupBase group;
+  ObjectiveBase alignedTo;
+  UserBase leader;
 
-  TimelineItemMessage lastTimeLineItemMessage;
+  TimelineItemMessage lastTimelineItemMessage;
+
+  // Transients fields
+  // List<Objective> alignedWithChildren;
+  // List<Measure> measures;
+  // List<TimelineItem> timeline;
+
 }
+*/
 
 /// Facilities to [Objective] class
 class ObjectiveFacilities {
+/*
+  static ObjectiveMessage messageFrom(Objective objective) {
+    return ObjectiveMessage()
+      ..id = objective.id
+      ..name = objective.name
+      ..description = objective.description
+      ..startDate = objective.startDate
+      ..endDate = objective.endDate
+      ..lastTimelineItemMessage = TimeLineItemFacilities.timelineItemMessageFrom(objective.lastTimelineItem)
+      // Just id
+      ..organization = OrganizationBase()..id = objective.organization.id
+      ..group = GroupBase()..id = objective.group.id
+      ..alignedTo = ObjectiveBase()..id = objective.alignedTo.id
+      ..leader = UserBase()..id = objective.leader.id;
 
-  static ObjectiveMessage objectiveMessageFrom(Objective objective) {
-    return new ObjectiveMessage()..id = objective.id
-        ..name = objective.name
-        ..description = objective.description
-        ..startDate = objective.startDate
-        ..endDate = objective.endDate
-        ..organizationId = objective.organization.id
-        ..groupId = objective.group.id
-        ..alignedToObjectiveId = objective.alignedTo.id
-        ..leaderId = objective.leader.id
-        ..lastTimeLineItemMessage = TimeLineItemFacilities.timelineItemMessageFrom(objective.lastTimelineItem);
   }
+  */
 
   /// Delta diff between [current] and [previous] Objective.
   /// Like a document (json) idea, then just store user readly data, don't have IDs, FKs, etc.
@@ -218,6 +234,7 @@ class ObjectiveFacilities {
     if (previous != null && current.alignedTo.id != previous.alignedTo.id) {
 
       //Save just specitication.
+
       difference[changedDataKey] = {'alignedTo.name': {
         currentDataChangedKey: current.alignedTo.name,
         previousDataChangedKey: previous.alignedTo.name

@@ -4,18 +4,23 @@
 import 'dart:convert';
 
 /// Domain model class to represent an measure
-class Measure {
+class MeasureBase {
+  String id;
+}
+
+class Measure implements MeasureBase {
 
   String id;
 
   String name;
   String description;
   String metric;
-  MeasureUnit measureUnit;
   int decimalsNumber;
   double startValue;
   double endValue;
   double currentValue;
+
+  MeasureUnit measureUnit;
 
  // NumberFormat _numberFormat;
 
@@ -85,7 +90,19 @@ class Measure {
   }
 }
 
-class MeasureUnit {
+
+
+
+
+class MeasureUnitBase {
+  String id;
+}
+
+class MeasureUnitPersistent implements MeasureUnitBase {
+  String id;
+}
+
+class MeasureUnit implements MeasureUnitPersistent {
 
   String id;
 

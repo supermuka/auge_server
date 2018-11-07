@@ -78,3 +78,4 @@ API RETURN
 
 Collection always return a list instance that maybe empty, not a error.
 Object/Message if not found, return a error because it is considerated a resource.
+PUT and POST return a new resource. See https://medium.com/studioarmix/learn-restful-api-design-ideals-c5ec915a430f (best practice), https://stackoverflow.com/questions/797834/should-a-restful-put-operation-return-something

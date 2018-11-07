@@ -432,7 +432,7 @@ class InitiativeAugeApi {
           "organization_id": initiative.organization.id,
           "leader_user_id": initiative?.leader?.id,
           "objective_id": initiative?.objective?.id,
-          "group_id": initiative?.group?.id});
+           "group_id": initiative?.group?.id });
 
         for (Stage stage in initiative.stages) {
           stage.id = new Uuid().v4();
@@ -480,7 +480,7 @@ class InitiativeAugeApi {
               "organization_id": initiative.organization.id,
               "leader_user_id": initiative?.leader?.id,
               "objective_id": initiative?.objective?.id,
-              "group_id": initiative?.group?.id});
+               "group_id": initiative?.group?.id });
 
         // Stages
         StringBuffer stagesId = new StringBuffer();

@@ -5,6 +5,7 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as io;
 
 import 'package:rpc/rpc.dart';
+import 'package:rpc/src/utils.dart';
 
 import 'package:auge_server/augeapi.dart';
 import 'package:auge_server/initiativeaugeapi.dart';
@@ -34,13 +35,21 @@ main(List<String> args) async {
   }
 
   // RPC
+/*
+  rpcLogger.onRecord.listen((event) {
+    print('${event.level.name}: ${event.time}: ${event.message}');
+  });
+*/
   _apiServer.addApi(new AugeApi());
   _apiServer.addApi(new InitiativeAugeApi());
   _apiServer.addApi(new ObjectiveAugeApi());
   _apiServer.enableDiscoveryApi();
 
+
   // Create a Shelf handler for your RPC API.
   var apiHandler = createRpcHandler(_apiServer);
+
+
 
   var handler = const shelf.Pipeline()
       .addMiddleware(shelf.logRequests())

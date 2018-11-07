@@ -81,7 +81,7 @@ class AugeApi {
 
   /// Create (insert) a new organization
   @ApiMethod( method: 'POST', path: 'organizations')
-  Future<IdMessage> createOrganization(Organization organization) async {
+  Future<Organization> createOrganization(Organization organization) async {
 
     if (organization.id == null) {
       organization.id = new Uuid().v4();
@@ -101,7 +101,7 @@ class AugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return new IdMessage()..id = organization.id;
+    return (await queryOrganizations(id: organization.id))?.first;
   }
 
   /// Update an organization passing an instance of [Organization]
@@ -643,10 +643,10 @@ class AugeApi {
 
   /// Create (insert) a new group
   @ApiMethod( method: 'POST', path: 'groups')
-  Future<IdMessage> createGroup(Group group) async {
+  Future<IdMessage> createGroup(Group groupMessage) async {
 
-    if (group.id == null) {
-      group.id = new Uuid().v4();
+    if (groupMessage.id == null) {
+      groupMessage.id = new Uuid().v4();
     }
 
     await AugeConnection.getConnection().transaction((ctx) async {
@@ -661,16 +661,16 @@ class AugeApi {
                 "@super_group_id,"
                 "@leader_user_id)"
             , substitutionValues: {
-          "id": group.id,
-          "name": group.name,
-          "active": group.active,
-          "organization_id": group.organization.id,
-          "group_type_id": group.groupType?.id,
-          "super_group_id": group.superGroup?.id,
-          "leader_user_id": group.leader?.id});
+          "id": groupMessage.id,
+          "name": groupMessage.name,
+          "active": groupMessage.active,
+          "organization_id": groupMessage.organization.id,
+          "group_type_id": groupMessage.groupType?.id,
+          "super_group_id": groupMessage.superGroup?.id,
+          "leader_user_id": groupMessage.leader?.id});
 
         // Assigned Members Users
-        for (User user in group.members) {
+        for (User user in groupMessage.members) {
           await ctx.query("INSERT INTO auge.groups_users"
               " (group_id,"
               " user_id)"
@@ -678,16 +678,17 @@ class AugeApi {
               " (@id,"
               " @user_id)"
               , substitutionValues: {
-                "id": group.id,
+                "id": groupMessage.id,
                 "user_id": user.id});
         }
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
       }
     });
 
-    return new IdMessage()..id = group.id;
+    return new IdMessage()..id = groupMessage.id;
   }
 
   /// Update a [Group]

@@ -11,18 +11,24 @@ import 'package:auge_server/model/group.dart';
 import 'package:auge_server/model/objective/objective.dart';
 
 /// Domain model class to represent an initiative (action plan, projects)
-class Initiative extends Object {
+
+class InitiativeBase {
+  String id;
+}
+
+class Initiative implements InitiativeBase {
   String id;
 
   String name;
   String description;
+  List<Stage> stages;
 
   Objective objective;
   Organization organization;
   Group group;
   User leader;
 
-  List<Stage> stages;
+  // Transient fields
   List<WorkItem> workItems;
 
   Initiative() {

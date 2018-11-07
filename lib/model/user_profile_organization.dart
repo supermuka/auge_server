@@ -4,9 +4,12 @@
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/organization.dart';
 
-
 /// Domain model class to represent a relationship between users and organizations
-class UserProfileOrganization extends Object  {
+class UserProfileOrganizationBase {
+   String id;
+}
+
+class UserProfileOrganization implements UserProfileOrganizationBase  {
 
   String id;
   User user;

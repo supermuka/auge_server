@@ -96,14 +96,14 @@ class AugeApi {
   ///
   /// Request parameters:
   ///
-  /// Completes with a [IdMessage].
+  /// Completes with a [Organization].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<IdMessage> createOrganization(Organization request) {
+  async.Future<Organization> createOrganization(Organization request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -123,7 +123,7 @@ class AugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => IdMessageFactory.fromJson(data));
+    return _response.then((data) => OrganizationFactory.fromJson(data));
   }
 
   /// [request] - The metadata request object.

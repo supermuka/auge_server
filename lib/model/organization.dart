@@ -2,8 +2,12 @@
 // Author: Samuel C. Schwebel
 
 /// Domain model class to represent an organiozation (corporate, team, etc.)
+class OrganizationBase {
+  String id;
+}
 
-class Organization extends Object  {
+class Organization implements OrganizationBase  {
+
   String id;
   String name;
 
@@ -21,5 +25,4 @@ class Organization extends Object  {
     cloneTo(to);
     return to;
   }
-
 }

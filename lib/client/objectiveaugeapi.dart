@@ -84,7 +84,7 @@ class ObjectiveAugeApi {
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<Objective> createObjective(ObjectiveMessage request) {
+  async.Future<Objective> createObjective(Objective request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -93,7 +93,7 @@ class ObjectiveAugeApi {
     var _body = null;
 
     if (request != null) {
-      _body = convert.json.encode(ObjectiveMessageFactory.toJson(request));
+      _body = convert.json.encode(ObjectiveFactory.toJson(request));
     }
 
     _url = 'objectives';
@@ -393,7 +393,7 @@ class ObjectiveAugeApi {
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future updateObjective(ObjectiveMessage request) {
+  async.Future updateObjective(Objective request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -402,7 +402,7 @@ class ObjectiveAugeApi {
     var _body = null;
 
     if (request != null) {
-      _body = convert.json.encode(ObjectiveMessageFactory.toJson(request));
+      _body = convert.json.encode(ObjectiveFactory.toJson(request));
     }
 
     _downloadOptions = null;
@@ -726,80 +726,6 @@ class ObjectiveFactory {
   }
 }
 
-class ObjectiveMessageFactory {
-  static ObjectiveMessage fromJson(core.Map _json) {
-    var message = new ObjectiveMessage();
-    if (_json.containsKey("alignedToObjectiveId")) {
-      message.alignedToObjectiveId = _json["alignedToObjectiveId"];
-    }
-    if (_json.containsKey("description")) {
-      message.description = _json["description"];
-    }
-    if (_json.containsKey("endDate")) {
-      message.endDate = core.DateTime.parse(_json["endDate"]);
-    }
-    if (_json.containsKey("groupId")) {
-      message.groupId = _json["groupId"];
-    }
-    if (_json.containsKey("id")) {
-      message.id = _json["id"];
-    }
-    if (_json.containsKey("lastTimeLineItemMessage")) {
-      message.lastTimeLineItemMessage =
-          TimelineItemMessageFactory.fromJson(_json["lastTimeLineItemMessage"]);
-    }
-    if (_json.containsKey("leaderId")) {
-      message.leaderId = _json["leaderId"];
-    }
-    if (_json.containsKey("name")) {
-      message.name = _json["name"];
-    }
-    if (_json.containsKey("organizationId")) {
-      message.organizationId = _json["organizationId"];
-    }
-    if (_json.containsKey("startDate")) {
-      message.startDate = core.DateTime.parse(_json["startDate"]);
-    }
-    return message;
-  }
-
-  static core.Map toJson(ObjectiveMessage message) {
-    var _json = new core.Map();
-    if (message.alignedToObjectiveId != null) {
-      _json["alignedToObjectiveId"] = message.alignedToObjectiveId;
-    }
-    if (message.description != null) {
-      _json["description"] = message.description;
-    }
-    if (message.endDate != null) {
-      _json["endDate"] = (message.endDate).toIso8601String();
-    }
-    if (message.groupId != null) {
-      _json["groupId"] = message.groupId;
-    }
-    if (message.id != null) {
-      _json["id"] = message.id;
-    }
-    if (message.lastTimeLineItemMessage != null) {
-      _json["lastTimeLineItemMessage"] =
-          TimelineItemMessageFactory.toJson(message.lastTimeLineItemMessage);
-    }
-    if (message.leaderId != null) {
-      _json["leaderId"] = message.leaderId;
-    }
-    if (message.name != null) {
-      _json["name"] = message.name;
-    }
-    if (message.organizationId != null) {
-      _json["organizationId"] = message.organizationId;
-    }
-    if (message.startDate != null) {
-      _json["startDate"] = (message.startDate).toIso8601String();
-    }
-    return _json;
-  }
-}
-
 class OrganizationFactory {
   static Organization fromJson(core.Map _json) {
     var message = new Organization();
@@ -879,60 +805,6 @@ class TimelineItemFactory {
     }
     if (message.user != null) {
       _json["user"] = UserFactory.toJson(message.user);
-    }
-    return _json;
-  }
-}
-
-class TimelineItemMessageFactory {
-  static TimelineItemMessage fromJson(core.Map _json) {
-    var message = new TimelineItemMessage();
-    if (_json.containsKey("changedData")) {
-      message.changedData = _json["changedData"];
-    }
-    if (_json.containsKey("className")) {
-      message.className = _json["className"];
-    }
-    if (_json.containsKey("comment")) {
-      message.comment = _json["comment"];
-    }
-    if (_json.containsKey("dateTime")) {
-      message.dateTime = core.DateTime.parse(_json["dateTime"]);
-    }
-    if (_json.containsKey("id")) {
-      message.id = _json["id"];
-    }
-    if (_json.containsKey("systemFunctionIndex")) {
-      message.systemFunctionIndex = _json["systemFunctionIndex"];
-    }
-    if (_json.containsKey("userId")) {
-      message.userId = _json["userId"];
-    }
-    return message;
-  }
-
-  static core.Map toJson(TimelineItemMessage message) {
-    var _json = new core.Map();
-    if (message.changedData != null) {
-      _json["changedData"] = message.changedData;
-    }
-    if (message.className != null) {
-      _json["className"] = message.className;
-    }
-    if (message.comment != null) {
-      _json["comment"] = message.comment;
-    }
-    if (message.dateTime != null) {
-      _json["dateTime"] = (message.dateTime).toIso8601String();
-    }
-    if (message.id != null) {
-      _json["id"] = message.id;
-    }
-    if (message.systemFunctionIndex != null) {
-      _json["systemFunctionIndex"] = message.systemFunctionIndex;
-    }
-    if (message.userId != null) {
-      _json["userId"] = message.userId;
     }
     return _json;
   }

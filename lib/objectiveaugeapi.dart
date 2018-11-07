@@ -44,14 +44,14 @@ class ObjectiveAugeApi {
   "@user_id,"
   "@objective_id)";
 
-  Map<String, dynamic> querySubstitutionValuesCreateTimelineItem(String objectiveId, TimelineItemMessage timelineItemMessage) {
-      return {"id": timelineItemMessage.id,
-              "date_time": timelineItemMessage.dateTime,
-              "system_function_index": timelineItemMessage.systemFunctionIndex,
-              "class_name": timelineItemMessage.className,
-              "changed_data": timelineItemMessage.changedData,
-              "comment": timelineItemMessage.comment,
-              "user_id": timelineItemMessage.userId,
+  Map<String, dynamic> querySubstitutionValuesCreateTimelineItem(String objectiveId, TimelineItem timelineItem) {
+      return {"id": timelineItem.id,
+              "date_time": timelineItem.dateTime,
+              "system_function_index": timelineItem.systemFunctionIndex,
+              "class_name": timelineItem.className,
+              "changed_data": timelineItem.changedData,
+              "comment": timelineItem.comment,
+              "user_id": timelineItem.user.id,
               "objective_id": objectiveId};
   }
 
@@ -514,10 +514,10 @@ class ObjectiveAugeApi {
 
     /// Create (insert) a new objective
   @ApiMethod( method: 'POST', path: 'objectives')
-  Future<Objective> createObjective(ObjectiveMessage objectiveMessage) async {
+  Future<Objective> createObjective(Objective objective) async {
 
-    if (objectiveMessage.id == null) {
-      objectiveMessage.id = new Uuid().v4();
+    if (objective.id == null) {
+      objective.id = new Uuid().v4();
     }
 
     try {
@@ -535,37 +535,38 @@ class ObjectiveAugeApi {
             "@leader_user_id,"
             "@group_id)"
         , substitutionValues: {
-        "id": objectiveMessage.id,
-        "name": objectiveMessage.name,
-        "description": objectiveMessage.description,
-        "start_date": objectiveMessage.startDate,
-        "end_date": objectiveMessage.endDate,
-        "aligned_to_objective_id": objectiveMessage.alignedToObjectiveId,
-        "organization_id": objectiveMessage.organizationId,
-        "leader_user_id": objectiveMessage.leaderId,
-        "group_id": objectiveMessage.groupId});
+        "id": objective.id,
+        "name": objective.name,
+        "description": objective.description,
+        "start_date": objective.startDate,
+        "end_date": objective.endDate,
+        "aligned_to_objective_id": objective.alignedTo.id ,
+        "organization_id": objective.organization.id,
+        "leader_user_id": objective.leader.id,
+        "group_id": objective.group.id });
 
         // TimelineItem
-        if (objectiveMessage.lastTimeLineItemMessage.id == null) {
-          objectiveMessage.lastTimeLineItemMessage.id = new Uuid().v4();
+        if (objective.lastTimelineItem.id == null) {
+          objective.lastTimelineItem.id = new Uuid().v4();
         }
-        if (objectiveMessage.lastTimeLineItemMessage.dateTime == null) {
-          objectiveMessage.lastTimeLineItemMessage.dateTime = DateTime.now().toUtc();
+        if (objective.lastTimelineItem.dateTime == null) {
+          objective.lastTimelineItem.dateTime = DateTime.now().toUtc();
         }
 
-        await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objectiveMessage.id, objectiveMessage.lastTimeLineItemMessage));
+        await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objective.id, objective.lastTimelineItem));
+
 
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return (await queryObjectives(id: objectiveMessage.id, withTimeline: true, withMeasures: true, withProfile: true))?.first;
+    return (await queryObjectives(id: objective.id, withTimeline: true, withMeasures: true, withProfile: true))?.first;
   }
 
   /// Update an initiative passing an instance of [Objective]
   @ApiMethod( method: 'PUT', path: 'objectives')
-  Future<VoidMessage> updateObjective(ObjectiveMessage objectiveMessage) async {
+  Future<VoidMessage> updateObjective(Objective objective) async {
 
     try {
       await AugeConnection.getConnection().query(
@@ -580,15 +581,15 @@ class ObjectiveAugeApi {
               " group_id = @group_id"
               " WHERE id = @id"
           , substitutionValues: {
-        "id": objectiveMessage.id,
-        "name": objectiveMessage.name,
-        "description": objectiveMessage.description,
-        "start_date": objectiveMessage.startDate,
-        "end_date": objectiveMessage.endDate,
-        "aligned_to_objective_id": objectiveMessage.alignedToObjectiveId,
-        "organization_id": objectiveMessage.organizationId,
-        "leader_user_id": objectiveMessage.leaderId,
-        "group_id": objectiveMessage.groupId});
+        "id": objective.id,
+        "name": objective.name,
+        "description": objective.description,
+        "start_date": objective.startDate,
+        "end_date": objective.endDate,
+        "aligned_to_objective_id": objective.alignedTo.id,
+        "organization_id": objective.organization.id,
+        "leader_user_id": objective.leader.id,
+        "group_id": objective.group.id });
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -658,7 +659,4 @@ class ObjectiveAugeApi {
     }
     return objectiveTimeline;
   }
-
-
-
 }

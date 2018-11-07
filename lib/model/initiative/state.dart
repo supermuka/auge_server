@@ -8,7 +8,11 @@ const _colorSaturation = 'saturation';
 const _colorLightness = 'lightness';
 
 /// Domain model class to represent an initiative  phase (backlog, workflow, archive)
-class State extends Object {
+class StateBase {
+  String id;
+}
+
+class State implements StateBase {
   String id;
   String name;
   // Define initiative state order
