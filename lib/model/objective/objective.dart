@@ -30,6 +30,7 @@ class Objective implements ObjectiveBase {
   Objective alignedTo;
   User leader;
   TimelineItem lastTimelineItem;
+  bool archived;
 
   // Transients fields
   List<Objective> alignedWithChildren;
@@ -68,6 +69,7 @@ class Objective implements ObjectiveBase {
     to.startDate = this.startDate;
     to.endDate = this.endDate;
     to.lastTimelineItem = this.lastTimelineItem;
+    to.archived = this.archived;
     if (this.organization != null) {
       to.organization = this.organization.clone();
     }

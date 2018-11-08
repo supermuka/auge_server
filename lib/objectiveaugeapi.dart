@@ -317,7 +317,7 @@ class ObjectiveAugeApi {
 
   // *** OBJECTIVES ***
   // alignedToRecursiveDeep: 0 not call; 1 call once; 2 call tow, etc...
-  static Future<List<Objective>> queryObjectives({String organizationId, String id, int alignedToRecursive = 1, bool withMeasures = true, bool treeAlignedWithChildren = false, bool withProfile = false, bool withTimeline = false}) async {
+  static Future<List<Objective>> queryObjectives({String organizationId, String id, int alignedToRecursive = 1, bool withMeasures = true, bool treeAlignedWithChildren = false, bool withProfile = false, bool withTimeline = false, bool withArchived = false}) async {
     List<List> results;
 
    // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
@@ -326,10 +326,11 @@ class ObjectiveAugeApi {
     " objective.description," //2
     " objective.start_date," //3
     " objective.end_date," //4
-    " objective.leader_user_id," //5
-    " objective.aligned_to_objective_id," //6
-    " objective.organization_id," //7
-    " objective.group_id"; //8
+    " objective.archived," //5
+    " objective.leader_user_id," //6
+    " objective.aligned_to_objective_id," //7
+    " objective.organization_id," //8
+    " objective.group_id"; //9
 
     String queryStatementWhere = "";
     Map<String, dynamic> substitutionValues;
@@ -340,6 +341,10 @@ class ObjectiveAugeApi {
     } else {
       queryStatementWhere = " objective.organization_id = @organization_id";
       substitutionValues = {"organization_id": organizationId};
+    }
+
+    if (!withArchived) {
+      queryStatementWhere = queryStatementWhere + " AND objective.archived <> true";
     }
 
     String queryStatement;
@@ -388,9 +393,9 @@ class ObjectiveAugeApi {
       for (var row in results) {
         // Measures
 
-        if (organization == null || organization.id != row[7]) {
+        if (organization == null || organization.id != row[8]) {
 
-          organizations = await AugeApi.queryOrganizations(id: row[7]);
+          organizations = await AugeApi.queryOrganizations(id: row[8]);
           if (organizations != null && organizations.length != 0) {
             organization = organizations.first;
           }
@@ -399,21 +404,21 @@ class ObjectiveAugeApi {
         measures = (withMeasures) ? await queryMeasures(objectiveId: row[0]) : [];
         timeline = (withTimeline) ? await queryTimeline(objectiveId: row[0]) : [];
 
-        users = await AugeApi.queryUsers(id: row[5], withProfile: withProfile);
+        users = await AugeApi.queryUsers(id: row[6], withProfile: withProfile);
 
         if (users != null && users.length != 0) {
           leaderUser = users.first;
         }
         ///leaderUser = (await AugeApi.getUsers(id: row[5], withProfile: withProfile)).first;
 
-        if (row[6] != null && alignedToRecursive > 0) {
-          alignedToObjectives = await queryObjectives(id: row[6],
+        if (row[7] != null && alignedToRecursive > 0) {
+          alignedToObjectives = await queryObjectives(id: row[7],
               alignedToRecursive: --alignedToRecursive);
           alignedToObjective = alignedToObjectives?.first;
         }
 
         //group = row[8] == null ? null : await _augeApi.getGroupById(row[8]);
-        groups = await AugeApi.queryGroups(id: row[8]);
+        groups = await AugeApi.queryGroups(id: row[9]);
         if (groups != null && groups.length != 0) {
           group = groups.first;
         }
@@ -424,6 +429,7 @@ class ObjectiveAugeApi {
           ..description = row[2]
           ..startDate = row[3]
           ..endDate = row[4]
+          ..archived = row[5]
           ..organization = organization
           ..leader = leaderUser
           ..measures = measures
@@ -434,11 +440,11 @@ class ObjectiveAugeApi {
 
         if (treeAlignedWithChildren) {
           // Parent must be present in the list (objectives);
-          if (row[6] == null)
+          if (row[7] == null)
              objectivesTree.add(objective);
           else {
             objectives
-                .singleWhere((o) => o.id == row[6])
+                .singleWhere((o) => o.id == row[7])
                 ?.alignedWithChildren
                 ?.add(objective);
           }
@@ -453,12 +459,12 @@ class ObjectiveAugeApi {
 
   /// Return all objectives from an organization
   @ApiMethod( method: 'GET', path: 'organization/{organizationId}/objetives')
-  Future<List<Objective>> getObjectives(String organizationId, {String id, bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false, bool withTimeline = false}) async {
+  Future<List<Objective>> getObjectives(String organizationId, {String id, bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false, bool withTimeline = false, bool withArchived = false}) async {
     try {
       // return queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
 
       List<Objective> objectives;
-      objectives = await queryObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile, withTimeline: withTimeline);
+      objectives = await queryObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile, withTimeline: withTimeline, withArchived: withArchived);
       return objectives;
       /*
       if (objectives != null && objectives.length != 0) {
@@ -500,6 +506,12 @@ class ObjectiveAugeApi {
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
         await ctx.query(
+            "DELETE FROM auge_objective.objective_timeline objective_timeline"
+                " WHERE objective_timeline.objective_id = @id"
+            , substitutionValues: {
+          "id": id});
+
+        await ctx.query(
             "DELETE FROM auge_objective.objectives objective"
                 " WHERE objective.id = @id"
             , substitutionValues: {
@@ -524,12 +536,13 @@ class ObjectiveAugeApi {
 
       await AugeConnection.getConnection().transaction((ctx) async {
 
-        await ctx.query("INSERT INTO auge_objective.objectives(id, name, description, start_date, end_date, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
+        await ctx.query("INSERT INTO auge_objective.objectives(id, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
             "(@id,"
             "@name,"
             "@description,"
             "@start_date,"
             "@end_date,"
+            "@archived,"
             "@aligned_to_objective_id, "
             "@organization_id,"
             "@leader_user_id,"
@@ -540,10 +553,11 @@ class ObjectiveAugeApi {
         "description": objective.description,
         "start_date": objective.startDate,
         "end_date": objective.endDate,
-        "aligned_to_objective_id": objective.alignedTo.id ,
+        "archived": objective.archived,
+        "aligned_to_objective_id": objective?.alignedTo.id ,
         "organization_id": objective.organization.id,
-        "leader_user_id": objective.leader.id,
-        "group_id": objective.group.id });
+        "leader_user_id": objective?.leader.id,
+        "group_id": objective?.group.id });
 
         // TimelineItem
         if (objective.lastTimelineItem.id == null) {
@@ -561,42 +575,57 @@ class ObjectiveAugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return (await queryObjectives(id: objective.id, withTimeline: true, withMeasures: true, withProfile: true))?.first;
+    return (await queryObjectives(id: objective.id, withTimeline: true, withMeasures: true, withProfile: true, withArchived: true))?.first;
   }
 
   /// Update an initiative passing an instance of [Objective]
   @ApiMethod( method: 'PUT', path: 'objectives')
-  Future<VoidMessage> updateObjective(Objective objective) async {
+  Future<Objective> updateObjective(Objective objective) async {
 
     try {
-      await AugeConnection.getConnection().query(
-          "UPDATE auge_objective.objectives "
-              " SET name = @name,"
-              " description = @description,"
-              " start_date = @start_date,"
-              " end_date = @end_date,"
-              " aligned_to_objective_id = @aligned_to_objective_id,"
-              " organization_id = @organization_id,"
-              " leader_user_id = @leader_user_id,"
-              " group_id = @group_id"
-              " WHERE id = @id"
-          , substitutionValues: {
-        "id": objective.id,
-        "name": objective.name,
-        "description": objective.description,
-        "start_date": objective.startDate,
-        "end_date": objective.endDate,
-        "aligned_to_objective_id": objective.alignedTo.id,
-        "organization_id": objective.organization.id,
-        "leader_user_id": objective.leader.id,
-        "group_id": objective.group.id });
 
+      await AugeConnection.getConnection().transaction((ctx) async {
+        await ctx.query(
+            "UPDATE auge_objective.objectives "
+                " SET name = @name,"
+                " description = @description,"
+                " start_date = @start_date,"
+                " end_date = @end_date,"
+                " archived = @archived,"
+                " aligned_to_objective_id = @aligned_to_objective_id,"
+                " organization_id = @organization_id,"
+                " leader_user_id = @leader_user_id,"
+                " group_id = @group_id"
+                " WHERE id = @id"
+            , substitutionValues: {
+          "id": objective.id,
+          "name": objective.name,
+          "description": objective.description,
+          "start_date": objective.startDate,
+          "end_date": objective.endDate,
+          "archived": objective.archived,
+          "aligned_to_objective_id": objective.alignedTo.id,
+          "organization_id": objective.organization.id,
+          "leader_user_id": objective.leader.id,
+          "group_id": objective.group.id});
+
+        // TimelineItem
+        if (objective.lastTimelineItem.id == null) {
+          objective.lastTimelineItem.id = new Uuid().v4();
+        }
+        if (objective.lastTimelineItem.dateTime == null) {
+          objective.lastTimelineItem.dateTime = DateTime.now().toUtc();
+        }
+
+        await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objective.id, objective.lastTimelineItem));
+
+      });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
 
-    return null;
+    return (await queryObjectives(id: objective.id, withTimeline: true, withMeasures: true, withProfile: true, withArchived: true))?.first;
   }
 
   // *** OBJECTIVE TIMELINE ***

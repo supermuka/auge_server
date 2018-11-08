@@ -19,5 +19,4 @@ class AugeConnection {
   static PostgreSQLConnection getConnection() {
     return _connection;
   }
-
 }

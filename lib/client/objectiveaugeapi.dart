@@ -289,6 +289,8 @@ class ObjectiveAugeApi {
   ///
   /// [withTimeline] - Query parameter: 'withTimeline'.
   ///
+  /// [withArchived] - Query parameter: 'withArchived'.
+  ///
   /// Completes with a [core.List<Objective>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -301,7 +303,8 @@ class ObjectiveAugeApi {
       core.bool withMeasures,
       core.bool treeAlignedWithChildren,
       core.bool withProfile,
-      core.bool withTimeline}) {
+      core.bool withTimeline,
+      core.bool withArchived}) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -326,6 +329,9 @@ class ObjectiveAugeApi {
     }
     if (withTimeline != null) {
       _queryParams["withTimeline"] = ["${withTimeline}"];
+    }
+    if (withArchived != null) {
+      _queryParams["withArchived"] = ["${withArchived}"];
     }
 
     _url = 'organization/' +
@@ -388,12 +394,14 @@ class ObjectiveAugeApi {
   ///
   /// Request parameters:
   ///
+  /// Completes with a [Objective].
+  ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future updateObjective(Objective request) {
+  async.Future<Objective> updateObjective(Objective request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -405,8 +413,6 @@ class ObjectiveAugeApi {
       _body = convert.json.encode(ObjectiveFactory.toJson(request));
     }
 
-    _downloadOptions = null;
-
     _url = 'objectives';
 
     var _response = _requester.request(_url, "PUT",
@@ -415,7 +421,7 @@ class ObjectiveAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => null);
+    return _response.then((data) => ObjectiveFactory.fromJson(data));
   }
 }
 
@@ -632,6 +638,9 @@ class ObjectiveFactory {
           .map<Objective>((value) => ObjectiveFactory.fromJson(value))
           .toList();
     }
+    if (_json.containsKey("archived")) {
+      message.archived = _json["archived"];
+    }
     if (_json.containsKey("description")) {
       message.description = _json["description"];
     }
@@ -683,6 +692,9 @@ class ObjectiveFactory {
       _json["alignedWithChildren"] = message.alignedWithChildren
           .map((value) => ObjectiveFactory.toJson(value))
           .toList();
+    }
+    if (message.archived != null) {
+      _json["archived"] = message.archived;
     }
     if (message.description != null) {
       _json["description"] = message.description;
