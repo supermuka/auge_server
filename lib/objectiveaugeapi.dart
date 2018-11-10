@@ -435,7 +435,8 @@ class ObjectiveAugeApi {
           ..measures = measures
           ..alignedTo = alignedToObjective
           ..group = group
-          ..timeline = timeline;
+          ..timeline = timeline
+          ..lastTimelineItem = timeline.length == 0 ? null : timeline.first;
         objectives.add(objective);
 
         if (treeAlignedWithChildren) {
@@ -554,10 +555,10 @@ class ObjectiveAugeApi {
         "start_date": objective.startDate,
         "end_date": objective.endDate,
         "archived": objective.archived,
-        "aligned_to_objective_id": objective?.alignedTo.id ,
+        "aligned_to_objective_id": objective.alignedTo == null ? null : objective.alignedTo.id ,
         "organization_id": objective.organization.id,
-        "leader_user_id": objective?.leader.id,
-        "group_id": objective?.group.id });
+        "leader_user_id": objective.leader == null ? null : objective.leader.id,
+        "group_id": objective.group == null ? null : objective.group.id });
 
         // TimelineItem
         if (objective.lastTimelineItem.id == null) {
@@ -604,10 +605,10 @@ class ObjectiveAugeApi {
           "start_date": objective.startDate,
           "end_date": objective.endDate,
           "archived": objective.archived,
-          "aligned_to_objective_id": objective.alignedTo.id,
+          "aligned_to_objective_id": objective.alignedTo == null ? null : objective.alignedTo.id,
           "organization_id": objective.organization.id,
-          "leader_user_id": objective.leader.id,
-          "group_id": objective.group.id});
+          "leader_user_id": objective.leader == null ? null : objective.leader.id,
+          "group_id": objective.group == null ? null : objective.group.id});
 
         // TimelineItem
         if (objective.lastTimelineItem.id == null) {

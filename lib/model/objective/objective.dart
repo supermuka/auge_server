@@ -233,13 +233,13 @@ class ObjectiveFacilities {
     }
 
     //Objective alignedTo;
-    if (previous != null && current.alignedTo.id != previous.alignedTo.id) {
+    if (previous != null && current.alignedTo?.id != previous.alignedTo?.id) {
 
       //Save just specitication.
 
       difference[changedDataKey] = {'alignedTo.name': {
-        currentDataChangedKey: current.alignedTo.name,
-        previousDataChangedKey: previous.alignedTo.name
+        currentDataChangedKey: current.alignedTo?.name,
+        previousDataChangedKey: previous.alignedTo?.name
       }};
     } else if (previous == null && current.alignedTo != null ) {
 
