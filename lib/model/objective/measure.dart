@@ -11,7 +11,6 @@ class MeasureBase {
 class Measure implements MeasureBase {
 
   String id;
-
   String name;
   String description;
   String metric;
@@ -21,6 +20,8 @@ class Measure implements MeasureBase {
   double currentValue;
 
   MeasureUnit measureUnit;
+
+  List<MeasureProgress> measureProgress;
 
  // NumberFormat _numberFormat;
 
@@ -90,8 +91,31 @@ class Measure implements MeasureBase {
   }
 }
 
+class MeasureProgressBase {
+  String id;
 
+}
 
+class MeasureProgress implements MeasureProgressBase {
+  String id;
+  DateTime dateTime;
+  double currentValue;
+  String comment;
+
+  void cloneTo(MeasureProgress to) {
+    to.id = this.id;
+    to.dateTime = this.dateTime;
+    to.currentValue = this.currentValue;
+    to.comment = this.comment;
+  }
+
+  MeasureProgress clone() {
+    MeasureProgress to = new MeasureProgress();
+    cloneTo(to);
+    return to;
+  }
+
+}
 
 
 class MeasureUnitBase {

@@ -77,6 +77,47 @@ class ObjectiveAugeApi {
   ///
   /// Request parameters:
   ///
+  /// [measureId] - Path parameter: 'measureId'.
+  ///
+  /// Completes with a [IdMessage].
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future<IdMessage> createMeasureProgress(
+      MeasureProgress request, core.String measureId) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (request != null) {
+      _body = convert.json.encode(MeasureProgressFactory.toJson(request));
+    }
+    if (measureId == null) {
+      throw new core.ArgumentError("Parameter measureId is required.");
+    }
+
+    _url =
+        'measures/' + commons.Escaper.ecapeVariable('$measureId') + '/progress';
+
+    var _response = _requester.request(_url, "POST",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => IdMessageFactory.fromJson(data));
+  }
+
+  /// [request] - The metadata request object.
+  ///
+  /// Request parameters:
+  ///
   /// Completes with a [Objective].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -177,6 +218,40 @@ class ObjectiveAugeApi {
 
   /// Request parameters:
   ///
+  /// [id] - Path parameter: 'id'.
+  ///
+  /// Completes with a [Measure].
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future<Measure> getMeasureById(core.String id) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (id == null) {
+      throw new core.ArgumentError("Parameter id is required.");
+    }
+
+    _url = 'measures/' + commons.Escaper.ecapeVariable('$id');
+
+    var _response = _requester.request(_url, "GET",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => MeasureFactory.fromJson(data));
+  }
+
+  /// Request parameters:
+  ///
   /// Completes with a [core.List<MeasureUnit>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -207,6 +282,8 @@ class ObjectiveAugeApi {
 
   /// Request parameters:
   ///
+  /// [objectiveId] - Path parameter: 'objectiveId'.
+  ///
   /// Completes with a [core.List<Measure>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -214,7 +291,7 @@ class ObjectiveAugeApi {
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<core.List<Measure>> getMeasures() {
+  async.Future<core.List<Measure>> getMeasures(core.String objectiveId) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -222,7 +299,13 @@ class ObjectiveAugeApi {
     var _downloadOptions = commons.DownloadOptions.Metadata;
     var _body = null;
 
-    _url = 'measures';
+    if (objectiveId == null) {
+      throw new core.ArgumentError("Parameter objectiveId is required.");
+    }
+
+    _url = 'objetives/' +
+        commons.Escaper.ecapeVariable('$objectiveId') +
+        '/measures';
 
     var _response = _requester.request(_url, "GET",
         body: _body,
@@ -549,6 +632,12 @@ class MeasureFactory {
     if (_json.containsKey("id")) {
       message.id = _json["id"];
     }
+    if (_json.containsKey("measureProgress")) {
+      message.measureProgress = (_json["measureProgress"] as core.List)
+          .map<MeasureProgress>(
+              (value) => MeasureProgressFactory.fromJson(value))
+          .toList();
+    }
     if (_json.containsKey("measureUnit")) {
       message.measureUnit = MeasureUnitFactory.fromJson(_json["measureUnit"]);
     }
@@ -581,6 +670,11 @@ class MeasureFactory {
     if (message.id != null) {
       _json["id"] = message.id;
     }
+    if (message.measureProgress != null) {
+      _json["measureProgress"] = message.measureProgress
+          .map((value) => MeasureProgressFactory.toJson(value))
+          .toList();
+    }
     if (message.measureUnit != null) {
       _json["measureUnit"] = MeasureUnitFactory.toJson(message.measureUnit);
     }
@@ -592,6 +686,42 @@ class MeasureFactory {
     }
     if (message.startValue != null) {
       _json["startValue"] = message.startValue;
+    }
+    return _json;
+  }
+}
+
+class MeasureProgressFactory {
+  static MeasureProgress fromJson(core.Map _json) {
+    var message = new MeasureProgress();
+    if (_json.containsKey("comment")) {
+      message.comment = _json["comment"];
+    }
+    if (_json.containsKey("currentValue")) {
+      message.currentValue = _json["currentValue"].toDouble();
+    }
+    if (_json.containsKey("dateTime")) {
+      message.dateTime = core.DateTime.parse(_json["dateTime"]);
+    }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    return message;
+  }
+
+  static core.Map toJson(MeasureProgress message) {
+    var _json = new core.Map();
+    if (message.comment != null) {
+      _json["comment"] = message.comment;
+    }
+    if (message.currentValue != null) {
+      _json["currentValue"] = message.currentValue;
+    }
+    if (message.dateTime != null) {
+      _json["dateTime"] = (message.dateTime).toIso8601String();
+    }
+    if (message.id != null) {
+      _json["id"] = message.id;
     }
     return _json;
   }

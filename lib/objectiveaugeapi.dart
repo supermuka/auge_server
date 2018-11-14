@@ -160,12 +160,12 @@ class ObjectiveAugeApi {
     return null;
   }
 
-/*
+
   /// Return a [Measure] by Id
   @ApiMethod( method: 'GET', path: 'measures/{id}')
   Future<Measure> getMeasureById(String id) async {
     try {
-      List<Measure> measures = await queryGetMeasures(id: id);
+      List<Measure> measures = await queryMeasures(id: id);
       if (measures == null || measures.length == 0) {
         throw new RpcError(204,  'DataNotFound', 'Data not Found')
           ..errors.add(new RpcErrorDetail(reason: 'MeasuereDataNotFound'));
@@ -176,16 +176,16 @@ class ObjectiveAugeApi {
       rethrow;
     }
   }
-  */
+
 
 
   /// Return [Measure] list
-  @ApiMethod( method: 'GET', path: 'measures')
-  Future<List<Measure>> getMeasures() async {
+  @ApiMethod( method: 'GET', path: 'objetives/{objectiveId}/measures')
+  Future<List<Measure>> getMeasures(String objectiveId) async {
     try {
 
       List<Measure> measures;
-      measures = await queryMeasures();
+      measures = await queryMeasures(objectiveId: objectiveId);
       return measures;
       /*
       if (measures != null && measures.length != 0) {
@@ -249,29 +249,33 @@ class ObjectiveAugeApi {
     }
 
     try {
-      await  AugeConnection.getConnection().query("INSERT INTO auge_objective.measures(id, name, description, metric, decimals_number, start_value, end_value, current_value, measure_unit_id, objective_id) VALUES"
-          "(@id,"
-          "@name,"
-          "@description,"
-          "@metric,"
-          "@decimals_number,"
-          "@start_value,"
-          "@end_value,"
-          "@current_value,"
-          "@measure_unit_id,"
-          "@objective_id)"
-          , substitutionValues: {
-            "id": measure.id,
-            "name": measure.name,
-            "description": measure.description,
-            "metric": measure.metric,
-            "decimals_number": measure.decimalsNumber,
-            "start_value": measure.startValue,
-            "end_value": measure.endValue,
-            "current_value": measure.currentValue,
-            "measure_unit_id": measure?.measureUnit?.id,
-            "objective_id": objectiveid
-          });
+
+      await AugeConnection.getConnection().transaction((ctx) async {
+        await ctx.query(
+            "INSERT INTO auge_objective.measures(id, name, description, metric, decimals_number, start_value, end_value, current_value, measure_unit_id, objective_id) VALUES"
+                "(@id,"
+                "@name,"
+                "@description,"
+                "@metric,"
+                "@decimals_number,"
+                "@start_value,"
+                "@end_value,"
+                "@current_value,"
+                "@measure_unit_id,"
+                "@objective_id)"
+            , substitutionValues: {
+          "id": measure.id,
+          "name": measure.name,
+          "description": measure.description,
+          "metric": measure.metric,
+          "decimals_number": measure.decimalsNumber,
+          "start_value": measure.startValue,
+          "end_value": measure.endValue,
+          "current_value": measure.currentValue,
+          "measure_unit_id": measure?.measureUnit?.id,
+          "objective_id": objectiveid
+        });
+      });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -280,7 +284,48 @@ class ObjectiveAugeApi {
     return IdMessage()..id = measure.id;
   }
 
-  /// Update an initiative passing an instance of [Measure]
+  /// Update current value of the [MeasureProgress]
+  @ApiMethod( method: 'POST', path: 'measures/{measureId}/progress')
+  Future<IdMessage> createMeasureProgress(String measureId, MeasureProgress measureProgress) async {
+    try {
+      await AugeConnection.getConnection().transaction((ctx) async {
+
+        await ctx.query(
+            "UPDATE auge_objective.measures SET current_value = @current_value WHERE id = @measure_id", substitutionValues: {
+          "current_value": measureProgress.currentValue,
+          "measure_id": measureId});
+
+        if (measureProgress.id == null) {
+          measureProgress.id = new Uuid().v4();
+        }
+
+        if (measureProgress.dateTime == null) {
+          measureProgress.dateTime = DateTime.now().toUtc();
+        }
+
+        await ctx.query(
+            "INSERT INTO auge_objective.measure_progress(id, date_time, current_value, comment, measure_id) VALUES"
+                "(@id,"
+                "@date_time,"
+                "@current_value,"
+                "@comment,"
+                "@measure_id)"
+            , substitutionValues: {
+          "id": measureProgress.id,
+          "date_time": measureProgress.dateTime,
+          "current_value": measureProgress.currentValue,
+          "comment": measureProgress.comment,
+          "measure_id": measureId});
+
+      });
+    } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
+    }
+    return IdMessage()..id = measureProgress.id;
+  }
+
+  /// Update [Measure]
   @ApiMethod( method: 'PUT', path: 'objetives/{objectiveid}/measures')
   Future<VoidMessage> updateMeasure(String objectiveid, Measure measure) async {
     try {

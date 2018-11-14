@@ -251,11 +251,11 @@ class ObjectiveFacilities {
     if (previous != null && current.leader.id != previous.leader.id) {
 
       difference[changedDataKey] =
-      {'alignedTo.name': {currentDataChangedKey: current.leader.name, previousDataChangedKey: previous.leader.name}};
+      {'leader.name': {currentDataChangedKey: current.leader.name, previousDataChangedKey: previous.leader.name}};
     } else if (previous == null && current.leader != null ) {
 
       difference[changedDataKey] =
-      {'alignedTo.name': {currentDataChangedKey: current.leader.name}};
+      {'leader.name': {currentDataChangedKey: current.leader.name}};
     }
 
     //List<Measure> measures;
