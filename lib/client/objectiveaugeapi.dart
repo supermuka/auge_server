@@ -252,6 +252,44 @@ class ObjectiveAugeApi {
 
   /// Request parameters:
   ///
+  /// [measureId] - Path parameter: 'measureId'.
+  ///
+  /// Completes with a [core.List<MeasureProgress>].
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future<core.List<MeasureProgress>> getMeasureProgress(
+      core.String measureId) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (measureId == null) {
+      throw new core.ArgumentError("Parameter measureId is required.");
+    }
+
+    _url =
+        'measures/' + commons.Escaper.ecapeVariable('$measureId') + '/progress';
+
+    var _response = _requester.request(_url, "GET",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => (data as core.List)
+        .map<MeasureProgress>((value) => MeasureProgressFactory.fromJson(value))
+        .toList());
+  }
+
+  /// Request parameters:
+  ///
   /// Completes with a [core.List<MeasureUnit>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an

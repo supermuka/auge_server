@@ -284,6 +284,44 @@ class ObjectiveAugeApi {
     return IdMessage()..id = measure.id;
   }
 
+  // *** MEASURES PROGRESS ***
+  static Future<List<MeasureProgress>> queryMeasureProgress({String measureId, String id}) async {
+    List<List> results;
+
+    String queryStatement;
+
+    queryStatement = "SELECT id::VARCHAR, date_time, current_value, comment, measure_id"
+        " FROM auge_objective.measure_progress ";
+
+    Map<String, dynamic> substitutionValues;
+
+    if (id != null) {
+      queryStatement += " WHERE id = @id";
+      substitutionValues = {"id": id};
+    } else {
+      queryStatement += " WHERE measure_id = @measure_id";
+      substitutionValues = {"measure_id": measureId};
+    }
+
+    results = await AugeConnection.getConnection().query(
+        queryStatement, substitutionValues: substitutionValues);
+
+    List<MeasureProgress> mesuareProgress = new List();
+
+    if (results != null && results.isNotEmpty) {
+
+      for (var row in results) {
+
+        mesuareProgress.add( MeasureProgress()
+          ..id = row[0]
+          ..dateTime = row[1]
+          ..currentValue = row[2]
+          ..comment = row[3]);
+      }
+    }
+    return mesuareProgress;
+  }
+
   /// Update current value of the [MeasureProgress]
   @ApiMethod( method: 'POST', path: 'measures/{measureId}/progress')
   Future<IdMessage> createMeasureProgress(String measureId, MeasureProgress measureProgress) async {
@@ -324,6 +362,22 @@ class ObjectiveAugeApi {
     }
     return IdMessage()..id = measureProgress.id;
   }
+
+
+  /// Return [MeasureProgress] list by [Measure.id]
+  @ApiMethod( method: 'GET', path: 'measures/{measureId}/progress')
+  Future<List<MeasureProgress>> getMeasureProgress(String measureId) async {
+    try {
+
+      List<MeasureProgress> measureProgress;
+      measureProgress = await queryMeasureProgress(measureId: measureId);
+      return measureProgress;
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+  }
+
 
   /// Update [Measure]
   @ApiMethod( method: 'PUT', path: 'objetives/{objectiveid}/measures')
