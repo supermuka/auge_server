@@ -35,11 +35,11 @@ main(List<String> args) async {
   }
 
   // RPC
-
+/*
   rpcLogger.onRecord.listen((event) {
     print('${event.level.name}: ${event.time}: ${event.message}');
   });
-
+*/
   _apiServer.addApi(new AugeApi());
   _apiServer.addApi(new InitiativeAugeApi());
   _apiServer.addApi(new ObjectiveAugeApi());
