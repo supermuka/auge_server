@@ -578,6 +578,12 @@ class MeasureFactory {
     if (_json.containsKey("id")) {
       message.id = _json["id"];
     }
+    if (_json.containsKey("measureProgress")) {
+      message.measureProgress = (_json["measureProgress"] as core.List)
+          .map<MeasureProgress>(
+              (value) => MeasureProgressFactory.fromJson(value))
+          .toList();
+    }
     if (_json.containsKey("measureUnit")) {
       message.measureUnit = MeasureUnitFactory.fromJson(_json["measureUnit"]);
     }
@@ -610,6 +616,11 @@ class MeasureFactory {
     if (message.id != null) {
       _json["id"] = message.id;
     }
+    if (message.measureProgress != null) {
+      _json["measureProgress"] = message.measureProgress
+          .map((value) => MeasureProgressFactory.toJson(value))
+          .toList();
+    }
     if (message.measureUnit != null) {
       _json["measureUnit"] = MeasureUnitFactory.toJson(message.measureUnit);
     }
@@ -621,6 +632,42 @@ class MeasureFactory {
     }
     if (message.startValue != null) {
       _json["startValue"] = message.startValue;
+    }
+    return _json;
+  }
+}
+
+class MeasureProgressFactory {
+  static MeasureProgress fromJson(core.Map _json) {
+    var message = new MeasureProgress();
+    if (_json.containsKey("comment")) {
+      message.comment = _json["comment"];
+    }
+    if (_json.containsKey("currentValue")) {
+      message.currentValue = _json["currentValue"].toDouble();
+    }
+    if (_json.containsKey("dateTime")) {
+      message.dateTime = core.DateTime.parse(_json["dateTime"]);
+    }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    return message;
+  }
+
+  static core.Map toJson(MeasureProgress message) {
+    var _json = new core.Map();
+    if (message.comment != null) {
+      _json["comment"] = message.comment;
+    }
+    if (message.currentValue != null) {
+      _json["currentValue"] = message.currentValue;
+    }
+    if (message.dateTime != null) {
+      _json["dateTime"] = (message.dateTime).toIso8601String();
+    }
+    if (message.id != null) {
+      _json["id"] = message.id;
     }
     return _json;
   }
@@ -666,6 +713,9 @@ class ObjectiveFactory {
       message.alignedWithChildren = (_json["alignedWithChildren"] as core.List)
           .map<Objective>((value) => ObjectiveFactory.fromJson(value))
           .toList();
+    }
+    if (_json.containsKey("archived")) {
+      message.archived = _json["archived"];
     }
     if (_json.containsKey("description")) {
       message.description = _json["description"];
@@ -718,6 +768,9 @@ class ObjectiveFactory {
       _json["alignedWithChildren"] = message.alignedWithChildren
           .map((value) => ObjectiveFactory.toJson(value))
           .toList();
+    }
+    if (message.archived != null) {
+      _json["archived"] = message.archived;
     }
     if (message.description != null) {
       _json["description"] = message.description;

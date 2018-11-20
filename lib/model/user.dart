@@ -7,7 +7,7 @@ class UserBase {
  String id;
 }
 
-class User implements UserBase  {
+class User extends UserBase  {
   String id;
   String name;
   String eMail;

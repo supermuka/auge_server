@@ -669,7 +669,6 @@ class ObjectiveAugeApi {
 
         await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objective.id, objective.lastTimelineItem));
 
-
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');

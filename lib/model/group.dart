@@ -26,7 +26,9 @@ class GroupPersistent<TOrganization extends OrganizationBase, TGroupType extends
   }
 }
 */
-class Group /* implements GroupPersistent<Organization, GroupType, Group, User> */ {
+
+
+class Group implements GroupBase {
 
   String id;
   String name;
