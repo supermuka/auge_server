@@ -35,7 +35,7 @@ class ObjectiveAugeApi {
   ///
   /// Request parameters:
   ///
-  /// [objectiveid] - Path parameter: 'objectiveid'.
+  /// [objectiveId] - Path parameter: 'objectiveId'.
   ///
   /// Completes with a [IdMessage].
   ///
@@ -45,7 +45,7 @@ class ObjectiveAugeApi {
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
   async.Future<IdMessage> createMeasure(
-      Measure request, core.String objectiveid) {
+      Measure request, core.String objectiveId) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -56,12 +56,12 @@ class ObjectiveAugeApi {
     if (request != null) {
       _body = convert.json.encode(MeasureFactory.toJson(request));
     }
-    if (objectiveid == null) {
-      throw new core.ArgumentError("Parameter objectiveid is required.");
+    if (objectiveId == null) {
+      throw new core.ArgumentError("Parameter objectiveId is required.");
     }
 
     _url = 'objetives/' +
-        commons.Escaper.ecapeVariable('$objectiveid') +
+        commons.Escaper.ecapeVariable('$objectiveId') +
         '/measures';
 
     var _response = _requester.request(_url, "POST",
@@ -118,14 +118,14 @@ class ObjectiveAugeApi {
   ///
   /// Request parameters:
   ///
-  /// Completes with a [Objective].
+  /// Completes with a [IdMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<Objective> createObjective(Objective request) {
+  async.Future<IdMessage> createObjective(Objective request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -145,7 +145,7 @@ class ObjectiveAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => ObjectiveFactory.fromJson(data));
+    return _response.then((data) => IdMessageFactory.fromJson(data));
   }
 
   /// Request parameters:
@@ -362,6 +362,12 @@ class ObjectiveAugeApi {
   ///
   /// [withMeasures] - Query parameter: 'withMeasures'.
   ///
+  /// [withProfile] - Query parameter: 'withProfile'.
+  ///
+  /// [withTimeline] - Query parameter: 'withTimeline'.
+  ///
+  /// [withArchived] - Query parameter: 'withArchived'.
+  ///
   /// Completes with a [Objective].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -370,7 +376,10 @@ class ObjectiveAugeApi {
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
   async.Future<Objective> getObjectiveById(core.String id,
-      {core.bool withMeasures}) {
+      {core.bool withMeasures,
+      core.bool withProfile,
+      core.bool withTimeline,
+      core.bool withArchived}) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -383,6 +392,15 @@ class ObjectiveAugeApi {
     }
     if (withMeasures != null) {
       _queryParams["withMeasures"] = ["${withMeasures}"];
+    }
+    if (withProfile != null) {
+      _queryParams["withProfile"] = ["${withProfile}"];
+    }
+    if (withTimeline != null) {
+      _queryParams["withTimeline"] = ["${withTimeline}"];
+    }
+    if (withArchived != null) {
+      _queryParams["withArchived"] = ["${withArchived}"];
     }
 
     _url = 'objectives/' + commons.Escaper.ecapeVariable('$id');
@@ -399,8 +417,6 @@ class ObjectiveAugeApi {
   /// Request parameters:
   ///
   /// [organizationId] - Path parameter: 'organizationId'.
-  ///
-  /// [id] - Query parameter: 'id'.
   ///
   /// [withMeasures] - Query parameter: 'withMeasures'.
   ///
@@ -420,8 +436,7 @@ class ObjectiveAugeApi {
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
   async.Future<core.List<Objective>> getObjectives(core.String organizationId,
-      {core.String id,
-      core.bool withMeasures,
+      {core.bool withMeasures,
       core.bool treeAlignedWithChildren,
       core.bool withProfile,
       core.bool withTimeline,
@@ -435,9 +450,6 @@ class ObjectiveAugeApi {
 
     if (organizationId == null) {
       throw new core.ArgumentError("Parameter organizationId is required.");
-    }
-    if (id != null) {
-      _queryParams["id"] = [id];
     }
     if (withMeasures != null) {
       _queryParams["withMeasures"] = ["${withMeasures}"];
@@ -470,18 +482,56 @@ class ObjectiveAugeApi {
         .toList());
   }
 
-  /// [request] - The metadata request object.
-  ///
   /// Request parameters:
   ///
-  /// [objectiveid] - Path parameter: 'objectiveid'.
+  /// [objectiveId] - Path parameter: 'objectiveId'.
+  ///
+  /// Completes with a [core.List<TimelineItem>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future updateMeasure(Measure request, core.String objectiveid) {
+  async.Future<core.List<TimelineItem>> getTimeline(core.String objectiveId) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (objectiveId == null) {
+      throw new core.ArgumentError("Parameter objectiveId is required.");
+    }
+
+    _url = 'objective/' +
+        commons.Escaper.ecapeVariable('$objectiveId') +
+        '/timeline';
+
+    var _response = _requester.request(_url, "GET",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => (data as core.List)
+        .map<TimelineItem>((value) => TimelineItemFactory.fromJson(value))
+        .toList());
+  }
+
+  /// [request] - The metadata request object.
+  ///
+  /// Request parameters:
+  ///
+  /// [objectiveId] - Path parameter: 'objectiveId'.
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future updateMeasure(Measure request, core.String objectiveId) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -492,14 +542,14 @@ class ObjectiveAugeApi {
     if (request != null) {
       _body = convert.json.encode(MeasureFactory.toJson(request));
     }
-    if (objectiveid == null) {
-      throw new core.ArgumentError("Parameter objectiveid is required.");
+    if (objectiveId == null) {
+      throw new core.ArgumentError("Parameter objectiveId is required.");
     }
 
     _downloadOptions = null;
 
     _url = 'objetives/' +
-        commons.Escaper.ecapeVariable('$objectiveid') +
+        commons.Escaper.ecapeVariable('$objectiveId') +
         '/measures';
 
     var _response = _requester.request(_url, "PUT",
@@ -670,6 +720,10 @@ class MeasureFactory {
     if (_json.containsKey("id")) {
       message.id = _json["id"];
     }
+    if (_json.containsKey("lastTimelineItem")) {
+      message.lastTimelineItem =
+          TimelineItemFactory.fromJson(_json["lastTimelineItem"]);
+    }
     if (_json.containsKey("measureProgress")) {
       message.measureProgress = (_json["measureProgress"] as core.List)
           .map<MeasureProgress>(
@@ -707,6 +761,10 @@ class MeasureFactory {
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.lastTimelineItem != null) {
+      _json["lastTimelineItem"] =
+          TimelineItemFactory.toJson(message.lastTimelineItem);
     }
     if (message.measureProgress != null) {
       _json["measureProgress"] = message.measureProgress

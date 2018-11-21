@@ -160,7 +160,6 @@ class ObjectiveAugeApi {
     return null;
   }
 
-
   /// Return a [Measure] by Id
   @ApiMethod( method: 'GET', path: 'measures/{id}')
   Future<Measure> getMeasureById(String id) async {
@@ -241,15 +240,14 @@ class ObjectiveAugeApi {
   */
 
   /// Create (insert) a new measures
-  @ApiMethod( method: 'POST', path: 'objetives/{objectiveid}/measures')
-  Future<IdMessage> createMeasure(String objectiveid, Measure measure) async {
+  @ApiMethod( method: 'POST', path: 'objetives/{objectiveId}/measures')
+  Future<IdMessage> createMeasure(String objectiveId, Measure measure) async {
 
     if (measure.id == null) {
       measure.id = new Uuid().v4();
     }
 
     try {
-
       await AugeConnection.getConnection().transaction((ctx) async {
         await ctx.query(
             "INSERT INTO auge_objective.measures(id, name, description, metric, decimals_number, start_value, end_value, current_value, measure_unit_id, objective_id) VALUES"
@@ -273,8 +271,18 @@ class ObjectiveAugeApi {
           "end_value": measure.endValue,
           "current_value": measure.currentValue,
           "measure_unit_id": measure?.measureUnit?.id,
-          "objective_id": objectiveid
+          "objective_id": objectiveId
         });
+
+        // TimelineItem
+        if (measure.lastTimelineItem.id == null) {
+          measure.lastTimelineItem.id = new Uuid().v4();
+        }
+        if (measure.lastTimelineItem.dateTime == null) {
+          measure.lastTimelineItem.dateTime = DateTime.now().toUtc();
+        }
+
+        await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objectiveId, measure.lastTimelineItem));
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -380,32 +388,45 @@ class ObjectiveAugeApi {
 
 
   /// Update [Measure]
-  @ApiMethod( method: 'PUT', path: 'objetives/{objectiveid}/measures')
-  Future<VoidMessage> updateMeasure(String objectiveid, Measure measure) async {
+  @ApiMethod( method: 'PUT', path: 'objetives/{objectiveId}/measures')
+  Future<VoidMessage> updateMeasure(String objectiveId, Measure measure) async {
     try {
-      await  AugeConnection.getConnection().query("UPDATE auge_objective.measures "
-          " SET name = @name,"
-          " description = @description,"
-          " metric = @metric,"
-          " decimals_number = @decimals_number,"
-          " start_value = @start_value,"
-          " end_value = @end_value,"
-          " current_value = @current_value,"
-          " objective_id = @objective_id,"
-          " measure_unit_id = @measure_unit_id"
-          " WHERE id = @id"
-          , substitutionValues: {
-            "id": measure.id,
-            "name": measure.name,
-            "description": measure.description,
-            "metric": measure.metric,
-            "decimals_number": measure.decimalsNumber,
-            "start_value": measure.startValue,
-            "end_value": measure.endValue,
-            "current_value": measure.currentValue,
-            "measure_unit_id": measure?.measureUnit?.id,
-            "objective_id": objectiveid
-          });
+      await AugeConnection.getConnection().transaction((ctx) async {
+        await ctx.query("UPDATE auge_objective.measures "
+            " SET name = @name,"
+            " description = @description,"
+            " metric = @metric,"
+            " decimals_number = @decimals_number,"
+            " start_value = @start_value,"
+            " end_value = @end_value,"
+            " current_value = @current_value,"
+            " objective_id = @objective_id,"
+            " measure_unit_id = @measure_unit_id"
+            " WHERE id = @id"
+            , substitutionValues: {
+              "id": measure.id,
+              "name": measure.name,
+              "description": measure.description,
+              "metric": measure.metric,
+              "decimals_number": measure.decimalsNumber,
+              "start_value": measure.startValue,
+              "end_value": measure.endValue,
+              "current_value": measure.currentValue,
+              "measure_unit_id": measure?.measureUnit?.id,
+              "objective_id": objectiveId
+            });
+
+        // TimelineItem
+        if (measure.lastTimelineItem.id == null) {
+          measure.lastTimelineItem.id = new Uuid().v4();
+        }
+        if (measure.lastTimelineItem.dateTime == null) {
+          measure.lastTimelineItem.dateTime = DateTime.now().toUtc();
+        }
+
+        await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objectiveId, measure.lastTimelineItem));
+
+      });
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -528,7 +549,7 @@ class ObjectiveAugeApi {
           ..description = row[2]
           ..startDate = row[3]
           ..endDate = row[4]
-          ..archived = row[5]
+          ..archived =  row[5]
           ..organization = organization
           ..leader = leaderUser
           ..measures = measures
@@ -559,7 +580,7 @@ class ObjectiveAugeApi {
 
   /// Return all objectives from an organization
   @ApiMethod( method: 'GET', path: 'organization/{organizationId}/objetives')
-  Future<List<Objective>> getObjectives(String organizationId, {String id, bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false, bool withTimeline = false, bool withArchived = false}) async {
+  Future<List<Objective>> getObjectives(String organizationId, {bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false, bool withTimeline = false, bool withArchived = false}) async {
     try {
       // return queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
 
@@ -583,9 +604,9 @@ class ObjectiveAugeApi {
 
   /// Return an [Objective] from an organization by Id
   @ApiMethod( method: 'GET', path: 'objectives/{id}')
-  Future<Objective> getObjectiveById(String id, {bool withMeasures = false}) async {
+  Future<Objective> getObjectiveById(String id, {bool withMeasures = false, bool withProfile = false, bool withTimeline = false, bool withArchived = false}) async {
     try {
-      List<Objective> objectives = await queryObjectives(id: id, withMeasures: withMeasures);
+      List<Objective> objectives = await queryObjectives(id: id, withMeasures: withMeasures, withProfile: withProfile, withTimeline: withTimeline, withArchived: withArchived);
 
       if (objectives != null && objectives.length != 0) {
         return objectives.first;
@@ -626,16 +647,12 @@ class ObjectiveAugeApi {
 
     /// Create (insert) a new objective
   @ApiMethod( method: 'POST', path: 'objectives')
-  Future<Objective> createObjective(Objective objective) async {
-
+  Future<IdMessage> createObjective(Objective objective) async {
     if (objective.id == null) {
       objective.id = new Uuid().v4();
     }
-
     try {
-
       await AugeConnection.getConnection().transaction((ctx) async {
-
         await ctx.query("INSERT INTO auge_objective.objectives(id, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
             "(@id,"
             "@name,"
@@ -674,7 +691,7 @@ class ObjectiveAugeApi {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return (await queryObjectives(id: objective.id, withTimeline: true, withMeasures: true, withProfile: true, withArchived: true))?.first;
+    return IdMessage()..id = objective.id;
   }
 
   /// Update an initiative passing an instance of [Objective]
@@ -786,5 +803,21 @@ class ObjectiveAugeApi {
       }
     }
     return objectiveTimeline;
+  }
+
+  /// Return objective timeline
+  @ApiMethod( method: 'GET', path: 'objective/{objectiveId}/timeline')
+  Future<List<TimelineItem>> getTimeline(String objectiveId) async {
+    try {
+      // return queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
+
+      List<TimelineItem> timeline;
+      timeline = await queryTimeline(objectiveId: objectiveId);
+      return timeline;
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
   }
 }

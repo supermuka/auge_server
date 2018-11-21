@@ -1,6 +1,7 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'package:auge_server/model/objective/timeline_item.dart';
 import 'dart:convert';
 
 /// Domain model class to represent an measure
@@ -22,6 +23,8 @@ class Measure implements MeasureBase {
   MeasureUnit measureUnit;
 
   List<MeasureProgress> measureProgress;
+
+  TimelineItem lastTimelineItem;
 
  // NumberFormat _numberFormat;
 
