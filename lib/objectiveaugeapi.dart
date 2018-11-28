@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel.
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:rpc/rpc.dart';
 import 'package:uuid/uuid.dart';
@@ -34,13 +35,13 @@ class ObjectiveAugeApi {
   }
 
   String queryStatementCreateTimelineItem =
-  "INSERT INTO auge_objective.objective_timeline(id, date_time, system_function_index, class_name, changed_data, comment, user_id, objective_id) VALUES"
+  "INSERT INTO auge_objective.objective_timeline(id, date_time, system_function_index, class_name, changed_data, description, user_id, objective_id) VALUES"
   "(@id,"
   "@date_time,"
   "@system_function_index,"
   "@class_name,"
   "@changed_data,"
-  "@comment,"
+  "@description,"
   "@user_id,"
   "@objective_id)";
 
@@ -50,11 +51,10 @@ class ObjectiveAugeApi {
               "system_function_index": timelineItem.systemFunctionIndex,
               "class_name": timelineItem.className,
               "changed_data": timelineItem.changedData,
-              "comment": timelineItem.comment,
+              "description": timelineItem.description,
               "user_id": timelineItem.user.id,
               "objective_id": objectiveId};
   }
-
 
   // *** MEASURE UNITS ***
   static Future<List<MeasureUnit>> queryMeasureUnits({String id}) async {
@@ -87,22 +87,37 @@ class ObjectiveAugeApi {
   }
 
   // *** MEASURES ***
-  static Future<List<Measure>> queryMeasures({String objectiveId, String id}) async {
+  static Future<List<Measure>> queryMeasures({String objectiveId, String id, bool isDeleted= false}) async {
     List<List> results;
 
     String queryStatement;
 
-    queryStatement = "SELECT id::VARCHAR, name, description, metric, decimals_number, start_value::REAL, end_value::REAL, current_value::REAL, measure_unit_id"
-        " FROM auge_objective.measures ";
+    queryStatement = "SELECT id::VARCHAR," //0
+    " name," //1
+    " description," //2
+    " metric," //3
+    " decimals_number," //4
+    " start_value::REAL," //5
+    " end_value::REAL," //6
+    " current_value::REAL," //7
+    " measure_unit_id," //8
+    " is_deleted," //9
+    " created_at," //10
+    " created_by_user_id," //11
+    " updated_at," //12
+    " updated_by_user_id," //13
+    " deleted_at, " //14
+    " deleted_by_user_id " //15
+    " FROM auge_objective.measures ";
 
     Map<String, dynamic> substitutionValues;
 
     if (id != null) {
-      queryStatement += " WHERE id = @id";
-      substitutionValues = {"id": id};
+      queryStatement += " WHERE id = @id AND is_deleted = @is_deleted";
+      substitutionValues = {"id": id, "is_deleted": isDeleted};
     } else {
-      queryStatement += " WHERE objective_id = @objective_id";
-      substitutionValues = {"objective_id": objectiveId};
+      queryStatement += " WHERE objective_id = @objective_id AND is_deleted = @is_deleted";
+      substitutionValues = {"objective_id": objectiveId, "is_deleted": isDeleted};
     }
 
     results = await AugeConnection.getConnection().query(
@@ -135,7 +150,14 @@ class ObjectiveAugeApi {
           ..startValue = row[5]
           ..endValue = row[6]
           ..currentValue = row[7]
-          ..measureUnit = measureUnit);
+          ..measureUnit = measureUnit
+          ..isDeleted = row[9]
+          ..audit.createdAt = row[10]
+          ..audit.createdBy = row[11] != null ? (await AugeApi.queryUsers(id: row[11], withProfile: false)).first : null
+          ..audit.updatedAt = row[12]
+          ..audit.updatedBy = row[13] != null ? (await AugeApi.queryUsers(id: row[13], withProfile: false)).first : null
+          ..audit.deletedAt = row[14]
+          ..audit.deletedBy = row[15] != null ? (await AugeApi.queryUsers(id: row[15], withProfile: false)).first : null);
       }
     }
     return mesuares;
@@ -176,15 +198,13 @@ class ObjectiveAugeApi {
     }
   }
 
-
-
   /// Return [Measure] list
   @ApiMethod( method: 'GET', path: 'objetives/{objectiveId}/measures')
-  Future<List<Measure>> getMeasures(String objectiveId) async {
+  Future<List<Measure>> getMeasures(String objectiveId, {bool isDeleted = false}) async {
     try {
 
       List<Measure> measures;
-      measures = await queryMeasures(objectiveId: objectiveId);
+      measures = await queryMeasures(objectiveId: objectiveId, isDeleted: isDeleted);
       return measures;
       /*
       if (measures != null && measures.length != 0) {
@@ -247,10 +267,12 @@ class ObjectiveAugeApi {
       measure.id = new Uuid().v4();
     }
 
+    DateTime dateTimeNow = DateTime.now().toUtc();
+    print('Passou $dateTimeNow');
     try {
       await AugeConnection.getConnection().transaction((ctx) async {
         await ctx.query(
-            "INSERT INTO auge_objective.measures(id, name, description, metric, decimals_number, start_value, end_value, current_value, measure_unit_id, objective_id) VALUES"
+            "INSERT INTO auge_objective.measures(id, name, description, metric, decimals_number, start_value, end_value, current_value, measure_unit_id, objective_id, created_at, created_by_user_id, is_deleted) VALUES"
                 "(@id,"
                 "@name,"
                 "@description,"
@@ -260,7 +282,10 @@ class ObjectiveAugeApi {
                 "@end_value,"
                 "@current_value,"
                 "@measure_unit_id,"
-                "@objective_id)"
+                "@objective_id,"
+                "@created_at,"
+                "@created_by_user_id,"
+                "@is_deleted)"
             , substitutionValues: {
           "id": measure.id,
           "name": measure.name,
@@ -271,7 +296,10 @@ class ObjectiveAugeApi {
           "end_value": measure.endValue,
           "current_value": measure.currentValue,
           "measure_unit_id": measure?.measureUnit?.id,
-          "objective_id": objectiveId
+          "objective_id": objectiveId,
+          "created_at": dateTimeNow,
+          "created_by_user_id": measure.audit.createdBy.id,
+          "is_deleted": measure.isDeleted
         });
 
         // TimelineItem
@@ -279,10 +307,11 @@ class ObjectiveAugeApi {
           measure.lastTimelineItem.id = new Uuid().v4();
         }
         if (measure.lastTimelineItem.dateTime == null) {
-          measure.lastTimelineItem.dateTime = DateTime.now().toUtc();
+          measure.lastTimelineItem.dateTime = dateTimeNow;
         }
 
         await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objectiveId, measure.lastTimelineItem));
+
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -298,7 +327,7 @@ class ObjectiveAugeApi {
 
     String queryStatement;
 
-    queryStatement = "SELECT id::VARCHAR, date_time, current_value, comment, measure_id"
+    queryStatement = "SELECT id::VARCHAR, date_time, current_value, description, measure_id"
         " FROM auge_objective.measure_progress ";
 
     Map<String, dynamic> substitutionValues;
@@ -386,42 +415,65 @@ class ObjectiveAugeApi {
     }
   }
 
-
   /// Update [Measure]
   @ApiMethod( method: 'PUT', path: 'objetives/{objectiveId}/measures')
   Future<VoidMessage> updateMeasure(String objectiveId, Measure measure) async {
     try {
       await AugeConnection.getConnection().transaction((ctx) async {
-        await ctx.query("UPDATE auge_objective.measures "
-            " SET name = @name,"
-            " description = @description,"
-            " metric = @metric,"
-            " decimals_number = @decimals_number,"
-            " start_value = @start_value,"
-            " end_value = @end_value,"
-            " current_value = @current_value,"
-            " objective_id = @objective_id,"
-            " measure_unit_id = @measure_unit_id"
-            " WHERE id = @id"
-            , substitutionValues: {
-              "id": measure.id,
-              "name": measure.name,
-              "description": measure.description,
-              "metric": measure.metric,
-              "decimals_number": measure.decimalsNumber,
-              "start_value": measure.startValue,
-              "end_value": measure.endValue,
-              "current_value": measure.currentValue,
-              "measure_unit_id": measure?.measureUnit?.id,
-              "objective_id": objectiveId
-            });
+
+        DateTime dateTimeNow = DateTime.now().toUtc();
+
+        // Soft delete
+        if (measure.isDeleted) {
+            await ctx.query("UPDATE auge_objective.measures "
+              " SET deleted_at = @deleted_at,"
+              " deleted_by_user_id = @deleted_by_user_id,"
+              " is_deleted = @is_deleted"
+              " WHERE id = @id"
+              , substitutionValues: {
+                "id": measure.id,
+                "is_deleted": measure.isDeleted,
+                "deleted_at": dateTimeNow,
+                "deleted_by_user_id": measure.audit.deletedBy.id
+              });
+        } else {
+          await ctx.query("UPDATE auge_objective.measures "
+              " SET name = @name,"
+              " description = @description,"
+              " metric = @metric,"
+              " decimals_number = @decimals_number,"
+              " start_value = @start_value,"
+              " end_value = @end_value,"
+              " current_value = @current_value,"
+              " objective_id = @objective_id,"
+              " measure_unit_id = @measure_unit_id,"
+              " updated_at = @updated_at,"
+              " updated_by_user_id = @updated_by_user_id,"
+              " is_deleted = @is_deleted"
+              " WHERE id = @id"
+              , substitutionValues: {
+                "id": measure.id,
+                "name": measure.name,
+                "description": measure.description,
+                "metric": measure.metric,
+                "decimals_number": measure.decimalsNumber,
+                "start_value": measure.startValue,
+                "end_value": measure.endValue,
+                "current_value": measure.currentValue,
+                "measure_unit_id": measure?.measureUnit?.id,
+                "objective_id": objectiveId,
+                "updated_at": dateTimeNow,
+                "updated_by_user_id": measure.audit.updatedBy.id,
+                "is_deleted": measure.isDeleted,
+              });
+        }
 
         // TimelineItem
         if (measure.lastTimelineItem.id == null) {
           measure.lastTimelineItem.id = new Uuid().v4();
         }
         if (measure.lastTimelineItem.dateTime == null) {
-          measure.lastTimelineItem.dateTime = DateTime.now().toUtc();
+          measure.lastTimelineItem.dateTime = dateTimeNow;
         }
 
         await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objectiveId, measure.lastTimelineItem));
@@ -745,7 +797,7 @@ class ObjectiveAugeApi {
   }
 
   // *** OBJECTIVE TIMELINE ***
-  static Future<List<TimelineItem>> queryTimeline({String objectiveId, String id}) async {
+  static Future<List<TimelineItem>> queryTimeline({String objectiveId, String id, withIdRemoved = false}) async {
     List<List> results;
 
     String queryStatement;
@@ -755,7 +807,7 @@ class ObjectiveAugeApi {
         " system_function_index," //2
         " class_name," //3
         " changed_data,"  //4
-        " comment,"  //5
+        " description,"  //5
         " user_id," //6
         " objective_id" //7
         " FROM auge_objective.objective_timeline ";
@@ -792,17 +844,26 @@ class ObjectiveAugeApi {
           user = null;
         }
 
+
+
+        Map changedDataMap = json.decode(row[4]);
+        if (withIdRemoved)
+        changedDataMap.keys.where((k) =>  (k == 'id' || changedDataMap[k] is Map && changedDataMap[k].keys.where((kk) => (kk == 'id') ))
+        ).toList().forEach(changedDataMap.remove);
+
+
         objectiveTimeline.add(new TimelineItem()
           ..id = row[0]
           ..dateTime = row[1]
           ..systemFunctionIndex = row[2]
           ..className = row[3]
-          ..changedData = row[4]
-          ..comment = row[5]
+          ..changedData =  row[4]
+          ..description = row[5]
           ..user = user);
       }
     }
     return objectiveTimeline;
+
   }
 
   /// Return objective timeline

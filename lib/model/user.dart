@@ -4,7 +4,7 @@
 /// Domain model class to represent an user account
 
 class UserBase {
- String id;
+  String id;
 }
 
 class User extends UserBase  {

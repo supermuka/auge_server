@@ -578,6 +578,10 @@ class MeasureFactory {
     if (_json.containsKey("id")) {
       message.id = _json["id"];
     }
+    if (_json.containsKey("lastTimelineItem")) {
+      message.lastTimelineItem =
+          TimelineItemFactory.fromJson(_json["lastTimelineItem"]);
+    }
     if (_json.containsKey("measureProgress")) {
       message.measureProgress = (_json["measureProgress"] as core.List)
           .map<MeasureProgress>(
@@ -615,6 +619,10 @@ class MeasureFactory {
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.lastTimelineItem != null) {
+      _json["lastTimelineItem"] =
+          TimelineItemFactory.toJson(message.lastTimelineItem);
     }
     if (message.measureProgress != null) {
       _json["measureProgress"] = message.measureProgress
@@ -926,11 +934,11 @@ class TimelineItemFactory {
     if (_json.containsKey("className")) {
       message.className = _json["className"];
     }
-    if (_json.containsKey("comment")) {
-      message.comment = _json["comment"];
-    }
     if (_json.containsKey("dateTime")) {
       message.dateTime = core.DateTime.parse(_json["dateTime"]);
+    }
+    if (_json.containsKey("description")) {
+      message.description = _json["description"];
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
@@ -952,11 +960,11 @@ class TimelineItemFactory {
     if (message.className != null) {
       _json["className"] = message.className;
     }
-    if (message.comment != null) {
-      _json["comment"] = message.comment;
-    }
     if (message.dateTime != null) {
       _json["dateTime"] = (message.dateTime).toIso8601String();
+    }
+    if (message.description != null) {
+      _json["description"] = message.description;
     }
     if (message.id != null) {
       _json["id"] = message.id;

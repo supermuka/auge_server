@@ -26,8 +26,6 @@ class GroupPersistent<TOrganization extends OrganizationBase, TGroupType extends
   }
 }
 */
-
-
 class Group implements GroupBase {
 
   String id;

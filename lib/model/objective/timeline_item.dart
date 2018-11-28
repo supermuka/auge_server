@@ -21,7 +21,7 @@ class TimelineItem implements TimelineItemBase {
   int systemFunctionIndex;
   String className;
   String changedData;
-  String comment;
+  String description;
 
 
   void cloneTo(TimelineItem to) {
@@ -33,7 +33,7 @@ class TimelineItem implements TimelineItemBase {
     to.systemFunctionIndex = this.systemFunctionIndex;
     to.className = this.className;
     to.changedData = this.changedData;
-    to.comment = this.comment;
+    to.description = this.description;
   }
 
   TimelineItem clone() {
@@ -64,7 +64,7 @@ class TimelineItemMessage {
   int systemFunctionIndex;
   String className;
   String changedData;
-  String comment;
+  String description;
 }
 
 /// Facilities to [TimelineItem] class
@@ -77,7 +77,7 @@ class TimeLineItemFacilities {
         ..systemFunctionIndex = timeLineItem.systemFunctionIndex
         ..className = timeLineItem.className
         ..changedData = timeLineItem.changedData
-        ..comment = timeLineItem.comment;
+        ..description = timeLineItem.description;
 
   }
 
