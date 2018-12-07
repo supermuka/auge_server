@@ -105,7 +105,8 @@ class ObjectiveAugeApi {
     " created_at," //10
     " created_by_user_id," //11
     " updated_at," //12
-    " updated_by_user_id " //13
+    " updated_by_user_id, " //13
+    " version " //14
     " FROM auge_objective.measures ";
 
     Map<String, dynamic> substitutionValues;
@@ -153,7 +154,8 @@ class ObjectiveAugeApi {
           ..measureUnit = measureUnit
           ..isDeleted = row[9]
           ..audit.createdAt = row[10]
-          ..audit.updatedAt = row[12];
+          ..audit.updatedAt = row[12]
+          ..audit.version = row[14];
 
         if (withAuditUser) {
           List<User> createdUsers = await AugeApi.queryUsers(id: row[11], withProfile: false);
@@ -336,7 +338,7 @@ class ObjectiveAugeApi {
   }
 
   // *** MEASURES PROGRESS ***
-  static Future<List<MeasureProgress>> queryMeasureProgress({String measureId, String id, bool withAuditUser = false}) async {
+  static Future<List<MeasureProgress>> queryMeasureProgress({String measureId, String id, bool isDeleted = false, bool withAuditUser = false}) async {
 
     print('queryMeasureProgress');
     print(id);
@@ -351,24 +353,24 @@ class ObjectiveAugeApi {
     " comment," //3
     " measure_id," //4
     " created_at,"//5
-    " created_by_user_id"//6
-    " FROM auge_objective.measure_progress "
-    " WHERE auge_objective.measure_progress.is_deleted = false";
+    " created_by_user_id,"//6
+    " version"//7
+    " FROM auge_objective.measure_progress ";
 
     Map<String, dynamic> substitutionValues;
 
     if (id != null) {
-      queryStatement += " AND id = @id";
-      substitutionValues = {"id": id};
+      queryStatement += " WHERE id = @id AND auge_objective.measure_progress.is_deleted = @is_deleted";
+      substitutionValues = {"id": id, "is_deleted": isDeleted};
     } else {
-      queryStatement += " AND measure_id = @measure_id";
-      substitutionValues = {"measure_id": measureId};
+      queryStatement += " WHERE measure_id = @measure_id AND auge_objective.measure_progress.is_deleted = @is_deleted";
+      substitutionValues = {"measure_id": measureId, "is_deleted": isDeleted};
     }
 
     results = await AugeConnection.getConnection().query(
         queryStatement, substitutionValues: substitutionValues);
 
-    List<MeasureProgress> mesuareProgress = new List();
+    List<MeasureProgress> mesuareProgresses = new List();
 
     if (results != null && results.isNotEmpty) {
 
@@ -378,17 +380,17 @@ class ObjectiveAugeApi {
           ..date = row[1]
           ..currentValue = row[2]
           ..comment = row[3]
-          ..audit.createdAt = row[5];
-
+          ..audit.createdAt = row[5]
+          ..audit.version = row[7];
 
         if (withAuditUser) {
           measureProgress
-
             ..audit.createdBy = row[6] == null ? null : (await AugeApi.queryUsers(id: row[6])).first;
           }
+        mesuareProgresses.add(measureProgress);
       }
     }
-    return mesuareProgress;
+    return mesuareProgresses;
   }
 
   /// Create current value of the [MeasureProgress]
@@ -429,7 +431,7 @@ class ObjectiveAugeApi {
           }
 
           await ctx.query(
-              "INSERT INTO auge_objective.measure_progress(id, date, current_value, comment, measure_id, created_at, created_by_user_id, version) VALUES"
+              "INSERT INTO auge_objective.measure_progress(id, date, current_value, comment, measure_id, created_at, created_by_user_id, is_deleted, version) VALUES"
                   "(@id,"
                   "@date,"
                   "@current_value,"
@@ -437,6 +439,7 @@ class ObjectiveAugeApi {
                   "@measure_id,"
                   "@created_at,"
                   "@created_by_user_id,"
+                  "@is_deleted,"
                   "@version)"
               , substitutionValues: {
             "id": measureProgress.id,
@@ -446,6 +449,7 @@ class ObjectiveAugeApi {
             "measure_id": measureId,
             "created_at": dateTimeNow,
             "created_by_user_id": measureProgress.audit.createdBy.id,
+            "is_deleted": false,
             "version": 0});
         }
       });
