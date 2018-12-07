@@ -3,13 +3,15 @@
 
 import 'package:auge_server/model/user.dart';
 
-class Base {
+abstract class Base {
   String id;
   bool isDeleted;
 }
 
 class Audit {
 
+  /// This filed it´s necessary to optimistic concurrency control
+  int version;
   /// This field values it's generated on server side
   static const createdAtField = 'createdAt';
   DateTime createdAt;
@@ -20,9 +22,4 @@ class Audit {
   DateTime updatedAt;
   static const updatedByField = 'modifiedBy';
   User updatedBy;
-  /// This field values it's generated on server side
-  static const deletedAtField = 'deletedAt';
-  DateTime deletedAt;
-  static const deletedByField = 'deletedBy';
-  User deletedBy;
 }

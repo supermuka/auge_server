@@ -6,9 +6,14 @@ class RpcErrorMessage {
 }
 
 class RpcErrorDetailMessage {
-  static const String userDataNotFoundReason = 'UserDataNotFound';
-  static const String organizationDataNotFoundReason = 'OrganizationDataNotFound';
+
+  static const String groupUpdatePreconditionFailed = 'GroupUpdatePreconditionFailed';
+  static const String measureUpdatePreconditionFailed = 'MeasureUpdatePreconditionFailed';
+  static const String measureProgressUpdatePreconditionFailed = 'MeasureProgressUpdatePreconditionFailed';
   static const String measureUnitsDataNotFoundReason = 'MeasureUnitsDataNotFound';
-  static const String objectiveDataNotFoundReason = 'ObjectivesDataNotFound';
+  static const String measureDataNotFoundReason = 'MeasureDataNotFound';
+  static const String objectiveDataNotFoundReason = 'ObjectiveDataNotFound';
+  static const String organizationDataNotFoundReason = 'OrganizationDataNotFound';
+  static const String userDataNotFoundReason = 'UserDataNotFound';
 }
 

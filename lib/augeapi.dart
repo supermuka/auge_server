@@ -537,7 +537,7 @@ class AugeApi {
   }
 
    // *** GROUP  ***
-  static Future<List<Group>> queryGroups({String id, String organizationId, int alignedToRecursive = 1}) async {
+  static Future<List<Group>> queryGroups({String id, String organizationId, int alignedToRecursive = 1, bool withAudit = false}) async {
     List<List> results;
 
     String queryStatement = '';
@@ -549,7 +549,13 @@ class AugeApi {
     " g.organization_id," //3
     " g.group_type_id,"   //4
     " g.leader_user_id,"  //5
-    " g.super_group_id "  //6
+    " g.super_group_id, " //6
+    " g.created_at, "     //7
+    " g.created_by_user_id, " //8
+    " g.updated_at, "     //9
+    " g.updated_by_user_id, " //10
+    " g.deleted_at, "     //11
+    " g.deleted_by_user_id " //12
     " FROM auge.groups g ";
 
     Map<String, dynamic> _substitutionValues;
@@ -622,6 +628,32 @@ class AugeApi {
           ..leader = leader
           ..members = (members != null && members.length != 0) ? members : null;
 
+        if (withAudit) {
+
+          List<User> createdByList;
+          List<User> updatedByList;
+          List<User> deletedByList;
+
+          if (row[8] != null) {
+            createdByList = await AugeApi.queryUsers(id: row[8], withProfile: false);
+          }
+
+          if (row[10] != null) {
+            updatedByList = await AugeApi.queryUsers(id: row[10], withProfile: false);
+          }
+
+          if (row[12] != null) {
+            deletedByList = await AugeApi.queryUsers(id: row[12], withProfile: false);
+          }
+
+          group.audit
+            ..createdAt = row[7]
+            ..createdBy.id = createdByList == null || createdByList.length == 0 ? null : createdByList.first.id
+            ..updatedAt = row[9]
+            ..updatedBy.id = updatedByList == null || updatedByList.length == 0 ? null : updatedByList.first.id;
+        }
+
+
         groups.add(group);
       }
     }
@@ -643,17 +675,24 @@ class AugeApi {
 
   /// Create (insert) a new group
   @ApiMethod( method: 'POST', path: 'groups')
-  Future<IdMessage> createGroup(Group groupMessage) async {
+  Future<IdMessage> createGroup(Group group) async {
 
-    if (groupMessage.id == null) {
-      groupMessage.id = new Uuid().v4();
+    if (group.id == null) {
+      group.id = new Uuid().v4();
     }
 
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
         await ctx.query(
-            "INSERT INTO auge.groups(id, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
+            "INSERT INTO auge.groups(id, is_deleted, created_at, created_by_user_id, updated_at, updated_by_user_id, deleted_at, deleted_by_user_id, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
                 "@id,"
+                "@is_deleted,"
+                "@created_at,"
+                "@created_by_user_id,"
+                "@updated_at,"
+                "@updated_by_user_id,"
+                "@deleted_at,"
+                "@deleted_by_user_id,"
                 "@name,"
                 "@active,"
                 "@organization_id,"
@@ -661,16 +700,18 @@ class AugeApi {
                 "@super_group_id,"
                 "@leader_user_id)"
             , substitutionValues: {
-          "id": groupMessage.id,
-          "name": groupMessage.name,
-          "active": groupMessage.active,
-          "organization_id": groupMessage.organization.id,
-          "group_type_id": groupMessage.groupType?.id,
-          "super_group_id": groupMessage.superGroup?.id,
-          "leader_user_id": groupMessage.leader?.id});
+          "id": group.id,
+          "created_at": DateTime.now().toUtc(),
+          "created_by_user_id": group.audit.createdBy.id,
+          "name": group.name,
+          "active": group.active,
+          "organization_id": group.organization.id,
+          "group_type_id": group.groupType?.id,
+          "super_group_id": group.superGroup?.id,
+          "leader_user_id": group.leader?.id});
 
         // Assigned Members Users
-        for (User user in groupMessage.members) {
+        for (User user in group.members) {
           await ctx.query("INSERT INTO auge.groups_users"
               " (group_id,"
               " user_id)"
@@ -678,7 +719,7 @@ class AugeApi {
               " (@id,"
               " @user_id)"
               , substitutionValues: {
-                "id": groupMessage.id,
+                "id": group.id,
                 "user_id": user.id});
         }
 
@@ -688,61 +729,89 @@ class AugeApi {
       }
     });
 
-    return new IdMessage()..id = groupMessage.id;
+    return new IdMessage()..id = group.id;
   }
 
   /// Update a [Group]
   @ApiMethod( method: 'PUT', path: 'groups')
   Future<VoidMessage> updateGroup(Group group) async {
 
+    List<List<dynamic>> result;
+
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
-        await ctx.query(
-            "UPDATE auge.groups"
-                " SET name = @name,"
-                " active = @active,"
-                " organization_id = @organization_id,"
-                " group_type_id = @group_type_id,"
-                " super_group_id = @super_group_id,"
-                " leader_user_id = @leader_user_id"
-                " WHERE id = @id", substitutionValues: {
-          "id": group.id,
-          "name": group.name,
-          "active": group.active,
-          "organization_id": group.organization.id,
-          "group_type_id": group.groupType?.id,
-          "super_group_id": group.superGroup?.id,
-          "leader_user_id": group.leader?.id});
+        if (group.isDeleted) {
+          result = await ctx.query(
+          "UPDATE auge.groups"
+              " SET is_deleted = @is_deleted,"
+              " WHERE id = @id", substitutionValues: {
+              "id": group.id,
+              "is_deleted": group.isDeleted});
+      } else {
+          result = await ctx.query(
+              "UPDATE auge.groups"
+                  " SET is_deleted = @is_deleted,"
+                  " updated_at = @updated_at,"
+                  " updated_by_user_id = @updated_by_user_id,"
+                  " name = @name,"
+                  " active = @active,"
+                  " organization_id = @organization_id,"
+                  " group_type_id = @group_type_id,"
+                  " super_group_id = @super_group_id,"
+                  " leader_user_id = @leader_user_id"
+                  " WHERE id = @id", substitutionValues: {
+            "id": group.id,
 
-      // Members users
-      StringBuffer membersUsersId = new StringBuffer();
-      for (User user in group.members) {
-        await ctx.query("INSERT INTO auge.groups_users"
-        " (group_id,"
-        " user_id)"
-        " VALUES"
-        " (@id,"
-        " @user_id)"
-        " ON CONFLICT (group_id, user_id) DO NOTHING"
-        , substitutionValues: {
-        "id": group.id,
-        "user_id": user.id});
+            "is_deleted": group.isDeleted,
+            "updated_at": DateTime.now().toUtc(),
+            "updated_by_user_id": group.audit.updatedBy.id,
+            "name": group.name,
+            "active": group.active,
+            "organization_id": group.organization.id,
+            "group_type_id": group.groupType?.id,
+            "super_group_id": group.superGroup?.id,
+            "leader_user_id": group.leader?.id
+          });
+
+          // Members users
+          StringBuffer membersUsersId = new StringBuffer();
+          for (User user in group.members) {
+            await ctx.query("INSERT INTO auge.groups_users"
+                " (group_id,"
+                " user_id)"
+                " VALUES"
+                " (@id,"
+                " @user_id)"
+                " ON CONFLICT (group_id, user_id) DO NOTHING"
+                , substitutionValues: {
+                  "id": group.id,
+                  "user_id": user.id
+                });
 
 
-        if (membersUsersId.isNotEmpty)
-          membersUsersId.write(',');
-        membersUsersId.write("'");
-        membersUsersId.write(user.id);
-        membersUsersId.write("'");
-      }
+            if (membersUsersId.isNotEmpty)
+              membersUsersId.write(',');
+            membersUsersId.write("'");
+            membersUsersId.write(user.id);
+            membersUsersId.write("'");
+          }
 
-      if (membersUsersId.isNotEmpty) {
-        await ctx.query("DELETE FROM auge.groups_users"
-        " WHERE group_id = @id"
-        " AND user_id NOT IN (${membersUsersId.toString()})"
-        , substitutionValues: {
-        "id": group.id});
-      }
+          if (membersUsersId.isNotEmpty) {
+            await ctx.query("DELETE FROM auge.groups_users"
+                " WHERE group_id = @id"
+                " AND user_id NOT IN (${membersUsersId.toString()})"
+                , substitutionValues: {
+                  "id": group.id
+                });
+          }
+        }
+
+        // Optimistic concurrency control
+        if (result.length == 0) {
+          throw new RpcError(412, 'PreconditionFailed', 'Precondition Failed')
+            ..errors.add(
+                new RpcErrorDetail(reason: RpcErrorDetailMessage.groupUpdatePreconditionFailed));
+        }
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');

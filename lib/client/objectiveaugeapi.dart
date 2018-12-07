@@ -80,6 +80,8 @@ class ObjectiveAugeApi {
   ///
   /// [measureId] - Path parameter: 'measureId'.
   ///
+  /// [measureVersion] - Path parameter: 'measureVersion'.
+  ///
   /// Completes with a [IdMessage].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -88,7 +90,7 @@ class ObjectiveAugeApi {
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
   async.Future<IdMessage> createMeasureProgress(
-      MeasureProgress request, core.String measureId) {
+      MeasureProgress request, core.String measureId, core.int measureVersion) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -102,9 +104,15 @@ class ObjectiveAugeApi {
     if (measureId == null) {
       throw new core.ArgumentError("Parameter measureId is required.");
     }
+    if (measureVersion == null) {
+      throw new core.ArgumentError("Parameter measureVersion is required.");
+    }
 
-    _url =
-        'measures/' + commons.Escaper.ecapeVariable('$measureId') + '/progress';
+    _url = 'measures/' +
+        commons.Escaper.ecapeVariable('$measureId') +
+        '/' +
+        commons.Escaper.ecapeVariable('$measureVersion') +
+        '/progress';
 
     var _response = _requester.request(_url, "POST",
         body: _body,
@@ -291,6 +299,41 @@ class ObjectiveAugeApi {
 
   /// Request parameters:
   ///
+  /// [measureProgressId] - Path parameter: 'measureProgressId'.
+  ///
+  /// Completes with a [MeasureProgress].
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future<MeasureProgress> getMeasureProgressById(
+      core.String measureProgressId) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (measureProgressId == null) {
+      throw new core.ArgumentError("Parameter measureProgressId is required.");
+    }
+
+    _url = 'progress/' + commons.Escaper.ecapeVariable('$measureProgressId');
+
+    var _response = _requester.request(_url, "GET",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => MeasureProgressFactory.fromJson(data));
+  }
+
+  /// Request parameters:
+  ///
   /// Completes with a [core.List<MeasureUnit>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -325,6 +368,8 @@ class ObjectiveAugeApi {
   ///
   /// [isDeleted] - Query parameter: 'isDeleted'.
   ///
+  /// [withAuditUser] - Query parameter: 'withAuditUser'.
+  ///
   /// Completes with a [core.List<Measure>].
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
@@ -333,7 +378,7 @@ class ObjectiveAugeApi {
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
   async.Future<core.List<Measure>> getMeasures(core.String objectiveId,
-      {core.bool isDeleted}) {
+      {core.bool isDeleted, core.bool withAuditUser}) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -346,6 +391,9 @@ class ObjectiveAugeApi {
     }
     if (isDeleted != null) {
       _queryParams["isDeleted"] = ["${isDeleted}"];
+    }
+    if (withAuditUser != null) {
+      _queryParams["withAuditUser"] = ["${withAuditUser}"];
     }
 
     _url = 'objetives/' +
@@ -572,14 +620,63 @@ class ObjectiveAugeApi {
   ///
   /// Request parameters:
   ///
-  /// Completes with a [Objective].
+  /// [measureId] - Path parameter: 'measureId'.
+  ///
+  /// [measureVersion] - Path parameter: 'measureVersion'.
   ///
   /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
   /// error.
   ///
   /// If the used [http.Client] completes with an error when making a REST call,
   /// this method will complete with the same error.
-  async.Future<Objective> updateObjective(Objective request) {
+  async.Future updateMeasureProgress(
+      MeasureProgress request, core.String measureId, core.int measureVersion) {
+    var _url = null;
+    var _queryParams = new core.Map<core.String, core.List<core.String>>();
+    var _uploadMedia = null;
+    var _uploadOptions = null;
+    var _downloadOptions = commons.DownloadOptions.Metadata;
+    var _body = null;
+
+    if (request != null) {
+      _body = convert.json.encode(MeasureProgressFactory.toJson(request));
+    }
+    if (measureId == null) {
+      throw new core.ArgumentError("Parameter measureId is required.");
+    }
+    if (measureVersion == null) {
+      throw new core.ArgumentError("Parameter measureVersion is required.");
+    }
+
+    _downloadOptions = null;
+
+    _url = 'measures/' +
+        commons.Escaper.ecapeVariable('$measureId') +
+        '/' +
+        commons.Escaper.ecapeVariable('$measureVersion') +
+        '/progress';
+
+    var _response = _requester.request(_url, "PUT",
+        body: _body,
+        queryParams: _queryParams,
+        uploadOptions: _uploadOptions,
+        uploadMedia: _uploadMedia,
+        downloadOptions: _downloadOptions);
+    return _response.then((data) => null);
+  }
+
+  /// [request] - The metadata request object.
+  ///
+  /// Request parameters:
+  ///
+  /// Completes with a [IdMessage].
+  ///
+  /// Completes with a [commons.ApiRequestError] if the API endpoint returned an
+  /// error.
+  ///
+  /// If the used [http.Client] completes with an error when making a REST call,
+  /// this method will complete with the same error.
+  async.Future<IdMessage> updateObjective(Objective request) {
     var _url = null;
     var _queryParams = new core.Map<core.String, core.List<core.String>>();
     var _uploadMedia = null;
@@ -599,7 +696,7 @@ class ObjectiveAugeApi {
         uploadOptions: _uploadOptions,
         uploadMedia: _uploadMedia,
         downloadOptions: _downloadOptions);
-    return _response.then((data) => ObjectiveFactory.fromJson(data));
+    return _response.then((data) => IdMessageFactory.fromJson(data));
   }
 }
 
@@ -612,17 +709,14 @@ class AuditFactory {
     if (_json.containsKey("createdBy")) {
       message.createdBy = UserFactory.fromJson(_json["createdBy"]);
     }
-    if (_json.containsKey("deletedAt")) {
-      message.deletedAt = core.DateTime.parse(_json["deletedAt"]);
-    }
-    if (_json.containsKey("deletedBy")) {
-      message.deletedBy = UserFactory.fromJson(_json["deletedBy"]);
-    }
     if (_json.containsKey("updatedAt")) {
       message.updatedAt = core.DateTime.parse(_json["updatedAt"]);
     }
     if (_json.containsKey("updatedBy")) {
       message.updatedBy = UserFactory.fromJson(_json["updatedBy"]);
+    }
+    if (_json.containsKey("version")) {
+      message.version = _json["version"];
     }
     return message;
   }
@@ -635,17 +729,14 @@ class AuditFactory {
     if (message.createdBy != null) {
       _json["createdBy"] = UserFactory.toJson(message.createdBy);
     }
-    if (message.deletedAt != null) {
-      _json["deletedAt"] = (message.deletedAt).toIso8601String();
-    }
-    if (message.deletedBy != null) {
-      _json["deletedBy"] = UserFactory.toJson(message.deletedBy);
-    }
     if (message.updatedAt != null) {
       _json["updatedAt"] = (message.updatedAt).toIso8601String();
     }
     if (message.updatedBy != null) {
       _json["updatedBy"] = UserFactory.toJson(message.updatedBy);
+    }
+    if (message.version != null) {
+      _json["version"] = message.version;
     }
     return _json;
   }
@@ -657,11 +748,17 @@ class GroupFactory {
     if (_json.containsKey("active")) {
       message.active = _json["active"];
     }
+    if (_json.containsKey("audit")) {
+      message.audit = AuditFactory.fromJson(_json["audit"]);
+    }
     if (_json.containsKey("groupType")) {
       message.groupType = GroupTypeFactory.fromJson(_json["groupType"]);
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
+    }
+    if (_json.containsKey("isDeleted")) {
+      message.isDeleted = _json["isDeleted"];
     }
     if (_json.containsKey("leader")) {
       message.leader = UserFactory.fromJson(_json["leader"]);
@@ -689,11 +786,17 @@ class GroupFactory {
     if (message.active != null) {
       _json["active"] = message.active;
     }
+    if (message.audit != null) {
+      _json["audit"] = AuditFactory.toJson(message.audit);
+    }
     if (message.groupType != null) {
       _json["groupType"] = GroupTypeFactory.toJson(message.groupType);
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.isDeleted != null) {
+      _json["isDeleted"] = message.isDeleted;
     }
     if (message.leader != null) {
       _json["leader"] = UserFactory.toJson(message.leader);
@@ -857,34 +960,46 @@ class MeasureFactory {
 class MeasureProgressFactory {
   static MeasureProgress fromJson(core.Map _json) {
     var message = new MeasureProgress();
+    if (_json.containsKey("audit")) {
+      message.audit = AuditFactory.fromJson(_json["audit"]);
+    }
     if (_json.containsKey("comment")) {
       message.comment = _json["comment"];
     }
     if (_json.containsKey("currentValue")) {
       message.currentValue = _json["currentValue"].toDouble();
     }
-    if (_json.containsKey("dateTime")) {
-      message.dateTime = core.DateTime.parse(_json["dateTime"]);
+    if (_json.containsKey("date")) {
+      message.date = core.DateTime.parse(_json["date"]);
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
+    }
+    if (_json.containsKey("isDeleted")) {
+      message.isDeleted = _json["isDeleted"];
     }
     return message;
   }
 
   static core.Map toJson(MeasureProgress message) {
     var _json = new core.Map();
+    if (message.audit != null) {
+      _json["audit"] = AuditFactory.toJson(message.audit);
+    }
     if (message.comment != null) {
       _json["comment"] = message.comment;
     }
     if (message.currentValue != null) {
       _json["currentValue"] = message.currentValue;
     }
-    if (message.dateTime != null) {
-      _json["dateTime"] = (message.dateTime).toIso8601String();
+    if (message.date != null) {
+      _json["date"] = (message.date).toIso8601String();
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.isDeleted != null) {
+      _json["isDeleted"] = message.isDeleted;
     }
     return _json;
   }
@@ -934,6 +1049,9 @@ class ObjectiveFactory {
     if (_json.containsKey("archived")) {
       message.archived = _json["archived"];
     }
+    if (_json.containsKey("audit")) {
+      message.audit = AuditFactory.fromJson(_json["audit"]);
+    }
     if (_json.containsKey("description")) {
       message.description = _json["description"];
     }
@@ -945,6 +1063,9 @@ class ObjectiveFactory {
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
+    }
+    if (_json.containsKey("isDeleted")) {
+      message.isDeleted = _json["isDeleted"];
     }
     if (_json.containsKey("lastTimelineItem")) {
       message.lastTimelineItem =
@@ -989,6 +1110,9 @@ class ObjectiveFactory {
     if (message.archived != null) {
       _json["archived"] = message.archived;
     }
+    if (message.audit != null) {
+      _json["audit"] = AuditFactory.toJson(message.audit);
+    }
     if (message.description != null) {
       _json["description"] = message.description;
     }
@@ -1000,6 +1124,9 @@ class ObjectiveFactory {
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.isDeleted != null) {
+      _json["isDeleted"] = message.isDeleted;
     }
     if (message.lastTimelineItem != null) {
       _json["lastTimelineItem"] =
@@ -1079,11 +1206,17 @@ class TimelineItemFactory {
     if (_json.containsKey("id")) {
       message.id = _json["id"];
     }
+    if (_json.containsKey("isDeleted")) {
+      message.isDeleted = _json["isDeleted"];
+    }
     if (_json.containsKey("systemFunctionIndex")) {
       message.systemFunctionIndex = _json["systemFunctionIndex"];
     }
     if (_json.containsKey("user")) {
       message.user = UserFactory.fromJson(_json["user"]);
+    }
+    if (_json.containsKey("version")) {
+      message.version = _json["version"];
     }
     return message;
   }
@@ -1105,11 +1238,17 @@ class TimelineItemFactory {
     if (message.id != null) {
       _json["id"] = message.id;
     }
+    if (message.isDeleted != null) {
+      _json["isDeleted"] = message.isDeleted;
+    }
     if (message.systemFunctionIndex != null) {
       _json["systemFunctionIndex"] = message.systemFunctionIndex;
     }
     if (message.user != null) {
       _json["user"] = UserFactory.toJson(message.user);
+    }
+    if (message.version != null) {
+      _json["version"] = message.version;
     }
     return _json;
   }

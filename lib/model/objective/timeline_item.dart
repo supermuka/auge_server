@@ -3,17 +3,17 @@
 
 import 'dart:convert';
 
+import 'package:auge_server/model/model_base.dart';
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/user.dart';
 
 /// Domain model class to objective timeline
-class TimelineItemBase {
-  String id;
-}
-
-class TimelineItem implements TimelineItemBase {
+class TimelineItem implements Base {
 
   String id;
+  int version;
+  bool isDeleted;
+
   DateTime dateTime;
   User user;
 

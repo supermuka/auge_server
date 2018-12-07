@@ -1,6 +1,7 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'package:auge_server/model/model_base.dart';
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 
@@ -27,8 +28,18 @@ class GroupPersistent<TOrganization extends OrganizationBase, TGroupType extends
 }
 */
 class Group implements GroupBase {
-
+  // Base - implements
+  static const idField = 'id';
   String id;
+
+  static const isDeletedField = 'isDeleted';
+  bool isDeleted;
+
+  // Base - audit
+  static const auditField = 'audit';
+  Audit audit;
+
+  // Specific
   String name;
 
   Organization organization;

@@ -10,6 +10,7 @@ import 'dart:convert' as convert;
 
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
+import 'package:auge_server/model/model_base.dart';
 import 'package:auge_server/model/group.dart';
 import 'package:auge_server/message/created_message.dart';
 import 'package:auge_server/model/initiative/initiative.dart';
@@ -380,17 +381,59 @@ class InitiativeAugeApi {
   }
 }
 
+class AuditFactory {
+  static Audit fromJson(core.Map _json) {
+    var message = new Audit();
+    if (_json.containsKey("createdAt")) {
+      message.createdAt = core.DateTime.parse(_json["createdAt"]);
+    }
+    if (_json.containsKey("createdBy")) {
+      message.createdBy = UserFactory.fromJson(_json["createdBy"]);
+    }
+    if (_json.containsKey("updatedAt")) {
+      message.updatedAt = core.DateTime.parse(_json["updatedAt"]);
+    }
+    if (_json.containsKey("updatedBy")) {
+      message.updatedBy = UserFactory.fromJson(_json["updatedBy"]);
+    }
+    return message;
+  }
+
+  static core.Map toJson(Audit message) {
+    var _json = new core.Map();
+    if (message.createdAt != null) {
+      _json["createdAt"] = (message.createdAt).toIso8601String();
+    }
+    if (message.createdBy != null) {
+      _json["createdBy"] = UserFactory.toJson(message.createdBy);
+    }
+    if (message.updatedAt != null) {
+      _json["updatedAt"] = (message.updatedAt).toIso8601String();
+    }
+    if (message.updatedBy != null) {
+      _json["updatedBy"] = UserFactory.toJson(message.updatedBy);
+    }
+    return _json;
+  }
+}
+
 class GroupFactory {
   static Group fromJson(core.Map _json) {
     var message = new Group();
     if (_json.containsKey("active")) {
       message.active = _json["active"];
     }
+    if (_json.containsKey("audit")) {
+      message.audit = AuditFactory.fromJson(_json["audit"]);
+    }
     if (_json.containsKey("groupType")) {
       message.groupType = GroupTypeFactory.fromJson(_json["groupType"]);
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
+    }
+    if (_json.containsKey("isDeleted")) {
+      message.isDeleted = _json["isDeleted"];
     }
     if (_json.containsKey("leader")) {
       message.leader = UserFactory.fromJson(_json["leader"]);
@@ -418,11 +461,17 @@ class GroupFactory {
     if (message.active != null) {
       _json["active"] = message.active;
     }
+    if (message.audit != null) {
+      _json["audit"] = AuditFactory.toJson(message.audit);
+    }
     if (message.groupType != null) {
       _json["groupType"] = GroupTypeFactory.toJson(message.groupType);
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.isDeleted != null) {
+      _json["isDeleted"] = message.isDeleted;
     }
     if (message.leader != null) {
       _json["leader"] = UserFactory.toJson(message.leader);
@@ -563,6 +612,9 @@ class InitiativeFactory {
 class MeasureFactory {
   static Measure fromJson(core.Map _json) {
     var message = new Measure();
+    if (_json.containsKey("audit")) {
+      message.audit = AuditFactory.fromJson(_json["audit"]);
+    }
     if (_json.containsKey("currentValue")) {
       message.currentValue = _json["currentValue"].toDouble();
     }
@@ -577,6 +629,9 @@ class MeasureFactory {
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
+    }
+    if (_json.containsKey("isDeleted")) {
+      message.isDeleted = _json["isDeleted"];
     }
     if (_json.containsKey("lastTimelineItem")) {
       message.lastTimelineItem =
@@ -605,6 +660,9 @@ class MeasureFactory {
 
   static core.Map toJson(Measure message) {
     var _json = new core.Map();
+    if (message.audit != null) {
+      _json["audit"] = AuditFactory.toJson(message.audit);
+    }
     if (message.currentValue != null) {
       _json["currentValue"] = message.currentValue;
     }
@@ -619,6 +677,9 @@ class MeasureFactory {
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.isDeleted != null) {
+      _json["isDeleted"] = message.isDeleted;
     }
     if (message.lastTimelineItem != null) {
       _json["lastTimelineItem"] =
@@ -648,34 +709,46 @@ class MeasureFactory {
 class MeasureProgressFactory {
   static MeasureProgress fromJson(core.Map _json) {
     var message = new MeasureProgress();
+    if (_json.containsKey("audit")) {
+      message.audit = AuditFactory.fromJson(_json["audit"]);
+    }
     if (_json.containsKey("comment")) {
       message.comment = _json["comment"];
     }
     if (_json.containsKey("currentValue")) {
       message.currentValue = _json["currentValue"].toDouble();
     }
-    if (_json.containsKey("dateTime")) {
-      message.dateTime = core.DateTime.parse(_json["dateTime"]);
+    if (_json.containsKey("date")) {
+      message.date = core.DateTime.parse(_json["date"]);
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
+    }
+    if (_json.containsKey("isDeleted")) {
+      message.isDeleted = _json["isDeleted"];
     }
     return message;
   }
 
   static core.Map toJson(MeasureProgress message) {
     var _json = new core.Map();
+    if (message.audit != null) {
+      _json["audit"] = AuditFactory.toJson(message.audit);
+    }
     if (message.comment != null) {
       _json["comment"] = message.comment;
     }
     if (message.currentValue != null) {
       _json["currentValue"] = message.currentValue;
     }
-    if (message.dateTime != null) {
-      _json["dateTime"] = (message.dateTime).toIso8601String();
+    if (message.date != null) {
+      _json["date"] = (message.date).toIso8601String();
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.isDeleted != null) {
+      _json["isDeleted"] = message.isDeleted;
     }
     return _json;
   }
@@ -725,6 +798,9 @@ class ObjectiveFactory {
     if (_json.containsKey("archived")) {
       message.archived = _json["archived"];
     }
+    if (_json.containsKey("audit")) {
+      message.audit = AuditFactory.fromJson(_json["audit"]);
+    }
     if (_json.containsKey("description")) {
       message.description = _json["description"];
     }
@@ -736,6 +812,9 @@ class ObjectiveFactory {
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
+    }
+    if (_json.containsKey("isDeleted")) {
+      message.isDeleted = _json["isDeleted"];
     }
     if (_json.containsKey("lastTimelineItem")) {
       message.lastTimelineItem =
@@ -780,6 +859,9 @@ class ObjectiveFactory {
     if (message.archived != null) {
       _json["archived"] = message.archived;
     }
+    if (message.audit != null) {
+      _json["audit"] = AuditFactory.toJson(message.audit);
+    }
     if (message.description != null) {
       _json["description"] = message.description;
     }
@@ -791,6 +873,9 @@ class ObjectiveFactory {
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.isDeleted != null) {
+      _json["isDeleted"] = message.isDeleted;
     }
     if (message.lastTimelineItem != null) {
       _json["lastTimelineItem"] =

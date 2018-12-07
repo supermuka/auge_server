@@ -71,9 +71,9 @@ class InitiativeAugeApi {
     Objective objective;
     Organization organization;
     User user;
+    Group group;
     List<User> users;
     List<Stage> stages;
-    Group group;
     List<Organization> organizations;
     List<Objective> objectives;
     List<Group> groups;

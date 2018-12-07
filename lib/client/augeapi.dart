@@ -10,6 +10,7 @@ import 'dart:convert' as convert;
 
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
+import 'package:auge_server/model/model_base.dart';
 import 'package:auge_server/message/datetime_message.dart';
 import 'package:auge_server/model/group.dart';
 import 'package:auge_server/message/created_message.dart';
@@ -813,6 +814,42 @@ class AugeApi {
   }
 }
 
+class AuditFactory {
+  static Audit fromJson(core.Map _json) {
+    var message = new Audit();
+    if (_json.containsKey("createdAt")) {
+      message.createdAt = core.DateTime.parse(_json["createdAt"]);
+    }
+    if (_json.containsKey("createdBy")) {
+      message.createdBy = UserFactory.fromJson(_json["createdBy"]);
+    }
+    if (_json.containsKey("updatedAt")) {
+      message.updatedAt = core.DateTime.parse(_json["updatedAt"]);
+    }
+    if (_json.containsKey("updatedBy")) {
+      message.updatedBy = UserFactory.fromJson(_json["updatedBy"]);
+    }
+    return message;
+  }
+
+  static core.Map toJson(Audit message) {
+    var _json = new core.Map();
+    if (message.createdAt != null) {
+      _json["createdAt"] = (message.createdAt).toIso8601String();
+    }
+    if (message.createdBy != null) {
+      _json["createdBy"] = UserFactory.toJson(message.createdBy);
+    }
+    if (message.updatedAt != null) {
+      _json["updatedAt"] = (message.updatedAt).toIso8601String();
+    }
+    if (message.updatedBy != null) {
+      _json["updatedBy"] = UserFactory.toJson(message.updatedBy);
+    }
+    return _json;
+  }
+}
+
 class DateTimeMessageFactory {
   static DateTimeMessage fromJson(core.Map _json) {
     var message = new DateTimeMessage();
@@ -837,11 +874,17 @@ class GroupFactory {
     if (_json.containsKey("active")) {
       message.active = _json["active"];
     }
+    if (_json.containsKey("audit")) {
+      message.audit = AuditFactory.fromJson(_json["audit"]);
+    }
     if (_json.containsKey("groupType")) {
       message.groupType = GroupTypeFactory.fromJson(_json["groupType"]);
     }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
+    }
+    if (_json.containsKey("isDeleted")) {
+      message.isDeleted = _json["isDeleted"];
     }
     if (_json.containsKey("leader")) {
       message.leader = UserFactory.fromJson(_json["leader"]);
@@ -869,11 +912,17 @@ class GroupFactory {
     if (message.active != null) {
       _json["active"] = message.active;
     }
+    if (message.audit != null) {
+      _json["audit"] = AuditFactory.toJson(message.audit);
+    }
     if (message.groupType != null) {
       _json["groupType"] = GroupTypeFactory.toJson(message.groupType);
     }
     if (message.id != null) {
       _json["id"] = message.id;
+    }
+    if (message.isDeleted != null) {
+      _json["isDeleted"] = message.isDeleted;
     }
     if (message.leader != null) {
       _json["leader"] = UserFactory.toJson(message.leader);

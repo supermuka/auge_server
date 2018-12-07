@@ -9,12 +9,14 @@ import 'package:auge_server/model/objective/timeline_item.dart';
 /// Domain model class to represent an measure
 class Measure implements Base {
 
-  // Base
+  // Base - implements
   static const idField = 'id';
   String id;
   static const isDeletedField = 'isDeleted';
   bool isDeleted;
 
+  // Base - audit
+  static const auditField = 'audit';
   Audit audit;
 
   // Specific
@@ -34,6 +36,7 @@ class Measure implements Base {
   double currentValue;
   static const measureUnitField = 'measureUnit';
   MeasureUnit measureUnit;
+
 
   // Transient
   List<MeasureProgress> measureProgress;
@@ -99,14 +102,29 @@ class MeasureProgressBase {
 }
 
 class MeasureProgress implements MeasureProgressBase {
+  // Base - implements
+  static const idField = 'id';
   String id;
-  DateTime dateTime;
+  static const isDeletedField = 'isDeleted';
+  bool isDeleted;
+
+
+  // Base - audit
+  static const auditField = 'audit';
+  Audit audit;
+
+  // Specific
+  DateTime date;
   double currentValue;
   String comment;
 
+  MeasureProgress() {
+    audit = Audit();
+  }
+
   void cloneTo(MeasureProgress to) {
     to.id = this.id;
-    to.dateTime = this.dateTime;
+    to.date = this.date;
     to.currentValue = this.currentValue;
     to.comment = this.comment;
   }

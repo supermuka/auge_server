@@ -3,6 +3,7 @@
 
 import 'dart:convert';
 
+import 'package:auge_server/model/model_base.dart';
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/objective/measure.dart';
@@ -13,16 +14,18 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 /// Domain model class to represent an objective
-abstract class ObjectiveBase {
-  String id;
+class Objective implements Base {
 
-}
-
-class Objective implements ObjectiveBase {
-
-
+  // Base
   static const idField = 'id';
   String id;
+  static const isDeletedField = 'isDeleted';
+  bool isDeleted;
+
+  static const auditField = 'audit';
+  Audit audit;
+
+  // Specific
   static const nameField = 'name';
   String name;
   static const descriptionField = 'description';
@@ -52,6 +55,7 @@ class Objective implements ObjectiveBase {
   Objective() {
     initializeDateFormatting(Intl.defaultLocale);
 
+    audit = Audit();
     alignedWithChildren = List<Objective>();
     measures = List<Measure>();
     timeline = List<TimelineItem>();
@@ -193,8 +197,8 @@ class ObjectiveFacilities {
     difference[idsKey] = {};
     difference[valuesKey] = {};
 
-    // String name;
-    if (previous != null && current.id != previous.id) {
+    // String id;
+    if (previous != null  && current.id != previous.id) {
       difference[idsKey][Objective.idField] =  {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
     } else if (previous == null && current.id != null) {
       difference[idsKey][Objective.idField] = {currentDataChangedKey: current.id};
@@ -216,24 +220,20 @@ class ObjectiveFacilities {
 
     //DateTime startDate;
     if (previous != null && current.startDate != previous.startDate) {
-      difference[valuesKey][Objective.startDateField] = {currentDataChangedKey: current.startDate.toString(), previousDataChangedKey: previous.startDate.toString()};
+      difference[valuesKey][Objective.startDateField] = {currentDataChangedKey: current.startDate.toIso8601String(), previousDataChangedKey: previous.startDate.toIso8601String()};
     } else if (previous == null && current.startDate != null ) {
-      difference[valuesKey][Objective.startDateField] = {currentDataChangedKey: current.startDate};
+      difference[valuesKey][Objective.startDateField] = {currentDataChangedKey: current.startDate.toIso8601String()};
     }
 
     //DateTime endDate;
     if (previous != null && current.endDate != previous.endDate) {
-      difference[valuesKey][Objective.endDateField] = {currentDataChangedKey: current.endDate.toString(), previousDataChangedKey: previous.endDate.toString()};
+      difference[valuesKey][Objective.endDateField] = {currentDataChangedKey: current.endDate.toIso8601String(), previousDataChangedKey: previous.endDate.toIso8601String()};
     } else if (previous == null && current.endDate != null ) {
-      difference[valuesKey][Objective.endDateField] = {currentDataChangedKey: current.endDate.toString()};
+      difference[valuesKey][Objective.endDateField] = {currentDataChangedKey: current.endDate.toIso8601String()};
     }
 
     //Group group;
     if (previous != null && current.group?.id != previous.group?.id) {
-      //difference['group.id'] =
-      //{thisTerm: this.group?.id, compareToTerm: compareTo.group?.id};
-
-      //Save just specitication.
       difference[valuesKey][Objective.groupField] = {currentDataChangedKey: current.group?.name, previousDataChangedKey: previous.group?.name};
 
     } else if (previous == null && current.group != null ) {
@@ -256,11 +256,10 @@ class ObjectiveFacilities {
     }
 
     //User leader;
-    if (previous != null && current.leader.id != previous.leader.id) {
+    if (previous != null && current.leader?.id != previous.leader?.id) {
 
-      difference[valuesKey][Objective.leaderField] = {currentDataChangedKey: current.leader.name, previousDataChangedKey: previous.leader.name};
+      difference[valuesKey][Objective.leaderField] = {currentDataChangedKey: current.leader?.name, previousDataChangedKey: previous.leader?.name};
     } else if (previous == null && current.leader != null ) {
-
       difference[valuesKey][Objective.leaderField] = {currentDataChangedKey: current.leader.name};
     }
 
