@@ -549,13 +549,7 @@ class AugeApi {
     " g.organization_id," //3
     " g.group_type_id,"   //4
     " g.leader_user_id,"  //5
-    " g.super_group_id, " //6
-    " g.created_at, "     //7
-    " g.created_by_user_id, " //8
-    " g.updated_at, "     //9
-    " g.updated_by_user_id, " //10
-    " g.deleted_at, "     //11
-    " g.deleted_by_user_id " //12
+    " g.super_group_id " //6
     " FROM auge.groups g ";
 
     Map<String, dynamic> _substitutionValues;
@@ -645,14 +639,7 @@ class AugeApi {
           if (row[12] != null) {
             deletedByList = await AugeApi.queryUsers(id: row[12], withProfile: false);
           }
-
-          group.audit
-            ..createdAt = row[7]
-            ..createdBy.id = createdByList == null || createdByList.length == 0 ? null : createdByList.first.id
-            ..updatedAt = row[9]
-            ..updatedBy.id = updatedByList == null || updatedByList.length == 0 ? null : updatedByList.first.id;
         }
-
 
         groups.add(group);
       }
@@ -684,7 +671,7 @@ class AugeApi {
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
         await ctx.query(
-            "INSERT INTO auge.groups(id, is_deleted, created_at, created_by_user_id, updated_at, updated_by_user_id, deleted_at, deleted_by_user_id, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
+            "INSERT INTO auge.groups(id, is_deleted, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
                 "@id,"
                 "@is_deleted,"
                 "@created_at,"
@@ -701,8 +688,6 @@ class AugeApi {
                 "@leader_user_id)"
             , substitutionValues: {
           "id": group.id,
-          "created_at": DateTime.now().toUtc(),
-          "created_by_user_id": group.audit.createdBy.id,
           "name": group.name,
           "active": group.active,
           "organization_id": group.organization.id,
@@ -763,8 +748,6 @@ class AugeApi {
             "id": group.id,
 
             "is_deleted": group.isDeleted,
-            "updated_at": DateTime.now().toUtc(),
-            "updated_by_user_id": group.audit.updatedBy.id,
             "name": group.name,
             "active": group.active,
             "organization_id": group.organization.id,

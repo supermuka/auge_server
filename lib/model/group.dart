@@ -2,13 +2,11 @@
 // Author: Samuel C. Schwebel
 
 import 'package:auge_server/model/model_base.dart';
+import 'package:auge_server/model/history_item.dart';
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 
 /// Domain model class to represent a group
-class GroupBase {
-  String id;
-}
 /*
 class GroupPersistent<TOrganization extends OrganizationBase, TGroupType extends GroupTypeBase, TGroup extends GroupBase, TUser extends UserBase> implements GroupBase {
 
@@ -27,17 +25,19 @@ class GroupPersistent<TOrganization extends OrganizationBase, TGroupType extends
   }
 }
 */
-class Group implements GroupBase {
+class Group implements Base {
   // Base - implements
   static const idField = 'id';
   String id;
+  static const versionField = 'version';
+  int version;
 
   static const isDeletedField = 'isDeleted';
   bool isDeleted;
 
-  // Base - audit
-  static const auditField = 'audit';
-  Audit audit;
+  // Base - history - transient
+  static const lastHistoryItemField = 'lastHistoryItem';
+  HistoryItem lastHistoryItem;
 
   // Specific
   String name;

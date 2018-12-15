@@ -4,10 +4,10 @@
 import 'dart:convert';
 
 import 'package:auge_server/model/model_base.dart';
+import 'package:auge_server/model/history_item.dart';
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/objective/measure.dart';
-import 'package:auge_server/model/objective/timeline_item.dart';
 import 'package:auge_server/model/group.dart';
 
 import 'package:intl/intl.dart';
@@ -19,11 +19,14 @@ class Objective implements Base {
   // Base
   static const idField = 'id';
   String id;
+  static const versionField = 'version';
+  int version;
   static const isDeletedField = 'isDeleted';
   bool isDeleted;
 
-  static const auditField = 'audit';
-  Audit audit;
+  // Transient
+  static const lastHistoryItemField = 'lastHistoryItem';
+  HistoryItem lastHistoryItem;
 
   // Specific
   static const nameField = 'name';
@@ -42,23 +45,21 @@ class Objective implements Base {
   Objective alignedTo;
   static const leaderField = 'leader';
   User leader;
-  static const lastTimelineItemField = 'lastTimelineItem';
-  TimelineItem lastTimelineItem;
   static const archivedField = 'archived';
   bool archived;
 
   // Transients fields
   List<Objective> alignedWithChildren;
   List<Measure> measures;
-  List<TimelineItem> timeline;
+  List<HistoryItem> history;
 
   Objective() {
     initializeDateFormatting(Intl.defaultLocale);
 
-    audit = Audit();
+    lastHistoryItem = HistoryItem();
     alignedWithChildren = List<Objective>();
     measures = List<Measure>();
-    timeline = List<TimelineItem>();
+    history = List<HistoryItem>();
   }
 
   int get progress {
@@ -84,7 +85,7 @@ class Objective implements Base {
     to.description = this.description;
     to.startDate = this.startDate;
     to.endDate = this.endDate;
-    to.lastTimelineItem = this.lastTimelineItem;
+    to.lastHistoryItem = this.lastHistoryItem;
     to.archived = this.archived;
     if (this.organization != null) {
       to.organization = this.organization.clone();
@@ -119,10 +120,10 @@ class Objective implements Base {
           to.measures.add(o.clone()));
     }
 
-    if (this.timeline != null && this.timeline.length != 0) {
-      to.timeline.clear();
-      this.timeline.forEach((o) =>
-          to.timeline.add(o.clone()));
+    if (this.history != null && this.history.length != 0) {
+      to.history.clear();
+      this.history.forEach((o) =>
+          to.history.add(o));
     }
   }
 

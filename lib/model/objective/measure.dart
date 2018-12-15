@@ -4,20 +4,19 @@
 import 'dart:convert';
 
 import 'package:auge_server/model/model_base.dart';
-import 'package:auge_server/model/objective/timeline_item.dart';
+import 'package:auge_server/model/history_item.dart';
 
 /// Domain model class to represent an measure
 class Measure implements Base {
 
   // Base - implements
-  static const idField = 'id';
   String id;
-  static const isDeletedField = 'isDeleted';
+  int version;
   bool isDeleted;
 
-  // Base - audit
-  static const auditField = 'audit';
-  Audit audit;
+  // History
+  static const lastHistoryItemField = 'lastHistoryItem';
+  HistoryItem lastHistoryItem;
 
   // Specific
   static const nameField = 'name';
@@ -32,31 +31,30 @@ class Measure implements Base {
   double startValue;
   static const endValueField = 'endValue';
   double endValue;
-  static const currentValueField = 'currentValue';
-  double currentValue;
   static const measureUnitField = 'measureUnit';
   MeasureUnit measureUnit;
 
-
   // Transient
+  static const currentValueField = 'currentValue';
+  double currentValue; // field calculeted on measureProgress
+
   List<MeasureProgress> measureProgress;
-  TimelineItem lastTimelineItem;
 
   Measure() {
-    audit = Audit();
+    lastHistoryItem = HistoryItem();
     measureUnit = MeasureUnit();
   }
 
   // NumberFormat _numberFormat;
-  double get minValue => startValue == null ? null : endValue == null ? endValue : startValue <= endValue ? num.tryParse(startValue.toStringAsFixed(decimalsNumber ?? 0)) : num.tryParse(endValue.toStringAsFixed(decimalsNumber ?? 0));
+  double get minValue => startValue == null || endValue == null ? null : startValue <= endValue ? num.tryParse(startValue.toStringAsFixed(decimalsNumber ?? 0)) : num.tryParse(endValue.toStringAsFixed(decimalsNumber ?? 0));
   set minValue(double value) => startValue <= endValue ? startValue = value : endValue = value;
 
-  double get maxValue => startValue == null ? null : endValue == null ? endValue : startValue <= endValue ? num.tryParse(endValue.toStringAsFixed(decimalsNumber ?? 0)) : num.tryParse(startValue.toStringAsFixed(decimalsNumber ?? 0));
+  double get maxValue => startValue == null || endValue == null ? null : startValue <= endValue ? num.tryParse(endValue.toStringAsFixed(decimalsNumber ?? 0)) : num.tryParse(startValue.toStringAsFixed(decimalsNumber ?? 0));
   set maxValue(double value) => startValue <= endValue ? endValue = value: startValue = value;
 
   double get stepValue => decimalsNumber == null || decimalsNumber == 0 ? 1 : num.tryParse('.'.padRight(decimalsNumber,'0') + '1');
 
-  double get valueRelatedMinMax => startValue == null ? null : endValue == null ? endValue : currentValue == null ? null : startValue <= endValue ? num.tryParse(currentValue.toStringAsFixed(decimalsNumber ?? 0)) : num.tryParse((startValue + endValue - currentValue).toStringAsFixed(decimalsNumber ?? 0));
+  double get valueRelatedMinMax => startValue == null ? null : endValue == null ? null : currentValue == null ? startValue <= endValue ? startValue : endValue : startValue <= endValue ? num.tryParse(currentValue.toStringAsFixed(decimalsNumber ?? 0)) : num.tryParse((startValue + endValue - currentValue).toStringAsFixed(decimalsNumber ?? 0));
   // set valueRelatedMinMax(double value) => startValue <= endValue ? currentValue = value : currentValue = startValue + endValue - value;
 
   int get progress {
@@ -68,7 +66,7 @@ class Measure implements Base {
 
       if (endMinusStartValue != null && endMinusStartValue != 0) {
         _progress =
-            (((currentValue ?? 0) - (startValue ?? 0)) /
+            (((currentValue ?? startValue ?? 0) - (startValue ?? 0)) /
                 endMinusStartValue * 100)
                 ?.toInt();
       }
@@ -97,29 +95,27 @@ class Measure implements Base {
   }
 }
 
-class MeasureProgressBase {
-  String id;
-}
 
-class MeasureProgress implements MeasureProgressBase {
+class MeasureProgress implements Base {
   // Base - implements
-  static const idField = 'id';
   String id;
-  static const isDeletedField = 'isDeleted';
+  int version;
   bool isDeleted;
 
-
-  // Base - audit
-  static const auditField = 'audit';
-  Audit audit;
+  // Base - History - Transient
+  static const lastHistoryItemField = 'lastHistoryItem';
+  HistoryItem lastHistoryItem;
 
   // Specific
+  static const dateField = 'date';
   DateTime date;
+  static const currentValueField = 'current';
   double currentValue;
+  static const commentField = 'comment';
   String comment;
 
   MeasureProgress() {
-    audit = Audit();
+    lastHistoryItem = HistoryItem();
   }
 
   void cloneTo(MeasureProgress to) {
@@ -135,7 +131,6 @@ class MeasureProgress implements MeasureProgressBase {
     return to;
   }
 }
-
 
 class MeasureUnitBase {
   String id;
@@ -186,9 +181,9 @@ class MeasureFacilities {
 
     // String id;
     if (previous != null && current.id != previous.id) {
-      difference[idsKey][Measure.idField] = {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
+      difference[idsKey][Base.idField] = {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
     } else if (previous == null && current.id != null) {
-      difference[Measure.idField] = {currentDataChangedKey: current.id};
+      difference[Base.idField] = {currentDataChangedKey: current.id};
     }
 
     // String name;
@@ -258,3 +253,77 @@ class MeasureFacilities {
     return json.decode(jsonDifference);
   }
 }
+
+
+/// Facilities to [MeasureProgress] class
+class MeasureProgressFacilities {
+
+  /// Delta diff between [current] and [previous].
+  /// ids = A list from IDs changed.
+  /// values =  Values (in user view) changed. ids and values are maintained in structure separately per performance reason (Json stored document strategy)
+  static String differenceToJson(MeasureProgress current, MeasureProgress previous) {
+
+    Map<String, Map<String, dynamic>> difference = Map();
+
+    const idsKey = 'ids';
+    const valuesKey = 'values';
+
+    const currentDataChangedKey = 'current';
+    const previousDataChangedKey = 'previous';
+
+    difference[idsKey] = {};
+    difference[valuesKey] = {};
+
+    // String id;
+    if (previous != null && current.id != previous.id) {
+      difference[idsKey][Base.idField] = {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
+    } else if (previous == null && current.id != null) {
+      difference[Base.idField] = {currentDataChangedKey: current.id};
+    }
+
+    // String version;
+    if (previous != null && current.version != previous.version) {
+      difference[valuesKey][Base.versionField] = {currentDataChangedKey: current.version, previousDataChangedKey: previous.version};
+    } else if (previous == null && current.version != null) {
+      difference[valuesKey][Base.versionField] = {currentDataChangedKey: current.version};
+    }
+
+    // String description;
+    if (previous != null && current.isDeleted != previous.isDeleted) {
+      difference[valuesKey][Base.isDeletedField] = {currentDataChangedKey: current.isDeleted, previousDataChangedKey: previous.isDeleted};
+    } else if (previous == null && current.isDeleted != null ) {
+      difference[valuesKey][Base.isDeletedField] = {currentDataChangedKey: current.isDeleted};
+    }
+
+    // DateTime date;
+    if (previous != null && current.date != previous.date) {
+      difference[valuesKey][MeasureProgress.dateField] = {currentDataChangedKey: current.date, previousDataChangedKey: previous.date};
+    } else if (previous == null && current.date != null ) {
+      difference[valuesKey][MeasureProgress.dateField] = {currentDataChangedKey: current.date};
+    }
+
+    // double currentValue;
+    if (previous != null && current.currentValue != previous.currentValue) {
+      difference[valuesKey][MeasureProgress.currentValueField] = {currentDataChangedKey: current.currentValue, previousDataChangedKey: previous.currentValue};
+    } else if (previous == null && current.currentValue != null ) {
+      difference[valuesKey][MeasureProgress.currentValueField] = {currentDataChangedKey: current.currentValue};
+    }
+
+    // String comment;
+    if (previous != null && current.comment != previous.comment) {
+      difference[valuesKey][MeasureProgress.commentField] = {currentDataChangedKey: current.comment, previousDataChangedKey: previous.comment};
+    } else if (previous == null && current.comment != null ) {
+      difference[valuesKey][MeasureProgress.commentField] = {currentDataChangedKey: current.comment};
+    }
+
+    //List<Measure> measures;
+    return json.encode(difference);
+  }
+
+  static Map<String, dynamic> differenceToMap(String jsonDifference) {
+    return json.decode(jsonDifference);
+  }
+
+
+}
+

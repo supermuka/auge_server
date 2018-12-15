@@ -10,9 +10,9 @@ import 'dart:convert' as convert;
 
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
-import 'package:auge_server/model/model_base.dart';
 import 'package:auge_server/message/datetime_message.dart';
 import 'package:auge_server/model/group.dart';
+import 'package:auge_server/model/history_item.dart';
 import 'package:auge_server/message/created_message.dart';
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
@@ -814,42 +814,6 @@ class AugeApi {
   }
 }
 
-class AuditFactory {
-  static Audit fromJson(core.Map _json) {
-    var message = new Audit();
-    if (_json.containsKey("createdAt")) {
-      message.createdAt = core.DateTime.parse(_json["createdAt"]);
-    }
-    if (_json.containsKey("createdBy")) {
-      message.createdBy = UserFactory.fromJson(_json["createdBy"]);
-    }
-    if (_json.containsKey("updatedAt")) {
-      message.updatedAt = core.DateTime.parse(_json["updatedAt"]);
-    }
-    if (_json.containsKey("updatedBy")) {
-      message.updatedBy = UserFactory.fromJson(_json["updatedBy"]);
-    }
-    return message;
-  }
-
-  static core.Map toJson(Audit message) {
-    var _json = new core.Map();
-    if (message.createdAt != null) {
-      _json["createdAt"] = (message.createdAt).toIso8601String();
-    }
-    if (message.createdBy != null) {
-      _json["createdBy"] = UserFactory.toJson(message.createdBy);
-    }
-    if (message.updatedAt != null) {
-      _json["updatedAt"] = (message.updatedAt).toIso8601String();
-    }
-    if (message.updatedBy != null) {
-      _json["updatedBy"] = UserFactory.toJson(message.updatedBy);
-    }
-    return _json;
-  }
-}
-
 class DateTimeMessageFactory {
   static DateTimeMessage fromJson(core.Map _json) {
     var message = new DateTimeMessage();
@@ -874,9 +838,6 @@ class GroupFactory {
     if (_json.containsKey("active")) {
       message.active = _json["active"];
     }
-    if (_json.containsKey("audit")) {
-      message.audit = AuditFactory.fromJson(_json["audit"]);
-    }
     if (_json.containsKey("groupType")) {
       message.groupType = GroupTypeFactory.fromJson(_json["groupType"]);
     }
@@ -885,6 +846,10 @@ class GroupFactory {
     }
     if (_json.containsKey("isDeleted")) {
       message.isDeleted = _json["isDeleted"];
+    }
+    if (_json.containsKey("lastHistoryItem")) {
+      message.lastHistoryItem =
+          HistoryItemFactory.fromJson(_json["lastHistoryItem"]);
     }
     if (_json.containsKey("leader")) {
       message.leader = UserFactory.fromJson(_json["leader"]);
@@ -904,6 +869,9 @@ class GroupFactory {
     if (_json.containsKey("superGroup")) {
       message.superGroup = GroupFactory.fromJson(_json["superGroup"]);
     }
+    if (_json.containsKey("version")) {
+      message.version = _json["version"];
+    }
     return message;
   }
 
@@ -911,9 +879,6 @@ class GroupFactory {
     var _json = new core.Map();
     if (message.active != null) {
       _json["active"] = message.active;
-    }
-    if (message.audit != null) {
-      _json["audit"] = AuditFactory.toJson(message.audit);
     }
     if (message.groupType != null) {
       _json["groupType"] = GroupTypeFactory.toJson(message.groupType);
@@ -923,6 +888,10 @@ class GroupFactory {
     }
     if (message.isDeleted != null) {
       _json["isDeleted"] = message.isDeleted;
+    }
+    if (message.lastHistoryItem != null) {
+      _json["lastHistoryItem"] =
+          HistoryItemFactory.toJson(message.lastHistoryItem);
     }
     if (message.leader != null) {
       _json["leader"] = UserFactory.toJson(message.leader);
@@ -939,6 +908,9 @@ class GroupFactory {
     }
     if (message.superGroup != null) {
       _json["superGroup"] = GroupFactory.toJson(message.superGroup);
+    }
+    if (message.version != null) {
+      _json["version"] = message.version;
     }
     return _json;
   }
@@ -963,6 +935,72 @@ class GroupTypeFactory {
     }
     if (message.name != null) {
       _json["name"] = message.name;
+    }
+    return _json;
+  }
+}
+
+class HistoryItemFactory {
+  static HistoryItem fromJson(core.Map _json) {
+    var message = new HistoryItem();
+    if (_json.containsKey("changedValues")) {
+      message.changedValues = _json["changedValues"];
+    }
+    if (_json.containsKey("dateTime")) {
+      message.dateTime = core.DateTime.parse(_json["dateTime"]);
+    }
+    if (_json.containsKey("description")) {
+      message.description = _json["description"];
+    }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    if (_json.containsKey("objectClassName")) {
+      message.objectClassName = _json["objectClassName"];
+    }
+    if (_json.containsKey("objectId")) {
+      message.objectId = _json["objectId"];
+    }
+    if (_json.containsKey("objectVersion")) {
+      message.objectVersion = _json["objectVersion"];
+    }
+    if (_json.containsKey("systemFunctionIndex")) {
+      message.systemFunctionIndex = _json["systemFunctionIndex"];
+    }
+    if (_json.containsKey("user")) {
+      message.user = UserFactory.fromJson(_json["user"]);
+    }
+    return message;
+  }
+
+  static core.Map toJson(HistoryItem message) {
+    var _json = new core.Map();
+    if (message.changedValues != null) {
+      _json["changedValues"] = message.changedValues;
+    }
+    if (message.dateTime != null) {
+      _json["dateTime"] = (message.dateTime).toIso8601String();
+    }
+    if (message.description != null) {
+      _json["description"] = message.description;
+    }
+    if (message.id != null) {
+      _json["id"] = message.id;
+    }
+    if (message.objectClassName != null) {
+      _json["objectClassName"] = message.objectClassName;
+    }
+    if (message.objectId != null) {
+      _json["objectId"] = message.objectId;
+    }
+    if (message.objectVersion != null) {
+      _json["objectVersion"] = message.objectVersion;
+    }
+    if (message.systemFunctionIndex != null) {
+      _json["systemFunctionIndex"] = message.systemFunctionIndex;
+    }
+    if (message.user != null) {
+      _json["user"] = UserFactory.toJson(message.user);
     }
     return _json;
   }

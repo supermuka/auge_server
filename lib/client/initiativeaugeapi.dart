@@ -10,8 +10,8 @@ import 'dart:convert' as convert;
 
 import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:http/http.dart' as http;
-import 'package:auge_server/model/model_base.dart';
 import 'package:auge_server/model/group.dart';
+import 'package:auge_server/model/history_item.dart';
 import 'package:auge_server/message/created_message.dart';
 import 'package:auge_server/model/initiative/initiative.dart';
 import 'package:auge_server/model/objective/measure.dart';
@@ -19,7 +19,6 @@ import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/initiative/stage.dart';
 import 'package:auge_server/model/initiative/state.dart';
-import 'package:auge_server/model/objective/timeline_item.dart';
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/initiative/work_item.dart';
 import 'package:auge_server/model/initiative/work_item_check_item.dart';
@@ -381,50 +380,11 @@ class InitiativeAugeApi {
   }
 }
 
-class AuditFactory {
-  static Audit fromJson(core.Map _json) {
-    var message = new Audit();
-    if (_json.containsKey("createdAt")) {
-      message.createdAt = core.DateTime.parse(_json["createdAt"]);
-    }
-    if (_json.containsKey("createdBy")) {
-      message.createdBy = UserFactory.fromJson(_json["createdBy"]);
-    }
-    if (_json.containsKey("updatedAt")) {
-      message.updatedAt = core.DateTime.parse(_json["updatedAt"]);
-    }
-    if (_json.containsKey("updatedBy")) {
-      message.updatedBy = UserFactory.fromJson(_json["updatedBy"]);
-    }
-    return message;
-  }
-
-  static core.Map toJson(Audit message) {
-    var _json = new core.Map();
-    if (message.createdAt != null) {
-      _json["createdAt"] = (message.createdAt).toIso8601String();
-    }
-    if (message.createdBy != null) {
-      _json["createdBy"] = UserFactory.toJson(message.createdBy);
-    }
-    if (message.updatedAt != null) {
-      _json["updatedAt"] = (message.updatedAt).toIso8601String();
-    }
-    if (message.updatedBy != null) {
-      _json["updatedBy"] = UserFactory.toJson(message.updatedBy);
-    }
-    return _json;
-  }
-}
-
 class GroupFactory {
   static Group fromJson(core.Map _json) {
     var message = new Group();
     if (_json.containsKey("active")) {
       message.active = _json["active"];
-    }
-    if (_json.containsKey("audit")) {
-      message.audit = AuditFactory.fromJson(_json["audit"]);
     }
     if (_json.containsKey("groupType")) {
       message.groupType = GroupTypeFactory.fromJson(_json["groupType"]);
@@ -434,6 +394,10 @@ class GroupFactory {
     }
     if (_json.containsKey("isDeleted")) {
       message.isDeleted = _json["isDeleted"];
+    }
+    if (_json.containsKey("lastHistoryItem")) {
+      message.lastHistoryItem =
+          HistoryItemFactory.fromJson(_json["lastHistoryItem"]);
     }
     if (_json.containsKey("leader")) {
       message.leader = UserFactory.fromJson(_json["leader"]);
@@ -453,6 +417,9 @@ class GroupFactory {
     if (_json.containsKey("superGroup")) {
       message.superGroup = GroupFactory.fromJson(_json["superGroup"]);
     }
+    if (_json.containsKey("version")) {
+      message.version = _json["version"];
+    }
     return message;
   }
 
@@ -460,9 +427,6 @@ class GroupFactory {
     var _json = new core.Map();
     if (message.active != null) {
       _json["active"] = message.active;
-    }
-    if (message.audit != null) {
-      _json["audit"] = AuditFactory.toJson(message.audit);
     }
     if (message.groupType != null) {
       _json["groupType"] = GroupTypeFactory.toJson(message.groupType);
@@ -472,6 +436,10 @@ class GroupFactory {
     }
     if (message.isDeleted != null) {
       _json["isDeleted"] = message.isDeleted;
+    }
+    if (message.lastHistoryItem != null) {
+      _json["lastHistoryItem"] =
+          HistoryItemFactory.toJson(message.lastHistoryItem);
     }
     if (message.leader != null) {
       _json["leader"] = UserFactory.toJson(message.leader);
@@ -488,6 +456,9 @@ class GroupFactory {
     }
     if (message.superGroup != null) {
       _json["superGroup"] = GroupFactory.toJson(message.superGroup);
+    }
+    if (message.version != null) {
+      _json["version"] = message.version;
     }
     return _json;
   }
@@ -512,6 +483,72 @@ class GroupTypeFactory {
     }
     if (message.name != null) {
       _json["name"] = message.name;
+    }
+    return _json;
+  }
+}
+
+class HistoryItemFactory {
+  static HistoryItem fromJson(core.Map _json) {
+    var message = new HistoryItem();
+    if (_json.containsKey("changedValues")) {
+      message.changedValues = _json["changedValues"];
+    }
+    if (_json.containsKey("dateTime")) {
+      message.dateTime = core.DateTime.parse(_json["dateTime"]);
+    }
+    if (_json.containsKey("description")) {
+      message.description = _json["description"];
+    }
+    if (_json.containsKey("id")) {
+      message.id = _json["id"];
+    }
+    if (_json.containsKey("objectClassName")) {
+      message.objectClassName = _json["objectClassName"];
+    }
+    if (_json.containsKey("objectId")) {
+      message.objectId = _json["objectId"];
+    }
+    if (_json.containsKey("objectVersion")) {
+      message.objectVersion = _json["objectVersion"];
+    }
+    if (_json.containsKey("systemFunctionIndex")) {
+      message.systemFunctionIndex = _json["systemFunctionIndex"];
+    }
+    if (_json.containsKey("user")) {
+      message.user = UserFactory.fromJson(_json["user"]);
+    }
+    return message;
+  }
+
+  static core.Map toJson(HistoryItem message) {
+    var _json = new core.Map();
+    if (message.changedValues != null) {
+      _json["changedValues"] = message.changedValues;
+    }
+    if (message.dateTime != null) {
+      _json["dateTime"] = (message.dateTime).toIso8601String();
+    }
+    if (message.description != null) {
+      _json["description"] = message.description;
+    }
+    if (message.id != null) {
+      _json["id"] = message.id;
+    }
+    if (message.objectClassName != null) {
+      _json["objectClassName"] = message.objectClassName;
+    }
+    if (message.objectId != null) {
+      _json["objectId"] = message.objectId;
+    }
+    if (message.objectVersion != null) {
+      _json["objectVersion"] = message.objectVersion;
+    }
+    if (message.systemFunctionIndex != null) {
+      _json["systemFunctionIndex"] = message.systemFunctionIndex;
+    }
+    if (message.user != null) {
+      _json["user"] = UserFactory.toJson(message.user);
     }
     return _json;
   }
@@ -612,9 +649,6 @@ class InitiativeFactory {
 class MeasureFactory {
   static Measure fromJson(core.Map _json) {
     var message = new Measure();
-    if (_json.containsKey("audit")) {
-      message.audit = AuditFactory.fromJson(_json["audit"]);
-    }
     if (_json.containsKey("currentValue")) {
       message.currentValue = _json["currentValue"].toDouble();
     }
@@ -633,9 +667,9 @@ class MeasureFactory {
     if (_json.containsKey("isDeleted")) {
       message.isDeleted = _json["isDeleted"];
     }
-    if (_json.containsKey("lastTimelineItem")) {
-      message.lastTimelineItem =
-          TimelineItemFactory.fromJson(_json["lastTimelineItem"]);
+    if (_json.containsKey("lastHistoryItem")) {
+      message.lastHistoryItem =
+          HistoryItemFactory.fromJson(_json["lastHistoryItem"]);
     }
     if (_json.containsKey("measureProgress")) {
       message.measureProgress = (_json["measureProgress"] as core.List)
@@ -655,14 +689,14 @@ class MeasureFactory {
     if (_json.containsKey("startValue")) {
       message.startValue = _json["startValue"].toDouble();
     }
+    if (_json.containsKey("version")) {
+      message.version = _json["version"];
+    }
     return message;
   }
 
   static core.Map toJson(Measure message) {
     var _json = new core.Map();
-    if (message.audit != null) {
-      _json["audit"] = AuditFactory.toJson(message.audit);
-    }
     if (message.currentValue != null) {
       _json["currentValue"] = message.currentValue;
     }
@@ -681,9 +715,9 @@ class MeasureFactory {
     if (message.isDeleted != null) {
       _json["isDeleted"] = message.isDeleted;
     }
-    if (message.lastTimelineItem != null) {
-      _json["lastTimelineItem"] =
-          TimelineItemFactory.toJson(message.lastTimelineItem);
+    if (message.lastHistoryItem != null) {
+      _json["lastHistoryItem"] =
+          HistoryItemFactory.toJson(message.lastHistoryItem);
     }
     if (message.measureProgress != null) {
       _json["measureProgress"] = message.measureProgress
@@ -702,6 +736,9 @@ class MeasureFactory {
     if (message.startValue != null) {
       _json["startValue"] = message.startValue;
     }
+    if (message.version != null) {
+      _json["version"] = message.version;
+    }
     return _json;
   }
 }
@@ -709,9 +746,6 @@ class MeasureFactory {
 class MeasureProgressFactory {
   static MeasureProgress fromJson(core.Map _json) {
     var message = new MeasureProgress();
-    if (_json.containsKey("audit")) {
-      message.audit = AuditFactory.fromJson(_json["audit"]);
-    }
     if (_json.containsKey("comment")) {
       message.comment = _json["comment"];
     }
@@ -727,14 +761,18 @@ class MeasureProgressFactory {
     if (_json.containsKey("isDeleted")) {
       message.isDeleted = _json["isDeleted"];
     }
+    if (_json.containsKey("lastHistoryItem")) {
+      message.lastHistoryItem =
+          HistoryItemFactory.fromJson(_json["lastHistoryItem"]);
+    }
+    if (_json.containsKey("version")) {
+      message.version = _json["version"];
+    }
     return message;
   }
 
   static core.Map toJson(MeasureProgress message) {
     var _json = new core.Map();
-    if (message.audit != null) {
-      _json["audit"] = AuditFactory.toJson(message.audit);
-    }
     if (message.comment != null) {
       _json["comment"] = message.comment;
     }
@@ -749,6 +787,13 @@ class MeasureProgressFactory {
     }
     if (message.isDeleted != null) {
       _json["isDeleted"] = message.isDeleted;
+    }
+    if (message.lastHistoryItem != null) {
+      _json["lastHistoryItem"] =
+          HistoryItemFactory.toJson(message.lastHistoryItem);
+    }
+    if (message.version != null) {
+      _json["version"] = message.version;
     }
     return _json;
   }
@@ -798,9 +843,6 @@ class ObjectiveFactory {
     if (_json.containsKey("archived")) {
       message.archived = _json["archived"];
     }
-    if (_json.containsKey("audit")) {
-      message.audit = AuditFactory.fromJson(_json["audit"]);
-    }
     if (_json.containsKey("description")) {
       message.description = _json["description"];
     }
@@ -810,15 +852,20 @@ class ObjectiveFactory {
     if (_json.containsKey("group")) {
       message.group = GroupFactory.fromJson(_json["group"]);
     }
+    if (_json.containsKey("history")) {
+      message.history = (_json["history"] as core.List)
+          .map<HistoryItem>((value) => HistoryItemFactory.fromJson(value))
+          .toList();
+    }
     if (_json.containsKey("id")) {
       message.id = _json["id"];
     }
     if (_json.containsKey("isDeleted")) {
       message.isDeleted = _json["isDeleted"];
     }
-    if (_json.containsKey("lastTimelineItem")) {
-      message.lastTimelineItem =
-          TimelineItemFactory.fromJson(_json["lastTimelineItem"]);
+    if (_json.containsKey("lastHistoryItem")) {
+      message.lastHistoryItem =
+          HistoryItemFactory.fromJson(_json["lastHistoryItem"]);
     }
     if (_json.containsKey("leader")) {
       message.leader = UserFactory.fromJson(_json["leader"]);
@@ -838,10 +885,8 @@ class ObjectiveFactory {
     if (_json.containsKey("startDate")) {
       message.startDate = core.DateTime.parse(_json["startDate"]);
     }
-    if (_json.containsKey("timeline")) {
-      message.timeline = (_json["timeline"] as core.List)
-          .map<TimelineItem>((value) => TimelineItemFactory.fromJson(value))
-          .toList();
+    if (_json.containsKey("version")) {
+      message.version = _json["version"];
     }
     return message;
   }
@@ -859,9 +904,6 @@ class ObjectiveFactory {
     if (message.archived != null) {
       _json["archived"] = message.archived;
     }
-    if (message.audit != null) {
-      _json["audit"] = AuditFactory.toJson(message.audit);
-    }
     if (message.description != null) {
       _json["description"] = message.description;
     }
@@ -871,15 +913,20 @@ class ObjectiveFactory {
     if (message.group != null) {
       _json["group"] = GroupFactory.toJson(message.group);
     }
+    if (message.history != null) {
+      _json["history"] = message.history
+          .map((value) => HistoryItemFactory.toJson(value))
+          .toList();
+    }
     if (message.id != null) {
       _json["id"] = message.id;
     }
     if (message.isDeleted != null) {
       _json["isDeleted"] = message.isDeleted;
     }
-    if (message.lastTimelineItem != null) {
-      _json["lastTimelineItem"] =
-          TimelineItemFactory.toJson(message.lastTimelineItem);
+    if (message.lastHistoryItem != null) {
+      _json["lastHistoryItem"] =
+          HistoryItemFactory.toJson(message.lastHistoryItem);
     }
     if (message.leader != null) {
       _json["leader"] = UserFactory.toJson(message.leader);
@@ -898,10 +945,8 @@ class ObjectiveFactory {
     if (message.startDate != null) {
       _json["startDate"] = (message.startDate).toIso8601String();
     }
-    if (message.timeline != null) {
-      _json["timeline"] = message.timeline
-          .map((value) => TimelineItemFactory.toJson(value))
-          .toList();
+    if (message.version != null) {
+      _json["version"] = message.version;
     }
     return _json;
   }
@@ -1005,60 +1050,6 @@ class StateFactory {
     }
     if (message.name != null) {
       _json["name"] = message.name;
-    }
-    return _json;
-  }
-}
-
-class TimelineItemFactory {
-  static TimelineItem fromJson(core.Map _json) {
-    var message = new TimelineItem();
-    if (_json.containsKey("changedData")) {
-      message.changedData = _json["changedData"];
-    }
-    if (_json.containsKey("className")) {
-      message.className = _json["className"];
-    }
-    if (_json.containsKey("dateTime")) {
-      message.dateTime = core.DateTime.parse(_json["dateTime"]);
-    }
-    if (_json.containsKey("description")) {
-      message.description = _json["description"];
-    }
-    if (_json.containsKey("id")) {
-      message.id = _json["id"];
-    }
-    if (_json.containsKey("systemFunctionIndex")) {
-      message.systemFunctionIndex = _json["systemFunctionIndex"];
-    }
-    if (_json.containsKey("user")) {
-      message.user = UserFactory.fromJson(_json["user"]);
-    }
-    return message;
-  }
-
-  static core.Map toJson(TimelineItem message) {
-    var _json = new core.Map();
-    if (message.changedData != null) {
-      _json["changedData"] = message.changedData;
-    }
-    if (message.className != null) {
-      _json["className"] = message.className;
-    }
-    if (message.dateTime != null) {
-      _json["dateTime"] = (message.dateTime).toIso8601String();
-    }
-    if (message.description != null) {
-      _json["description"] = message.description;
-    }
-    if (message.id != null) {
-      _json["id"] = message.id;
-    }
-    if (message.systemFunctionIndex != null) {
-      _json["systemFunctionIndex"] = message.systemFunctionIndex;
-    }
-    if (message.user != null) {
-      _json["user"] = UserFactory.toJson(message.user);
     }
     return _json;
   }

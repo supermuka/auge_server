@@ -10,9 +10,10 @@ import 'package:uuid/uuid.dart';
 import 'package:auge_server/augeconnection.dart';
 import 'package:auge_server/augeapi.dart';
 
+import 'package:auge_server/model/authorization.dart';
+import 'package:auge_server/model/history_item.dart';
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/objective/measure.dart';
-import 'package:auge_server/model/objective/timeline_item.dart';
 import 'package:auge_server/model/organization.dart';
 import 'package:auge_server/model/user.dart';
 import 'package:auge_server/model/group.dart';
@@ -21,39 +22,37 @@ import 'package:auge_server/message/created_message.dart';
 
 import 'package:auge_server/shared/rpc_error_message.dart';
 
-//import 'package:auge_shared/message/messages.dart';
-
 /// Api for Objective Domain
 @ApiClass(version: 'v1')
 class ObjectiveAugeApi {
 
- // AugeApi _augeApi;
-
   ObjectiveAugeApi() {
-  //  _augeApi = new AugeApi();
     AugeConnection.createConnection();
   }
 
-  String queryStatementCreateTimelineItem =
-  "INSERT INTO auge_objective.objective_timeline(id, date_time, system_function_index, class_name, changed_data, description, user_id, objective_id) VALUES"
-  "(@id,"
-  "@date_time,"
-  "@system_function_index,"
-  "@class_name,"
-  "@changed_data,"
-  "@description,"
-  "@user_id,"
-  "@objective_id)";
+  // History to auge_objective schema
+  String queryStatementCreateHistoryItem = "INSERT INTO auge_objective.history(id, object_id, object_version, object_class_name, system_function_index, date_time, user_id, description, changed_values) VALUES"
+        "(@id,"
+        "@object_id,"
+        "@object_version,"
+        "@object_class_name,"
+        "@system_function_index,"
+        "@date_time,"
+        "@user_id,"
+        "@description,"
+        "@changed_values)";
 
-  Map<String, dynamic> querySubstitutionValuesCreateTimelineItem(String objectiveId, TimelineItem timelineItem) {
-      return {"id": timelineItem.id,
-              "date_time": timelineItem.dateTime,
-              "system_function_index": timelineItem.systemFunctionIndex,
-              "class_name": timelineItem.className,
-              "changed_data": timelineItem.changedData,
-              "description": timelineItem.description,
-              "user_id": timelineItem.user.id,
-              "objective_id": objectiveId};
+
+  Map<String, dynamic> querySubstitutionValuesCreateHistoryItem(HistoryItem historyItem) {
+      return {"id": historyItem.id,
+              "date_time": historyItem.dateTime,
+              "system_function_index": historyItem.systemFunctionIndex,
+              "changed_values": historyItem.changedValues,
+              "description": historyItem.description,
+              "user_id": historyItem.user.id,
+              "object_id": historyItem.objectId,
+              "object_version": historyItem.objectVersion,
+              "object_class_name": historyItem.objectClassName};
   }
 
   // *** MEASURE UNITS ***
@@ -87,27 +86,23 @@ class ObjectiveAugeApi {
   }
 
   // *** MEASURES ***
-  static Future<List<Measure>> queryMeasures({String objectiveId, String id, bool isDeleted = false, bool withAuditUser = false}) async {
+  static Future<List<Measure>> queryMeasures({String objectiveId, String id, bool isDeleted = false}) async {
     List<List> results;
 
     String queryStatement;
 
     queryStatement = "SELECT id::VARCHAR," //0
-    " name," //1
-    " description," //2
-    " metric," //3
-    " decimals_number," //4
-    " start_value::REAL," //5
-    " end_value::REAL," //6
-    " current_value::REAL," //7
-    " measure_unit_id," //8
-    " is_deleted," //9
-    " created_at," //10
-    " created_by_user_id," //11
-    " updated_at," //12
-    " updated_by_user_id, " //13
-    " version " //14
-    " FROM auge_objective.measures ";
+    " version, " //1
+    " name," //2
+    " description," //3
+    " metric," //4
+    " decimals_number," //5
+    " start_value::REAL," //6
+    " end_value::REAL," //7
+    " (select current_value from auge_objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //8
+    " measure_unit_id," //9
+    " is_deleted" //10
+    " FROM auge_objective.measures measure ";
 
     Map<String, dynamic> substitutionValues;
 
@@ -131,9 +126,9 @@ class ObjectiveAugeApi {
 
       for (var row in results) {
 
-        if (row[8] != null)
+        if (row[9] != null)
          //  measureUnit = await getMeasureUnitById(row[8]);
-          measureUnits = await queryMeasureUnits(id: row[8]);
+          measureUnits = await queryMeasureUnits(id: row[9]);
           if (measureUnits != null && measureUnits.length != 0) {
             measureUnit = measureUnits.first;
           }
@@ -144,32 +139,16 @@ class ObjectiveAugeApi {
 
         measure
           ..id = row[0]
-          ..name = row[1]
-          ..description = row[2]
-          ..metric = row[3]
-          ..decimalsNumber = row[4]
-          ..startValue = row[5]
-          ..endValue = row[6]
-          ..currentValue = row[7]
+          ..version = row[1]
+          ..name = row[2]
+          ..description = row[3]
+          ..metric = row[4]
+          ..decimalsNumber = row[5]
+          ..startValue = row[6]
+          ..endValue = row[7]
+          ..currentValue = row[8]
           ..measureUnit = measureUnit
-          ..isDeleted = row[9]
-          ..audit.createdAt = row[10]
-          ..audit.updatedAt = row[12]
-          ..audit.version = row[14];
-
-        if (withAuditUser) {
-          List<User> createdUsers = await AugeApi.queryUsers(id: row[11], withProfile: false);
-          if (createdUsers.isNotEmpty) {
-            measure
-              ..audit.createdBy = createdUsers.first;
-          }
-
-          List<User> updatedUsers = await AugeApi.queryUsers(id: row[13], withProfile: false);
-          if (updatedUsers.isNotEmpty) {
-            measure
-              ..audit.createdBy = updatedUsers.first;
-          }
-        }
+          ..isDeleted = row[10];
         mesuares.add(measure);
       }
     }
@@ -213,20 +192,12 @@ class ObjectiveAugeApi {
 
   /// Return [Measure] list
   @ApiMethod( method: 'GET', path: 'objetives/{objectiveId}/measures')
-  Future<List<Measure>> getMeasures(String objectiveId, {bool isDeleted = false, bool withAuditUser = false}) async {
+  Future<List<Measure>> getMeasures(String objectiveId, {bool isDeleted = false}) async {
     try {
 
       List<Measure> measures;
-      measures = await queryMeasures(objectiveId: objectiveId, isDeleted: isDeleted, withAuditUser: withAuditUser);
+      measures = await queryMeasures(objectiveId: objectiveId, isDeleted: isDeleted);
       return measures;
-      /*
-      if (measures != null && measures.length != 0) {
-        return measures;
-      } else {
-        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
-          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.userDataNotFoundReason));
-      }
-      */
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -243,34 +214,12 @@ class ObjectiveAugeApi {
       List<MeasureUnit> measureUnits;
       measureUnits = await queryMeasureUnits();
       return measureUnits;
-      /*
-      if (measureUnits != null && measureUnits.length != 0) {
-        return measureUnits;
-      } else {
-        throw new RpcError(httpCodeNotFound, RpcErrorMessage.dataNotFoundName, RpcErrorMessage.dataNotFoundMessage)
-          ..errors.add(new RpcErrorDetail(reason: RpcErrorDetailMessage.measureUnitsDataNotFoundReason));
-      }
-      */
-
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
   }
-/*
-  /// Return a [MeasureUnit] by Id
-  @ApiMethod( method: 'GET', path: 'measure_units/{id}')
-  Future<MeasureUnit> getMeasureUnitById(String id) async {
-    try {
-      List<MeasureUnit> measureUnits = await queryGetMeasureUnits(id: id);
-      return measureUnits?.first;
-    } catch (e) {
-      print('${e.runtimeType}, ${e}');
-      rethrow;
-    }
-  }
-  */
 
   /// Create (insert) a new measures
   @ApiMethod( method: 'POST', path: 'objetives/{objectiveId}/measures')
@@ -280,53 +229,47 @@ class ObjectiveAugeApi {
       measure.id = new Uuid().v4();
     }
 
-    DateTime dateTimeNow = DateTime.now().toUtc();
-
     try {
       await AugeConnection.getConnection().transaction((ctx) async {
 
+        measure.version = 0;
         await ctx.query(
-            "INSERT INTO auge_objective.measures(id, name, description, metric, decimals_number, start_value, end_value, current_value, measure_unit_id, objective_id, is_deleted, created_at, created_by_user_id, version) VALUES"
+            "INSERT INTO auge_objective.measures(id, version, name, description, metric, decimals_number, start_value, end_value, measure_unit_id, objective_id, is_deleted) VALUES"
                 "(@id,"
+                "@version,"
                 "@name,"
                 "@description,"
                 "@metric,"
                 "@decimals_number,"
                 "@start_value,"
                 "@end_value,"
-                "@current_value,"
                 "@measure_unit_id,"
                 "@objective_id,"
-                "@is_deleted,"
-                "@created_at,"
-                "@created_by_user_id,"
-                "@version)"
+                "@is_deleted)"
             , substitutionValues: {
           "id": measure.id,
+          "version": measure.version,
           "name": measure.name,
           "description": measure.description,
           "metric": measure.metric,
           "decimals_number": measure.decimalsNumber,
           "start_value": measure.startValue,
           "end_value": measure.endValue,
-          "current_value": measure.currentValue,
           "measure_unit_id": measure?.measureUnit?.id,
           "objective_id": objectiveId,
           "is_deleted": measure.isDeleted,
-          "created_at": dateTimeNow,
-          "created_by_user_id": measure.audit.createdBy.id,
-          "version": 0
         });
 
-        // TimelineItem
-        if (measure.lastTimelineItem.id == null) {
-          measure.lastTimelineItem.id = new Uuid().v4();
-        }
-        if (measure.lastTimelineItem.dateTime == null) {
-          measure.lastTimelineItem.dateTime = dateTimeNow;
-        }
+        // HistoryItem - server-side generation
+        measure.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
+          objectId: measure.id,
+          objectVersion: measure.version,
+          objectClassName: measure.runtimeType.toString(),
+          systemFunctionIndex: SystemFunction.create.index,
+          dateTime: DateTime.now().toUtc());
 
-        await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objectiveId, measure.lastTimelineItem));
+        // Create a history item
+        await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(measure.lastHistoryItem));
 
       });
     } catch (e) {
@@ -340,21 +283,17 @@ class ObjectiveAugeApi {
   // *** MEASURES PROGRESS ***
   static Future<List<MeasureProgress>> queryMeasureProgress({String measureId, String id, bool isDeleted = false, bool withAuditUser = false}) async {
 
-    print('queryMeasureProgress');
-    print(id);
 
     List<List> results;
 
     String queryStatement;
 
     queryStatement = "SELECT id::VARCHAR," // 0
-    " date," //1
-    " current_value," //2
-    " comment," //3
-    " measure_id," //4
-    " created_at,"//5
-    " created_by_user_id,"//6
-    " version"//7
+    " version,"//1
+    " date," //2
+    " current_value," //3
+    " comment," //4
+    " measure_id" //5
     " FROM auge_objective.measure_progress ";
 
     Map<String, dynamic> substitutionValues;
@@ -377,16 +316,11 @@ class ObjectiveAugeApi {
       for (var row in results) {
 
         MeasureProgress measureProgress = MeasureProgress()..id = row[0]
-          ..date = row[1]
-          ..currentValue = row[2]
-          ..comment = row[3]
-          ..audit.createdAt = row[5]
-          ..audit.version = row[7];
+          ..version = row[1]
+          ..date = row[2]
+          ..currentValue = row[3]
+          ..comment = row[4];
 
-        if (withAuditUser) {
-          measureProgress
-            ..audit.createdBy = row[6] == null ? null : (await AugeApi.queryUsers(id: row[6])).first;
-          }
         mesuareProgresses.add(measureProgress);
       }
     }
@@ -394,64 +328,48 @@ class ObjectiveAugeApi {
   }
 
   /// Create current value of the [MeasureProgress]
-  @ApiMethod( method: 'POST', path: 'measures/{measureId}/{measureVersion}/progress')
-  Future<IdMessage> createMeasureProgress(String measureId, int measureVersion, MeasureProgress measureProgress) async {
+  @ApiMethod( method: 'POST', path: 'measures/{measureId}/progress')
+  Future<IdMessage> createMeasureProgress(String measureId, MeasureProgress measureProgress) async {
     try {
-      DateTime dateTimeNow = DateTime.now().toUtc();
 
       await AugeConnection.getConnection().transaction((ctx) async {
-        List<List<dynamic>> result;
-        result = await ctx.query(
-          "UPDATE auge_objective.measures "
-          "SET current_value = @current_value, "
-          "updated_at = @updated_at, "
-          "updated_by_user_id = @updated_by_user_id, "
-          "version = @version + 1"
-          "WHERE id = @measure_id "
-            "AND version = @version "
-            "RETURNING true", substitutionValues: {
-          "current_value": measureProgress.currentValue,
-          "updated_at": dateTimeNow,
-          "updated_by_user_id": measureProgress.audit.createdBy.id, // progress is created, but measure is updated.
-          "measure_id": measureId,
-          "version": measureVersion});
 
-        // Optimistic concurrency control
-        if (result.isEmpty) {
-          throw new RpcError(412, 'PreconditionFailed', 'Precondition Failed')
-            ..errors.add(
-                new RpcErrorDetail(reason: RpcErrorDetailMessage.measureProgressUpdatePreconditionFailed));
-        } else {
-          if (measureProgress.id == null) {
-            measureProgress.id = new Uuid().v4();
-          }
+        if (measureProgress.id == null) {
+          measureProgress.id = new Uuid().v4();
+        }
 
-          if (measureProgress.date == null) {
-            measureProgress.date = dateTimeNow;
-          }
+        measureProgress.version = 0;
 
           await ctx.query(
-              "INSERT INTO auge_objective.measure_progress(id, date, current_value, comment, measure_id, created_at, created_by_user_id, is_deleted, version) VALUES"
+              "INSERT INTO auge_objective.measure_progress(id, version, date, current_value, comment, measure_id, is_deleted) VALUES"
                   "(@id,"
+                  "@version,"
                   "@date,"
                   "@current_value,"
                   "@comment,"
                   "@measure_id,"
-                  "@created_at,"
-                  "@created_by_user_id,"
-                  "@is_deleted,"
-                  "@version)"
+                  "@is_deleted)"
               , substitutionValues: {
             "id": measureProgress.id,
+            "version": measureProgress.version,
             "date": measureProgress.date,
             "current_value": measureProgress.currentValue,
             "comment": measureProgress.comment,
             "measure_id": measureId,
-            "created_at": dateTimeNow,
-            "created_by_user_id": measureProgress.audit.createdBy.id,
             "is_deleted": false,
-            "version": 0});
-        }
+            });
+
+        // HistoryItem - server-side generation
+        measureProgress.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
+            objectId: measureProgress.id,
+            objectVersion: measureProgress.version,
+            objectClassName: measureProgress.runtimeType.toString(),
+            systemFunctionIndex: SystemFunction.create.index,
+            dateTime: DateTime.now().toUtc());
+
+          // Create a history item
+          await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(measureProgress.lastHistoryItem));
+
       });
 
     } catch (e) {
@@ -462,64 +380,80 @@ class ObjectiveAugeApi {
   }
 
   /// Create current value of the [MeasureProgress]
-  @ApiMethod( method: 'PUT', path: 'measures/{measureId}/{measureVersion}/progress')
-  Future<VoidMessage> updateMeasureProgress(String measureId, int measureVersion, MeasureProgress measureProgress) async {
+  @ApiMethod( method: 'PUT', path: 'measures/{measureId}/progress')
+  Future<VoidMessage> updateMeasureProgress(String measureId,  MeasureProgress measureProgress) async {
     try {
 
       DateTime dateTimeNow = DateTime.now().toUtc();
 
       await AugeConnection.getConnection().transaction((ctx) async {
-        await ctx.query(
-            "UPDATE auge_objective.measures "
-                "SET current_value = @current_value, "
-                "updated_at = @updated_at, "
-                "updated_by_user_id = @updated_by_user_id, "
-                "version = @version + 1"
-                "WHERE id = @measure_id"
-                "AND versoin = @version", substitutionValues: {
-          "current_value": measureProgress.currentValue,
-          "updated_at": dateTimeNow,
-          "updated_by_user_id": measureProgress.audit.createdBy.id, // progress is created, but measure is updated.
-          "measure_id": measureId,
-          "version": measureVersion});
 
-        if (measureProgress.id == null) {
-          measureProgress.id = new Uuid().v4();
-        }
-
-        if (measureProgress.date == null) {
-          measureProgress.date = dateTimeNow;
-        }
+        DateTime dateTimeNow = DateTime.now().toUtc();
 
         List<List<dynamic>> result;
 
-        result = await ctx.query(
-            "UPDATE auge_objective.measure_progress "
-              "SET date = @date, "
-              "current_value = @current_value, "
-              "comment = @comment, "
-              "measure_id = @measure_id, "
-              "updated_at = @updated_at, "
-              "updated_by_user_id = @updated_by_user_id, "
-              "version = @version + 1"
-            "WHERE id = @id AND version = @version "
-            "RETURNING true"
-            , substitutionValues: {
-          "id": measureProgress.id,
-          "date": measureProgress.date,
-          "current_value": measureProgress.currentValue,
-          "comment": measureProgress.comment,
-          "measure_id": measureId,
-          "updated_at": dateTimeNow,
-          "updated_by_user_id": measureProgress.audit.updatedBy.id,
-          "version": measureProgress.audit.version});
+        // Soft delete
+        if (measureProgress.isDeleted) {
 
-        // Optimistic concurrency control
-        if (result.isEmpty) {
-          throw new RpcError(412, 'PreconditionFailed', 'Precondition Failed')
-            ..errors.add(
-                new RpcErrorDetail(reason: RpcErrorDetailMessage.measureProgressUpdatePreconditionFailed));
+          result = await ctx.query(
+              "UPDATE auge_objective.measure_progress "
+                  "SET is_deleted = @is_deleted, "
+                  "version = @version + 1"
+                  "WHERE id = @id AND version = @version "
+                  "RETURNING true"
+              , substitutionValues: {
+            "id": measureProgress.id,
+            "version": measureProgress.version,
+            "is_deleted": measureProgress.isDeleted,});
+
+        } else {
+
+          if (measureProgress.id == null) {
+            measureProgress.id = new Uuid().v4();
+          }
+
+          if (measureProgress.date == null) {
+            measureProgress.date = dateTimeNow;
+          }
+
+          result = await ctx.query(
+              "UPDATE auge_objective.measure_progress "
+                  "SET date = @date, "
+                  "current_value = @current_value, "
+                  "comment = @comment, "
+                  "measure_id = @measure_id, "
+                  "version = @version + 1"
+                  "WHERE id = @id AND version = @version "
+                  "RETURNING true"
+              , substitutionValues: {
+            "id": measureProgress.id,
+            "version": measureProgress.version,
+            "date": measureProgress.date,
+            "current_value": measureProgress.currentValue,
+            "comment": measureProgress.comment,
+            "measure_id": measureId,
+
+            });
+
+          // Optimistic concurrency control
+          if (result.isEmpty) {
+            throw new RpcError(412, 'PreconditionFailed', 'Precondition Failed')
+              ..errors.add(
+                  new RpcErrorDetail(reason: RpcErrorDetailMessage
+                      .measureProgressUpdatePreconditionFailed));
+          }
         }
+
+        measureProgress.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
+            objectId: measureProgress.id,
+            objectVersion: measureProgress.version,
+            objectClassName: measureProgress.runtimeType.toString(),
+            systemFunctionIndex: SystemFunction.update.index,
+            dateTime: DateTime.now().toUtc());
+
+        // Create a history item
+        await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(measureProgress.lastHistoryItem));
+
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -566,28 +500,24 @@ class ObjectiveAugeApi {
   Future<VoidMessage> updateMeasure(String objectiveId, Measure measure) async {
     try {
       await AugeConnection.getConnection().transaction((ctx) async {
-        DateTime dateTimeNow = DateTime.now().toUtc();
 
         List<List<dynamic>> result;
 
         // Soft delete
         if (measure.isDeleted) {
           result = await ctx.query("UPDATE auge_objective.measures "
-              " SET updated_at = @updated_at,"
-              " updated_by_user_id = @updated_by_user_id,"
+              " SET version = @version + 1,"
               " is_deleted = @is_deleted,"
-              " version = @version + 1"
               " WHERE id = @id and version = @version"
               " RETURNING true"
               , substitutionValues: {
                 "id": measure.id,
+                "version": measure.version,
                 "is_deleted": measure.isDeleted,
-                "updated_at": dateTimeNow,
-                "updated_by_user_id": measure.audit.updatedBy.id,
-                "version": measure.audit.version,
               });
         } else {
           result = await ctx.query("UPDATE auge_objective.measures "
+              " version = @version + 1"
               " SET name = @name,"
               " description = @description,"
               " metric = @metric,"
@@ -597,14 +527,12 @@ class ObjectiveAugeApi {
               " current_value = @current_value,"
               " objective_id = @objective_id,"
               " measure_unit_id = @measure_unit_id,"
-              " updated_at = @updated_at,"
-              " updated_by_user_id = @updated_by_user_id,"
               " is_deleted = @is_deleted,"
-              " version = @version + 1"
               " WHERE id = @id and version = @version"
               " RETURNING true"
               , substitutionValues: {
                 "id": measure.id,
+                "version": measure.version,
                 "name": measure.name,
                 "description": measure.description,
                 "metric": measure.metric,
@@ -614,10 +542,7 @@ class ObjectiveAugeApi {
                 "current_value": measure.currentValue,
                 "measure_unit_id": measure?.measureUnit?.id,
                 "objective_id": objectiveId,
-                "updated_at": dateTimeNow,
-                "updated_by_user_id": measure.audit.updatedBy.id,
                 "is_deleted": measure.isDeleted,
-                "version": measure.audit.version
               });
         }
 
@@ -627,17 +552,16 @@ class ObjectiveAugeApi {
             ..errors.add(
                 new RpcErrorDetail(reason: 'MeasureUpdatePreconditionFailed'));
         } else {
-          // TimelineItem
-          if (measure.lastTimelineItem.id == null) {
-            measure.lastTimelineItem.id = new Uuid().v4();
-          }
-          if (measure.lastTimelineItem.dateTime == null) {
-            measure.lastTimelineItem.dateTime = dateTimeNow;
-          }
 
-          await ctx.query(queryStatementCreateTimelineItem,
-              substitutionValues: querySubstitutionValuesCreateTimelineItem(
-                  objectiveId, measure.lastTimelineItem));
+          // Create a history item
+          measure.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
+              objectId: measure.id,
+              objectVersion: measure.version,
+              objectClassName: measure.runtimeType.toString(),
+              systemFunctionIndex: measure.isDeleted ? SystemFunction.delete.index : SystemFunction.update.index,
+              dateTime: DateTime.now().toUtc());
+
+          await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(measure.lastHistoryItem));
         }
       });
 
@@ -650,26 +574,20 @@ class ObjectiveAugeApi {
 
   // *** OBJECTIVES ***
   // alignedToRecursiveDeep: 0 not call; 1 call once; 2 call tow, etc...
-  static Future<List<Objective>> queryObjectives({String organizationId, String id, int alignedToRecursive = 1, bool withMeasures = true, bool treeAlignedWithChildren = false, bool withProfile = false, bool withTimeline = false, bool withArchived = false}) async {
+  static Future<List<Objective>> queryObjectives({String organizationId, String id, int alignedToRecursive = 1, bool withMeasures = true, bool treeAlignedWithChildren = false, bool withProfile = false, bool withHistory = false, bool withArchived = false}) async {
     List<List> results;
-
    // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
     String queryStatementColumns = "objective.id," //0
-    " objective.name," //1
-    " objective.description," //2
-    " objective.start_date," //3
-    " objective.end_date," //4
-    " objective.archived," //5
-    " objective.leader_user_id," //6
-    " objective.aligned_to_objective_id," //7
-    " objective.organization_id," //8
-    " objective.group_id"; //9
-    /*
-    " objective.created_at," //10
-    " objective.created_by_user_id," //11
-    " objective.updated_at," //12
-    " objective.updated_by_user_id"; //13
-    */
+    " objective.version, " //1
+    " objective.name," //2
+    " objective.description," //3
+    " objective.start_date," //4
+    " objective.end_date," //5
+    " objective.archived," //6
+    " objective.leader_user_id," //7
+    " objective.aligned_to_objective_id," //8
+    " objective.organization_id," //9
+    " objective.group_id"; //10
 
     String queryStatementWhere = "";
     Map<String, dynamic> substitutionValues;
@@ -717,7 +635,7 @@ class ObjectiveAugeApi {
       Organization organization; // = await _augeApi.getOrganizationById(organizationId);
 
       List<Measure> measures;
-      List<TimelineItem> timeline;
+      List<HistoryItem> history;
       User leaderUser;
       Objective alignedToObjective;
       List<Objective> alignedToObjectives;
@@ -732,61 +650,57 @@ class ObjectiveAugeApi {
       for (var row in results) {
         // Measures
 
-        if (organization == null || organization.id != row[8]) {
+        if (organization == null || organization.id != row[9]) {
 
-          organizations = await AugeApi.queryOrganizations(id: row[8]);
+          organizations = await AugeApi.queryOrganizations(id: row[9]);
           if (organizations != null && organizations.length != 0) {
             organization = organizations.first;
           }
         }
 
         measures = (withMeasures) ? await queryMeasures(objectiveId: row[0]) : [];
-        timeline = (withTimeline) ? await queryTimeline(objectiveId: row[0]) : [];
-
-        users = await AugeApi.queryUsers(id: row[6], withProfile: withProfile);
+        history = (withHistory) ? await queryHistory(row[0]) : [];
+        users = await AugeApi.queryUsers(id: row[7], withProfile: withProfile);
 
         if (users != null && users.length != 0) {
           leaderUser = users.first;
         }
         ///leaderUser = (await AugeApi.getUsers(id: row[5], withProfile: withProfile)).first;
-
-        if (row[7] != null && alignedToRecursive > 0) {
-          alignedToObjectives = await queryObjectives(id: row[7],
+        if (row[8] != null && alignedToRecursive > 0) {
+          alignedToObjectives = await queryObjectives(id: row[8],
               alignedToRecursive: --alignedToRecursive);
           alignedToObjective = alignedToObjectives?.first;
         }
-
         //group = row[8] == null ? null : await _augeApi.getGroupById(row[8]);
-        groups = await AugeApi.queryGroups(id: row[9]);
+        groups = await AugeApi.queryGroups(id: row[10]);
         if (groups != null && groups.length != 0) {
           group = groups.first;
         }
 
         objective = new Objective()
           ..id = row[0]
-          ..name = row[1]
-          ..description = row[2]
-          ..startDate = row[3]
-          ..endDate = row[4]
-          ..archived =  row[5]
+          ..version = row[1]
+          ..name = row[2]
+          ..description = row[3]
+          ..startDate = row[4]
+          ..endDate = row[5]
+          ..archived =  row[6]
           ..organization = organization
           ..leader = leaderUser
           ..measures = measures
           ..alignedTo = alignedToObjective
           ..group = group
-          ..timeline = timeline
-          ..lastTimelineItem = timeline.length == 0 ? null : timeline.first;
-
+          ..history = history;
 
         objectives.add(objective);
 
         if (treeAlignedWithChildren) {
           // Parent must be present in the list (objectives);
-          if (row[7] == null)
+          if (row[8] == null)
              objectivesTree.add(objective);
           else {
             objectives
-                .singleWhere((o) => o.id == row[7])
+                .singleWhere((o) => o.id == row[8])
                 ?.alignedWithChildren
                 ?.add(objective);
           }
@@ -801,12 +715,12 @@ class ObjectiveAugeApi {
 
   /// Return all objectives from an organization
   @ApiMethod( method: 'GET', path: 'organization/{organizationId}/objetives')
-  Future<List<Objective>> getObjectives(String organizationId, {bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false, bool withTimeline = false, bool withArchived = false}) async {
+  Future<List<Objective>> getObjectives(String organizationId, {bool withMeasures = false, bool treeAlignedWithChildren = false, bool withProfile = false, bool withHistory = false, bool withArchived = false}) async {
     try {
       // return queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
 
       List<Objective> objectives;
-      objectives = await queryObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile, withTimeline: withTimeline, withArchived: withArchived);
+      objectives = await queryObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile, withHistory: withHistory, withArchived: withArchived);
       return objectives;
       /*
       if (objectives != null && objectives.length != 0) {
@@ -825,9 +739,9 @@ class ObjectiveAugeApi {
 
   /// Return an [Objective] from an organization by Id
   @ApiMethod( method: 'GET', path: 'objectives/{id}')
-  Future<Objective> getObjectiveById(String id, {bool withMeasures = false, bool withProfile = false, bool withTimeline = false, bool withArchived = false}) async {
+  Future<Objective> getObjectiveById(String id, {bool withMeasures = false, bool withProfile = false, bool withHistory = false, bool withArchived = false}) async {
     try {
-      List<Objective> objectives = await queryObjectives(id: id, withMeasures: withMeasures, withProfile: withProfile, withTimeline: withTimeline, withArchived: withArchived);
+      List<Objective> objectives = await queryObjectives(id: id, withMeasures: withMeasures, withProfile: withProfile, withHistory: withHistory, withArchived: withArchived);
 
       if (objectives != null && objectives.length != 0) {
         return objectives.first;
@@ -847,12 +761,6 @@ class ObjectiveAugeApi {
 
     await AugeConnection.getConnection().transaction((ctx) async {
       try {
-        await ctx.query(
-            "DELETE FROM auge_objective.objective_timeline objective_timeline"
-                " WHERE objective_timeline.objective_id = @id"
-            , substitutionValues: {
-          "id": id});
-
         await ctx.query(
             "DELETE FROM auge_objective.objectives objective"
                 " WHERE objective.id = @id"
@@ -877,8 +785,9 @@ class ObjectiveAugeApi {
 
     try {
       await AugeConnection.getConnection().transaction((ctx) async {
-        await ctx.query("INSERT INTO auge_objective.objectives(id, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id, is_deleted, created_at, created_by_user_id, version) VALUES"
+        await ctx.query("INSERT INTO auge_objective.objectives(id, version, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id, is_deleted) VALUES"
             "(@id,"
+            "@version,"
             "@name,"
             "@description,"
             "@start_date,"
@@ -888,12 +797,10 @@ class ObjectiveAugeApi {
             "@organization_id,"
             "@leader_user_id,"
             "@group_id,"
-            "@is_deleted,"
-            "@created_at,"
-            "@created_by_user_id,"
-            "@version)"
+            "@is_deleted)"
         , substitutionValues: {
         "id": objective.id,
+        "version": 0,
         "name": objective.name,
         "description": objective.description,
         "start_date": objective.startDate,
@@ -904,20 +811,17 @@ class ObjectiveAugeApi {
         "leader_user_id": objective.leader == null ? null : objective.leader.id,
         "group_id": objective.group == null ? null : objective.group.id,
         "is_deleted": objective.isDeleted,
-        "created_at": dateTimeNow,
-        "created_by_user_id": objective.audit.createdBy.id,
-        "version": 0
         });
 
-        // TimelineItem
-        if (objective.lastTimelineItem.id == null) {
-          objective.lastTimelineItem.id = new Uuid().v4();
-        }
-        if (objective.lastTimelineItem.dateTime == null) {
-          objective.lastTimelineItem.dateTime = dateTimeNow;
-        }
-
-        await ctx.query(queryStatementCreateTimelineItem, substitutionValues: querySubstitutionValuesCreateTimelineItem(objective.id, objective.lastTimelineItem));
+        // HistoryItem
+        objective.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
+            objectId: objective.id,
+            objectVersion: objective.version,
+            objectClassName: objective.runtimeType.toString(),
+            systemFunctionIndex: SystemFunction.create.index,
+            dateTime: DateTime.now().toUtc());
+        // Create a history item
+        await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(objective.lastHistoryItem));
 
       });
     } catch (e) {
@@ -933,29 +837,25 @@ class ObjectiveAugeApi {
 
     try {
 
-      DateTime dateTimeNow = DateTime.now().toUtc();
 
       List<List<dynamic>> result;
       await AugeConnection.getConnection().transaction((ctx) async {
         if (objective.isDeleted) {
           result = await ctx.query("UPDATE auge_objective.objectives "
-              " SET is_deleted = @is_deleted, "
-              " updated_at = @updated_at,"
-              " updated_by_user_id = @updated_by_user_id,"
-              " version = @version + 1"
+              " SET version = @version + 1, "
+              " is_deleted = @is_deleted "
               " WHERE id = @id and version = @version"
               " RETURNING true "
               , substitutionValues: {
                 "id": objective.id,
+                "version": objective.version,
                 "is_deleted": objective.isDeleted,
-                "updated_at": dateTimeNow,
-                "updated_by_user_id": objective.audit.updatedBy.id,
-                "version": objective.audit.version,
               });
         } else {
           result = await ctx.query(
               "UPDATE auge_objective.objectives "
-                  " SET name = @name,"
+                  " SET version = @version + 1, "
+                  " name = @name,"
                   " description = @description,"
                   " start_date = @start_date,"
                   " end_date = @end_date,"
@@ -965,13 +865,12 @@ class ObjectiveAugeApi {
                   " leader_user_id = @leader_user_id,"
                   " group_id = @group_id,"
                   " is_deleted = @is_deleted,"
-                  " updated_at = @updated_at,"
-                  " updated_by_user_id = @updated_by_user_id,"
-                  " version = @version + 1"
+
                   " WHERE id = @id and version = @version"
                   " RETURNING true"
               , substitutionValues: {
             "id": objective.id,
+            "version": objective.version,
             "name": objective.name,
             "description": objective.description,
             "start_date": objective.startDate,
@@ -985,9 +884,7 @@ class ObjectiveAugeApi {
                 .id,
             "group_id": objective.group == null ? null : objective.group.id,
             "is_deleted": objective.isDeleted,
-            "updated_at": dateTimeNow,
-            "updated_by_user_id": objective.audit.updatedBy.id,
-            "version": objective.audit.version});
+            });
         }
 
         // Optimistic concurrency control
@@ -997,17 +894,16 @@ class ObjectiveAugeApi {
                 new RpcErrorDetail(reason: RpcErrorDetailMessage.measureUpdatePreconditionFailed));
         }
         else {
-          // TimelineItem
-          if (objective.lastTimelineItem.id == null) {
-            objective.lastTimelineItem.id = new Uuid().v4();
-          }
-          if (objective.lastTimelineItem.dateTime == null) {
-            objective.lastTimelineItem.dateTime = dateTimeNow;
-          }
+          // HistoryItem
+          objective.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
+              objectId: objective.id,
+              objectVersion: objective.version,
+              objectClassName: objective.runtimeType.toString(),
+              systemFunctionIndex: objective.isDeleted ? SystemFunction.delete.index : SystemFunction.update.index,
+              dateTime: DateTime.now().toUtc());
 
-          await ctx.query(queryStatementCreateTimelineItem,
-              substitutionValues: querySubstitutionValuesCreateTimelineItem(
-                  objective.id, objective.lastTimelineItem));
+          await ctx.query(queryStatementCreateHistoryItem,
+              substitutionValues: querySubstitutionValuesCreateHistoryItem(objective.lastHistoryItem));
         }
       });
     } catch (e) {
@@ -1018,38 +914,51 @@ class ObjectiveAugeApi {
     return new IdMessage()..id = objective.id;
   }
 
-  // *** OBJECTIVE TIMELINE ***
-  static Future<List<TimelineItem>> queryTimeline({String objectiveId, String id, withIdRemoved = false}) async {
+  // *** HISTORY TO OBJECTIVE SCHEMA ***
+  static Future<List<HistoryItem>> queryHistory(String objectiveId, {withIdRemoved = false}) async {
     List<List> results;
+
+    String queryStatementSelect = "SELECT history_item.id, " //0
+        "history_item.object_id, " //1
+        "history_item.object_version, " //2
+        "history_item.object_class_name, " //3
+        "history_item.system_function_index, " //4
+        "history_item.date_time, " //5
+        "history_item.user_id, " //6
+        "history_item.description, " //7
+        "history_item.changed_values "; //8
 
     String queryStatement;
 
-    queryStatement = "SELECT id::VARCHAR," //0
-        " date_time," //1
-        " system_function_index," //2
-        " class_name," //3
-        " changed_data,"  //4
-        " description,"  //5
-        " user_id," //6
-        " objective_id" //7
-        " FROM auge_objective.objective_timeline ";
+
+    queryStatement = queryStatementSelect +
+        "FROM auge_objective.history history_item "
+        "WHERE object_class_name = 'Objective' "
+        "AND object_id = @objective_id "
+        "UNION "
+         + queryStatementSelect +
+        "FROM auge_objective.history history_item "
+        "JOIN auge_objective.measures measure ON measure.id = history_item.object_id "
+        "WHERE history_item.object_class_name = 'Measure' "
+        "AND measure.objective_id = @objective_id "
+        "UNION "
+        + queryStatementSelect +
+        "FROM auge_objective.history history_item "
+        "JOIN auge_objective.measure_progress measure_progress ON measure_progress.id = history_item.object_id "
+        "JOIN auge_objective.measures measure ON measure.id = measure_progress.measure_id "
+        "WHERE history_item.object_class_name = 'MeasureProgress' "
+        "AND measure.objective_id = @objective_id";
 
     Map<String, dynamic> substitutionValues;
 
-    if (id != null) {
-      queryStatement += " WHERE id = @id";
-      substitutionValues = {"id": id};
-    } else {
-      queryStatement += " WHERE objective_id = @objective_id";
-      substitutionValues = {"objective_id": objectiveId};
-    }
+    substitutionValues = {"objective_id": objectiveId};
 
-    queryStatement += " ORDER BY date_time DESC ";
+    queryStatement += " ORDER BY 6 DESC ";
 
     results = await AugeConnection.getConnection().query(
         queryStatement, substitutionValues: substitutionValues);
 
-    List<TimelineItem> objectiveTimeline = new List();
+    List<HistoryItem> history = new List();
     List<User> users;
 
     User user;
@@ -1066,37 +975,38 @@ class ObjectiveAugeApi {
           user = null;
         }
 
-
-
-        Map changedDataMap = json.decode(row[4]);
+        Map changedDataMap = json.decode(row[8]);
         if (withIdRemoved)
         changedDataMap.keys.where((k) =>  (k == 'id' || changedDataMap[k] is Map && changedDataMap[k].keys.where((kk) => (kk == 'id') ))
         ).toList().forEach(changedDataMap.remove);
 
 
-        objectiveTimeline.add(new TimelineItem()
+        history.add(new HistoryItem()
           ..id = row[0]
-          ..dateTime = row[1]
-          ..systemFunctionIndex = row[2]
-          ..className = row[3]
-          ..changedData =  row[4]
-          ..description = row[5]
-          ..user = user);
+          ..objectId = row[1]
+          ..objectVersion = row[2]
+          ..objectClassName = row[3]
+          ..systemFunctionIndex = row[4]
+          ..dateTime = row[5]
+          ..user = user
+          ..description = row[7]
+          ..changedValues = json.encode(changedDataMap)
+          );
       }
     }
-    return objectiveTimeline;
+    return history;
 
   }
 
-  /// Return objective timeline
-  @ApiMethod( method: 'GET', path: 'objective/{objectiveId}/timeline')
-  Future<List<TimelineItem>> getTimeline(String objectiveId) async {
+  /// Return objective history
+  @ApiMethod( method: 'GET', path: 'objective/{objectiveId}/history')
+  Future<List<HistoryItem>> getHistory(String objectiveId) async {
     try {
       // return queryGetObjectives(organizationId: organizationId, withMeasures: withMeasures, treeAlignedWithChildren: treeAlignedWithChildren, withProfile: withProfile);
 
-      List<TimelineItem> timeline;
-      timeline = await queryTimeline(objectiveId: objectiveId);
-      return timeline;
+      List<HistoryItem> history;
+      history = await queryHistory(objectiveId);
+      return history;
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
