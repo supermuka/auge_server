@@ -340,24 +340,24 @@ class ObjectiveAugeApi {
 
         measureProgress.version = 0;
 
-          await ctx.query(
-              "INSERT INTO auge_objective.measure_progress(id, version, date, current_value, comment, measure_id, is_deleted) VALUES"
-                  "(@id,"
-                  "@version,"
-                  "@date,"
-                  "@current_value,"
-                  "@comment,"
-                  "@measure_id,"
-                  "@is_deleted)"
-              , substitutionValues: {
-            "id": measureProgress.id,
-            "version": measureProgress.version,
-            "date": measureProgress.date,
-            "current_value": measureProgress.currentValue,
-            "comment": measureProgress.comment,
-            "measure_id": measureId,
-            "is_deleted": false,
-            });
+        await ctx.query(
+            "INSERT INTO auge_objective.measure_progress(id, version, date, current_value, comment, measure_id, is_deleted) VALUES"
+                "(@id,"
+                "@version,"
+                "@date,"
+                "@current_value,"
+                "@comment,"
+                "@measure_id,"
+                "@is_deleted)"
+            , substitutionValues: {
+          "id": measureProgress.id,
+          "version": measureProgress.version,
+          "date": measureProgress.date,
+          "current_value": measureProgress.currentValue,
+          "comment": measureProgress.comment,
+          "measure_id": measureId,
+          "is_deleted": false,
+          });
 
         // HistoryItem - server-side generation
         measureProgress.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
@@ -367,8 +367,8 @@ class ObjectiveAugeApi {
             systemFunctionIndex: SystemFunction.create.index,
             dateTime: DateTime.now().toUtc());
 
-          // Create a history item
-          await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(measureProgress.lastHistoryItem));
+        // Create a history item
+        await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(measureProgress.lastHistoryItem));
 
       });
 
@@ -507,7 +507,7 @@ class ObjectiveAugeApi {
         if (measure.isDeleted) {
           result = await ctx.query("UPDATE auge_objective.measures "
               " SET version = @version + 1,"
-              " is_deleted = @is_deleted,"
+              " is_deleted = @is_deleted"
               " WHERE id = @id and version = @version"
               " RETURNING true"
               , substitutionValues: {
@@ -527,7 +527,7 @@ class ObjectiveAugeApi {
               " current_value = @current_value,"
               " objective_id = @objective_id,"
               " measure_unit_id = @measure_unit_id,"
-              " is_deleted = @is_deleted,"
+              " is_deleted = @is_deleted"
               " WHERE id = @id and version = @version"
               " RETURNING true"
               , substitutionValues: {
