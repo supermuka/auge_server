@@ -1,0 +1,76 @@
+// Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
+// Author: Samuel C. Schwebel
+
+syntax = "proto3";
+
+package auge.protobuf;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "general/common.proto";
+import "general/organization.proto";
+import "general/group.proto";
+import "general/user.proto";
+import "general/history_item.proto";
+import "objective/measure.proto";
+
+// The service definition.
+service ObjectiveService {
+
+  rpc GetObjectives (ObjectiveGetRequest) returns (ObjectivesResponse) {}
+  rpc GetObjective (ObjectiveGetRequest) returns (Objective) {}
+
+  rpc CreateObjective (Objective) returns (IdResponse) {}
+  rpc UpdateObjective (Objective) returns (google.protobuf.Empty) {}
+  rpc SoftDeleteObjective (Objective) returns (google.protobuf.Empty) {}
+  rpc DeleteObjective (Objective) returns (google.protobuf.Empty) {}
+}
+
+// Message to respective domain object.
+message Objective {
+
+  // Base
+  string id = 1;
+  int32 version = 2;
+  bool is_deleted = 3;
+
+  // Specific
+  string name = 5;
+  string description = 6;
+  google.protobuf.Timestamp start_date = 7;
+  google.protobuf.Timestamp end_date = 8;
+  Organization organization = 9;
+  Group group = 10;
+  Objective aligned_to = 11;
+  User leader = 12;
+  bool archived = 13;
+
+  // Transients fields.
+  HistoryItem history_item_log = 14;
+  repeated Objective aligned_with_children = 15;
+  repeated Measure measures = 16;
+  repeated HistoryItem history = 17;
+}
+
+// Response list of the objectives
+message Objectives {
+  repeated Objective objectives = 1;
+}
+
+// Used to query select params
+message ObjectiveGetRequest {
+  string id = 1;
+  bool is_deleted = 2;
+  string organization_id = 3;
+  int32 aligned_to_recursive = 4;
+  bool with_measures = 5;
+  bool tree_aligned_with_children = 6;
+  bool with_profile = 7;
+  bool with_history = 8;
+  bool with_archived = 9;
+}
+
+// Response list of the objectives
+message ObjectivesResponse {
+  repeated Objective objectives = 1;
+}

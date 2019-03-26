@@ -1,0 +1,46 @@
+// Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
+// Author: Samuel C. Schwebel
+
+syntax = "proto3";
+
+package auge.protobuf;
+
+import "general/common.proto";
+import "google/protobuf/empty.proto";
+
+import "general/user.proto";
+import "general/organization.proto";
+
+// The service definition.
+service UserProfileOrganizationService {
+
+    rpc GetUsersProfileOrganizations (UserProfileOrganizationGetRequest) returns (UsersProfileOrganizationsResponse) {}
+    rpc GetUserProfileOrganization (UserProfileOrganizationGetRequest) returns (UserProfileOrganization) {}
+
+    rpc CreateUserProfileOrganization (UserProfileOrganization) returns (IdResponse) {}
+    rpc UpdateUserProfileOrganization (UserProfileOrganization) returns (google.protobuf.Empty) {}
+    rpc DeleteUserProfileOrganization (UserProfileOrganization) returns (google.protobuf.Empty) {}
+    rpc SoftDeleteUserProfileOrganization (UserProfileOrganization) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+}
+
+// Message to respective domain object.
+message UserProfileOrganization {
+    string id = 1;
+    int32 version = 2;
+    bool is_deleted = 3;
+    User user = 4;
+    Organization organization = 5;
+    int32 authorization_role = 6;
+}
+
+message UserProfileOrganizationGetRequest {
+    string id = 1;
+    bool is_deleted = 2;
+    string userId = 3;
+    string organizationId = 4;
+}
+
+// Response list of the organization
+message UsersProfileOrganizationsResponse {
+    repeated UserProfileOrganization usersProfileOrganizations = 1;
+}

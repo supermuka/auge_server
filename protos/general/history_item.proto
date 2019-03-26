@@ -1,0 +1,47 @@
+// Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
+// Author: Samuel C. Schwebel
+
+syntax = "proto3";
+
+package auge.protobuf;
+
+import "google/protobuf/timestamp.proto";
+import "general/user.proto";
+
+// The service definition.
+service HistoryItemService {
+
+   rpc GetHistory (HistoryItemGetRequest) returns (HistoryResponse) {}
+
+}
+
+// Message to respective domain object.
+message HistoryItem {
+
+   string id = 1;
+   string object_class_name = 2;
+   string object_id = 3;
+   int32 object_version = 4;
+   int32 system_module = 5;
+   int32 system_function_index = 6;
+   google.protobuf.Timestamp date_time = 7;
+   User user = 8;
+   string description = 9;
+
+   map<string, string> changed_values = 10;
+}
+
+// Request for query select
+message HistoryItemGetRequest {
+   string id = 1;
+   int32 system_module_index = 2;
+
+   // Used to query filter
+   bool with_id_removed = 3;
+}
+
+// Response list of the history item
+message HistoryResponse {
+   repeated HistoryItem history = 1;
+}
+

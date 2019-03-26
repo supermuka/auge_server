@@ -11,6 +11,10 @@ pub run rpc:generate client -i lib/augeapi.dart -o lib/client -p 8091
 
 pub global activate discoveryapis_generator
 
+protoc --dart_out=grpc:lib/src/protos/generated -Iprotos protos/general/group.proto --plugin=protoc-gen-dart=D:\Users\Samuel\AppData\Roaming\Pub\Cache\bin\protoc-gen-dart.bat
+
+https://cloud.google.com/apis/design/standard_methods
+
 
 SERVER INSTALLATION
 

@@ -8,10 +8,10 @@ import 'package:postgres/postgres.dart';
 import 'package:uuid/uuid.dart';
 import 'package:auge_server/augeconnection.dart';
 
-import 'package:auge_server/model/organization.dart';
-import 'package:auge_server/model/user.dart';
-import 'package:auge_server/model/user_profile_organization.dart';
-import 'package:auge_server/model/group.dart';
+import 'package:auge_server/model/general/organization.dart';
+import 'package:auge_server/model/general/user.dart';
+import 'package:auge_server/model/general/user_profile_organization.dart';
+import 'package:auge_server/model/general/group.dart';
 
 import 'package:auge_server/message/created_message.dart';
 import 'package:auge_server/message/datetime_message.dart';
@@ -24,8 +24,8 @@ class AugeApi {
   AugeApi() {
     AugeConnection.createConnection();
   }
-
   /// Close a database connection
+  /*
   @ApiMethod( method: 'PUT', path: 'close')
   Future<VoidMessage> closeConnection(VoidMessage _) async {
     try {
@@ -40,6 +40,7 @@ class AugeApi {
     }
     return null;
   }
+  */
 
   // *** ORGANIZATIONS ***
   static Future<List<Organization>> queryOrganizations({String id}) async {
@@ -52,7 +53,7 @@ class AugeApi {
       queryStatement += " WHERE organization.id = '${id}'";
     }
 
-    results =  await AugeConnection.getConnection().query(queryStatement);
+    results =  await (await AugeConnection.getConnection()).query(queryStatement);
 
     List<Organization> organizations = new List();
     for (var row in results) {
@@ -88,7 +89,7 @@ class AugeApi {
     }
 
     try {
-      await AugeConnection.getConnection().query(
+      await (await AugeConnection.getConnection()).query(
           "INSERT INTO auge.organizations(id, name, code) VALUES"
               "(@id,"
               "@name,"
@@ -108,7 +109,7 @@ class AugeApi {
   @ApiMethod( method: 'PUT', path: 'organizations')
   Future<VoidMessage> updateOrganization(Organization organization) async {
     try {
-      await AugeConnection.getConnection().query(
+      await (await AugeConnection.getConnection()).query(
           "UPDATE auge.organizations SET name = @name,"
               " code = @code"
               " WHERE id = @id "
@@ -128,7 +129,7 @@ class AugeApi {
   @ApiMethod( method: 'DELETE', path: 'organizations/{id}')
   Future<VoidMessage> deleteOrganization(String id) async {
     try {
-      await AugeConnection.getConnection().query(
+      await (await AugeConnection.getConnection()).query(
           "DELETE FROM auge.organizations organization WHERE organization.id = ${PostgreSQLFormat
               .id("id")}"
           , substitutionValues: {
@@ -185,7 +186,7 @@ class AugeApi {
       whereAnd = "AND";
     }
 
-    results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: _substitutionValues);
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: _substitutionValues);
 
     List<User> users = new List();
     for (var row in results) {
@@ -245,7 +246,7 @@ class AugeApi {
     if (user.id == null) {
       user.id = new Uuid().v4();
     }
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "INSERT INTO auge.users(id, name, email, password) VALUES("
@@ -281,7 +282,7 @@ class AugeApi {
   @ApiMethod( method: 'PUT', path: 'users')
   Future<VoidMessage> updateUser(User user) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "UPDATE auge.users "
@@ -316,7 +317,7 @@ class AugeApi {
   @ApiMethod( method: 'DELETE', path: 'users/{id}')
   Future<VoidMessage> deleteUser(String id) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM auge.users_profile user_profile WHERE user_profile.user_id = ${PostgreSQLFormat
@@ -372,7 +373,7 @@ class AugeApi {
      //The last, not need... whereAnd = 'AND';
     }
 
-    results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: _substitutionValues);
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: _substitutionValues);
 
     List<UserProfileOrganization> usersOrganizations = new List();
 
@@ -447,7 +448,7 @@ class AugeApi {
       userProfileOrganization.id = Uuid().v4();
     }
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
 
         await ctx.query(
@@ -476,7 +477,7 @@ class AugeApi {
   @ApiMethod( method: 'PUT', path: 'users_profile_organizations')
   Future<VoidMessage> updateUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "UPDATE auge.users_profile_organizations "
@@ -502,7 +503,7 @@ class AugeApi {
   @ApiMethod( method: 'DELETE', path: 'users_profile_organizations/{id}')
   Future<VoidMessage> deleteUserProfileOrganization(String id) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM auge.users_profile_organizations user_profile_organization "
@@ -521,7 +522,7 @@ class AugeApi {
   @ApiMethod( method: 'DELETE', path: 'users_profile_organizations/users/{user_id}')
   Future<VoidMessage> deleteUserProfileOrganizationByUserId(String user_id) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM auge.users_profile_organizations user_profile_organization "
@@ -567,7 +568,7 @@ class AugeApi {
       };
     }
 
-    results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: _substitutionValues);
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: _substitutionValues);
 
     List<Group> groups = new List();
     User leader;
@@ -668,18 +669,13 @@ class AugeApi {
       group.id = new Uuid().v4();
     }
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "INSERT INTO auge.groups(id, is_deleted, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
+            "INSERT INTO auge.groups(id, version, is_deleted, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
                 "@id,"
+                "@version,"
                 "@is_deleted,"
-                "@created_at,"
-                "@created_by_user_id,"
-                "@updated_at,"
-                "@updated_by_user_id,"
-                "@deleted_at,"
-                "@deleted_by_user_id,"
                 "@name,"
                 "@active,"
                 "@organization_id,"
@@ -688,6 +684,8 @@ class AugeApi {
                 "@leader_user_id)"
             , substitutionValues: {
           "id": group.id,
+          "version": 0,
+          "is_deleted": group.isDeleted,
           "name": group.name,
           "active": group.active,
           "organization_id": group.organization.id,
@@ -696,7 +694,9 @@ class AugeApi {
           "leader_user_id": group.leader?.id});
 
         // Assigned Members Users
-        for (User user in group.members) {
+        for (var user in group.members) {
+          print(user.runtimeType);
+          print(user.id);
           await ctx.query("INSERT INTO auge.groups_users"
               " (group_id,"
               " user_id)"
@@ -723,7 +723,7 @@ class AugeApi {
 
     List<List<dynamic>> result;
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         if (group.isDeleted) {
           result = await ctx.query(
@@ -808,7 +808,7 @@ class AugeApi {
   @ApiMethod( method: 'DELETE', path: 'groups/{id}')
   Future<VoidMessage> deleteGroup(String id) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM auge.groups g WHERE g.id = @id "
@@ -876,7 +876,7 @@ class AugeApi {
     queryStatement += " WHERE group_users.group_id = @group_id";
     substitutionValues = {"group_id": groupId};
 
-    results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
     List<User> groupMembers = new List();
     List<User> users;
@@ -910,5 +910,4 @@ class AugeApi {
       rethrow;
     }
   }
-
 }

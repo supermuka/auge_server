@@ -11,12 +11,21 @@ class AugeConnection {
   static void createConnection() {
    // _connection = new PostgreSQLConnection(
    //     "35.231.201.73", 5432, "levius", username: "postgres", password: "admin@levius#2018");
-    _connection = new PostgreSQLConnection(
-        "localhost", 5432, "levius", username: "postgres", password: "admin@levius#2018");
-    _connection.open();
+    if (_connection == null || _connection.isClosed) {
+      _connection = new PostgreSQLConnection(
+          "localhost", 5432, "levius", username: "postgres",
+          password: "admin@levius#2018");
+      _connection.open();
+    }
   }
 
-  static PostgreSQLConnection getConnection() {
+  static Future<PostgreSQLConnection> getConnection() async {
+    if (_connection == null || _connection.isClosed) {
+      _connection = new PostgreSQLConnection(
+          "localhost", 5432, "levius", username: "postgres",
+          password: "admin@levius#2018");
+      await _connection.open();
+    }
     return _connection;
   }
 }

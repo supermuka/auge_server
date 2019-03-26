@@ -1,0 +1,42 @@
+// Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
+// Author: Samuel C. Schwebel
+
+syntax = "proto3";
+
+package auge.protobuf;
+
+import "initiative/state.proto";
+
+// The service definition.
+service StageService {
+    rpc GetStages (StageGetRequest) returns (StagesResponse) {}
+    rpc GetStage (StageGetRequest) returns (Stage) {}
+}
+
+// Message to respective domain object.
+message Stage {
+
+    // Base
+    string id = 1;
+    int32 version = 2;
+    bool is_deleted = 3;
+
+    // Specific
+    string name = 4;
+    State state = 5;
+
+    // Define initiative stage order
+    int32 index = 6;
+}
+
+// Response list of the stages
+message StagesResponse {
+    repeated Stage stages = 1;
+}
+
+// Request for query param
+message StageGetRequest {
+
+    string id = 1;
+    string initiative_id = 2;
+}

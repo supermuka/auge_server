@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import 'package:auge_server/model/user.dart';
+import 'package:auge_server/model/general/user.dart';
 
 void main() {
 

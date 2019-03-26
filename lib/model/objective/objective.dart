@@ -2,50 +2,42 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:convert';
+import 'package:fixnum/fixnum.dart';
 
-import 'package:auge_server/model/model_base.dart';
-import 'package:auge_server/model/history_item.dart';
-import 'package:auge_server/model/organization.dart';
-import 'package:auge_server/model/user.dart';
+import 'package:auge_server/model/general/history_item.dart';
+import 'package:auge_server/model/general/organization.dart';
+import 'package:auge_server/model/general/user.dart';
 import 'package:auge_server/model/objective/measure.dart';
-import 'package:auge_server/model/group.dart';
+import 'package:auge_server/model/general/group.dart';
 
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+// Proto buffer transport layer.
+// ignore_for_file: uri_has_not_been_generated
+import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
+import 'package:auge_server/src/protos/generated/objective/objective.pb.dart' as objective_pb;
+
 /// Domain model class to represent an objective
-class Objective implements Base {
+class Objective {
 
   // Base
-  static const idField = 'id';
   String id;
-  static const versionField = 'version';
   int version;
-  static const isDeletedField = 'isDeleted';
   bool isDeleted;
 
   // Transient
-  static const lastHistoryItemField = 'lastHistoryItem';
   HistoryItem lastHistoryItem;
 
   // Specific
-  static const nameField = 'name';
   String name;
-  static const descriptionField = 'description';
   String description;
-  static const startDateField = 'startDate';
   DateTime startDate;
-  static const endDateField = 'endDate';
   DateTime endDate;
-  static const organizationField = 'organization';
   Organization organization;
-  static const groupField = 'group';
   Group group;
-  static const alignedToField = 'alignedTo';
   Objective alignedTo;
-  static const leaderField = 'leader';
   User leader;
-  static const archivedField = 'archived';
   bool archived;
 
   // Transients fields
@@ -79,112 +71,68 @@ class Objective implements Base {
     return (countMeasuresProgress != 0) ? (sumMeasuresProgress / countMeasuresProgress * 100).toInt() : 0;
   }
 
-  void cloneTo(Objective to) {
-    to.id = this.id;
-    to.name = this.name;
-    to.description = this.description;
-    to.startDate = this.startDate;
-    to.endDate = this.endDate;
-    to.lastHistoryItem = this.lastHistoryItem;
-    to.archived = this.archived;
-    if (this.organization != null) {
-      to.organization = this.organization.clone();
-    }
-    if (this.group != null) {
-      to.group = this.group.clone();
-    } else {
-      to.group = null;
+  objective_pb.Objective writeToProtoBuf() {
+    objective_pb.Objective objectivePb = objective_pb.Objective();
+
+    if (this.id != null) objectivePb.id = this.id;
+    if (this.version != null) objectivePb.version = this.version;
+    if (this.isDeleted != null) objectivePb.isDeleted = this.isDeleted;
+    if (this.name != null) objectivePb.name = this.name;
+    if (this.description != null) objectivePb.description = this.description;
+
+    if (this.startDate != null) {
+      Timestamp t = Timestamp();
+      int microsecondsSinceEpoch = this.startDate.toUtc().microsecondsSinceEpoch;
+      t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
+      t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
+      objectivePb.startDate = t;
     }
 
-    if (this.alignedTo != null) {
-      to.alignedTo = this.alignedTo.clone();
-    } else {
-      to.alignedTo = null;
+    if (this.endDate != null) {
+      Timestamp t = Timestamp();
+      int microsecondsSinceEpoch = this.endDate.toUtc().microsecondsSinceEpoch;
+      t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
+      t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
+      objectivePb.endDate = t;
     }
 
-    if (this.leader != null) {
-      to.leader = this.leader.clone();
-    } else {
-      to.leader = null;
-    }
+    if (this.archived != null) objectivePb.archived = this.archived;
+    if (this.organization != null) objectivePb.organization = this.organization.writeToProtoBuf();
+    if (this.leader != null) objectivePb.leader = this.leader.writeToProtoBuf();
 
-    if (this.alignedWithChildren != null && this.alignedWithChildren.length != 0) {
-      to.alignedWithChildren.clear();
-      this.alignedWithChildren.forEach((o) =>
-          to.alignedWithChildren.add(o.clone()));
-    }
-
-    if (this.measures != null && this.measures.length != 0) {
-      to.measures.clear();
-      this.measures.forEach((o) =>
-          to.measures.add(o.clone()));
-    }
-
-    if (this.history != null && this.history.length != 0) {
-      to.history.clear();
-      this.history.forEach((o) =>
-          to.history.add(o));
-    }
+    return objectivePb;
   }
 
-  Objective clone() {
-    Objective to = new Objective();
-    cloneTo(to);
-    return to;
+  readFromProtoBuf(objective_pb.Objective objectivePb) {
+    if (objectivePb.hasId()) this.id = objectivePb.id;
+    if (objectivePb.hasVersion()) this.version = objectivePb.version;
+    if (objectivePb.hasIsDeleted()) this.isDeleted = objectivePb.isDeleted;
+    if (objectivePb.hasName()) this.name = objectivePb.name;
+    if (objectivePb.hasDescription()) this.description = objectivePb.description;
+    if (objectivePb.hasArchived()) this.archived = objectivePb.archived;
+
+    if (objectivePb.hasStartDate()) {
+      this.startDate = DateTime.fromMicrosecondsSinceEpoch(objectivePb.startDate.seconds.toInt() * 1000000 + objectivePb.startDate.nanos ~/ 1000 );
+    }
+
+    if (objectivePb.hasEndDate()) {
+      this.endDate = DateTime.fromMicrosecondsSinceEpoch(objectivePb.endDate.seconds.toInt() * 1000000 + objectivePb.endDate.nanos ~/ 1000 );
+    }
+
+    if (objectivePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(objectivePb.organization);
+    if (objectivePb.hasLeader()) this.leader = User()..readFromProtoBuf(objectivePb.leader);
+
   }
 }
-
-/*
-/// Related to [Objective] data model
-/// Define the [Objective] essential attributes to exchange data between client and server on RPC
-/// Used to POST and PUT
-class ObjectiveMessage {
-
-  String id;
-  String name;
-  String description;
-  DateTime startDate;
-  DateTime endDate;
-
-  OrganizationBase organization;
-  GroupBase group;
-  ObjectiveBase alignedTo;
-  UserBase leader;
-
-  TimelineItemMessage lastTimelineItemMessage;
-
-  // Transients fields
-  // List<Objective> alignedWithChildren;
-  // List<Measure> measures;
-  // List<TimelineItem> timeline;
-
-}
-*/
 
 /// Facilities to [Objective] class
 class ObjectiveFacilities {
-/*
-  static ObjectiveMessage messageFrom(Objective objective) {
-    return ObjectiveMessage()
-      ..id = objective.id
-      ..name = objective.name
-      ..description = objective.description
-      ..startDate = objective.startDate
-      ..endDate = objective.endDate
-      ..lastTimelineItemMessage = TimeLineItemFacilities.timelineItemMessageFrom(objective.lastTimelineItem)
-      // Just id
-      ..organization = OrganizationBase()..id = objective.organization.id
-      ..group = GroupBase()..id = objective.group.id
-      ..alignedTo = ObjectiveBase()..id = objective.alignedTo.id
-      ..leader = UserBase()..id = objective.leader.id;
-
-  }
-  */
-
   /// Delta diff between [current] and [previous] Objective.
   /// Like a document (json) idea, then just store user readly data, don't have IDs, FKs, etc.
   /// identification
   /// dataChanged
+  ///
+  /*
   static String differenceToJson(Objective current, Objective previous) {
 
     Map<String, Map<String, dynamic>> difference = Map();
@@ -221,16 +169,16 @@ class ObjectiveFacilities {
 
     //DateTime startDate;
     if (previous != null && current.startDate != previous.startDate) {
-      difference[valuesKey][Objective.startDateField] = {currentDataChangedKey: current.startDate.toIso8601String(), previousDataChangedKey: previous.startDate.toIso8601String()};
+      difference[valuesKey][Objective.startDateField] = {currentDataChangedKey: current.startDate?.toIso8601String(), previousDataChangedKey: previous.startDate?.toIso8601String()};
     } else if (previous == null && current.startDate != null ) {
-      difference[valuesKey][Objective.startDateField] = {currentDataChangedKey: current.startDate.toIso8601String()};
+      difference[valuesKey][Objective.startDateField] = {currentDataChangedKey: current.startDate?.toIso8601String()};
     }
 
     //DateTime endDate;
     if (previous != null && current.endDate != previous.endDate) {
-      difference[valuesKey][Objective.endDateField] = {currentDataChangedKey: current.endDate.toIso8601String(), previousDataChangedKey: previous.endDate.toIso8601String()};
+      difference[valuesKey][Objective.endDateField] = {currentDataChangedKey: current.endDate?.toIso8601String(), previousDataChangedKey: previous.endDate?.toIso8601String()};
     } else if (previous == null && current.endDate != null ) {
-      difference[valuesKey][Objective.endDateField] = {currentDataChangedKey: current.endDate.toIso8601String()};
+      difference[valuesKey][Objective.endDateField] = {currentDataChangedKey: current.endDate?.toIso8601String()};
     }
 
     //Group group;
@@ -282,4 +230,5 @@ class ObjectiveFacilities {
       }
     });
   }
+  */
 }

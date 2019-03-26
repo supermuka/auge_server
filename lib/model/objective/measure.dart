@@ -2,12 +2,17 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:convert';
+import 'package:fixnum/fixnum.dart';
 
-import 'package:auge_server/model/model_base.dart';
-import 'package:auge_server/model/history_item.dart';
+import 'package:auge_server/model/general/history_item.dart';
+
+// Proto buffer transport layer.
+// ignore_for_file: uri_has_not_been_generated
+import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
+import 'package:auge_server/src/protos/generated/objective/measure.pb.dart' as measure_pb;
 
 /// Domain model class to represent an measure
-class Measure implements Base {
+class Measure {
 
   // Base - implements
   String id;
@@ -15,34 +20,26 @@ class Measure implements Base {
   bool isDeleted;
 
   // History
-  static const lastHistoryItemField = 'lastHistoryItem';
-  HistoryItem lastHistoryItem;
+  // HistoryItem lastHistoryItem;
 
   // Specific
-  static const nameField = 'name';
   String name;
-  static const descriptionField = 'description';
   String description;
-  static const metricField = 'metric';
   String metric;
-  static const decimalsNumberField = 'decimalsNumber';
   int decimalsNumber;
-  static const startValueField = 'startValue';
   double startValue;
-  static const endValueField = 'endValue';
   double endValue;
-  static const measureUnitField = 'measureUnit';
   MeasureUnit measureUnit;
 
   // Transient
-  static const currentValueField = 'currentValue';
   double currentValue; // field calculeted on measureProgress
 
   List<MeasureProgress> measureProgress;
 
   Measure() {
-    lastHistoryItem = HistoryItem();
+    // lastHistoryItem = HistoryItem();
     measureUnit = MeasureUnit();
+    measureProgress = <MeasureProgress>[];
   }
 
   // NumberFormat _numberFormat;
@@ -93,29 +90,92 @@ class Measure implements Base {
     cloneTo(to);
     return to;
   }
+
+  measure_pb.Measure writeToProtoBuf() {
+    measure_pb.Measure measurePb = measure_pb.Measure();
+
+    if (this.id != null) measurePb.id = this.id;
+    if (this.version != null) measurePb.version = this.version;
+    if (this.isDeleted != null) measurePb.isDeleted = this.isDeleted;
+    if (this.name != null) measurePb.name = this.name;
+    if (this.description != null) measurePb.description = this.description;
+
+    if (this.metric != null) measurePb.metric = this.metric;
+
+    if (this.decimalsNumber != null) measurePb.decimalsNumber = this.decimalsNumber;
+    if (this.startValue != null) measurePb.startValue = this.startValue;
+    if (this.endValue != null) measurePb.endValue = this.endValue;
+    if (this.currentValue != null) measurePb.currentValue = this.currentValue;
+    if (this.measureUnit != null) measurePb.measureUnit = this.measureUnit.writeToProtoBuf();
+
+    if (this.measureProgress != null && this.measureProgress.isNotEmpty) measurePb.measureProgress.addAll(this.measureProgress.map((m) => m.writeToProtoBuf()));
+
+    return measurePb;
+  }
+
+  readFromProtoBuf(measure_pb.Measure measurePb) {
+    if (measurePb.hasId()) this.id = measurePb.id;
+    if (measurePb.hasVersion()) this.version = measurePb.version;
+    if (measurePb.hasIsDeleted()) this.isDeleted = measurePb.isDeleted;
+    if (measurePb.hasName()) this.name = measurePb.name;
+    if (measurePb.hasDescription()) this.description = measurePb.description;
+
+    if (measurePb.hasMetric()) this.metric = measurePb.metric;
+    if (measurePb.hasDecimalsNumber()) this.decimalsNumber = measurePb.decimalsNumber;
+    if (measurePb.hasStartValue()) this.startValue = measurePb.startValue;
+    if (measurePb.hasEndValue()) this.endValue = measurePb.endValue;
+    if (measurePb.hasCurrentValue()) this.currentValue = measurePb.currentValue;
+    if (measurePb.hasMeasureUnit()) this.measureUnit = MeasureUnit()..readFromProtoBuf(measurePb.measureUnit);
+    if (measurePb.measureProgress.isNotEmpty) this.measureProgress = measurePb.measureProgress.map((u) => MeasureProgress()..readFromProtoBuf(u)).toList();
+  }
 }
 
-
-class MeasureProgress implements Base {
+class MeasureProgress {
   // Base - implements
   String id;
   int version;
   bool isDeleted;
 
   // Base - History - Transient
-  static const lastHistoryItemField = 'lastHistoryItem';
-  HistoryItem lastHistoryItem;
+  // REFACTOR HistoryItem lastHistoryItem;
 
   // Specific
-  static const dateField = 'date';
   DateTime date;
-  static const currentValueField = 'current';
   double currentValue;
-  static const commentField = 'comment';
   String comment;
 
   MeasureProgress() {
-    lastHistoryItem = HistoryItem();
+   // lastHistoryItem = HistoryItem();
+  }
+
+  measure_pb.MeasureProgress writeToProtoBuf() {
+    measure_pb.MeasureProgress measureProgressPb = measure_pb.MeasureProgress();
+
+    if (this.id != null) measureProgressPb.id = this.id;
+    if (this.version != null) measureProgressPb.version = this.version;
+    if (this.isDeleted != null) measureProgressPb.isDeleted = this.isDeleted;
+
+    if (this.date != null) {
+      Timestamp t = Timestamp();
+      int microsecondsSinceEpoch = this.date.toUtc().microsecondsSinceEpoch;
+      t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
+      t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
+      measureProgressPb.date = t;
+    }
+
+    if (this.currentValue != null) measureProgressPb.currentValue = this.currentValue;
+    if (this.comment != null) measureProgressPb.comment = this.comment;
+
+    return measureProgressPb;
+  }
+
+  readFromProtoBuf(measure_pb.MeasureProgress measureProgressPb) {
+    if (measureProgressPb.hasId()) this.id = measureProgressPb.id;
+    if (measureProgressPb.hasVersion()) this.version = measureProgressPb.version;
+    if (measureProgressPb.hasIsDeleted()) this.isDeleted = measureProgressPb.isDeleted;
+    if (measureProgressPb.hasDate()) this.date =  DateTime.fromMicrosecondsSinceEpoch(measureProgressPb.date.seconds.toInt() * 1000000 + measureProgressPb.date.nanos ~/ 1000 );
+    if (measureProgressPb.hasCurrentValue()) this.currentValue = measureProgressPb.currentValue;
+    if (measureProgressPb.hasComment()) this.comment = measureProgressPb.comment;
   }
 
   void cloneTo(MeasureProgress to) {
@@ -130,21 +190,32 @@ class MeasureProgress implements Base {
     cloneTo(to);
     return to;
   }
+
+
+
 }
 
-class MeasureUnitBase {
+class MeasureUnit {
+
   String id;
-}
-
-class MeasureUnit implements MeasureUnitBase {
-
-  static const idField = 'id';
-  String id;
-
-  static const symbolField = 'symbol';
   String symbol;
-  static const nameField = 'name';
   String name;
+
+  measure_pb.MeasureUnit writeToProtoBuf() {
+    measure_pb.MeasureUnit measureUnitPb = measure_pb.MeasureUnit();
+
+    if (this.id != null) measureUnitPb.id = this.id;
+    if (this.symbol != null) measureUnitPb.symbol = this.symbol;
+    if (this.name != null) measureUnitPb.name = this.name;
+
+    return measureUnitPb;
+  }
+
+  readFromProtoBuf(measure_pb.MeasureUnit measureUnitPb) {
+    if (measureUnitPb.hasId()) this.id = measureUnitPb.id;
+    if (measureUnitPb.hasSymbol()) this.symbol = measureUnitPb.symbol;
+    if (measureUnitPb.hasName()) this.name = measureUnitPb.name;
+  }
 
   void cloneTo(MeasureUnit to) {
     to.id = this.id;
@@ -162,7 +233,7 @@ class MeasureUnit implements MeasureUnitBase {
 
 /// Facilities to [Measure] class
 class MeasureFacilities {
-
+/*
   /// Delta diff between [current] and [previous].
   /// ids = A list from IDs changed.
   /// values =  Values (in user view) changed. ids and values are maintained in structure separately per performance reason (Json stored document strategy)
@@ -181,9 +252,9 @@ class MeasureFacilities {
 
     // String id;
     if (previous != null && current.id != previous.id) {
-      difference[idsKey][Base.idField] = {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
+      difference[idsKey][Measure.idField] = {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
     } else if (previous == null && current.id != null) {
-      difference[Base.idField] = {currentDataChangedKey: current.id};
+      difference[Measure.idField] = {currentDataChangedKey: current.id};
     }
 
     // String name;
@@ -276,23 +347,23 @@ class MeasureProgressFacilities {
 
     // String id;
     if (previous != null && current.id != previous.id) {
-      difference[idsKey][Base.idField] = {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
+      difference[idsKey][MeasureProgress.idField] = {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
     } else if (previous == null && current.id != null) {
-      difference[Base.idField] = {currentDataChangedKey: current.id};
+      difference[MeasureProgress.idField] = {currentDataChangedKey: current.id};
     }
 
     // String version;
     if (previous != null && current.version != previous.version) {
-      difference[valuesKey][Base.versionField] = {currentDataChangedKey: current.version, previousDataChangedKey: previous.version};
+      difference[valuesKey][MeasureProgress.versionField] = {currentDataChangedKey: current.version, previousDataChangedKey: previous.version};
     } else if (previous == null && current.version != null) {
-      difference[valuesKey][Base.versionField] = {currentDataChangedKey: current.version};
+      difference[valuesKey][MeasureProgress.versionField] = {currentDataChangedKey: current.version};
     }
 
     // String description;
     if (previous != null && current.isDeleted != previous.isDeleted) {
-      difference[valuesKey][Base.isDeletedField] = {currentDataChangedKey: current.isDeleted, previousDataChangedKey: previous.isDeleted};
+      difference[valuesKey][MeasureProgress.isDeletedField] = {currentDataChangedKey: current.isDeleted, previousDataChangedKey: previous.isDeleted};
     } else if (previous == null && current.isDeleted != null ) {
-      difference[valuesKey][Base.isDeletedField] = {currentDataChangedKey: current.isDeleted};
+      difference[valuesKey][MeasureProgress.isDeletedField] = {currentDataChangedKey: current.isDeleted};
     }
 
     // DateTime date;
@@ -323,7 +394,5 @@ class MeasureProgressFacilities {
   static Map<String, dynamic> differenceToMap(String jsonDifference) {
     return json.decode(jsonDifference);
   }
-
-
+  */
 }
-

@@ -15,11 +15,10 @@ import 'package:auge_server/model/initiative/initiative.dart';
 import 'package:auge_server/model/initiative/state.dart';
 import 'package:auge_server/model/initiative/work_item.dart';
 import 'package:auge_server/model/initiative/stage.dart';
-import 'package:auge_server/model/initiative/work_item_check_item.dart';
-import 'package:auge_server/model/organization.dart';
-import 'package:auge_server/model/user.dart';
+import 'package:auge_server/model/general/organization.dart';
+import 'package:auge_server/model/general/user.dart';
 import 'package:auge_server/model/objective/objective.dart';
-import 'package:auge_server/model/group.dart';
+import 'package:auge_server/model/general/group.dart';
 
 import 'package:auge_server/message/created_message.dart';
 
@@ -63,7 +62,7 @@ class InitiativeAugeApi {
 
     }
 
-    results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
     List<Initiative> initiatives = List<Initiative>();
     List<WorkItem> workItems;
@@ -136,7 +135,7 @@ class InitiativeAugeApi {
       substitutionValues = {"id": id};
     }
 
-    results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
     List<State> states = new List();
     for (var row in results) {
       states.add(new State()..id = row[0]..name = row[1]..color = (json.decode(row[2]) as Map).cast<String, int>()..index = row[3]);
@@ -169,7 +168,7 @@ class InitiativeAugeApi {
       substitutionValues = {"initiative_id": initiativeId};
     }
 
-    results = await AugeConnection.getConnection().query(
+    results = await (await AugeConnection.getConnection()).query(
         queryStatement, substitutionValues: substitutionValues);
 
     List<Stage> stages = new List();
@@ -212,7 +211,7 @@ class InitiativeAugeApi {
       substitutionValues = {"initiative_id": initiativeId};
     }
 
-    results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
     List<WorkItem> workItems = new List();
     List<Stage> stages;
@@ -249,7 +248,7 @@ class InitiativeAugeApi {
     queryStatement += " WHERE work_item_assigned_user.work_item_id = @work_item_id";
     substitutionValues = {"work_item_id": workItemId};
 
-    results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
     List<User> assignedToUsers = new List();
     List<User> users;
@@ -284,7 +283,7 @@ class InitiativeAugeApi {
     queryStatement += " WHERE check_item.work_item_id = @work_item_id";
     substitutionValues = {"work_item_id": workItemId};
 
-    results =  await AugeConnection.getConnection().query(queryStatement, substitutionValues: substitutionValues);
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
     List<WorkItemCheckItem> checkItems = new List();
     for (var row in results) {
@@ -298,10 +297,10 @@ class InitiativeAugeApi {
   /// Return all initiatives from an organization
   /// Its possible to filter as a [id] key, [organizationId], [objectiveId] and [withWorkItems]
   @ApiMethod( method: 'GET', path: 'organizations/{organizationId}/initiatives')
-  Future<List<Initiative>> getInitiatives(String organizationId, {String objectiveId, bool withWorkItems = false, bool withProfile = false}) async {
+  Future<List<Initiative>> getInitiatives(/* String organizationId, {String objectiveId, bool withWorkItems = false, bool withProfile = false} */) async {
     try {
       List<Initiative> initiatives;
-      initiatives = await queryInitiatives(organizationId: organizationId, objectiveId: objectiveId, withWorkItems: withWorkItems, withProfile: withProfile);
+      //TODO commented just for error on migration initiatives = await queryInitiatives(organizationId: organizationId, objectiveId: objectiveId, withWorkItems: withWorkItems, withProfile: withProfile);
       return initiatives;
 
       /*
@@ -337,7 +336,7 @@ class InitiativeAugeApi {
   @ApiMethod( method: 'DELETE', path: 'initiatives/{id}')
   Future<VoidMessage> deleteInitiative(String id) async {
     try {
-      await AugeConnection.getConnection().transaction((ctx) async {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
             "DELETE FROM auge_initiative.stages stage"
@@ -415,7 +414,7 @@ class InitiativeAugeApi {
     }
 
     try {
-      await AugeConnection.getConnection().transaction((ctx) async {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query(
             "INSERT INTO auge_initiative.initiatives(id, name, description, organization_id, leader_user_id, objective_id, group_id) VALUES"
                 "(@id,"
@@ -463,7 +462,7 @@ class InitiativeAugeApi {
   @ApiMethod( method: 'PUT', path: 'initiatives')
   Future<VoidMessage> updateInitiative(Initiative initiative) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query("UPDATE auge_initiative.initiatives "
             " SET name = @name,"
@@ -557,7 +556,7 @@ class InitiativeAugeApi {
   @ApiMethod(method: 'DELETE', path: 'workitems/{id}')
   Future<VoidMessage> deleteWorkItem(String id) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM auge_initiative.work_items work_item"
@@ -581,7 +580,7 @@ class InitiativeAugeApi {
       workItem.id = new Uuid().v4();
     }
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query("INSERT INTO auge_initiative.work_items"
             "(id,"
@@ -654,7 +653,7 @@ class InitiativeAugeApi {
   @ApiMethod(method: 'PUT', path: 'initiatives/{initiativeId}/workitems')
   Future<VoidMessage> updateWorkItem(String initiativeId, WorkItem workItem) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query("UPDATE auge_initiative.work_items"
             " SET name = @name,"

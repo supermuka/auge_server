@@ -5,7 +5,7 @@
 /// Permission is defined informing role, object and function values.
 /// Constraint is defined informing constraint values.
 
-import 'package:auge_server/model/authorization.dart';
+import 'package:auge_server/model/general/authorization.dart';
 
 abstract class AuthorizationPolicy {
   List<Authorization> authorizations;
@@ -148,6 +148,5 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationModule = SystemModule.user_profile
       ..authorizationFunctionContraints = {SystemFunction.read: null, SystemFunction.update: null}
     );
-
   }
 }

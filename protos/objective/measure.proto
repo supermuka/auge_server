@@ -1,0 +1,114 @@
+// Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
+// Author: Samuel C. Schwebel
+
+syntax = "proto3";
+
+package auge.protobuf;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "general/common.proto";
+import "general/history_item.proto";
+
+// The service definition.
+service MeasureService {
+
+    rpc GetMeasures (MeasureGetRequest) returns (MeasuresResponse) {}
+    rpc GetMeasure (MeasureGetRequest) returns (Measure) {}
+
+    rpc CreateMeasure (Measure) returns (IdResponse) {}
+    rpc UpdateMeasure (Measure) returns (google.protobuf.Empty) {}
+    rpc DeleteMeasure (Measure) returns (google.protobuf.Empty) {}
+    rpc SoftDeleteMeasure (Measure) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+
+    rpc GetMeasureUnits (google.protobuf.Empty) returns (MeasureUnitsResponse) {}
+
+    rpc GetMeasureProgresses (MeasureProgressGetRequest) returns (MeasureProgressesResponse) {}
+    rpc GetMeasureProgress (MeasureProgressGetRequest) returns (MeasureProgress) {}
+
+    rpc CreateMeasureProgress (MeasureProgress) returns (IdResponse) {}
+    rpc UpdateMeasureProgress (MeasureProgress) returns (google.protobuf.Empty) {}
+    rpc DeleteMeasureProgress (MeasureProgress) returns (google.protobuf.Empty) {}
+    rpc SoftDeleteMeasureProgress (MeasureProgress) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+}
+
+// Message to respective domain object.
+message Measure {
+
+    // Base
+    string id = 1;
+    int32 version = 2;
+    bool is_deleted = 3;
+
+    // Specific
+    string name = 4;
+    string description = 5;
+    string metric = 6;
+    int32 decimals_number = 7;
+    double start_value = 8;
+    double end_value = 9;
+    MeasureUnit measure_unit = 10;
+
+    // Transient
+    double current_value = 12; // field calculeted on measureProgress
+
+    string objective_id = 13; // used just to identify parent on request
+
+    HistoryItem history_item_log = 14;
+    repeated MeasureProgress measure_progress = 15;
+
+}
+
+// Response list of the measures
+message MeasuresResponse {
+    repeated Measure measures = 1;
+}
+
+// Request for query select
+message MeasureGetRequest {
+    string objective_id = 1;
+    string id = 2;
+    bool is_deleted = 3;
+}
+
+// Message to respective domain object.
+message MeasureUnit {
+    string id = 1;
+
+    string symbol = 2;
+    string name = 3;
+}
+
+// Response list of the measureUnits
+message MeasureUnitsResponse {
+    repeated MeasureUnit measureUnits = 1;
+}
+
+// Message to respective domain object.
+message MeasureProgress {
+    // Base
+    string id = 1;
+    int32 version = 2;
+    bool is_deleted = 3;
+
+    // Specific
+    google.protobuf.Timestamp date = 4;
+    double current_value = 5;
+    string comment = 6;
+
+    // Transient
+    string measureId = 7; // used just to identify parent on request
+    HistoryItem history_item_log = 8;
+}
+
+// Response list of the MeasureProgress
+message MeasureProgressesResponse {
+    repeated MeasureProgress measureProgresses = 1;
+}
+
+// Request for query select
+message MeasureProgressGetRequest {
+    string measureId = 1;
+    string id = 2;
+    bool isDeleted = 3;
+}

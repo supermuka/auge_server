@@ -1,0 +1,73 @@
+// Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
+// Author: Samuel C. Schwebel
+
+syntax = "proto3";
+
+package auge.protobuf;
+
+//import "common.proto";
+import "google/protobuf/empty.proto";
+import "general/common.proto";
+import "general/user.proto";
+import "general/organization.proto";
+
+// The service definition.
+service GroupService {
+
+    rpc GetGroupTypes (google.protobuf.Empty) returns (GroupTypesResponse) {}
+    rpc GetGroupType (GroupTypeGetRequest) returns (GroupType) {}
+
+    rpc GetGroups (GroupGetRequest) returns (GroupsResponse) {}
+    rpc GetGroup (GroupGetRequest) returns (Group) {}
+
+    rpc CreateGroup (Group) returns (IdResponse) {}
+    rpc UpdateGroup (Group) returns (google.protobuf.Empty) {}
+    rpc DeleteGroup (Group) returns (google.protobuf.Empty) {}
+    rpc SoftDeleteGroup (Group) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+}
+
+// Message to respective domain object.
+message GroupType {
+    string id = 1;
+    string name = 2;
+}
+
+// Response list of the organization
+message GroupTypesResponse {
+    repeated GroupType groupTypes = 1;
+}
+
+// Message to respective domain object.
+message Group {
+    string id = 1;
+    int32 version = 2;
+    bool is_deleted = 3;
+
+    string name = 4;
+    bool active = 9;
+    Organization organization = 5;
+    GroupType group_type = 6;
+    Group super_group = 7;
+    User leader = 8;
+    repeated User members = 10;
+}
+
+// Request for query select
+message GroupGetRequest {
+    string id = 1;
+    bool is_deleted = 2;
+    string organization_id = 3;
+    int32 aligned_to_recursive = 4;
+}
+
+// Request for query select
+message GroupTypeGetRequest {
+    string id = 1;
+}
+
+// Response list of the organization
+message GroupsResponse {
+    repeated Group groups = 1;
+}
+
+

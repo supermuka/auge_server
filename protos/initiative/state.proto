@@ -1,0 +1,42 @@
+// Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
+// Author: Samuel C. Schwebel
+
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+package auge.protobuf;
+
+// The service definition.
+service StateService {
+
+    rpc GetStates (google.protobuf.Empty) returns (StatesResponse) {}
+    rpc GetState (StateGetRequest) returns (State) {}
+
+}
+
+// Message to respective domain object.
+message State {
+
+    // Base
+    string id = 1;
+    int32 version = 2;
+    bool is_deleted = 3;
+
+    // Specific
+    string name = 4;
+    // Define initiative state order
+    int32 index = 5;
+    map<string, int32> color = 6;
+}
+
+// Response list of the states
+message StatesResponse {
+    repeated State states = 1;
+}
+
+// Message similar to message to respective domain object, but just with values that are save (relational database).
+// For [Delete] inform just relevant data as a [id]
+message StateGetRequest {
+    // Base
+    string id = 1;
+}

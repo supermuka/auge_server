@@ -1,24 +1,27 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-import 'package:auge_server/model/organization.dart';
-import 'package:auge_server/model/user.dart';
+import 'package:auge_server/model/general/organization.dart';
+import 'package:auge_server/model/general/user.dart';
 import 'package:auge_server/model/initiative/state.dart';
 import 'package:auge_server/model/initiative/stage.dart';
 import 'package:auge_server/model/initiative/work_item.dart';
-import 'package:auge_server/model/group.dart';
+import 'package:auge_server/model/general/group.dart';
 
 import 'package:auge_server/model/objective/objective.dart';
 
+// Proto buffer transport layer.
+// ignore_for_file: uri_has_not_been_generated
+import 'package:auge_server/src/protos/generated/initiative/initiative.pb.dart' as initiative_pb;
+
 /// Domain model class to represent an initiative (action plan, projects)
-
-class InitiativeBase {
+class Initiative  {
+  // Base
   String id;
-}
+  int version;
+  bool isDeleted;
 
-class Initiative implements InitiativeBase {
-  String id;
-
+  // Specific
   String name;
   String description;
   List<Stage> stages;
@@ -74,6 +77,40 @@ class Initiative implements InitiativeBase {
     return n;
   }
 
+  initiative_pb.Initiative writeToProtoBuf() {
+    initiative_pb.Initiative initiativePb = initiative_pb.Initiative();
+
+    if (this.id != null) initiativePb.id = this.id;
+    if (this.version != null) initiativePb.version = this.version;
+    if (this.isDeleted != null) initiativePb.isDeleted = this.isDeleted;
+    if (this.name != null) initiativePb.name = this.name;
+    if (this.description != null) initiativePb.description = this.description;
+
+    if (this.objective != null) initiativePb.objective = this.objective.writeToProtoBuf();
+    if (this.group != null) initiativePb.group = this.group.writeToProtoBuf();
+    if (this.organization != null) initiativePb.organization = this.organization.writeToProtoBuf();
+    if (this.leader != null) initiativePb.leader = this.leader.writeToProtoBuf();
+    if (this.workItems != null && this.workItems.isNotEmpty) initiativePb.workItems.addAll(this.workItems.map((m) => m.writeToProtoBuf()));
+    if (this.stages != null && this.stages.isNotEmpty) initiativePb.stages.addAll(this.stages.map((m) => m.writeToProtoBuf()));
+
+    return initiativePb;
+  }
+
+  readFromProtoBuf(initiative_pb.Initiative initiativePb) {
+    if (initiativePb.hasId()) this.id = initiativePb.id;
+    if (initiativePb.hasVersion()) this.version = initiativePb.version;
+    if (initiativePb.hasIsDeleted()) this.isDeleted = initiativePb.isDeleted;
+    if (initiativePb.hasName()) this.name = initiativePb.name;
+    if (initiativePb.hasDescription()) this.description = initiativePb.description;
+    if (initiativePb.hasObjective()) this.objective = Objective()..readFromProtoBuf(initiativePb.objective);
+    if (initiativePb.hasGroup()) this.group = Group()..readFromProtoBuf(initiativePb.group);
+    if (initiativePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(initiativePb.organization);
+    if (initiativePb.hasLeader()) this.leader = User()..readFromProtoBuf(initiativePb.leader);
+    if (initiativePb.workItems.isNotEmpty) this.workItems = initiativePb.workItems.map((u) => WorkItem()..readFromProtoBuf(u)).toList();
+    if (initiativePb.stages.isNotEmpty) this.stages = initiativePb.stages.map((u) => Stage()..readFromProtoBuf(u)).toList();
+  }
+
+/*
   void cloneTo(Initiative to) {
     to.id = this.id;
     to.name = this.name;
@@ -115,5 +152,6 @@ class Initiative implements InitiativeBase {
     cloneTo(to);
     return to;
   }
+*/
 
 }

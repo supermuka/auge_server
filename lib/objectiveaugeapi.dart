@@ -10,13 +10,13 @@ import 'package:uuid/uuid.dart';
 import 'package:auge_server/augeconnection.dart';
 import 'package:auge_server/augeapi.dart';
 
-import 'package:auge_server/model/authorization.dart';
-import 'package:auge_server/model/history_item.dart';
+import 'package:auge_server/model/general/authorization.dart';
+import 'package:auge_server/model/general/history_item.dart';
 import 'package:auge_server/model/objective/objective.dart';
 import 'package:auge_server/model/objective/measure.dart';
-import 'package:auge_server/model/organization.dart';
-import 'package:auge_server/model/user.dart';
-import 'package:auge_server/model/group.dart';
+import 'package:auge_server/model/general/organization.dart';
+import 'package:auge_server/model/general/user.dart';
+import 'package:auge_server/model/general/group.dart';
 
 import 'package:auge_server/message/created_message.dart';
 
@@ -114,7 +114,7 @@ class ObjectiveAugeApi {
       substitutionValues = {"objective_id": objectiveId, "is_deleted": isDeleted};
     }
 
-    results = await AugeConnection.getConnection().query(
+    results = await (await AugeConnection.getConnection()).query(
         queryStatement, substitutionValues: substitutionValues);
 
     List<Measure> mesuares = new List();
@@ -159,7 +159,7 @@ class ObjectiveAugeApi {
   @ApiMethod( method: 'DELETE', path: 'measures/{id}')
   Future<VoidMessage> deleteMeasure(String id) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM auge_objective.measures measure"
@@ -230,7 +230,7 @@ class ObjectiveAugeApi {
     }
 
     try {
-      await AugeConnection.getConnection().transaction((ctx) async {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         measure.version = 0;
         await ctx.query(
@@ -260,6 +260,7 @@ class ObjectiveAugeApi {
           "is_deleted": measure.isDeleted,
         });
 
+        /*TODO
         // HistoryItem - server-side generation
         measure.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
           objectId: measure.id,
@@ -270,7 +271,7 @@ class ObjectiveAugeApi {
 
         // Create a history item
         await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(measure.lastHistoryItem));
-
+        */
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -306,7 +307,7 @@ class ObjectiveAugeApi {
       substitutionValues = {"measure_id": measureId, "is_deleted": isDeleted};
     }
 
-    results = await AugeConnection.getConnection().query(
+    results = await (await AugeConnection.getConnection()).query(
         queryStatement, substitutionValues: substitutionValues);
 
     List<MeasureProgress> mesuareProgresses = new List();
@@ -332,7 +333,7 @@ class ObjectiveAugeApi {
   Future<IdMessage> createMeasureProgress(String measureId, MeasureProgress measureProgress) async {
     try {
 
-      await AugeConnection.getConnection().transaction((ctx) async {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         if (measureProgress.id == null) {
           measureProgress.id = new Uuid().v4();
@@ -359,6 +360,7 @@ class ObjectiveAugeApi {
           "is_deleted": false,
           });
 
+        /*TODO
         // HistoryItem - server-side generation
         measureProgress.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
             objectId: measureProgress.id,
@@ -369,6 +371,7 @@ class ObjectiveAugeApi {
 
         // Create a history item
         await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(measureProgress.lastHistoryItem));
+        */
 
       });
 
@@ -386,7 +389,7 @@ class ObjectiveAugeApi {
 
       DateTime dateTimeNow = DateTime.now().toUtc();
 
-      await AugeConnection.getConnection().transaction((ctx) async {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         DateTime dateTimeNow = DateTime.now().toUtc();
 
@@ -444,6 +447,7 @@ class ObjectiveAugeApi {
           }
         }
 
+        /*TODO
         measureProgress.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
             objectId: measureProgress.id,
             objectVersion: measureProgress.version,
@@ -453,6 +457,7 @@ class ObjectiveAugeApi {
 
         // Create a history item
         await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(measureProgress.lastHistoryItem));
+        */
 
       });
     } catch (e) {
@@ -499,7 +504,7 @@ class ObjectiveAugeApi {
   @ApiMethod( method: 'PUT', path: 'objetives/{objectiveId}/measures')
   Future<VoidMessage> updateMeasure(String objectiveId, Measure measure) async {
     try {
-      await AugeConnection.getConnection().transaction((ctx) async {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         List<List<dynamic>> result;
 
@@ -554,6 +559,7 @@ class ObjectiveAugeApi {
         } else {
 
           // Create a history item
+          /*TODO
           measure.lastHistoryItem.setServerSideValues(id: new Uuid().v4(),
               objectId: measure.id,
               objectVersion: measure.version,
@@ -562,6 +568,7 @@ class ObjectiveAugeApi {
               dateTime: DateTime.now().toUtc());
 
           await ctx.query(queryStatementCreateHistoryItem, substitutionValues: querySubstitutionValuesCreateHistoryItem(measure.lastHistoryItem));
+          */
         }
       });
 
@@ -624,7 +631,7 @@ class ObjectiveAugeApi {
                 " WHERE " + queryStatementWhere;
     }
 
-    results = await AugeConnection.getConnection().query(
+    results = await (await AugeConnection.getConnection()).query(
         queryStatement, substitutionValues: substitutionValues);
 
     List<Objective> objectives = new List();
@@ -759,7 +766,7 @@ class ObjectiveAugeApi {
   @ApiMethod( method: 'DELETE', path: 'objectives/{id}')
   Future<VoidMessage> deleteObjective(String id) async {
 
-    await AugeConnection.getConnection().transaction((ctx) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM auge_objective.objectives objective"
@@ -784,7 +791,7 @@ class ObjectiveAugeApi {
     DateTime dateTimeNow = DateTime.now().toUtc();
 
     try {
-      await AugeConnection.getConnection().transaction((ctx) async {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query("INSERT INTO auge_objective.objectives(id, version, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id, is_deleted) VALUES"
             "(@id,"
             "@version,"
@@ -839,7 +846,7 @@ class ObjectiveAugeApi {
 
 
       List<List<dynamic>> result;
-      await AugeConnection.getConnection().transaction((ctx) async {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
         if (objective.isDeleted) {
           result = await ctx.query("UPDATE auge_objective.objectives "
               " SET version = @version + 1, "
@@ -864,8 +871,7 @@ class ObjectiveAugeApi {
                   " organization_id = @organization_id,"
                   " leader_user_id = @leader_user_id,"
                   " group_id = @group_id,"
-                  " is_deleted = @is_deleted,"
-
+                  " is_deleted = @is_deleted"
                   " WHERE id = @id and version = @version"
                   " RETURNING true"
               , substitutionValues: {
@@ -891,7 +897,7 @@ class ObjectiveAugeApi {
         if (result.isEmpty) {
           throw new RpcError(412, 'PreconditionFailed', 'Precondition Failed')
             ..errors.add(
-                new RpcErrorDetail(reason: RpcErrorDetailMessage.measureUpdatePreconditionFailed));
+                new RpcErrorDetail(/*reason: RpcErrorDetailMessage.measureUpdatePreconditionFailed*/));
         }
         else {
           // HistoryItem
@@ -955,7 +961,7 @@ class ObjectiveAugeApi {
 
     queryStatement += " ORDER BY 6 DESC ";
 
-    results = await AugeConnection.getConnection().query(
+    results = await (await AugeConnection.getConnection()).query(
         queryStatement, substitutionValues: substitutionValues);
 
     List<HistoryItem> history = new List();
@@ -990,7 +996,7 @@ class ObjectiveAugeApi {
           ..dateTime = row[5]
           ..user = user
           ..description = row[7]
-          ..changedValues = json.encode(changedDataMap)
+          //..changedValues = json.encode(changedDataMap)
           );
       }
     }

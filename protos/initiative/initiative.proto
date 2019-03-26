@@ -1,0 +1,68 @@
+// Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
+// Author: Samuel C. Schwebel
+
+syntax = "proto3";
+
+package auge.protobuf;
+
+import "google/protobuf/empty.proto";
+
+import "general/common.proto";
+import "general/history_item.proto";
+import "general/organization.proto";
+import "general/group.proto";
+import "general/user.proto";
+import "initiative/stage.proto";
+import "initiative/work_item.proto";
+import "objective/objective.proto";
+
+
+// The service definition.
+service InitiativeService {
+
+    rpc GetInitiatives (InitiativeGetRequest) returns (InitiativesResponse) {}
+    rpc GetInitiative (InitiativeGetRequest) returns (Initiative) {}
+
+    rpc CreateInitiative (Initiative) returns (IdResponse) {}
+    rpc UpdateInitiative (Initiative) returns (google.protobuf.Empty) {}
+    rpc DeleteInitiative (Initiative) returns (google.protobuf.Empty) {}
+    rpc SoftDeleteInitiative (Initiative) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+
+}
+
+// Message to respective domain object.
+message Initiative {
+
+    // Base
+    string id = 1;
+    int32 version = 2;
+    bool is_deleted = 3;
+
+    // Specific
+    string name = 4;
+    string description = 5;
+    repeated Stage stages = 6;
+    repeated WorkItem work_items = 7;
+
+    Objective objective = 8;
+    Organization organization = 9;
+    Group group = 10;
+    User leader = 11;
+
+    HistoryItem history_item_log = 14;
+}
+
+// Response list of the stages
+message InitiativesResponse {
+    repeated Initiative initiatives = 1;
+}
+
+// Request for query param
+message InitiativeGetRequest {
+    string id = 1;
+    bool is_deleted = 2;
+    string organization_id = 3;
+    string objective_id = 4;
+    bool with_work_items = 5;
+    bool with_profile = 6;
+}

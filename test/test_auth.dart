@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 
 import 'package:auge_server/shared/authorization_policy.dart';
-import 'package:auge_server/model/authorization.dart';
+import 'package:auge_server/model/general/authorization.dart';
 
 void main() {
 
