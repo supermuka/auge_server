@@ -14,8 +14,9 @@ class AugeConnection {
     if (_connection == null || _connection.isClosed) {
       _connection = new PostgreSQLConnection(
          /* "localhost", 5432, "levius", username: "postgres", */
-         "localhost", 5432, "auge", username: "postgres",
-          password: "admin@levius#2018");
+         /* "localhost", 5432, "auge", username: "postgres", */
+          "host.docker.internal", 5432, "auge", username: "postgres",
+          password: "schwebel");
       _connection.open();
     }
   }
@@ -24,8 +25,9 @@ class AugeConnection {
     if (_connection == null || _connection.isClosed) {
       _connection = new PostgreSQLConnection(
          /* "localhost", 5432, "levius", username: "postgres", */
-         "localhost", 5432, "auge", username: "postgres",
-          password: "admin@levius#2018");
+         /* "localhost", 5432, "auge", username: "postgres", */
+          "host.docker.internal", 5432, "auge", username: "postgres",
+          password: "schwebel");
       await _connection.open();
     }
     return _connection;

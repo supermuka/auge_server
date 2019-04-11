@@ -23,16 +23,14 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
   @override
   Future<UsersProfileOrganizationsResponse> getUsersProfileOrganizations(ServiceCall call,
       UserProfileOrganizationGetRequest userProfileOrganizationGetRequest) async {
-    print('DEBUG getUsersProfileOrganizations');
     return UsersProfileOrganizationsResponse()..usersProfileOrganizations.addAll(await querySelectUsersProfileOrganizations(userProfileOrganizationGetRequest));
   }
 
   @override
   Future<UserProfileOrganization> getUserProfileOrganization(ServiceCall call,
       UserProfileOrganizationGetRequest request) async {
-    print('DEBUG getUserProfileOrganization');
-    return UserProfileOrganization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
-    //return querySelectUserProfileOrganization(request);
+    //return UserProfileOrganization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
+    return querySelectUserProfileOrganization(request);
   }
 
   @override
@@ -76,7 +74,8 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         "uo.user_id, " // 3
         "uo.organization_id, " //4
         "uo.authorization_role " // 5
-        "FROM general.users_profile_organizations uo ";
+        "FROM general.users_profile_organizations uo "
+        "LEFT OUTER JOIN general.users u ON u.id = uo.user_id ";
 
     Map<String, dynamic> _substitutionValues = Map<String, dynamic>();
     queryStatement += "WHERE uo.is_deleted = @is_deleted";

@@ -34,7 +34,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   @override
   Future<ObjectivesResponse> getObjectives(ServiceCall call,
       ObjectiveGetRequest request) async {
-    return await querySelectObjectives(request);
+    return querySelectObjectives(request);
   }
 
   @override

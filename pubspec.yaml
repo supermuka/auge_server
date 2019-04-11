@@ -18,7 +18,7 @@ dependencies:
   #    url: git://github.com/dart-archive/rpc.git
   #    ref: experimental-mirrors-refactor
   #protobuf: ^0.13.9
-  #grpc: ^1.0.2
+  grpc: ^1.0.2
   #grpc:
   #  git:
   #    url: git://github.com/grpc/grpc-dart.git
