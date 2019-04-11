@@ -94,7 +94,7 @@ class InitiativeService extends InitiativeServiceBase {
         "initiative.leader_user_id, " //6
         "initiative.objective_id, " //7
         "initiative.group_id " //8
-        "FROM auge_initiative.initiatives initiative";
+        "FROM initiative.initiatives initiative";
 
     Map<String, dynamic> substitutionValues;
 
@@ -215,7 +215,7 @@ class InitiativeService extends InitiativeServiceBase {
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query(
-            "INSERT INTO auge_initiative.initiatives(id, version, is_deleted, name, description, organization_id, leader_user_id, objective_id, group_id) VALUES"
+            "INSERT INTO initiative.initiatives(id, version, is_deleted, name, description, organization_id, leader_user_id, objective_id, group_id) VALUES"
                 "(@id,"
                 "@version,"
                 "@is_deleted,"
@@ -240,7 +240,7 @@ class InitiativeService extends InitiativeServiceBase {
           stage.id = new Uuid().v4();
 
           await ctx.query(
-              "INSERT INTO auge_initiative.stages(id, name, index, state_id, initiative_id) VALUES"
+              "INSERT INTO initiative.stages(id, name, index, state_id, initiative_id) VALUES"
                   "(@id,"
                   "@name,"
                   "@index,"
@@ -269,7 +269,7 @@ class InitiativeService extends InitiativeServiceBase {
       try {
         List<List<dynamic>> result;
         if (initiative.isDeleted) {
-          result = await ctx.query("UPDATE auge_initiative.initiatives "
+          result = await ctx.query("UPDATE initiative.initiatives "
               " SET version = @version + 1, "
               " is_deleted = @is_deleted "
               " WHERE id = @id AND version = @version"
@@ -280,7 +280,7 @@ class InitiativeService extends InitiativeServiceBase {
                 "is_deleted": initiative.isDeleted,
               });
         } else {
-          result = await ctx.query("UPDATE auge_initiative.initiatives "
+          result = await ctx.query("UPDATE initiative.initiatives "
             " SET version = @version + 1,"
             " name = @name,"
             " description = @description,"
@@ -307,7 +307,7 @@ class InitiativeService extends InitiativeServiceBase {
               stage.id = new Uuid().v4();
 
               await ctx.query(
-                  "INSERT INTO auge_initiative.stages(id, name, index, state_id, initiative_id) VALUES"
+                  "INSERT INTO initiative.stages(id, name, index, state_id, initiative_id) VALUES"
                       "(@id,"
                       "@name,"
                       "@index,"
@@ -320,7 +320,7 @@ class InitiativeService extends InitiativeServiceBase {
                 "state_id": stage.state.id,
                 "initiative_id": initiative.id});
             } else {
-              await ctx.query("UPDATE auge_initiative.stages SET"
+              await ctx.query("UPDATE initiative.stages SET"
                   " name = @name,"
                   " index = @index,"
                   " state_id = @state_id,"
@@ -342,7 +342,7 @@ class InitiativeService extends InitiativeServiceBase {
           }
 
           if (stagesId.isNotEmpty) {
-            await ctx.query("DELETE FROM auge_initiative.stages "
+            await ctx.query("DELETE FROM initiative.stages "
                 " WHERE id NOT IN (${stagesId.toString()}) "
                 " AND initiative_id  = @initiative_id "
                 , substitutionValues: {
@@ -381,13 +381,13 @@ class InitiativeService extends InitiativeServiceBase {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
-            "DELETE FROM auge_initiative.stages stage"
+            "DELETE FROM initiative.stages stage"
                 " WHERE stage.initiative_id = @id"
             , substitutionValues: {
           "id": initiative.id});
 
         await ctx.query(
-            "DELETE FROM auge_initiative.initiatives initiative"
+            "DELETE FROM initiative.initiatives initiative"
                 " WHERE initiative.id = @id"
             , substitutionValues: {
           "id": initiative.id});

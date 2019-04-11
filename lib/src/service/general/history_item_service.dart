@@ -66,7 +66,7 @@ class HistoryItemService extends HistoryItemServiceBase {
 
     String queryStatement;
 
-
+/*
     queryStatement = queryStatementSelect +
         "FROM auge_objective.history history_item "
             "WHERE object_class_name = 'Objective' "
@@ -84,6 +84,12 @@ class HistoryItemService extends HistoryItemServiceBase {
             "JOIN auge_objective.measures measure ON measure.id = measure_progress.measure_id "
             "WHERE history_item.object_class_name = 'MeasureProgress' "
             "AND measure.objective_id = @objective_id";
+
+ */
+    queryStatement = queryStatementSelect +
+        "FROM auge_objective.history history_item "
+            "WHERE object_class_name = 'Objective' "
+            "AND system_module_index = @system_module_index ";
 
     Map<String, dynamic> substitutionValues;
 

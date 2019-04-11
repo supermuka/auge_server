@@ -17,15 +17,15 @@ dependencies:
   #  git:
   #    url: git://github.com/dart-archive/rpc.git
   #    ref: experimental-mirrors-refactor
-  protobuf: ^0.13.3
-  grpc: ^1.0.1
+  #protobuf: ^0.13.9
+  #grpc: ^1.0.2
   #grpc:
   #  git:
   #    url: git://github.com/grpc/grpc-dart.git
   #    ref: master
       #url: git://github.com/dart-archive/rpc.git
       #ref: experimental-mirrors-refactor
-  protoc_plugin: ^15.0.3
+  protoc_plugin: ^16.0.5
   postgres: ^1.0.2
   uuid: ^2.0.0-rc1
   http: ^0.12.0
@@ -35,3 +35,10 @@ dependencies:
 
 dev_dependencies:
   test: ^1.3.0
+
+dependency_overrides:
+  protobuf: ^0.13.9
+  grpc:
+    git:
+      url: git://github.com/grpc/grpc-dart.git
+      ref: grpc-web

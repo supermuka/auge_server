@@ -23,13 +23,16 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
   @override
   Future<UsersProfileOrganizationsResponse> getUsersProfileOrganizations(ServiceCall call,
       UserProfileOrganizationGetRequest userProfileOrganizationGetRequest) async {
+    print('DEBUG getUsersProfileOrganizations');
     return UsersProfileOrganizationsResponse()..usersProfileOrganizations.addAll(await querySelectUsersProfileOrganizations(userProfileOrganizationGetRequest));
   }
 
   @override
   Future<UserProfileOrganization> getUserProfileOrganization(ServiceCall call,
       UserProfileOrganizationGetRequest request) async {
-    return  querySelectUserProfileOrganization(request);
+    print('DEBUG getUserProfileOrganization');
+    return UserProfileOrganization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
+    //return querySelectUserProfileOrganization(request);
   }
 
   @override
@@ -73,7 +76,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         "uo.user_id, " // 3
         "uo.organization_id, " //4
         "uo.authorization_role " // 5
-        "FROM auge.users_profile_organizations uo ";
+        "FROM general.users_profile_organizations uo ";
 
     Map<String, dynamic> _substitutionValues = Map<String, dynamic>();
     queryStatement += "WHERE uo.is_deleted = @is_deleted";
@@ -93,6 +96,18 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
       queryStatement += " AND uo.organization_id = @organization_id";
       _substitutionValues.putIfAbsent("organization_id", () => userProfileOrganizationGetRequest.organizationId);
       //The last, not need... whereAnd = 'AND';
+    }
+
+    if (userProfileOrganizationGetRequest.hasEMail()) {
+      queryStatement = queryStatement +
+          " AND u.email = @email";
+
+      _substitutionValues.putIfAbsent("email", () => userProfileOrganizationGetRequest.eMail);
+    }
+    if (userProfileOrganizationGetRequest.hasPassword()) {
+      queryStatement = queryStatement +
+          " AND u.password = @password";
+      _substitutionValues.putIfAbsent("password", () => userProfileOrganizationGetRequest.password);
     }
 
     results = await (await AugeConnection.getConnection()).query(
@@ -158,7 +173,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
       try {
 
         await ctx.query(
-            "INSERT INTO auge.users_profile_organizations(id, version, is_deleted, user_id, organization_id, authorization_role) VALUES("
+            "INSERT INTO general.users_profile_organizations(id, version, is_deleted, user_id, organization_id, authorization_role) VALUES("
                 "@id,"
                 "@version,"
                 "@is_deleted,"
@@ -186,7 +201,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         List<List<dynamic>> result = await ctx.query(
-              "UPDATE auge.users_profile_organizations "
+              "UPDATE general.users_profile_organizations "
                   "SET version = @version + 1, "
                   "authorization_role = @authorization_role, "
                   "user_id = @user_id, "
@@ -216,7 +231,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         List<List<dynamic>> result = await ctx.query(
-            "UPDATE auge.users_profile_organizations "
+            "UPDATE general.users_profile_organizations "
                 "SET version = @version + 1, "
                 "is_deleted = @is_deleted "
                 "WHERE id = @id AND version = @version"
@@ -241,7 +256,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "DELETE FROM auge.users_profile_organizations user_profile_organization "
+            "DELETE FROM general.users_profile_organizations user_profile_organization "
                 "WHERE user_profile_organization.id = @id "
             , substitutionValues: {
           "id": userProfileOrganization.id});

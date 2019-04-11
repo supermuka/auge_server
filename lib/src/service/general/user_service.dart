@@ -62,16 +62,16 @@ class UserService extends UserServiceBase {
 
     String queryStatement = '';
     if (request != null && request.withProfile == false) {
-      queryStatement = "SELECT u.id::VARCHAR, u.name, u.email, u.password "
-          "FROM auge.users u ";
+      queryStatement = "SELECT u.id, u.version, u.is_deleted, u.name, u.email, u.password "
+          "FROM general.users u ";
     }
     else {
-      queryStatement = "SELECT u.id::VARCHAR, u.name, u.email, u.password, "
+      queryStatement = "SELECT u.id, u.version, u.is_deleted, u.name, u.email, u.password, "
           " user_profile.image, "
           " user_profile.is_super_admin, "
           " user_profile.idiom_locale "
-          " FROM auge.users u "
-          " LEFT OUTER JOIN auge.users_profile user_profile on user_profile.user_id = u.id";
+          " FROM general.users u "
+          " LEFT OUTER JOIN general.users_profile user_profile on user_profile.user_id = u.id";
     }
 
     Map<String, dynamic> _substitutionValues = Map();
@@ -95,7 +95,7 @@ class UserService extends UserServiceBase {
       whereAnd = "AND";
     }
     if (request != null && request.organizationId != null  && request.organizationId.isNotEmpty) {
-      queryStatement = queryStatement + " LEFT OUTER JOIN auge.users_profile_organizations user_profile_organization ON user_profile_organization.user_id = u.id";
+      queryStatement = queryStatement + " LEFT OUTER JOIN general.users_profile_organizations user_profile_organization ON user_profile_organization.user_id = u.id";
       queryStatement = queryStatement + " ${whereAnd} user_profile_organization.organization_id = @organization_id";
       _substitutionValues.putIfAbsent("organization_id", () => request.organizationId);
       whereAnd = "AND";
@@ -107,15 +107,17 @@ class UserService extends UserServiceBase {
     for (var row in results) {
       User user = new User()
         ..id = row[0]
-        ..name = row[1]
-        ..eMail = row[2]
-        ..password = row[3];
+        ..version = row[1]
+        ..isDeleted = row[2]
+        ..name = row[3]
+        ..eMail = row[4]
+        ..password = row[5];
 
       if (request != null && request.withProfile) {
         user.userProfile = UserProfile();
-        if (row[4] != null) user.userProfile.image = row[4];
-        if (row[5] != null) user.userProfile.isSuperAdmin = row[5];
-        if (row[6] != null) user.userProfile.idiomLocale = row[6];
+        if (row[6] != null) user.userProfile.image = row[6];
+        if (row[7] != null) user.userProfile.isSuperAdmin = row[7];
+        if (row[8] != null) user.userProfile.idiomLocale = row[8];
       }
       users.add(user);
     }
@@ -145,19 +147,23 @@ class UserService extends UserServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "INSERT INTO auge.users(id, name, email, password) VALUES("
+            "INSERT INTO general.users(id, version, is_deleted, name, email, password) VALUES("
                 "@id,"
+                "@version,"
+                "@is_deleted,"
                 "@name,"
                 "@email,"
                 "@password)"
             , substitutionValues: {
           "id": user.id,
+          "version": 0,
+          "is_deleted": true,
           "name": user.name,
           "email": user.eMail,
           "password": user.password});
         if (user.userProfile != null)
           await ctx.query(
-              "INSERT INTO auge.users_profile(user_id, image, is_super_admin, idiom_locale) VALUES("
+              "INSERT INTO general.users_profile(user_id, image, is_super_admin, idiom_locale) VALUES("
                   "@id,"
                   "@image,"
                   "@is_super_admin,"
@@ -180,19 +186,22 @@ class UserService extends UserServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
 
-        await ctx.query(
-            "UPDATE auge.users "
-                "SET name = @name,"
+        List<List<dynamic>> result = await ctx.query(
+            "UPDATE general.users "
+                "SET version = @version + 1,"
+                "name = @name,"
                 "email = @email,"
                 "password = @password "
-                "WHERE id = @id", substitutionValues: {
+                " WHERE id = @id AND version = @version"
+                " RETURNING true", substitutionValues: {
           "id": user.id,
+          "version": user.version,
           "name": user.name,
           "email": user.eMail,
           "password": user.password});
 
         await ctx.query(
-            "UPDATE auge.users_profile "
+            "UPDATE general.users_profile "
                 "SET image = @image, "
                 "is_super_admin = @is_super_admin, "
                 "idiom_locale = @idiom_locale "
@@ -203,6 +212,12 @@ class UserService extends UserServiceBase {
           "is_super_admin": user.userProfile.isSuperAdmin,
           "idiom_locale": user.userProfile.idiomLocale});
 
+        // Optimistic concurrency control
+        if (result.length == 0) {
+          throw new GrpcError.failedPrecondition('Precondition Failed');
+        }
+
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -211,19 +226,19 @@ class UserService extends UserServiceBase {
     return Empty();
   }
 
-  // Soft delete
+
   static Future<Empty> queryDeleteUser(User user) async {
 
     // TODO soft delete
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "DELETE FROM auge.users_profile user_profile WHERE user_profile.user_id = @user_id"
+            "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id"
             , substitutionValues: {
           "user_id": user.id});
 
         await ctx.query(
-            "DELETE FROM auge.users u WHERE u.id = @id)}"
+            "DELETE FROM general.users u WHERE u.id = @id)}"
             , substitutionValues: {
           "id": user.id});
       } catch (e) {

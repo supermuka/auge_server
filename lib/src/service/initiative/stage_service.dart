@@ -42,12 +42,14 @@ class StageService extends StageServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT stage.id::VARCHAR,"
+    queryStatement = "SELECT stage.id,"
+        " stage.version,"
+        " stage.is_deleted,"
         " stage.name,"
         " stage.index,"
         " stage.initiative_id,"
         " stage.state_id"
-        " FROM auge_initiative.stages stage";
+        " FROM initiative.stages stage";
 
     Map<String, dynamic> substitutionValues;
 
@@ -66,12 +68,14 @@ class StageService extends StageServiceBase {
 
     List<Stage> stages = new List();
     for (var row in results) {
-      List<State> states = await StateService.querySelectStates((StateGetRequest()..id = row[4]));
+      List<State> states = await StateService.querySelectStates((StateGetRequest()..id = row[6]));
 
       stages.add(new Stage()
         ..id = row[0]
-        ..name = row[1]
-        ..index = row[2]
+        ..version = row[1]
+        ..isDeleted = row[2]
+        ..name = row[3]
+        ..index = row[4]
         ..state = states?.first);
     }
     return stages;

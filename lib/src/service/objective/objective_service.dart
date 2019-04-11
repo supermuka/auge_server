@@ -78,15 +78,16 @@ class ObjectiveService extends ObjectiveServiceBase {
     // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
     String queryStatementColumns = "objective.id," //0
         " objective.version, " //1
-        " objective.name," //2
-        " objective.description," //3
-        " objective.start_date," //4
-        " objective.end_date," //5
-        " objective.archived," //6
-        " objective.leader_user_id," //7
-        " objective.aligned_to_objective_id," //8
-        " objective.organization_id," //9
-        " objective.group_id"; //10
+        " objective.is_deleted, " //2
+        " objective.name," //3
+        " objective.description," //4
+        " objective.start_date," //5
+        " objective.end_date," //6
+        " objective.archived," //7
+        " objective.leader_user_id," //8
+        " objective.aligned_to_objective_id," //9
+        " objective.organization_id," //10
+        " objective.group_id"; //11
 
     String queryStatementWhere = "";
     Map<String, dynamic> substitutionValues;
@@ -112,18 +113,18 @@ class ObjectiveService extends ObjectiveServiceBase {
       queryStatement =
           "WITH RECURSIVE nodes(" + queryStatementColumns.replaceAll("objective.", "") + ") AS ("
               " SELECT " + queryStatementColumns +
-              " FROM auge_objective.objectives objective WHERE " +
+              " FROM objective.objectives objective WHERE " +
               queryStatementWhere + " AND objective.aligned_to_objective_id is null"
               " UNION"
               " SELECT " + queryStatementColumns +
-              " FROM auge_objective.objectives objective, nodes node WHERE " +
+              " FROM objective.objectives objective, nodes node WHERE " +
               queryStatementWhere + " AND objective.aligned_to_objective_id = node.id"
               " )"
               " SELECT " + queryStatementColumns.replaceAll("objective.", "") + " FROM nodes";
     }
     else {
       queryStatement = "SELECT " + queryStatementColumns +
-          " FROM auge_objective.objectives objective"
+          " FROM objective.objectives objective"
               " WHERE " + queryStatementWhere;
     }
 
@@ -152,8 +153,8 @@ class ObjectiveService extends ObjectiveServiceBase {
       for (var row in results) {
         // Measures
 
-        if (row[9] != null) {
-          organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[9]);
+        if (row[10] != null) {
+          organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[10]);
         }
 
         if (row[0] != null) {
@@ -165,47 +166,48 @@ class ObjectiveService extends ObjectiveServiceBase {
           (objectiveSelectRequest.withHistory) ? await HistoryItemService
               .querySelectHistory(HistoryItemGetRequest()..id = row[0]) : [];
         }
-        if (row[7] != null) {
-          leaderUser = await UserService.querySelectUser(UserGetRequest()..id = row[7]..withProfile = objectiveSelectRequest.withProfile);
+        if (row[8] != null) {
+          leaderUser = await UserService.querySelectUser(UserGetRequest()..id = row[8]..withProfile = objectiveSelectRequest.withProfile);
         }
 
-        if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0) {
+        if (row[9] != null && objectiveSelectRequest.alignedToRecursive > 0) {
           --objectiveSelectRequest.alignedToRecursive;
           alignedToObjective = await ObjectiveService.querySelectObjective(objectiveSelectRequest);
         }
 
-        if (row[10] != null) {
-          group = await GroupService.querySelectGroup(GroupGetRequest()..id = row[10]);
+        if (row[11] != null) {
+          group = await GroupService.querySelectGroup(GroupGetRequest()..id = row[11]);
         }
 
         objective = new Objective()
           ..id = row[0]
           ..version = row[1]
-          ..name = row[2];
+          ..isDeleted = row[2]
+          ..name = row[3];
 
-        if (row[3] != null) objective.description = row[3];
+        if (row[4] != null) objective.description = row[4];
         //if (row[4] != null) objective.startDate = row[4];
 
-        if (row[4] != null) {
+        if (row[5] != null) {
           Timestamp t = Timestamp();
-          int microsecondsSinceEpoch = row[4].toUtc().microsecondsSinceEpoch;
+          int microsecondsSinceEpoch = row[5].toUtc().microsecondsSinceEpoch;
           t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
           t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
           objective.startDate = t;
         }
 
         //  if (row[5] != null) objective.endDate = row[5];
-        if (row[5] != null) {
+        if (row[6] != null) {
           Timestamp t = Timestamp();
-          int microsecondsSinceEpoch = row[5].toUtc().microsecondsSinceEpoch;
+          int microsecondsSinceEpoch = row[6].toUtc().microsecondsSinceEpoch;
           t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
           t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
           objective.endDate = t;
         }
 
 
-        if (row[6] != null) objective.archived =  row[6];
-        if (row[7] != null) objective.organization = organization;
+        if (row[7] != null) objective.archived =  row[7];
+        if (organization != null) objective.organization = organization;
         if (leaderUser != null) objective.leader = leaderUser;
         if (measures.isNotEmpty) objective.measures.addAll(measures);
         if (alignedToObjective != null) objective.alignedTo = alignedToObjective;
@@ -216,11 +218,11 @@ class ObjectiveService extends ObjectiveServiceBase {
 
         if (!objectiveSelectRequest.treeAlignedWithChildren) {
           // Parent must be present in the list (objectives);
-          if (row[8] == null)
+          if (row[9] == null)
             objectivesTree.add(objective);
           else {
             objectives
-                .singleWhere((o) => o.id == row[8])
+                .singleWhere((o) => o.id == row[9])
                 ?.alignedWithChildren
                 ?.add(objective);
           }
@@ -250,9 +252,10 @@ class ObjectiveService extends ObjectiveServiceBase {
 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
-        await ctx.query("INSERT INTO auge_objective.objectives(id, version, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id, is_deleted) VALUES"
+        await ctx.query("INSERT INTO objective.objectives(id, version, is_deleted, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
             "(@id,"
             "@version,"
+            "@is_deleted,"
             "@name,"
             "@description,"
             "@start_date,"
@@ -261,11 +264,11 @@ class ObjectiveService extends ObjectiveServiceBase {
             "@aligned_to_objective_id, "
             "@organization_id,"
             "@leader_user_id,"
-            "@group_id,"
-            "@is_deleted)"
+            "@group_id)"
             , substitutionValues: {
               "id": objective.id,
               "version": 0,
+              "is_deleted": objective.hasIsDeleted() ? objective.isDeleted : false,
               "name": objective.name,
               "description": objective.hasDescription() ?  objective.description : null,
               "start_date": objective.hasStartDate() ? objective.startDate : null,
@@ -275,7 +278,7 @@ class ObjectiveService extends ObjectiveServiceBase {
               "organization_id": objective.hasOrganization() ? objective.organization.id : null,
               "leader_user_id": objective.hasLeader() ? objective.leader.id : null,
               "group_id": objective.hasGroup() ? objective.group.id : null,
-              "is_deleted": objective.hasIsDeleted() ? objective.isDeleted : false,
+
             });
 
         // HistoryItem
@@ -306,7 +309,7 @@ class ObjectiveService extends ObjectiveServiceBase {
       List<List<dynamic>> result;
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         if (objective.isDeleted) {
-          result = await ctx.query("UPDATE auge_objective.objectives "
+          result = await ctx.query("UPDATE objective.objectives "
               " SET version = @version + 1, "
               " is_deleted = @is_deleted "
               " WHERE id = @id and version = @version"
@@ -318,7 +321,7 @@ class ObjectiveService extends ObjectiveServiceBase {
               });
         } else {
           result = await ctx.query(
-              "UPDATE auge_objective.objectives "
+              "UPDATE objective.objectives "
                   " SET version = @version + 1, "
                   " name = @name,"
                   " description = @description,"
@@ -381,7 +384,7 @@ class ObjectiveService extends ObjectiveServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "DELETE FROM auge_objective.objectives objective"
+            "DELETE FROM objective.objectives objective"
                 " WHERE objective.id = @id"
             , substitutionValues: {
           "id": objective.id});

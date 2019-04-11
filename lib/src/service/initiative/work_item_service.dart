@@ -88,13 +88,15 @@ class WorkItemService extends WorkItemServiceBase {
     String queryStatement;
 
     queryStatement = "SELECT work_item.id,"
+        " work_item.version,"
+        " work_item.is_deleted,"
         " work_item.name,"
         " work_item.description,"
         " work_item.due_date,"
         " work_item.completed,"
         " work_item.stage_id"
-        " FROM auge_initiative.work_items work_item"
-        " JOIN auge_initiative.stages stage ON stage.id = work_item.stage_id";
+        " FROM initiative.work_items work_item"
+        " JOIN initiative.stages stage ON stage.id = work_item.stage_id";
 
     Map<String, dynamic> substitutionValues;
 
@@ -117,16 +119,16 @@ class WorkItemService extends WorkItemServiceBase {
     WorkItem workItem;
     for (var row in results) {
 
-      stages = await StageService.querySelectStages(StageGetRequest()..initiativeId = row[0]..id = row[5]);
+      stages = await StageService.querySelectStages(StageGetRequest()..initiativeId = row[0]..id = row[7]);
 
       assignedToUsers = await querySelectWorkItemAssignedToUsers(row[0]);
 
       checkItems = await querySelectWorkItemCheckItems(WorkItemCheckItemGetRequest()..workItemId = row[0]);
 
-      workItem = WorkItem()..id = row[0]..name = row[1];
-      if (row[2] != null) workItem.description = row[2];
-      if (row[3] != null) workItem.dueDate = row[3];
-      if (row[4] != null) workItem.completed = row[4];
+      workItem = WorkItem()..id = row[0]..version = row[1]..isDeleted = row[2]..name = row[3];
+      if (row[4] != null) workItem.description = row[4];
+      if (row[5] != null) workItem.dueDate = row[5];
+      if (row[6] != null) workItem.completed = row[6];
       if ( stages.isNotEmpty) workItem.stage = stages?.first;
       if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
       if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
@@ -145,8 +147,8 @@ class WorkItemService extends WorkItemServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT check_item.id, check_item.name, check_item.finished"
-        " FROM auge_initiative.work_item_check_items check_item";
+    queryStatement = "SELECT check_item.id, check_item.version, check_item.is_deleted, check_item.name, check_item.finished"
+        " FROM initiative.work_item_check_items check_item";
 
     Map<String, dynamic> substitutionValues;
 
@@ -158,7 +160,7 @@ class WorkItemService extends WorkItemServiceBase {
     List<WorkItemCheckItem> checkItems = new List();
     for (var row in results) {
 
-      checkItems.add(new WorkItemCheckItem()..id = row[0]..name = row[1]..finished = row[2]);
+      checkItems.add(new WorkItemCheckItem()..id = row[0]..version = row[1]..isDeleted = row[2]..name = row[3]..finished = row[4]);
     }
 
     return checkItems;
@@ -182,7 +184,7 @@ class WorkItemService extends WorkItemServiceBase {
     String queryStatement;
 
     queryStatement = "SELECT work_item_assigned_user.user_id"
-        " FROM auge_initiative.work_item_assigned_users work_item_assigned_user";
+        " FROM initiative.work_item_assigned_users work_item_assigned_user";
 
     Map<String, dynamic> substitutionValues;
 
@@ -192,7 +194,7 @@ class WorkItemService extends WorkItemServiceBase {
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
     List<User> assignedToUsers = new List();
-    List<User> users;
+
     User user;
 
     for (var row in results) {
@@ -214,7 +216,7 @@ class WorkItemService extends WorkItemServiceBase {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
-        await ctx.query("INSERT INTO auge_initiative.work_items"
+        await ctx.query("INSERT INTO initiative.work_items"
             "(id,"
             "version,"
             "is_deleted,"
@@ -247,7 +249,7 @@ class WorkItemService extends WorkItemServiceBase {
 
         // Assigned Members Users
         for (User user in workItem.assignedTo) {
-          await ctx.query("INSERT INTO auge_initiative.work_item_assigned_users"
+          await ctx.query("INSERT INTO initiative.work_item_assigned_users"
               " (work_item_id,"
               " user_id)"
               " VALUES"
@@ -263,18 +265,24 @@ class WorkItemService extends WorkItemServiceBase {
         for (WorkItemCheckItem checkItem in workItem.checkItems) {
           checkItem.id = new Uuid().v4();
 
-          await ctx.query("INSERT INTO auge_initiative.work_item_check_items"
+          await ctx.query("INSERT INTO initiative.work_item_check_items"
               " (id,"
+              " version,"
+              " is_deleted,"
               " name,"
               " finished,"
               " work_item_id)"
               " VALUES"
               " (@id,"
+              " @version,"
+              " @is_deleted,"
               " @name,"
               " @finished,"
               " @work_item_id)"
               , substitutionValues: {
                 "id": checkItem.id,
+                "version": 0,
+                "is_deleted": checkItem.isDeleted ?? false,
                 "name": checkItem.name,
                 "finished": checkItem.hasFinished() ? checkItem.finished : false,
                 "work_item_id": workItem.id});
@@ -296,7 +304,7 @@ class WorkItemService extends WorkItemServiceBase {
 
         List<List<dynamic>> result;
         if (workItem.isDeleted) {
-          result = await ctx.query("UPDATE auge_initiative.work_items "
+          result = await ctx.query("UPDATE initiative.work_items "
               " SET version = @version + 1, "
               " is_deleted = @is_deleted "
               " WHERE id = @id AND version = @version"
@@ -307,7 +315,7 @@ class WorkItemService extends WorkItemServiceBase {
                 "is_deleted": workItem.isDeleted,
               });
         } else {
-          result = await ctx.query("UPDATE auge_initiative.work_items"
+          result = await ctx.query("UPDATE initiative.work_items"
               " SET version = @version + 1, "
               " is_deleted = @is_deleted, "
               " name = @name,"
@@ -337,7 +345,7 @@ class WorkItemService extends WorkItemServiceBase {
           StringBuffer assignedToUsersId = new StringBuffer();
           for (User user in workItem.assignedTo) {
             await ctx.query(
-                "INSERT INTO auge_initiative.work_item_assigned_users"
+                "INSERT INTO initiative.work_item_assigned_users"
                     " (work_item_id,"
                     " user_id)"
                     " VALUES"
@@ -358,7 +366,7 @@ class WorkItemService extends WorkItemServiceBase {
 
           if (assignedToUsersId.isNotEmpty) {
             await ctx.query(
-                "DELETE FROM auge_initiative.work_item_assigned_users"
+                "DELETE FROM initiative.work_item_assigned_users"
                     " WHERE work_item_id = @id"
                     " AND user_id NOT IN (${assignedToUsersId.toString()})"
                 , substitutionValues: {
@@ -372,7 +380,7 @@ class WorkItemService extends WorkItemServiceBase {
               checkItem.id = new Uuid().v4();
 
               await ctx.query(
-                  "INSERT INTO auge_initiative.work_item_check_items"
+                  "INSERT INTO initiative.work_item_check_items"
                       " (id,"
                       " name,"
                       " finished,"
@@ -388,7 +396,7 @@ class WorkItemService extends WorkItemServiceBase {
                 "finished": checkItem.finished,
                 "work_item_id": workItem.id});
             } else {
-              await ctx.query("UPDATE auge_initiative.work_item_check_items SET"
+              await ctx.query("UPDATE initiative.work_item_check_items SET"
                   " name = @name,"
                   " finished = @finished,"
                   " work_item_id = @work_item_id"
@@ -408,7 +416,7 @@ class WorkItemService extends WorkItemServiceBase {
           }
 
           String queryDelete;
-          queryDelete = "DELETE FROM auge_initiative.work_item_check_items";
+          queryDelete = "DELETE FROM initiative.work_item_check_items";
           if (checkItemsId.isNotEmpty) {
             queryDelete =
                 queryDelete + " WHERE id NOT IN (${checkItemsId.toString()})";
@@ -448,7 +456,7 @@ class WorkItemService extends WorkItemServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "DELETE FROM auge_initiative.work_items work_item"
+            "DELETE FROM initiative.work_items work_item"
                 " WHERE work_item.id = @id"
             , substitutionValues: {
           "id": workItem.id});

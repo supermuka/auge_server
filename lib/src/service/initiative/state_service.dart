@@ -40,8 +40,8 @@ class StateService extends StateServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT state.id::VARCHAR, state.name, state.color, state.index"
-        " FROM auge_initiative.states state";
+    queryStatement = "SELECT state.id, state.version, state.is_deleted, state.name, state.color, state.index"
+        " FROM initiative.states state";
 
     Map<String, dynamic> substitutionValues;
 
@@ -53,7 +53,7 @@ class StateService extends StateServiceBase {
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
     List<State> states = new List();
     for (var row in results) {
-      states.add(new State()..id = row[0]..name = row[1]..color.addAll((json.decode(row[2]) as Map).cast<String, int>())..index = row[3]);
+      states.add(new State()..id = row[0]..version = row[1]..isDeleted = row[2]..name = row[3]..color.addAll((json.decode(row[4]) as Map).cast<String, int>())..index = row[3]);
     }
     return states;
   }

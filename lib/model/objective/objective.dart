@@ -22,6 +22,7 @@ import 'package:auge_server/src/protos/generated/objective/objective.pb.dart' as
 class Objective {
 
   // Base
+  static final String idField = 'Id';
   String id;
   int version;
   bool isDeleted;
@@ -30,13 +31,18 @@ class Objective {
   HistoryItem lastHistoryItem;
 
   // Specific
+  static final String nameField = 'Name';
   String name;
+  static final String descriptionField = 'Description';
   String description;
+  static final String startDateField = 'Start Date';
   DateTime startDate;
+  static final String endDateField = 'End Date';
   DateTime endDate;
   Organization organization;
   Group group;
   Objective alignedTo;
+  static final String leaderField = 'Leader';
   User leader;
   bool archived;
 

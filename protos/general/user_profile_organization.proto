@@ -36,8 +36,10 @@ message UserProfileOrganization {
 message UserProfileOrganizationGetRequest {
     string id = 1;
     bool is_deleted = 2;
-    string userId = 3;
-    string organizationId = 4;
+    string user_id = 3;
+    string organization_id = 4;
+    string e_mail = 5;
+    string password = 6;
 }
 
 // Response list of the organization

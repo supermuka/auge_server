@@ -15,6 +15,7 @@ import 'package:auge_server/src/protos/generated/objective/measure.pb.dart' as m
 class Measure {
 
   // Base - implements
+  static final String idField = 'Id';
   String id;
   int version;
   bool isDeleted;
@@ -23,15 +24,23 @@ class Measure {
   // HistoryItem lastHistoryItem;
 
   // Specific
+  static final String nameField = 'Name';
   String name;
+  static final String descriptionField = 'Description';
   String description;
+  static final String metricField = 'Metric';
   String metric;
+  static final String decimalsNumberField = 'Decimals Number';
   int decimalsNumber;
+  static final String startValueField = 'Start Value';
   double startValue;
+  static final String endValueField = 'End Value';
   double endValue;
+  static final String measureUnitField = 'Unit';
   MeasureUnit measureUnit;
 
   // Transient
+  static final String currentValueField = 'Current  Value';
   double currentValue; // field calculeted on measureProgress
 
   List<MeasureProgress> measureProgress;

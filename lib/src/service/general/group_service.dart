@@ -93,7 +93,7 @@ class GroupService extends GroupServiceBase {
         " g.group_type_id,"   //4
         " g.leader_user_id,"  //5
         " g.super_group_id " //6
-        " FROM auge.groups g ";
+        " FROM general.groups g ";
 
     Map<String, dynamic> substitutionValues;
 
@@ -185,7 +185,7 @@ class GroupService extends GroupServiceBase {
       try {
         await ctx.query(
             //"INSERT INTO auge.groups(id, version, is_deleted, name, active, organization_id, group_type_id) VALUES("
-            "INSERT INTO auge.groups(id, version, is_deleted, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
+            "INSERT INTO general.groups(id, version, is_deleted, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
                 "@id,"
                 "@version,"
                 "@is_deleted,"
@@ -208,7 +208,7 @@ class GroupService extends GroupServiceBase {
 
         // Assigned Members Users
         for (User user in group.members) {
-          await ctx.query("INSERT INTO auge.groups_users"
+          await ctx.query("INSERT INTO general.groups_users"
               " (group_id,"
               " user_id)"
               " VALUES"
@@ -233,7 +233,7 @@ class GroupService extends GroupServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         result = await ctx.query(
-            "UPDATE auge.groups"
+            "UPDATE general.groups"
                 " SET version = @version + 1,"
                 " is_deleted = @is_deleted,"
                 " name = @name,"
@@ -258,7 +258,7 @@ class GroupService extends GroupServiceBase {
         // Members users
         StringBuffer membersUsersId = new StringBuffer();
         for (User user in group.members) {
-          await ctx.query("INSERT INTO auge.groups_users"
+          await ctx.query("INSERT INTO general.groups_users"
               " (group_id,"
               " user_id)"
               " VALUES"
@@ -279,7 +279,7 @@ class GroupService extends GroupServiceBase {
         }
 
         if (membersUsersId.isNotEmpty) {
-          await ctx.query("DELETE FROM auge.groups_users"
+          await ctx.query("DELETE FROM general.groups_users"
               " WHERE group_id = @id"
               " AND user_id NOT IN (${membersUsersId.toString()})"
               , substitutionValues: {
@@ -306,7 +306,7 @@ class GroupService extends GroupServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         List<List<dynamic>> result = await ctx.query(
-            "UPDATE auge.groups"
+            "UPDATE general.groups"
                 " SET version = @version + 1,"
                 " is_deleted = @is_deleted"
                 " WHERE id = @id AND version = @version"
@@ -333,7 +333,7 @@ class GroupService extends GroupServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         result = await ctx.query(
-            "DELETE FROM auge.groups g WHERE g.id = @id "
+            "DELETE FROM general.groups g WHERE g.id = @id "
             "RETURNING true"
             , substitutionValues: {
           "id": group.id});
@@ -394,7 +394,7 @@ class GroupService extends GroupServiceBase {
     String queryStatement;
 
     queryStatement = "SELECT group_users.user_id"
-        " FROM auge.groups_users group_users";
+        " FROM general.groups_users group_users";
 
     Map<String, dynamic> substitutionValues;
 

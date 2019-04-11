@@ -157,18 +157,18 @@ class MeasureService extends MeasureServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT id::VARCHAR," //0
-        " version, " //1
-        " name," //2
-        " description," //3
-        " metric," //4
-        " decimals_number," //5
-        " start_value::REAL," //6
-        " end_value::REAL," //7
-        " (select current_value from auge_objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //8
-        " measure_unit_id," //9
-        " is_deleted" //10
-        " FROM auge_objective.measures measure ";
+    queryStatement = "SELECT id," //0
+        " is_deleted" //1
+        " version, " //2
+        " name," //3
+        " description," //4
+        " metric," //5
+        " decimals_number," //6
+        " start_value::REAL," //7
+        " end_value::REAL," //8
+        " (select current_value from objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //9
+        " measure_unit_id " //10
+        " FROM objective.measures measure ";
 
     Map<String, dynamic> substitutionValues;
 
@@ -194,9 +194,9 @@ class MeasureService extends MeasureServiceBase {
       MeasureUnit measureUnit;
 
       for (var row in results) {
-        if (row[9] != null)
+        if (row[10] != null)
           //  measureUnit = await getMeasureUnitById(row[8]);
-          measureUnits = await querySelectMeasureUnits(id: row[9]);
+          measureUnits = await querySelectMeasureUnits(id: row[10]);
         if (measureUnits != null && measureUnits.length != 0) {
           measureUnit = measureUnits.first;
         }
@@ -208,16 +208,17 @@ class MeasureService extends MeasureServiceBase {
         measure
           ..id = row[0]
           ..version = row[1]
-          ..name = row[2];
+          ..isDeleted = row[2]
+          ..name = row[3];
 
-        if (row[3] != null)  measure.description = row[3];
-        if (row[4] != null) measure.metric = row[4];
-        if (row[5] != null) measure.decimalsNumber = row[5];
-        if (row[6] != null) measure.startValue = row[6];
-        if (row[7] != null) measure.endValue = row[7];
-        if (row[8] != null) measure.currentValue = row[8];
+        if (row[4] != null)  measure.description = row[4];
+        if (row[5] != null) measure.metric = row[5];
+        if (row[6] != null) measure.decimalsNumber = row[6];
+        if (row[7] != null) measure.startValue = row[7];
+        if (row[8] != null) measure.endValue = row[8];
+        if (row[9] != null) measure.currentValue = row[9];
         if (measureUnit != null) measure.measureUnit = measureUnit;
-        if (row[10] != null) measure.isDeleted = row[10];
+        if (row[11] != null) measure.isDeleted = row[11];
 
         measures.add(measure);
       }
@@ -245,9 +246,10 @@ class MeasureService extends MeasureServiceBase {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
-            "INSERT INTO auge_objective.measures(id, version, name, description, metric, decimals_number, start_value, end_value, measure_unit_id, objective_id, is_deleted) VALUES"
+            "INSERT INTO objective.measures(id, version, is_deleted, name, description, metric, decimals_number, start_value, end_value, measure_unit_id, objective_id) VALUES"
                 "(@id,"
                 "@version,"
+                "@is_deleted,"
                 "@name,"
                 "@description,"
                 "@metric,"
@@ -255,11 +257,11 @@ class MeasureService extends MeasureServiceBase {
                 "@start_value,"
                 "@end_value,"
                 "@measure_unit_id,"
-                "@objective_id,"
-                "@is_deleted)"
+                "@objective_id)"
             , substitutionValues: {
           "id": measure.id,
-          "version": measure.version,
+          "version": 0,
+          "is_deleted": measure.hasIsDeleted() ? measure.isDeleted : false,
           "name": measure.name,
           "description": measure.hasDescription() ? measure.description : null,
           "metric": measure.hasMetric() ? measure.metric : null,
@@ -268,7 +270,6 @@ class MeasureService extends MeasureServiceBase {
           "end_value": measure.hasEndValue() ? measure.endValue : null,
           "measure_unit_id": measure.hasMeasureUnit() ? measure.measureUnit.id : null,
           "objective_id": measure.hasObjectiveId() ? measure.objectiveId : null,
-          "is_deleted": measure.hasIsDeleted() ? measure.isDeleted : false,
         });
 
         // HistoryItem - server-side generation
@@ -303,7 +304,7 @@ class MeasureService extends MeasureServiceBase {
 
         // Soft delete
         if (measure.isDeleted) {
-          result = await ctx.query("UPDATE auge_objective.measures "
+          result = await ctx.query("UPDATE objective.measures "
               " SET version = @version + 1,"
               " is_deleted = @is_deleted"
               " WHERE id = @id AND version = @version"
@@ -314,7 +315,7 @@ class MeasureService extends MeasureServiceBase {
                 "is_deleted": measure.isDeleted,
               });
         } else {
-          result = await ctx.query("UPDATE auge_objective.measures "
+          result = await ctx.query("UPDATE objective.measures "
               " SET version = @version + 1,"
               " name = @name,"
               " description = @description,"
@@ -377,7 +378,7 @@ class MeasureService extends MeasureServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "DELETE FROM auge_objective.measures measure"
+            "DELETE FROM objective.measures measure"
                 " WHERE measure.id = @id"
             , substitutionValues: {
           "id": measure.id});
@@ -403,17 +404,17 @@ class MeasureService extends MeasureServiceBase {
         " current_value," //4
         " comment," //5
         " measure_id" //6
-        " FROM auge_objective.measure_progress ";
+        " FROM objective.measure_progress ";
 
     Map<String, dynamic> substitutionValues;
 
     if (request.hasId()) {
       queryStatement +=
-      " WHERE id = @id AND auge_objective.measure_progress.is_deleted = @is_deleted";
+      " WHERE id = @id AND objective.measure_progress.is_deleted = @is_deleted";
       substitutionValues = {"id": request.id, "is_deleted": request.isDeleted};
     } else if (request.hasMeasureId()) {
       queryStatement +=
-      " WHERE measure_id = @measure_id AND auge_objective.measure_progress.is_deleted = @is_deleted";
+      " WHERE measure_id = @measure_id AND objective.measure_progress.is_deleted = @is_deleted";
       substitutionValues = {"measure_id": request.measureId, "is_deleted": request.isDeleted};
     }
 
@@ -473,7 +474,7 @@ class MeasureService extends MeasureServiceBase {
         measureProgress.version = 0;
 
         await ctx.query(
-            "INSERT INTO auge_objective.measure_progress(id, version, is_deleted, date, current_value, comment, measure_id) VALUES"
+            "INSERT INTO objective.measure_progress(id, version, is_deleted, date, current_value, comment, measure_id) VALUES"
                 "(@id,"
                 "@version,"
                 "@is_deleted,"
@@ -526,7 +527,7 @@ class MeasureService extends MeasureServiceBase {
         // Soft delete
         if (measureProgress.isDeleted) {
           result = await ctx.query(
-              "UPDATE auge_objective.measure_progress "
+              "UPDATE objective.measure_progress "
                   "SET is_deleted = @is_deleted, "
                   "version = @version + 1"
                   "WHERE id = @id AND version = @version "
@@ -541,7 +542,7 @@ class MeasureService extends MeasureServiceBase {
           }
 
           result = await ctx.query(
-              "UPDATE auge_objective.measure_progress "
+              "UPDATE objective.measure_progress "
                   "SET date = @date, "
                   "current_value = @current_value, "
                   "comment = @comment, "
@@ -595,7 +596,7 @@ class MeasureService extends MeasureServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "DELETE FROM auge_objective.measure_progress measure_progress"
+            "DELETE FROM objective.measure_progress measure_progress"
                 " WHERE measure_progress.id = @id"
             , substitutionValues: {
           "id": measureProgress.id});

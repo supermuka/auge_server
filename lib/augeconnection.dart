@@ -13,7 +13,8 @@ class AugeConnection {
    //     "35.231.201.73", 5432, "levius", username: "postgres", password: "admin@levius#2018");
     if (_connection == null || _connection.isClosed) {
       _connection = new PostgreSQLConnection(
-          "localhost", 5432, "levius", username: "postgres",
+         /* "localhost", 5432, "levius", username: "postgres", */
+         "localhost", 5432, "auge", username: "postgres",
           password: "admin@levius#2018");
       _connection.open();
     }
@@ -22,7 +23,8 @@ class AugeConnection {
   static Future<PostgreSQLConnection> getConnection() async {
     if (_connection == null || _connection.isClosed) {
       _connection = new PostgreSQLConnection(
-          "localhost", 5432, "levius", username: "postgres",
+         /* "localhost", 5432, "levius", username: "postgres", */
+         "localhost", 5432, "auge", username: "postgres",
           password: "admin@levius#2018");
       await _connection.open();
     }

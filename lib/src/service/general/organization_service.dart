@@ -67,7 +67,7 @@ class OrganizationService extends OrganizationServiceBase {
     " organization.is_deleted," //2
     " organization.name," //3
     " organization.code" //4
-    " FROM auge.organizations organization";
+    " FROM general.organizations organization";
 
     Map<String, dynamic> substitutionValues;
 
@@ -121,7 +121,7 @@ class OrganizationService extends OrganizationServiceBase {
 
     try {
       await (await AugeConnection.getConnection()).query(
-          "INSERT INTO auge.organizations(id, name, code) VALUES"
+          "INSERT INTO general.organizations(id, name, code) VALUES"
               "(@id,"
               "@name,"
               "@code)"
@@ -140,7 +140,7 @@ class OrganizationService extends OrganizationServiceBase {
   static Future<Empty> queryUpdateOrganization(Organization organization) async {
     try {
       await (await AugeConnection.getConnection()).query(
-          "UPDATE auge.organizations SET name = @name,"
+          "UPDATE general.organizations SET name = @name,"
               " code = @code"
               " WHERE id = @id "
           , substitutionValues: {
@@ -159,7 +159,7 @@ class OrganizationService extends OrganizationServiceBase {
   static Future<Empty> queryDeleteOrganization(Organization organization) async {
     try {
       await (await AugeConnection.getConnection()).query(
-          "DELETE FROM auge.organizations organization WHERE organization.id = @id"
+          "DELETE FROM general.organizations organization WHERE organization.id = @id"
           , substitutionValues: {
         "id": organization.id});
     } catch (e) {

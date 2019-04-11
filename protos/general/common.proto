@@ -5,6 +5,15 @@ syntax = "proto3";
 
 package auge.protobuf;
 
+import "google/protobuf/timestamp.proto";
+
+// The service definition.
+service CommonService {
+
+    rpc GetDateTime (DateTimeGetRequest) returns (DateTimeResponse) {}
+
+}
+
 message IdRequest {
     string id = 1;
 }
@@ -12,3 +21,12 @@ message IdRequest {
 message IdResponse {
     string id = 1;
 }
+
+message DateTimeGetRequest {
+    bool is_utc = 1;
+}
+
+message DateTimeResponse {
+    google.protobuf.Timestamp date_time = 1;
+}
+
