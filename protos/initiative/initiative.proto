@@ -55,6 +55,7 @@ message Initiative {
 // Response list of the stages
 message InitiativesResponse {
     repeated Initiative initiatives = 1;
+    bool webListWorkAround = 2;
 }
 
 // Request for query param

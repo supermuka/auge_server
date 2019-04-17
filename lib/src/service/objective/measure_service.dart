@@ -26,7 +26,7 @@ class MeasureService extends MeasureServiceBase {
   Future<MeasureUnitsResponse> getMeasureUnits(ServiceCall call,
       Empty) async {
     MeasureUnitsResponse measureUnitsResponse;
-    measureUnitsResponse = MeasureUnitsResponse()
+    measureUnitsResponse = MeasureUnitsResponse()..webListWorkAround = true
       ..measureUnits.addAll(
           await querySelectMeasureUnits());
     return measureUnitsResponse;
@@ -36,7 +36,7 @@ class MeasureService extends MeasureServiceBase {
   Future<MeasuresResponse> getMeasures(ServiceCall call,
       MeasureGetRequest request) async {
     MeasuresResponse measuresResponse;
-    measuresResponse = MeasuresResponse()
+    measuresResponse = MeasuresResponse()..webListWorkAround = true
       ..measures.addAll(
           await querySelectMeasures(request));
     return measuresResponse;
@@ -79,8 +79,8 @@ class MeasureService extends MeasureServiceBase {
   @override
   Future<MeasureProgressesResponse> getMeasureProgresses(ServiceCall call,
       MeasureProgressGetRequest request) async {
-    return querySelectMeasureProgresses(
-        request);
+    return
+    MeasureProgressesResponse()..webListWorkAround = true..measureProgresses.addAll(await querySelectMeasureProgresses(request));
   }
 
   @override
@@ -391,7 +391,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   // *** MEASURES PROGRESS ***
-  static Future<MeasureProgressesResponse> querySelectMeasureProgresses(MeasureProgressGetRequest request /*
+  static Future<List<MeasureProgress>> querySelectMeasureProgresses(MeasureProgressGetRequest request /*
       {String measureId, String id, bool isDeleted = false, bool withAuditUser = false}*/) async {
     List<List> results;
 
@@ -449,14 +449,14 @@ class MeasureService extends MeasureServiceBase {
         mesuareProgresses.add(measureProgress);
       }
     }
-    return MeasureProgressesResponse()..measureProgresses.addAll(mesuareProgresses);
+    return mesuareProgresses;
   }
 
   static Future<MeasureProgress> querySelectMeasureProgress(MeasureProgressGetRequest request) async {
-    MeasureProgressesResponse measureProgressesResponse = await querySelectMeasureProgresses(request);
+    List<MeasureProgress> measureProgresses = await querySelectMeasureProgresses(request);
 
-    if (measureProgressesResponse.measureProgresses.isNotEmpty) {
-      return measureProgressesResponse.measureProgresses.first;
+    if (measureProgresses.isNotEmpty) {
+      return measureProgresses.first;
     } else {
       return null;
     }

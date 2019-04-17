@@ -19,6 +19,7 @@ class HistoryItemService extends HistoryItemServiceBase {
   Future<HistoryResponse> getHistory(ServiceCall call,
       HistoryItemGetRequest historyItemGetRequest) async {
     HistoryResponse historyResponse;
+    historyResponse.webListWorkAround = true;
     historyResponse = HistoryResponse()..history.addAll(await querySelectHistory(historyItemGetRequest));
     return historyResponse;
   }

@@ -32,6 +32,7 @@ message Stage {
 // Response list of the stages
 message StagesResponse {
     repeated Stage stages = 1;
+    bool webListWorkAround = 2;
 }
 
 // Request for query param

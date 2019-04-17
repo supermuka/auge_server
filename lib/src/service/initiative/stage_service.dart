@@ -19,7 +19,7 @@ class StageService extends StageServiceBase {
   Future<StagesResponse> getStages(ServiceCall call,
       StageGetRequest stageRequest) async {
     StagesResponse statesResponse;
-    statesResponse = StagesResponse()
+    statesResponse = StagesResponse()..webListWorkAround = true
       ..stages.addAll(
           await querySelectStages(stageRequest));
     return statesResponse;

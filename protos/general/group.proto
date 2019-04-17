@@ -68,6 +68,7 @@ message GroupTypeGetRequest {
 // Response list of the organization
 message GroupsResponse {
     repeated Group groups = 1;
+    bool webListWorkAround = 2;
 }
 
 

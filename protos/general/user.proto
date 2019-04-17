@@ -50,4 +50,5 @@ message UserGetRequest {
 // Response list of the organization
 message UsersResponse {
     repeated User users = 1;
+    bool webListWorkAround = 2;
 }

@@ -38,6 +38,7 @@ class GroupService extends GroupServiceBase {
   Future<GroupsResponse> getGroups(ServiceCall call,
       GroupGetRequest request) async {
     GroupsResponse groupsResponse;
+    groupsResponse.webListWorkAround = true;
     groupsResponse = GroupsResponse()..groups.addAll(await querySelectGroups(request));
     return groupsResponse;
 

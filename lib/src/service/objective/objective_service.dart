@@ -34,7 +34,8 @@ class ObjectiveService extends ObjectiveServiceBase {
   @override
   Future<ObjectivesResponse> getObjectives(ServiceCall call,
       ObjectiveGetRequest request) async {
-    return querySelectObjectives(request);
+
+    return ObjectivesResponse()..webListWorkAround = true..objectives.addAll(await querySelectObjectives(request));
   }
 
   @override
@@ -73,7 +74,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   // QUERY
   // *** OBJECTIVES ***
   // alignedToRecursiveDeep: 0 not call; 1 call once; 2 call tow, etc...
-  static Future<ObjectivesResponse> querySelectObjectives(ObjectiveGetRequest objectiveSelectRequest) async {
+  static Future<List<Objective>> querySelectObjectives(ObjectiveGetRequest objectiveSelectRequest) async {
     List<List> results;
     // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
     String queryStatementColumns = "objective.id," //0
@@ -143,12 +144,9 @@ class ObjectiveService extends ObjectiveServiceBase {
       List<HistoryItem> history;
       User leaderUser;
       Objective alignedToObjective;
-      List<Objective> alignedToObjectives;
 
       Objective objective;
       Group group;
-
-      List<Organization> organizations;
 
       for (var row in results) {
         // Measures
@@ -230,15 +228,20 @@ class ObjectiveService extends ObjectiveServiceBase {
         }
       }
     }
-    return ObjectivesResponse()..objectives.addAll((objectiveSelectRequest.treeAlignedWithChildren) ? objectivesTree ?? [] : objectives ?? []);
+    //print('DEBUG 1 ${(objectiveSelectRequest.treeAlignedWithChildren) ? objectivesTree ?? [] : objectives ?? []}');
+
+   // ObjectivesResponse o = ObjectivesResponse()..objectives.addAll((objectiveSelectRequest.treeAlignedWithChildren) ? objectivesTree ?? [] : objectives ?? []);
+    //print('DEBUG 2 ${o.objectives.length}');
+
+    return (objectiveSelectRequest.treeAlignedWithChildren) ? objectivesTree ?? [] : objectives ?? [];
   }
 
   static Future<Objective> querySelectObjective(ObjectiveGetRequest request) async {
 
-    ObjectivesResponse objectivesResponse = await querySelectObjectives(request);
+    List<Objective> objectives = await querySelectObjectives(request);
 
-    if (objectivesResponse.objectives.isNotEmpty) {
-      return objectivesResponse.objectives.first;
+    if (objectives.isNotEmpty) {
+      return objectives.first;
     } else {
       return null;
     }

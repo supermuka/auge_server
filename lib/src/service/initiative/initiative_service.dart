@@ -37,7 +37,7 @@ class InitiativeService extends InitiativeServiceBase {
   Future<InitiativesResponse> getInitiatives(ServiceCall call,
       InitiativeGetRequest initiativeGetRequest) async {
     InitiativesResponse initiativesResponse;
-    initiativesResponse = InitiativesResponse()
+    initiativesResponse = InitiativesResponse()..webListWorkAround = true
       ..initiatives.addAll(
           await querySelectInitiatives(initiativeGetRequest));
     return initiativesResponse;

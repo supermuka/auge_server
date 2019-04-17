@@ -53,6 +53,7 @@ message WorkItem {
 // Response list of the WorkItems
 message WorkItemsResponse {
     repeated WorkItem workItems = 1;
+    bool webListWorkAround = 2;
 }
 
 // Request for Work Item
@@ -84,6 +85,7 @@ message WorkItemCheckItem {
 // Response list of the WorkItemCheckItems
 message WorkItemCheckItemsResponse {
     repeated WorkItemCheckItem workItemCheckItems = 1;
+    bool webListWorkAround = 2;
 }
 
 // Request for query param

@@ -28,7 +28,7 @@ class WorkItemService extends WorkItemServiceBase {
   Future<WorkItemsResponse> getWorkItems(ServiceCall call,
       WorkItemGetRequest workItemGetRequest) async {
     WorkItemsResponse workItemsResponse;
-    workItemsResponse = WorkItemsResponse()
+    workItemsResponse = WorkItemsResponse()..webListWorkAround = true
       ..workItems.addAll(
           await querySelectWorkItems(workItemGetRequest));
     return workItemsResponse;

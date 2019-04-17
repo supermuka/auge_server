@@ -45,4 +45,5 @@ message UserProfileOrganizationGetRequest {
 // Response list of the organization
 message UsersProfileOrganizationsResponse {
     repeated UserProfileOrganization usersProfileOrganizations = 1;
+    bool webListWorkAround = 2;
 }

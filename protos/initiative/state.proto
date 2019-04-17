@@ -32,6 +32,7 @@ message State {
 // Response list of the states
 message StatesResponse {
     repeated State states = 1;
+    bool webListWorkAround = 2;
 }
 
 // Message similar to message to respective domain object, but just with values that are save (relational database).

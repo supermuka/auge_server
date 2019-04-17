@@ -73,4 +73,5 @@ message ObjectiveGetRequest {
 // Response list of the objectives
 message ObjectivesResponse {
   repeated Objective objectives = 1;
+  bool webListWorkAround = 2;
 }

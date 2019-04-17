@@ -23,7 +23,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
   @override
   Future<UsersProfileOrganizationsResponse> getUsersProfileOrganizations(ServiceCall call,
       UserProfileOrganizationGetRequest userProfileOrganizationGetRequest) async {
-    return UsersProfileOrganizationsResponse()..usersProfileOrganizations.addAll(await querySelectUsersProfileOrganizations(userProfileOrganizationGetRequest));
+    return UsersProfileOrganizationsResponse()..webListWorkAround = true..usersProfileOrganizations.addAll(await querySelectUsersProfileOrganizations(userProfileOrganizationGetRequest));
   }
 
   @override

@@ -19,7 +19,8 @@ class OrganizationService extends OrganizationServiceBase {
   @override
   Future<OrganizationsResponse> getOrganizations(ServiceCall call,
       OrganizationGetRequest request) async {
-    return OrganizationsResponse()..organizations.addAll(await querySelectOrganizations(request));
+
+    return OrganizationsResponse()..webListWorkAround = true..organizations.addAll(await querySelectOrganizations(request));
   }
 
   @override
