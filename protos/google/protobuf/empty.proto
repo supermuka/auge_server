@@ -49,4 +49,10 @@ option cc_enable_arenas = true;
 //     }
 //
 // The JSON representation for `Empty` is empty JSON object `{}`.
+/* original
 message Empty {}
+*/
+// workaround to web grpc-dart
+message Empty {
+    bool web_work_around = 1;
+}

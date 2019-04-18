@@ -378,7 +378,7 @@ class ObjectiveService extends ObjectiveServiceBase {
       rethrow;
     }
 
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   /// Delete an objective by [id]
@@ -396,6 +396,6 @@ class ObjectiveService extends ObjectiveServiceBase {
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 }

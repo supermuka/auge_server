@@ -37,11 +37,12 @@ class GroupService extends GroupServiceBase {
   @override
   Future<GroupsResponse> getGroups(ServiceCall call,
       GroupGetRequest request) async {
-    GroupsResponse groupsResponse;
-    groupsResponse.webListWorkAround = true;
-    groupsResponse = GroupsResponse()..groups.addAll(await querySelectGroups(request));
-    return groupsResponse;
-
+    try {
+      return GroupsResponse()..webListWorkAround = true..groups.addAll(await querySelectGroups(request));
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
   }
 
   @override
@@ -298,7 +299,7 @@ class GroupService extends GroupServiceBase {
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   // Soft delete
@@ -326,7 +327,7 @@ class GroupService extends GroupServiceBase {
       }
     });
 
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   static Future<Empty> queryDeleteGroup(Group group) async {
@@ -349,7 +350,7 @@ class GroupService extends GroupServiceBase {
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   // *** GROUP TYPES ***

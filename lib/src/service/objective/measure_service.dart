@@ -370,7 +370,7 @@ class MeasureService extends MeasureServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   /// Delete a [Measure] by id
@@ -387,7 +387,7 @@ class MeasureService extends MeasureServiceBase {
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   // *** MEASURES PROGRESS ***
@@ -588,7 +588,7 @@ class MeasureService extends MeasureServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   /// Delete a [MeasureProgress] by id
@@ -605,6 +605,6 @@ class MeasureService extends MeasureServiceBase {
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 }

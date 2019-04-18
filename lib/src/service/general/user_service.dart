@@ -10,6 +10,7 @@ import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
 import 'package:auge_server/augeconnection.dart';
+import 'package:protobuf/protobuf.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -28,6 +29,7 @@ class UserService extends UserServiceBase {
     User user = await querySelectUser(request);
     // if (user == null) call.sendTrailers(status: StatusCode.notFound, message: "User not found.");
     if (user == null) throw new GrpcError.notFound("User not found.");
+    print(user);
     return user;
   }
 
@@ -46,13 +48,13 @@ class UserService extends UserServiceBase {
   @override
   Future<Empty> deleteUser(ServiceCall call,
       User request) async {
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   @override
   Future<Empty> softDeleteUser(ServiceCall call,
       User request) async {
-    return queryDeleteUser(request);
+    return querySoftDeleteUser(request);
   }
 
   // Query
@@ -74,8 +76,14 @@ class UserService extends UserServiceBase {
           " LEFT OUTER JOIN general.users_profile user_profile on user_profile.user_id = u.id";
     }
 
-    Map<String, dynamic> _substitutionValues = Map();
     String whereAnd = "WHERE";
+    Map<String, dynamic> _substitutionValues = Map();
+    if (request != null && request.organizationId != null  && request.organizationId.isNotEmpty) {
+      queryStatement = queryStatement + " LEFT OUTER JOIN general.users_profile_organizations user_profile_organization ON user_profile_organization.user_id = u.id";
+      queryStatement = queryStatement + " ${whereAnd} user_profile_organization.organization_id = @organization_id";
+      _substitutionValues.putIfAbsent("organization_id", () => request.organizationId);
+      whereAnd = "AND";
+    }
     if (request != null && request.id != null && request.id.isNotEmpty) {
       queryStatement = queryStatement + " ${whereAnd} u.id = @id";
       _substitutionValues.putIfAbsent("id", () => request.id);
@@ -94,11 +102,10 @@ class UserService extends UserServiceBase {
       _substitutionValues.putIfAbsent("password", () => request.password);
       whereAnd = "AND";
     }
-    if (request != null && request.organizationId != null  && request.organizationId.isNotEmpty) {
-      queryStatement = queryStatement + " LEFT OUTER JOIN general.users_profile_organizations user_profile_organization ON user_profile_organization.user_id = u.id";
-      queryStatement = queryStatement + " ${whereAnd} user_profile_organization.organization_id = @organization_id";
-      _substitutionValues.putIfAbsent("organization_id", () => request.organizationId);
-      whereAnd = "AND";
+    if (request != null && request.isDeleted != null) {
+      queryStatement = queryStatement + " ${whereAnd} u.is_deleted = @is_deleted";
+      _substitutionValues.putIfAbsent("is_deleted", () => request.isDeleted);
+      // whereAnd = "AND";
     }
 
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: _substitutionValues);
@@ -157,7 +164,7 @@ class UserService extends UserServiceBase {
             , substitutionValues: {
           "id": user.id,
           "version": 0,
-          "is_deleted": true,
+          "is_deleted": false,
           "name": user.name,
           "email": user.eMail,
           "password": user.password});
@@ -223,13 +230,47 @@ class UserService extends UserServiceBase {
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
+  }
+
+  static Future<Empty> querySoftDeleteUser(User user) async {
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
+      try {
+        List<List<dynamic>> result = await ctx.query(
+            "UPDATE general.users "
+                "SET version = @version + 1, "
+                "is_deleted = @is_deleted "
+                "WHERE id = @id AND version = @version "
+                "RETURNING true", substitutionValues: {
+          "id": user.id,
+          "version": user.version,
+          "is_deleted": true});
+
+        // Optimistic concurrency control
+        if (result.length == 0) {
+          throw new GrpcError.failedPrecondition('Precondition Failed');
+        }
+
+        // Soft delete user_profile_organizations related to user
+        await ctx.query(
+            "UPDATE general.users_profile_organizations "
+                "SET version = version + 1, "
+                "is_deleted = @is_deleted "
+                "WHERE user_id = @user_id", substitutionValues: {
+          "user_id": user.id,
+          "is_deleted": true});
+
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
+      }
+    });
+    return Empty()..webWorkAround = true;
   }
 
 
   static Future<Empty> queryDeleteUser(User user) async {
 
-    // TODO soft delete
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
@@ -238,7 +279,7 @@ class UserService extends UserServiceBase {
           "user_id": user.id});
 
         await ctx.query(
-            "DELETE FROM general.users u WHERE u.id = @id)}"
+            "DELETE FROM general.users u WHERE u.id = @id"
             , substitutionValues: {
           "id": user.id});
       } catch (e) {
@@ -246,6 +287,6 @@ class UserService extends UserServiceBase {
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 }

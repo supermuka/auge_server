@@ -448,7 +448,7 @@ class WorkItemService extends WorkItemServiceBase {
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   /// Delete a WorkItem by [id]
@@ -466,6 +466,6 @@ class WorkItemService extends WorkItemServiceBase {
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 }

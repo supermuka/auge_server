@@ -372,7 +372,7 @@ class InitiativeService extends InitiativeServiceBase {
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   /// Delete an initiative by [id]

@@ -223,7 +223,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   static Future<Empty> querySoftDeleteUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
@@ -248,7 +248,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 
   static Future<Empty> queryDeleteUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
@@ -264,6 +264,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         rethrow;
       }
     });
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 }

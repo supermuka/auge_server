@@ -152,7 +152,7 @@ class OrganizationService extends OrganizationServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty();
+    return Empty()..webWorkAround = true;
 
   }
 
@@ -167,6 +167,6 @@ class OrganizationService extends OrganizationServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty();
+    return Empty()..webWorkAround = true;
   }
 }
