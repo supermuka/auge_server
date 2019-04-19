@@ -23,7 +23,7 @@ service GroupService {
     rpc CreateGroup (Group) returns (IdResponse) {}
     rpc UpdateGroup (Group) returns (google.protobuf.Empty) {}
     rpc DeleteGroup (Group) returns (google.protobuf.Empty) {}
-    rpc SoftDeleteGroup (Group) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+//    rpc SoftDeleteGroup (Group) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 }
 
 // Message to respective domain object.
@@ -41,21 +41,19 @@ message GroupTypesResponse {
 message Group {
     string id = 1;
     int32 version = 2;
-    bool is_deleted = 3;
 
-    string name = 4;
-    bool active = 9;
+    string name = 3;
+    bool active = 4;
     Organization organization = 5;
     GroupType group_type = 6;
     Group super_group = 7;
     User leader = 8;
-    repeated User members = 10;
+    repeated User members = 9;
 }
 
 // Request for query select
 message GroupGetRequest {
     string id = 1;
-    bool is_deleted = 2;
     string organization_id = 3;
     int32 aligned_to_recursive = 4;
 }
@@ -68,7 +66,5 @@ message GroupTypeGetRequest {
 // Response list of the organization
 message GroupsResponse {
     repeated Group groups = 1;
-    bool webListWorkAround = 2;
+    bool web_work_around = 2;
 }
-
-

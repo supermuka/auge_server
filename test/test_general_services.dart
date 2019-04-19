@@ -86,22 +86,6 @@ void main() {
 
       });
 
-      test('Call operation softDeleteOrganization', () async {
-
-        Empty emptyPb = await stub.softDeleteOrganization(Organization()
-          ..id = id);
-
-        expect(emptyPb, isNotNull);
-
-        try {
-          await stub
-              .getOrganization(OrganizationGetRequest()
-            ..id = '86ce1031-3df2-4ea4-9c42-05a0974aec4f'
-            /*id*/);
-        } on GrpcError catch (e) {
-          expect(e.code, StatusCode.notFound);
-        }
-      });
 
       test('Call operation deleteOrganization', () async {
 
@@ -331,21 +315,6 @@ void main() {
         expect(groupPb.name, equals(name));
         expect(groupPb.active, equals(active));
 
-      });
-
-      test('Call operation softDeleteGroup', () async {
-
-        Empty emptyPb = await stub
-            .softDeleteGroup(Group()
-          ..id = id
-          ..version = 1);
-
-        expect(emptyPb, isNotNull);
-
-        await stub
-              .getGroup(GroupGetRequest()
-            ..id = id
-            ..isDeleted = true);
       });
 
       test('Call operation deleteGroup', () async {

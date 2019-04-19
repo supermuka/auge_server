@@ -23,7 +23,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
   @override
   Future<UsersProfileOrganizationsResponse> getUsersProfileOrganizations(ServiceCall call,
       UserProfileOrganizationGetRequest userProfileOrganizationGetRequest) async {
-    return UsersProfileOrganizationsResponse()..webListWorkAround = true..usersProfileOrganizations.addAll(await querySelectUsersProfileOrganizations(userProfileOrganizationGetRequest));
+    return UsersProfileOrganizationsResponse()..webWorkAround = true..usersProfileOrganizations.addAll(await querySelectUsersProfileOrganizations(userProfileOrganizationGetRequest));
   }
 
   @override
@@ -53,13 +53,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     return queryDeleteUserProfileOrganization(userProfileOrganization);
   }
 
-  @override
-  Future<Empty> softDeleteUserProfileOrganization(ServiceCall call,
-      UserProfileOrganization userProfileOrganization) async {
-    userProfileOrganization.isDeleted = true;
-    return querySoftDeleteUserProfileOrganization(userProfileOrganization);
-  }
-
   // Query
   static Future<List<UserProfileOrganization>> querySelectUsersProfileOrganizations([UserProfileOrganizationGetRequest userProfileOrganizationGetRequest] /* {String id, String userId, String organizationId} */) async {
     Map<String, User> _userCache = {};
@@ -70,43 +63,45 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     queryStatement = "SELECT "
         "uo.id, " // 0
         "uo.version, " // 1
-        "uo.is_deleted, " // 2
-        "uo.user_id, " // 3
-        "uo.organization_id, " //4
-        "uo.authorization_role " // 5
+        "uo.user_id, " // 2
+        "uo.organization_id, " //3
+        "uo.authorization_role " // 4
         "FROM general.users_profile_organizations uo "
         "LEFT OUTER JOIN general.users u ON u.id = uo.user_id ";
 
     Map<String, dynamic> _substitutionValues = Map<String, dynamic>();
-    queryStatement += "WHERE uo.is_deleted = @is_deleted";
-    _substitutionValues.putIfAbsent("is_deleted", () => userProfileOrganizationGetRequest != null && userProfileOrganizationGetRequest.isDeleted);
+    String whereAnd = 'WHERE';
 
     if (userProfileOrganizationGetRequest.hasId()) {
-      queryStatement += " AND uo.id = @id";
+      queryStatement += " ${whereAnd} uo.id = @id";
       _substitutionValues.putIfAbsent("id", () => userProfileOrganizationGetRequest.id);
+      whereAnd = 'AND';
     }
 
     if (userProfileOrganizationGetRequest.hasUserId()) {
-      queryStatement += " AND uo.user_id = @user_id";
+      queryStatement += " ${whereAnd} uo.user_id = @user_id";
       _substitutionValues.putIfAbsent("user_id", () => userProfileOrganizationGetRequest.userId);
+      whereAnd = 'AND';
     }
 
     if (userProfileOrganizationGetRequest.hasOrganizationId()) {
-      queryStatement += " AND uo.organization_id = @organization_id";
+      queryStatement += " ${whereAnd} uo.organization_id = @organization_id";
       _substitutionValues.putIfAbsent("organization_id", () => userProfileOrganizationGetRequest.organizationId);
-      //The last, not need... whereAnd = 'AND';
+      whereAnd = 'AND';
     }
 
     if (userProfileOrganizationGetRequest.hasEMail()) {
       queryStatement = queryStatement +
-          " AND u.email = @email";
+          " ${whereAnd} u.email = @email";
 
       _substitutionValues.putIfAbsent("email", () => userProfileOrganizationGetRequest.eMail);
+      whereAnd = 'AND';
     }
     if (userProfileOrganizationGetRequest.hasPassword()) {
       queryStatement = queryStatement +
-          " AND u.password = @password";
+          " ${whereAnd} u.password = @password";
       _substitutionValues.putIfAbsent("password", () => userProfileOrganizationGetRequest.password);
+      //The last, not need... whereAnd = 'AND';
     }
 
     results = await (await AugeConnection.getConnection()).query(
@@ -119,23 +114,23 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
     if (results.isNotEmpty) {
       for (var row in results) {
-        if (row[3] != null) {
-          if (_userCache.containsKey(row[1])) {
-            user = _userCache[row[3]];
+        if (row[2] != null) {
+          if (_userCache.containsKey(row[2])) {
+            user = _userCache[row[2]];
           } else {
             user =
-            await UserService.querySelectUser(UserGetRequest()..id = row[3]..withProfile = true);
-            if (user != null) _userCache[row[3]] = user;
+            await UserService.querySelectUser(UserGetRequest()..id = row[2]..withProfile = true);
+            if (user != null) _userCache[row[2]] = user;
           }
         }
 
-        if (row[4] != null) {
-          if (_organizationCache.containsKey(row[4])) {
-            organization = _organizationCache[row[4]];
+        if (row[3] != null) {
+          if (_organizationCache.containsKey(row[3])) {
+            organization = _organizationCache[row[3]];
           } else {
             organization =
-            await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[4]);
-            if (organization != null) _organizationCache[row[4]] = organization;
+            await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[3]);
+            if (organization != null) _organizationCache[row[3]] = organization;
           }
         }
 
@@ -144,7 +139,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         userProfileOrganization.id = row[0];
         userProfileOrganization.user = user;
         userProfileOrganization.organization = organization;
-        userProfileOrganization.authorizationRole = row[5];
+        userProfileOrganization.authorizationRole = row[4];
 
         usersOrganizations.add(userProfileOrganization);
       }
@@ -166,23 +161,20 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     }
 
     userProfileOrganization.version = 0;
-    userProfileOrganization.isDeleted = false;
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
 
         await ctx.query(
-            "INSERT INTO general.users_profile_organizations(id, version, is_deleted, user_id, organization_id, authorization_role) VALUES("
+            "INSERT INTO general.users_profile_organizations(id, version, user_id, organization_id, authorization_role) VALUES("
                 "@id,"
                 "@version,"
-                "@is_deleted,"
                 "@user_id,"
                 "@organization_id,"
                 "@authorization_role)"
             , substitutionValues: {
           "id": userProfileOrganization.id,
           "version": userProfileOrganization.version,
-          "is_deleted": userProfileOrganization.isDeleted,
           "user_id": userProfileOrganization.hasUser() ? userProfileOrganization.user.id : null,
           "organization_id": userProfileOrganization.hasOrganization() ? userProfileOrganization.organization.id : null,
           "authorization_role": userProfileOrganization.authorizationRole});
@@ -218,31 +210,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
             throw new GrpcError.failedPrecondition('Precondition Failed');
           }
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
-    return Empty()..webWorkAround = true;
-  }
-
-  static Future<Empty> querySoftDeleteUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
-        List<List<dynamic>> result = await ctx.query(
-            "UPDATE general.users_profile_organizations "
-                "SET version = @version + 1, "
-                "is_deleted = @is_deleted "
-                "WHERE id = @id AND version = @version"
-                "RETURNING true", substitutionValues: {
-          "id": userProfileOrganization.id,
-          "version": userProfileOrganization.version,
-          "is_deleted": userProfileOrganization.isDeleted});
-
-        // Optimistic concurrency control
-        if (result.length == 0) {
-          throw new GrpcError.failedPrecondition('Precondition Failed');
-        }
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

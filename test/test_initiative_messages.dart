@@ -32,7 +32,6 @@ void main() {
 
       model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
       model.version = 0;
-      model.isDeleted = true;
       model.name = 'Name test';
       model.index = 0;
       model.state = state_m.State()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
@@ -43,7 +42,6 @@ void main() {
       void callExcept() {
         expect(model.id, equals(proto.id));
         expect(model.version, equals(proto.version));
-        expect(model.isDeleted, equals(proto.isDeleted));
         expect(model.name, equals(proto.name));
         expect(model.index, equals(proto.index));
         expect(model.state.id, equals(proto.state.id));
@@ -73,7 +71,6 @@ void main() {
 
       model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
       model.version = 0;
-      model.isDeleted = true;
       model.name = 'Name test';
       model.color = {'x': 0};
       model.index = 0;
@@ -83,7 +80,6 @@ void main() {
       void callExcept() {
         expect(model.id, equals(proto.id));
         expect(model.version, equals(proto.version));
-        expect(model.isDeleted, equals(proto.isDeleted));
         expect(model.name, equals(proto.name));
         expect(model.index, equals(proto.index));
         expect(model.color['x'], equals(proto.color['x']));
@@ -112,7 +108,6 @@ void main() {
 
       model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
       model.version = 0;
-      model.isDeleted = true;
       model.name = 'Name test';
       model.description = 'Description test';
       model.organization = organization_m.Organization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
@@ -127,7 +122,6 @@ void main() {
       void callExcept() {
         expect(model.id, equals(proto.id));
         expect(model.version, equals(proto.version));
-        expect(model.isDeleted, equals(proto.isDeleted));
         expect(model.name, equals(proto.name));
         expect(model.description, equals(proto.description));
 
@@ -166,7 +160,6 @@ void main() {
 
       model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
       model.version = 0;
-      model.isDeleted = true;
       model.name = 'Name test';
       model.description = 'Description test';
       model.completed = 50;
@@ -179,7 +172,6 @@ void main() {
       void callExcept() {
         expect(model.id, equals(proto.id));
         expect(model.version, equals(proto.version));
-        expect(model.isDeleted, equals(proto.isDeleted));
         expect(model.name, equals(proto.name));
         expect(model.description, equals(proto.description));
 

@@ -37,7 +37,7 @@ class InitiativeService extends InitiativeServiceBase {
   Future<InitiativesResponse> getInitiatives(ServiceCall call,
       InitiativeGetRequest initiativeGetRequest) async {
     InitiativesResponse initiativesResponse;
-    initiativesResponse = InitiativesResponse()..webListWorkAround = true
+    initiativesResponse = InitiativesResponse()..webWorkAround = true
       ..initiatives.addAll(
           await querySelectInitiatives(initiativeGetRequest));
     return initiativesResponse;
@@ -70,13 +70,6 @@ class InitiativeService extends InitiativeServiceBase {
     return queryDeleteInitiative(initiative);
   }
 
-  @override
-  Future<Empty> softDeleteInitiative(ServiceCall call,
-      Initiative initiative) async {
-    initiative.isDeleted = true;
-    return queryUpdateInitiative(initiative);
-  }
-
   // QUERY
   // *** INITIATIVES ***
   static Future<List<Initiative>> querySelectInitiatives(InitiativeGetRequest initiativeGetRequest/* {String organizationId, String id, String objectiveId, bool withWorkItems = false, bool withProfile = false} */ ) async {
@@ -87,23 +80,22 @@ class InitiativeService extends InitiativeServiceBase {
 
     queryStatement = "SELECT initiative.id, " //0
         "initiative.version," //1
-        "initiative.is_deleted," //2
-        "initiative.name, " //3
-        "initiative.description, " //4
-        "initiative.organization_id, " //5
-        "initiative.leader_user_id, " //6
-        "initiative.objective_id, " //7
-        "initiative.group_id " //8
+        "initiative.name, " //2
+        "initiative.description, " //3
+        "initiative.organization_id, " //4
+        "initiative.leader_user_id, " //5
+        "initiative.objective_id, " //6
+        "initiative.group_id " //7
         "FROM initiative.initiatives initiative";
 
     Map<String, dynamic> substitutionValues;
 
     if (initiativeGetRequest.hasId()) {
-      queryStatement += " WHERE initiative.id = @id AND is_deleted = @is_deleted";
-      substitutionValues = {"id": initiativeGetRequest.id, "is_deleted": initiativeGetRequest.isDeleted};
+      queryStatement += " WHERE initiative.id = @id";
+      substitutionValues = {"id": initiativeGetRequest.id};
     } else if (initiativeGetRequest.hasOrganizationId()){
-      queryStatement += " WHERE initiative.organization_id = @organization_id AND is_deleted = @is_deleted";
-      substitutionValues = {"organization_id": initiativeGetRequest.organizationId, "is_deleted": initiativeGetRequest.isDeleted};
+      queryStatement += " WHERE initiative.organization_id = @organization_id";
+      substitutionValues = {"organization_id": initiativeGetRequest.organizationId};
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.initiativeInvalidArgument );
     }
@@ -128,19 +120,19 @@ class InitiativeService extends InitiativeServiceBase {
       // Work Items
       workItems = (initiativeGetRequest.withWorkItems) ? await WorkItemService.querySelectWorkItems(WorkItemGetRequest()..initiativeId = row[0]) : [];
 
-      if (row[5] != null && (organization == null || organization.id != row[5])) {
+      if (row[4] != null && (organization == null || organization.id != row[4])) {
 
         // organization = await _augeApi.getOrganizationById(row[3]);
 
-        organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[5]);
+        organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[4]);
 
       } else {
         organization = null;
       }
 
       // user = (await _augeApi.getUsers(id: row[4])).first;
-      if (row[6] != null) {
-        user = await UserService.querySelectUser(UserGetRequest()..id = row[6]..withProfile = initiativeGetRequest.withProfile);
+      if (row[5] != null) {
+        user = await UserService.querySelectUser(UserGetRequest()..id = row[5]..withProfile = initiativeGetRequest.withProfile);
       } else {
         user = null;
       }
@@ -149,26 +141,26 @@ class InitiativeService extends InitiativeServiceBase {
       stages = await StageService.querySelectStages(StageGetRequest()..initiativeId = row[0]);
 
       // objective = row[5] == null ? null : await _objectiveAugeApi.getObjectiveById(row[5]);
-      if (row[7] != null) {
+      if (row[6] != null) {
         objective =
-        row[7] == null ? null : await ObjectiveService.querySelectObjective(
+        row[6] == null ? null : await ObjectiveService.querySelectObjective(
             ObjectiveGetRequest()
-              ..id = row[7]);
+              ..id = row[6]);
       } else {
         objective = null;
       }
 
       // group =  row[6] == null ? null : await _augeApi.getGroupById(row[6]);
-      if (row[8] != null) {
-        group = row[8] == null ? null : await GroupService.querySelectGroup(
+      if (row[7] != null) {
+        group = row[7] == null ? null : await GroupService.querySelectGroup(
             GroupGetRequest()
-              ..id = row[8]);
+              ..id = row[7]);
       } else {
         group = null;
       }
 
       Initiative initiative =
-      Initiative()..id = row[0]..version = row[1]..isDeleted = row[2]..name = row[3]..description = row[4];
+      Initiative()..id = row[0]..version = row[1]..name = row[2]..description = row[3];
       if (workItems.isNotEmpty) {
         initiative.workItems.addAll(workItems);
       }
@@ -215,10 +207,9 @@ class InitiativeService extends InitiativeServiceBase {
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query(
-            "INSERT INTO initiative.initiatives(id, version, is_deleted, name, description, organization_id, leader_user_id, objective_id, group_id) VALUES"
+            "INSERT INTO initiative.initiatives(id, version, name, description, organization_id, leader_user_id, objective_id, group_id) VALUES"
                 "(@id,"
                 "@version,"
-                "@is_deleted,"
                 "@name,"
                 "@description,"
                 "@organization_id,"
@@ -228,7 +219,6 @@ class InitiativeService extends InitiativeServiceBase {
             , substitutionValues: {
           "id": initiative.id,
           "version": 0,
-          "is_deleted": false,
           "name": initiative.name,
           "description": initiative.description,
           "organization_id": initiative.organization.id,
@@ -268,86 +258,74 @@ class InitiativeService extends InitiativeServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         List<List<dynamic>> result;
-        if (initiative.isDeleted) {
-          result = await ctx.query("UPDATE initiative.initiatives "
-              " SET version = @version + 1, "
-              " is_deleted = @is_deleted "
-              " WHERE id = @id AND version = @version"
-              " RETURNING true "
-              , substitutionValues: {
-                "id": initiative.id,
-                "version": initiative.version,
-                "is_deleted": initiative.isDeleted,
-              });
-        } else {
-          result = await ctx.query("UPDATE initiative.initiatives "
-            " SET version = @version + 1,"
-            " name = @name,"
-            " description = @description,"
-            " organization_id = @organization_id,"
-            " leader_user_id = @leader_user_id,"
-            " objective_id = @objective_id,"
-            " group_id = @group_id"
-            " WHERE id = @id AND version = @version"
-            " RETURNING true "
-            , substitutionValues: {
-              "id": initiative.id,
-              "version": initiative.version,
-              "name": initiative.name,
-              "description": initiative.description,
-              "organization_id": initiative.hasOrganization() ? initiative.organization.id : null,
-              "leader_user_id": initiative.hasLeader() ? initiative.leader.id : null,
-              "objective_id": initiative.hasObjective() ? initiative.objective.id : null,
-              "group_id": initiative.hasGroup() ? initiative.group.id : null });
 
-          // Stages
-          StringBuffer stagesId = new StringBuffer();
-          for (Stage stage in initiative.stages) {
-            if (stage.id == null) {
-              stage.id = new Uuid().v4();
+        result = await ctx.query("UPDATE initiative.initiatives "
+          " SET version = @version + 1,"
+          " name = @name,"
+          " description = @description,"
+          " organization_id = @organization_id,"
+          " leader_user_id = @leader_user_id,"
+          " objective_id = @objective_id,"
+          " group_id = @group_id"
+          " WHERE id = @id AND version = @version"
+          " RETURNING true "
+          , substitutionValues: {
+            "id": initiative.id,
+            "version": initiative.version,
+            "name": initiative.name,
+            "description": initiative.description,
+            "organization_id": initiative.hasOrganization() ? initiative.organization.id : null,
+            "leader_user_id": initiative.hasLeader() ? initiative.leader.id : null,
+            "objective_id": initiative.hasObjective() ? initiative.objective.id : null,
+            "group_id": initiative.hasGroup() ? initiative.group.id : null });
 
-              await ctx.query(
-                  "INSERT INTO initiative.stages(id, name, index, state_id, initiative_id) VALUES"
-                      "(@id,"
-                      "@name,"
-                      "@index,"
-                      "@state_id,"
-                      "@initiative_id)"
-                  , substitutionValues: {
-                "id": stage.id,
-                "name": stage.name,
-                "index": stage.index,
-                "state_id": stage.state.id,
-                "initiative_id": initiative.id});
-            } else {
-              await ctx.query("UPDATE initiative.stages SET"
-                  " name = @name,"
-                  " index = @index,"
-                  " state_id = @state_id,"
-                  " initiative_id = @initiative_id"
-                  " WHERE id = @id"
-                  , substitutionValues: {
-                    "id": stage.id,
-                    "name": stage.name,
-                    "index": stage.index,
-                    "state_id": stage.state.id,
-                    "initiative_id": initiative.id});
-            }
+        // Stages
+        StringBuffer stagesId = new StringBuffer();
+        for (Stage stage in initiative.stages) {
+          if (stage.id == null) {
+            stage.id = new Uuid().v4();
 
-            if (stagesId.isNotEmpty)
-              stagesId.write(',');
-            stagesId.write("'");
-            stagesId.write(stage.id);
-            stagesId.write("'");
-          }
-
-          if (stagesId.isNotEmpty) {
-            await ctx.query("DELETE FROM initiative.stages "
-                " WHERE id NOT IN (${stagesId.toString()}) "
-                " AND initiative_id  = @initiative_id "
+            await ctx.query(
+                "INSERT INTO initiative.stages(id, name, index, state_id, initiative_id) VALUES"
+                    "(@id,"
+                    "@name,"
+                    "@index,"
+                    "@state_id,"
+                    "@initiative_id)"
                 , substitutionValues: {
+              "id": stage.id,
+              "name": stage.name,
+              "index": stage.index,
+              "state_id": stage.state.id,
+              "initiative_id": initiative.id});
+          } else {
+            await ctx.query("UPDATE initiative.stages SET"
+                " name = @name,"
+                " index = @index,"
+                " state_id = @state_id,"
+                " initiative_id = @initiative_id"
+                " WHERE id = @id"
+                , substitutionValues: {
+                  "id": stage.id,
+                  "name": stage.name,
+                  "index": stage.index,
+                  "state_id": stage.state.id,
                   "initiative_id": initiative.id});
           }
+
+          if (stagesId.isNotEmpty)
+            stagesId.write(',');
+          stagesId.write("'");
+          stagesId.write(stage.id);
+          stagesId.write("'");
+        }
+
+        if (stagesId.isNotEmpty) {
+          await ctx.query("DELETE FROM initiative.stages "
+              " WHERE id NOT IN (${stagesId.toString()}) "
+              " AND initiative_id  = @initiative_id "
+              , substitutionValues: {
+                "initiative_id": initiative.id});
         }
 
         // Optimistic concurrency control
@@ -398,6 +376,4 @@ class InitiativeService extends InitiativeServiceBase {
     }
     return null;
   }
-
-
 }

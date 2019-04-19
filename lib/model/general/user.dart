@@ -15,7 +15,6 @@ class User {
   // Base fields
   String id;
   int version;
-  bool isDeleted;
 
   // Specific fields
   String name;
@@ -32,7 +31,6 @@ class User {
 
     if (this.id != null) userPb.id = this.id;
     if (this.version != null) userPb.version = this.version;
-    if (this.isDeleted != null) userPb.isDeleted = this.isDeleted;
     if (this.name != null) userPb.name = this.name;
     if (this.eMail != null) userPb.eMail = this.eMail;
     if (this.password != null) userPb.password = this.password;
@@ -44,7 +42,6 @@ class User {
   readFromProtoBuf(user_pb.User userPb) {
     if (userPb.hasId()) this.id = userPb.id;
     if (userPb.hasVersion()) this.version = userPb.version;
-    if (userPb.hasIsDeleted()) this.isDeleted = userPb.isDeleted;
     if (userPb.hasName()) this.name = userPb.name;
     if (userPb.hasEMail()) this.eMail = userPb.eMail;
     if (userPb.hasPassword()) this.password = userPb.password;

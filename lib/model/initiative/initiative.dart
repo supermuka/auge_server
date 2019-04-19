@@ -19,7 +19,6 @@ class Initiative  {
   // Base
   String id;
   int version;
-  bool isDeleted;
 
   // Specific
   String name;
@@ -82,7 +81,6 @@ class Initiative  {
 
     if (this.id != null) initiativePb.id = this.id;
     if (this.version != null) initiativePb.version = this.version;
-    if (this.isDeleted != null) initiativePb.isDeleted = this.isDeleted;
     if (this.name != null) initiativePb.name = this.name;
     if (this.description != null) initiativePb.description = this.description;
 
@@ -99,7 +97,6 @@ class Initiative  {
   readFromProtoBuf(initiative_pb.Initiative initiativePb) {
     if (initiativePb.hasId()) this.id = initiativePb.id;
     if (initiativePb.hasVersion()) this.version = initiativePb.version;
-    if (initiativePb.hasIsDeleted()) this.isDeleted = initiativePb.isDeleted;
     if (initiativePb.hasName()) this.name = initiativePb.name;
     if (initiativePb.hasDescription()) this.description = initiativePb.description;
     if (initiativePb.hasObjective()) this.objective = Objective()..readFromProtoBuf(initiativePb.objective);

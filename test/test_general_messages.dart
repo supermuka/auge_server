@@ -29,7 +29,6 @@ void main() {
 
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.version = 0;
-        model.isDeleted = true;
         model.name = 'Name test';
         model.code = '00.000.0000/000';
 
@@ -38,7 +37,6 @@ void main() {
         void callExcept() {
           expect(model.id, equals(proto.id));
           expect(model.version, equals(proto.version));
-          expect(model.isDeleted, equals(proto.isDeleted));
           expect(model.name, equals(proto.name));
           expect(model.code, equals(proto.code));
         }
@@ -62,7 +60,6 @@ void main() {
 
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.version = 0;
-        model.isDeleted = true;
         model.name = 'Name test';
         model.password = '123456789';
         model.eMail = 'test@levius.com.br';
@@ -72,7 +69,6 @@ void main() {
         void callExcept() {
           expect(model.id, equals(proto.id));
           expect(model.version, equals(proto.version));
-          expect(model.isDeleted, equals(proto.isDeleted));
           expect(model.name, equals(proto.name));
           expect(model.password, equals(proto.password));
           expect(model.eMail, equals(proto.eMail));
@@ -125,7 +121,6 @@ void main() {
 
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.version = 0;
-        model.isDeleted = true;
         model.authorizationRole = 0;
         model.organization = organization_m.Organization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.user = user_m.User()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
@@ -135,7 +130,6 @@ void main() {
         void callExcept() {
           expect(model.id, equals(proto.id));
           expect(model.version, equals(proto.version));
-          expect(model.isDeleted, equals(proto.isDeleted));
           expect(model.authorizationRole, equals(proto.authorizationRole));
           expect(model.organization.id, equals(proto.organization.id));
           expect(model.user.id, equals(proto.user.id));
@@ -160,7 +154,6 @@ void main() {
 
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.version = 0;
-        model.isDeleted = true;
         model.name = 'Unit Test Group';
         model.active = true;
         model.organization = organization_m.Organization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
@@ -175,7 +168,6 @@ void main() {
         void callExcept() {
           expect(model.id, equals(proto.id));
           expect(model.version, equals(proto.version));
-          expect(model.isDeleted, equals(proto.isDeleted));
           expect(model.name, equals(proto.name));
           expect(model.active, equals(proto.active));
           expect(model.organization.id, equals(proto.organization.id));

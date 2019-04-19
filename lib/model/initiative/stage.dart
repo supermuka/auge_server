@@ -13,7 +13,6 @@ class Stage {
   // Base
   String id;
   int version;
-  bool isDeleted;
 
   // Specific
   String name;
@@ -27,7 +26,6 @@ class Stage {
 
     if (this.id != null) stagePb.id = this.id;
     if (this.version != null) stagePb.version = this.version;
-    if (this.isDeleted != null) stagePb.isDeleted = this.isDeleted;
     if (this.name != null) stagePb.name = this.name;
     if (this.index != null) stagePb.index = this.index;
 
@@ -40,7 +38,6 @@ class Stage {
   readFromProtoBuf(stage_pb.Stage stagePb) {
     if (stagePb.hasId()) this.id = stagePb.id;
     if (stagePb.hasVersion()) this.version = stagePb.version;
-    if (stagePb.hasIsDeleted()) this.isDeleted = stagePb.isDeleted;
     if (stagePb.hasName()) this.name = stagePb.name;
     if (stagePb.hasIndex()) this.index = stagePb.index;
     if (stagePb.hasState()) this.state = State()..readFromProtoBuf(stagePb.state);

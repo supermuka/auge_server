@@ -182,7 +182,6 @@ void main() {
             ..description = description
             ..organization = (Organization()
               ..id = organizationId)
-            ..isDeleted = false
             ..historyItemLog = (HistoryItem()
               ..user = (User()
                 ..id = userId)
@@ -270,7 +269,6 @@ void main() {
           ..updateWorkItem(WorkItem()
             ..id = workItemId
             ..version = 0
-            ..isDeleted = false
             ..name = name
             ..description = description
             ..initiativeId = initiativeId
@@ -283,8 +281,7 @@ void main() {
 
         WorkItem workItem = await workItemStub
             .getWorkItem(WorkItemGetRequest()
-          ..id = workItemId
-          ..isDeleted = false);
+          ..id = workItemId);
 
         expect(workItem, isNotNull);
         expect(workItem.id, workItemId);
@@ -292,57 +289,6 @@ void main() {
         expect(workItem.description, description);
       });
 
-      test('Call operation softDeleteWorkItem', () async {
-        Empty emptyPb = await workItemStub
-            .softDeleteWorkItem(WorkItem()
-          ..id = workItemId
-          ..version = 1
-          ..isDeleted = false
-          ..historyItemLog = (HistoryItem()
-            ..user = (User()
-              ..id = userId)
-            ..changedValues.putIfAbsent(
-                'id', () => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
-
-        expect(emptyPb, isNotNull);
-
-        try {
-          WorkItem workItem = await workItemStub
-              .getWorkItem(WorkItemGetRequest()
-            ..id = workItemId
-            ..isDeleted = false);
-
-          expect(workItem, isNull);
-        } on GrpcError catch (e) {
-          expect(e.code, StatusCode.notFound);
-        }
-      });
-
-      test('Call operation softDeleteInitiative', () async {
-        Empty emptyPb = await initiativeStub
-            .softDeleteInitiative(Initiative()
-          ..id = initiativeId
-          ..version = 1
-          ..isDeleted = false
-          ..historyItemLog = (HistoryItem()
-            ..user = (User()
-              ..id = userId)
-            ..changedValues.putIfAbsent(
-                'id', () => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
-
-        expect(emptyPb, isNotNull);
-
-        try {
-          Initiative initiative = await initiativeStub
-              .getInitiative(InitiativeGetRequest()
-            ..id = initiativeId
-            ..isDeleted = false);
-
-          expect(initiative, isNull);
-        } on GrpcError catch (e) {
-          expect(e.code, StatusCode.notFound);
-        }
-      });
     });
   });
 }

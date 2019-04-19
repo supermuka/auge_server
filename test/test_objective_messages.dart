@@ -24,7 +24,6 @@ void main() {
 
       model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
       model.version = 0;
-      model.isDeleted = true;
       model.name = 'Name test';
       model.description = 'Description test';
       model.startDate = DateTime.now();
@@ -36,7 +35,6 @@ void main() {
       void callExcept() {
         expect(model.id, equals(proto.id));
         expect(model.version, equals(proto.version));
-        expect(model.isDeleted, equals(proto.isDeleted));
         expect(model.name, equals(proto.name));
         expect(model.description, equals(proto.description));
 
@@ -69,7 +67,6 @@ void main() {
 
       model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
       model.version = 0;
-      model.isDeleted = true;
       model.name = 'Name test';
       model.description = 'Description test';
       model.currentValue = 1;
@@ -94,7 +91,6 @@ void main() {
       void callExcept() {
         expect(model.id, equals(proto.id));
         expect(model.version, equals(proto.version));
-        expect(model.isDeleted, equals(proto.isDeleted));
         expect(model.name, equals(proto.name));
         expect(model.description, equals(proto.description));
         expect(model.currentValue, equals(proto.currentValue));
@@ -107,7 +103,6 @@ void main() {
         expect(model.measureUnit.symbol, equals(proto.measureUnit.symbol));
         expect(model.measureProgress.first.id, equals(proto.measureProgress.first.id));
         expect(model.measureProgress.first.version, equals(proto.measureProgress.first.version));
-        expect(model.measureProgress.first.isDeleted, equals(proto.measureProgress.first.isDeleted));
         expect(model.measureProgress.first.currentValue, equals(proto.measureProgress.first.currentValue));
         expect(model.measureProgress.first.comment, equals(proto.measureProgress.first.comment));
         expect(model.measureProgress.first.date, equals(DateTime.fromMicrosecondsSinceEpoch(

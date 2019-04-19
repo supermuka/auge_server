@@ -17,7 +17,7 @@ class StateService extends StateServiceBase {
   Future<StatesResponse> getStates(ServiceCall call,
       Empty) async {
     StatesResponse statesResponse;
-    statesResponse = StatesResponse()..webListWorkAround = true
+    statesResponse = StatesResponse()..webWorkAround = true
       ..states.addAll(
           await querySelectStates());
     return statesResponse;
@@ -40,7 +40,7 @@ class StateService extends StateServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT state.id, state.version, state.is_deleted, state.name, state.color, state.index"
+    queryStatement = "SELECT state.id, state.version, state.name, state.color, state.index"
         " FROM initiative.states state";
 
     Map<String, dynamic> substitutionValues;
@@ -53,7 +53,7 @@ class StateService extends StateServiceBase {
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
     List<State> states = new List();
     for (var row in results) {
-      states.add(new State()..id = row[0]..version = row[1]..isDeleted = row[2]..name = row[3]..color.addAll((json.decode(row[4]) as Map).cast<String, int>())..index = row[3]);
+      states.add(new State()..id = row[0]..version = row[1]..name = row[2]..color.addAll((json.decode(row[3]) as Map).cast<String, int>())..index = row[4]);
     }
     return states;
   }

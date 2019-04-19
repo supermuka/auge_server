@@ -19,7 +19,7 @@ service MeasureService {
     rpc CreateMeasure (Measure) returns (IdResponse) {}
     rpc UpdateMeasure (Measure) returns (google.protobuf.Empty) {}
     rpc DeleteMeasure (Measure) returns (google.protobuf.Empty) {}
-    rpc SoftDeleteMeasure (Measure) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+   // rpc SoftDeleteMeasure (Measure) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 
     rpc GetMeasureUnits (google.protobuf.Empty) returns (MeasureUnitsResponse) {}
 
@@ -29,7 +29,7 @@ service MeasureService {
     rpc CreateMeasureProgress (MeasureProgress) returns (IdResponse) {}
     rpc UpdateMeasureProgress (MeasureProgress) returns (google.protobuf.Empty) {}
     rpc DeleteMeasureProgress (MeasureProgress) returns (google.protobuf.Empty) {}
-    rpc SoftDeleteMeasureProgress (MeasureProgress) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+   // rpc SoftDeleteMeasureProgress (MeasureProgress) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 }
 
 // Message to respective domain object.
@@ -38,38 +38,36 @@ message Measure {
     // Base
     string id = 1;
     int32 version = 2;
-    bool is_deleted = 3;
 
     // Specific
-    string name = 4;
-    string description = 5;
-    string metric = 6;
-    int32 decimals_number = 7;
-    double start_value = 8;
-    double end_value = 9;
-    MeasureUnit measure_unit = 10;
+    string name = 3;
+    string description = 4;
+    string metric = 5;
+    int32 decimals_number = 6;
+    double start_value = 7;
+    double end_value = 8;
+    MeasureUnit measure_unit = 9;
 
     // Transient
-    double current_value = 12; // field calculeted on measureProgress
+    double current_value = 10; // field calculeted on measureProgress
 
-    string objective_id = 13; // used just to identify parent on request
+    string objective_id = 11; // used just to identify parent on request
 
-    HistoryItem history_item_log = 14;
-    repeated MeasureProgress measure_progress = 15;
+    HistoryItem history_item_log = 12;
+    repeated MeasureProgress measure_progress = 13;
 
 }
 
 // Response list of the measures
 message MeasuresResponse {
     repeated Measure measures = 1;
-    bool webListWorkAround = 2;
+    bool web_work_around = 2;
 }
 
 // Request for query select
 message MeasureGetRequest {
     string objective_id = 1;
     string id = 2;
-    bool is_deleted = 3;
 }
 
 // Message to respective domain object.
@@ -83,7 +81,7 @@ message MeasureUnit {
 // Response list of the measureUnits
 message MeasureUnitsResponse {
     repeated MeasureUnit measureUnits = 1;
-    bool webListWorkAround = 2;
+    bool web_work_around = 2;
 }
 
 // Message to respective domain object.
@@ -91,27 +89,25 @@ message MeasureProgress {
     // Base
     string id = 1;
     int32 version = 2;
-    bool is_deleted = 3;
 
     // Specific
-    google.protobuf.Timestamp date = 4;
-    double current_value = 5;
-    string comment = 6;
+    google.protobuf.Timestamp date = 3;
+    double current_value = 4;
+    string comment = 5;
 
     // Transient
-    string measureId = 7; // used just to identify parent on request
-    HistoryItem history_item_log = 8;
+    string measure_id = 6; // used just to identify parent on request
+    HistoryItem history_item_log = 7;
 }
 
 // Response list of the MeasureProgress
 message MeasureProgressesResponse {
-    repeated MeasureProgress measureProgresses = 1;
-    bool webListWorkAround = 2;
+    repeated MeasureProgress measure_progresses = 1;
+    bool web_work_around = 2;
 }
 
 // Request for query select
 message MeasureProgressGetRequest {
-    string measureId = 1;
+    string measure_id = 1;
     string id = 2;
-    bool isDeleted = 3;
 }

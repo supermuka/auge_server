@@ -38,7 +38,7 @@ class GroupService extends GroupServiceBase {
   Future<GroupsResponse> getGroups(ServiceCall call,
       GroupGetRequest request) async {
     try {
-      return GroupsResponse()..webListWorkAround = true..groups.addAll(await querySelectGroups(request));
+      return GroupsResponse()..webWorkAround = true..groups.addAll(await querySelectGroups(request));
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -71,13 +71,6 @@ class GroupService extends GroupServiceBase {
     return queryDeleteGroup(group);
   }
 
-  @override
-  Future<Empty> softDeleteGroup(ServiceCall call,
-      Group group) async {
-    group.isDeleted = true;
-    return querySoftDeleteGroup(group);
-  }
-
   // Query
   static Future<List<Group>> querySelectGroups( GroupGetRequest request /* {String id, String organizationId, int alignedToRecursive = 1} */ ) async {
     List<List> results;
@@ -90,29 +83,26 @@ class GroupService extends GroupServiceBase {
     queryStatement = "SELECT"
         " g.id,"              //0
         " g.version, "        //1
-        " g.is_deleted, "     //2
-        " g.name,"            //3
-        " g.active,"          //4
-        " g.organization_id," //5
-        " g.group_type_id,"   //6
-        " g.leader_user_id,"  //7
-        " g.super_group_id "  //8
+        " g.name,"            //2
+        " g.active,"          //3
+        " g.organization_id," //4
+        " g.group_type_id,"   //5
+        " g.leader_user_id,"  //6
+        " g.super_group_id "  //7
         " FROM general.groups g ";
 
     Map<String, dynamic> substitutionValues;
 
     if (request.id != null && request.id.isNotEmpty) {
-      queryStatement = queryStatement + " WHERE g.id = @id AND g.is_deleted = @is_deleted";
+      queryStatement = queryStatement + " WHERE g.id = @id";
       substitutionValues = {
         "id": request.id,
-        "is_deleted": request.isDeleted
       };
 
     } else if (request.organizationId != null) {
-      queryStatement = queryStatement + " WHERE g.organization_id = @organization_id AND g.is_deleted = @is_deleted";
+      queryStatement = queryStatement + " WHERE g.organization_id = @organization_id";
       substitutionValues = {
         "organization_id": request.organizationId,
-        "is_deleted": request.isDeleted
       };
     }
 
@@ -127,42 +117,53 @@ class GroupService extends GroupServiceBase {
       Organization organization;
 
       for (var row in results) {
-        if (row[5] != null) {
+
+        if (row[4] != null) {
             organization =
-            await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[5], cache: organizationCache);
+            await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[4], cache: organizationCache);
         }
-        if (row[7] != null) {
+
+        if (row[6] != null) {
             leader =
-            await UserService.querySelectUser(UserGetRequest()..id = row[7], cache: userCache);
+            await UserService.querySelectUser(UserGetRequest()..id = row[6], cache: userCache);
         }
-        if (row[8] != null && request.alignedToRecursive > 0) {
+
+        if (row[7] != null && request.alignedToRecursive > 0) {
             superGroup =
-            await querySelectGroup(GroupGetRequest()..id = row[8]..alignedToRecursive = --request.alignedToRecursive, cache: groupCache);
+            await querySelectGroup(GroupGetRequest()..id = row[7]..alignedToRecursive = --request.alignedToRecursive, cache: groupCache);
         }
+
         // No need of the cache. It´s doesn't persist on data base.
-        groupType = await GroupService.querySelectGroupType(GroupTypeGetRequest()..id = row[6]);
+        groupType = await GroupService.querySelectGroupType(GroupTypeGetRequest()..id = row[5]);
         //sleep(Duration(seconds: 1));
+
         members = await querySelectGroupMembers(row[0]);
+
         Group group = Group()
           ..id = row[0]
           ..version = row[1]
-          ..isDeleted = row[2]
-          ..name = row[3]
-          ..active = row[4]
+          ..name = row[2]
+          ..active = row[3]
           ..organization = organization
           ..groupType = groupType;
+
         if (superGroup != null) {
           group.superGroup = superGroup;
         }
+
         if (leader != null) {
           group.leader = leader;
         }
+
         if (members.isNotEmpty) {
           group.members.addAll(members);
         }
+
         groups.add(group);
+
       }
     }
+
     return groups;
   }
 
@@ -191,10 +192,9 @@ class GroupService extends GroupServiceBase {
       try {
         await ctx.query(
             //"INSERT INTO auge.groups(id, version, is_deleted, name, active, organization_id, group_type_id) VALUES("
-            "INSERT INTO general.groups(id, version, is_deleted, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
+            "INSERT INTO general.groups(id, version, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
                 "@id,"
                 "@version,"
-                "@is_deleted,"
                 "@name,"
                 "@active,"
                 "@organization_id,"
@@ -204,7 +204,6 @@ class GroupService extends GroupServiceBase {
             , substitutionValues: {
           "id": group.id,
           "version": 0,
-          "is_deleted": group.isDeleted ?? false,
           "name": group.name,
           "active": group.active,
           "organization_id": group.hasOrganization() ? group.organization.id : null,
@@ -241,7 +240,6 @@ class GroupService extends GroupServiceBase {
         result = await ctx.query(
             "UPDATE general.groups"
                 " SET version = @version + 1,"
-                " is_deleted = @is_deleted,"
                 " name = @name,"
                 " active = @active,"
                 " organization_id = @organization_id,"
@@ -251,7 +249,6 @@ class GroupService extends GroupServiceBase {
                 " WHERE id = @id AND version = @version"
                 " RETURNING true", substitutionValues: {
           "id": group.id,
-          "is_deleted": group.isDeleted,
           "version": group.version,
           "name": group.name,
           "active": group.active,
@@ -306,43 +303,23 @@ class GroupService extends GroupServiceBase {
     return Empty()..webWorkAround = true;
   }
 
-  // Soft delete
-  static Future<Empty> querySoftDeleteGroup(Group group) async {
-
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
-        List<List<dynamic>> result = await ctx.query(
-            "UPDATE general.groups"
-                " SET version = @version + 1,"
-                " is_deleted = @is_deleted"
-                " WHERE id = @id AND version = @version"
-                " RETURNING true", substitutionValues: {
-          "id": group.id,
-          "version": group.version,
-          "is_deleted": group.isDeleted});
-
-        // Optimistic concurrency control
-        if (result.length == 0) {
-          throw new GrpcError.failedPrecondition('Precondition Failed');
-        }
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
-
-    return Empty()..webWorkAround = true;
-  }
-
   static Future<Empty> queryDeleteGroup(Group group) async {
     List<List<dynamic>> result;
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
+
+        await ctx.query(
+            "DELETE FROM general.groups_users gu WHERE gu.group_id = @group_id "
+                "RETURNING true"
+            , substitutionValues: {
+          "group_id": group.id});
+
         result = await ctx.query(
-            "DELETE FROM general.groups g WHERE g.id = @id "
+            "DELETE FROM general.groups g WHERE g.id = @id AND g.version = @version "
             "RETURNING true"
             , substitutionValues: {
-          "id": group.id});
+          "id": group.id,
+           "version": group.version});
 
         // Optimistic concurrency control
         if (result.length == 0) {
@@ -419,9 +396,9 @@ class GroupService extends GroupServiceBase {
 
       if (users != null && users.length != 0) {
         user = users.first;
+        groupMembers.add(user);
       }
 
-      groupMembers.add(user);
     }
 
     return groupMembers;

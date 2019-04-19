@@ -25,7 +25,7 @@ import 'package:auge_server/message/created_message.dart';
 /// Api for Initiative Domain
 @ApiClass(version: 'v1')
 class InitiativeAugeApi {
-
+/*
   InitiativeAugeApi() {
     AugeConnection.createConnection();
   }
@@ -758,4 +758,6 @@ class InitiativeAugeApi {
     });
     return null;
   }
+
+ */
 }

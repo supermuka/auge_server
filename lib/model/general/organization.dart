@@ -10,7 +10,6 @@ class Organization {
   // Base fields
   String id;
   int version;
-  bool isDeleted;
 
   /// Specific fields
   String name;
@@ -23,7 +22,6 @@ class Organization {
 
     if (this.id != null) organizatoinPb.id = this.id;
     if (this.version != null) organizatoinPb.version = this.version;
-    if (this.isDeleted != null) organizatoinPb.isDeleted = this.isDeleted;
     if (this.name != null) organizatoinPb.name = this.name;
     if (this.code != null) organizatoinPb.code = this.code;
 
@@ -33,7 +31,6 @@ class Organization {
   readFromProtoBuf(organization_pb.Organization organizationPb) {
     if (organizationPb.hasId()) this.id = organizationPb.id;
     if (organizationPb.hasVersion()) this.version = organizationPb.version;
-    if (organizationPb.hasIsDeleted()) this.isDeleted = organizationPb.isDeleted;
     if (organizationPb.hasName()) this.name = organizationPb.name;
     if (organizationPb.hasCode()) this.code = organizationPb.code;
 

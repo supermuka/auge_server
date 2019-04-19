@@ -14,7 +14,6 @@ class Group {
   // Base fields
   String id;
   int version;
-  bool isDeleted;
 
   // Specific
   String name;
@@ -30,7 +29,6 @@ class Group {
 
     if (this.id != null) groupPb.id = this.id;
     if (this.version != null) groupPb.version = this.version;
-    if (this.isDeleted != null) groupPb.isDeleted = this.isDeleted;
     if (this.name != null) groupPb.name = this.name;
     if (this.active != null) groupPb.active = this.active;
     if (this.organization != null) groupPb.organization = this.organization.writeToProtoBuf();
@@ -45,7 +43,6 @@ class Group {
   readFromProtoBuf(group_pb.Group groupPb) {
     if (groupPb.hasId()) this.id = groupPb.id;
     if (groupPb.hasVersion()) this.version = groupPb.version;
-    if (groupPb.hasIsDeleted()) this.isDeleted = groupPb.isDeleted;
     if (groupPb.hasName()) this.name = groupPb.name;
     if (groupPb.hasActive()) this.active = groupPb.active;
     if (groupPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(groupPb.organization);

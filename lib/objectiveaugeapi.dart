@@ -25,7 +25,7 @@ import 'package:auge_server/shared/rpc_error_message.dart';
 /// Api for Objective Domain
 @ApiClass(version: 'v1')
 class ObjectiveAugeApi {
-
+/*
   ObjectiveAugeApi() {
     AugeConnection.createConnection();
   }
@@ -1015,4 +1015,6 @@ class ObjectiveAugeApi {
       rethrow;
     }
   }
+
+ */
 }

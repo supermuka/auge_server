@@ -28,7 +28,7 @@ class WorkItemService extends WorkItemServiceBase {
   Future<WorkItemsResponse> getWorkItems(ServiceCall call,
       WorkItemGetRequest workItemGetRequest) async {
     WorkItemsResponse workItemsResponse;
-    workItemsResponse = WorkItemsResponse()..webListWorkAround = true
+    workItemsResponse = WorkItemsResponse()..webWorkAround = true
       ..workItems.addAll(
           await querySelectWorkItems(workItemGetRequest));
     return workItemsResponse;
@@ -62,13 +62,6 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   @override
-  Future<Empty> softDeleteWorkItem(ServiceCall call,
-      WorkItem workItem) async {
-    workItem.isDeleted = true;
-    return queryUpdateWorkItem(workItem);
-  }
-
-  @override
   Future<WorkItemCheckItemsResponse> getWorkItemCheckItems(ServiceCall call,
       WorkItemCheckItemGetRequest workItemCheckItemGetRequest) async {
     WorkItemCheckItemsResponse workItemCheckItemsResponse;
@@ -89,7 +82,6 @@ class WorkItemService extends WorkItemServiceBase {
 
     queryStatement = "SELECT work_item.id,"
         " work_item.version,"
-        " work_item.is_deleted,"
         " work_item.name,"
         " work_item.description,"
         " work_item.due_date,"
@@ -101,11 +93,11 @@ class WorkItemService extends WorkItemServiceBase {
     Map<String, dynamic> substitutionValues;
 
     if (workItemGetRequest.hasId()) {
-      queryStatement += " WHERE work_item.id = @id AND work_item.is_deleted = @is_deleted";
-      substitutionValues = {"id": workItemGetRequest.id, "is_deleted": workItemGetRequest.isDeleted};
+      queryStatement += " WHERE work_item.id = @id";
+      substitutionValues = {"id": workItemGetRequest.id};
     } else if (workItemGetRequest.hasInitiativeId() ) {
-      queryStatement += " WHERE work_item.initiative_id = @initiative_id AND work_item.is_deleted = @is_deleted";
-      substitutionValues = {"initiative_id": workItemGetRequest.initiativeId, "is_deleted": workItemGetRequest.isDeleted};
+      queryStatement += " WHERE work_item.initiative_id = @initiative_id";
+      substitutionValues = {"initiative_id": workItemGetRequest.initiativeId};
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workItemInvalidArgument );
     }
@@ -119,16 +111,16 @@ class WorkItemService extends WorkItemServiceBase {
     WorkItem workItem;
     for (var row in results) {
 
-      stages = await StageService.querySelectStages(StageGetRequest()..initiativeId = row[0]..id = row[7]);
+      stages = await StageService.querySelectStages(StageGetRequest()..initiativeId = row[0]..id = row[6]);
 
       assignedToUsers = await querySelectWorkItemAssignedToUsers(row[0]);
 
       checkItems = await querySelectWorkItemCheckItems(WorkItemCheckItemGetRequest()..workItemId = row[0]);
 
-      workItem = WorkItem()..id = row[0]..version = row[1]..isDeleted = row[2]..name = row[3];
-      if (row[4] != null) workItem.description = row[4];
-      if (row[5] != null) workItem.dueDate = row[5];
-      if (row[6] != null) workItem.completed = row[6];
+      workItem = WorkItem()..id = row[0]..version = row[1]..name = row[2];
+      if (row[3] != null) workItem.description = row[3];
+      if (row[4] != null) workItem.dueDate = row[4];
+      if (row[5] != null) workItem.completed = row[5];
       if ( stages.isNotEmpty) workItem.stage = stages?.first;
       if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
       if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
@@ -147,7 +139,7 @@ class WorkItemService extends WorkItemServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT check_item.id, check_item.version, check_item.is_deleted, check_item.name, check_item.finished"
+    queryStatement = "SELECT check_item.id, check_item.version, check_item.name, check_item.finished"
         " FROM initiative.work_item_check_items check_item";
 
     Map<String, dynamic> substitutionValues;
@@ -160,7 +152,7 @@ class WorkItemService extends WorkItemServiceBase {
     List<WorkItemCheckItem> checkItems = new List();
     for (var row in results) {
 
-      checkItems.add(new WorkItemCheckItem()..id = row[0]..version = row[1]..isDeleted = row[2]..name = row[3]..finished = row[4]);
+      checkItems.add(new WorkItemCheckItem()..id = row[0]..version = row[1]..name = row[2]..finished = row[3]);
     }
 
     return checkItems;
@@ -219,7 +211,6 @@ class WorkItemService extends WorkItemServiceBase {
         await ctx.query("INSERT INTO initiative.work_items"
             "(id,"
             "version,"
-            "is_deleted,"
             "name,"
             "description,"
             "due_date,"
@@ -229,7 +220,6 @@ class WorkItemService extends WorkItemServiceBase {
             "VALUES"
             "(@id,"
             "@version,"
-            "@is_deleted,"
             "@name,"
             "@description,"
             "@due_date,"
@@ -239,7 +229,6 @@ class WorkItemService extends WorkItemServiceBase {
             , substitutionValues: {
               "id": workItem.id,
               "version": 0,
-              "is_deleted": false,
               "name": workItem.name,
               "description": workItem.hasDescription() ? workItem.description : null,
               "due_date": workItem.hasDueDate() ? workItem.dueDate : null,
@@ -268,21 +257,18 @@ class WorkItemService extends WorkItemServiceBase {
           await ctx.query("INSERT INTO initiative.work_item_check_items"
               " (id,"
               " version,"
-              " is_deleted,"
               " name,"
               " finished,"
               " work_item_id)"
               " VALUES"
               " (@id,"
               " @version,"
-              " @is_deleted,"
               " @name,"
               " @finished,"
               " @work_item_id)"
               , substitutionValues: {
                 "id": checkItem.id,
                 "version": 0,
-                "is_deleted": checkItem.isDeleted ?? false,
                 "name": checkItem.name,
                 "finished": checkItem.hasFinished() ? checkItem.finished : false,
                 "work_item_id": workItem.id});
@@ -303,127 +289,113 @@ class WorkItemService extends WorkItemServiceBase {
       try {
 
         List<List<dynamic>> result;
-        if (workItem.isDeleted) {
-          result = await ctx.query("UPDATE initiative.work_items "
-              " SET version = @version + 1, "
-              " is_deleted = @is_deleted "
-              " WHERE id = @id AND version = @version"
-              " RETURNING true "
-              , substitutionValues: {
-                "id": workItem.id,
-                "version": workItem.version,
-                "is_deleted": workItem.isDeleted,
-              });
-        } else {
-          result = await ctx.query("UPDATE initiative.work_items"
-              " SET version = @version + 1, "
-              " is_deleted = @is_deleted, "
-              " name = @name,"
-              " description = @description,"
-              " due_date = @due_date,"
-              " completed = @completed,"
-              " initiative_id = @initiative_id,"
-              " stage_id = @stage_id"
-              " WHERE id = @id AND version = @version"
-              " RETURNING true"
-              , substitutionValues: {
-                "id": workItem.id,
-                "version": workItem.version,
-                "is_deleted": workItem.isDeleted,
-                "name": workItem.name,
-                "description": workItem.hasDescription()
-                    ? workItem.description
-                    : null,
-                "due_date": workItem.hasDueDate() ? workItem.dueDate : null,
-                "completed": workItem.hasCompleted()
-                    ? workItem.completed
-                    : null,
-                "initiative_id": workItem.initiativeId,
-                "stage_id": workItem.hasStage() ? workItem.stage.id : null});
 
-          // Assigned Members Users
-          StringBuffer assignedToUsersId = new StringBuffer();
-          for (User user in workItem.assignedTo) {
+        result = await ctx.query("UPDATE initiative.work_items"
+            " SET version = @version + 1, "
+            " name = @name,"
+            " description = @description,"
+            " due_date = @due_date,"
+            " completed = @completed,"
+            " initiative_id = @initiative_id,"
+            " stage_id = @stage_id"
+            " WHERE id = @id AND version = @version"
+            " RETURNING true"
+            , substitutionValues: {
+              "id": workItem.id,
+              "version": workItem.version,
+              "name": workItem.name,
+              "description": workItem.hasDescription()
+                  ? workItem.description
+                  : null,
+              "due_date": workItem.hasDueDate() ? workItem.dueDate : null,
+              "completed": workItem.hasCompleted()
+                  ? workItem.completed
+                  : null,
+              "initiative_id": workItem.initiativeId,
+              "stage_id": workItem.hasStage() ? workItem.stage.id : null});
+
+        // Assigned Members Users
+        StringBuffer assignedToUsersId = new StringBuffer();
+        for (User user in workItem.assignedTo) {
+          await ctx.query(
+              "INSERT INTO initiative.work_item_assigned_users"
+                  " (work_item_id,"
+                  " user_id)"
+                  " VALUES"
+                  " (@id,"
+                  " @user_id)"
+                  " ON CONFLICT (work_item_id, user_id) DO NOTHING"
+              , substitutionValues: {
+            "id": workItem.id,
+            "user_id": user.id});
+
+
+          if (assignedToUsersId.isNotEmpty)
+            assignedToUsersId.write(',');
+          assignedToUsersId.write("'");
+          assignedToUsersId.write(user.id);
+          assignedToUsersId.write("'");
+        }
+
+        if (assignedToUsersId.isNotEmpty) {
+          await ctx.query(
+              "DELETE FROM initiative.work_item_assigned_users"
+                  " WHERE work_item_id = @id"
+                  " AND user_id NOT IN (${assignedToUsersId.toString()})"
+              , substitutionValues: {
+            "id": workItem.id});
+        }
+
+        // Check item list
+        StringBuffer checkItemsId = new StringBuffer();
+        for (WorkItemCheckItem checkItem in workItem.checkItems) {
+          if (checkItem.id == null) {
+            checkItem.id = new Uuid().v4();
+
             await ctx.query(
-                "INSERT INTO initiative.work_item_assigned_users"
-                    " (work_item_id,"
-                    " user_id)"
+                "INSERT INTO initiative.work_item_check_items"
+                    " (id,"
+                    " name,"
+                    " finished,"
+                    " work_item_id)"
                     " VALUES"
                     " (@id,"
-                    " @user_id)"
-                    " ON CONFLICT (work_item_id, user_id) DO NOTHING"
+                    " @name,"
+                    " @finished,"
+                    " @work_item_id)"
                 , substitutionValues: {
-              "id": workItem.id,
-              "user_id": user.id});
-
-
-            if (assignedToUsersId.isNotEmpty)
-              assignedToUsersId.write(',');
-            assignedToUsersId.write("'");
-            assignedToUsersId.write(user.id);
-            assignedToUsersId.write("'");
-          }
-
-          if (assignedToUsersId.isNotEmpty) {
-            await ctx.query(
-                "DELETE FROM initiative.work_item_assigned_users"
-                    " WHERE work_item_id = @id"
-                    " AND user_id NOT IN (${assignedToUsersId.toString()})"
+              "id": checkItem.id,
+              "name": checkItem.name,
+              "finished": checkItem.finished,
+              "work_item_id": workItem.id});
+          } else {
+            await ctx.query("UPDATE initiative.work_item_check_items SET"
+                " name = @name,"
+                " finished = @finished,"
+                " work_item_id = @work_item_id"
+                " WHERE id = @id"
                 , substitutionValues: {
-              "id": workItem.id});
+                  "id": checkItem.id,
+                  "name": checkItem.name,
+                  "finished": checkItem.finished,
+                  "work_item_id": workItem.id});
           }
 
-          // Check item list
-          StringBuffer checkItemsId = new StringBuffer();
-          for (WorkItemCheckItem checkItem in workItem.checkItems) {
-            if (checkItem.id == null) {
-              checkItem.id = new Uuid().v4();
-
-              await ctx.query(
-                  "INSERT INTO initiative.work_item_check_items"
-                      " (id,"
-                      " name,"
-                      " finished,"
-                      " work_item_id)"
-                      " VALUES"
-                      " (@id,"
-                      " @name,"
-                      " @finished,"
-                      " @work_item_id)"
-                  , substitutionValues: {
-                "id": checkItem.id,
-                "name": checkItem.name,
-                "finished": checkItem.finished,
-                "work_item_id": workItem.id});
-            } else {
-              await ctx.query("UPDATE initiative.work_item_check_items SET"
-                  " name = @name,"
-                  " finished = @finished,"
-                  " work_item_id = @work_item_id"
-                  " WHERE id = @id"
-                  , substitutionValues: {
-                    "id": checkItem.id,
-                    "name": checkItem.name,
-                    "finished": checkItem.finished,
-                    "work_item_id": workItem.id});
-            }
-
-            if (checkItemsId.isNotEmpty)
-              checkItemsId.write(',');
-            checkItemsId.write("'");
-            checkItemsId.write(checkItem.id);
-            checkItemsId.write("'");
-          }
-
-          String queryDelete;
-          queryDelete = "DELETE FROM initiative.work_item_check_items";
-          if (checkItemsId.isNotEmpty) {
-            queryDelete =
-                queryDelete + " WHERE id NOT IN (${checkItemsId.toString()})";
-          }
-
-          await ctx.query(queryDelete);
+          if (checkItemsId.isNotEmpty)
+            checkItemsId.write(',');
+          checkItemsId.write("'");
+          checkItemsId.write(checkItem.id);
+          checkItemsId.write("'");
         }
+
+        String queryDelete;
+        queryDelete = "DELETE FROM initiative.work_item_check_items";
+        if (checkItemsId.isNotEmpty) {
+          queryDelete =
+              queryDelete + " WHERE id NOT IN (${checkItemsId.toString()})";
+        }
+
+        await ctx.query(queryDelete);
 
         // Optimistic concurrency control
         if (result.isEmpty) {

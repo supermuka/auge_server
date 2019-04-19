@@ -42,6 +42,7 @@ class AugeApi {
   }
   */
 
+  /*
   // *** ORGANIZATIONS ***
   static Future<List<Organization>> queryOrganizations({String id}) async {
     var results;
@@ -668,10 +669,9 @@ class AugeApi {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "INSERT INTO auge.groups(id, version, is_deleted, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
+            "INSERT INTO auge.groups(id, version,  name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
                 "@id,"
                 "@version,"
-                "@is_deleted,"
                 "@name,"
                 "@active,"
                 "@organization_id,"
@@ -681,7 +681,6 @@ class AugeApi {
             , substitutionValues: {
           "id": group.id,
           "version": 0,
-          "is_deleted": group.isDeleted,
           "name": group.name,
           "active": group.active,
           "organization_id": group.organization.id,
@@ -905,4 +904,6 @@ class AugeApi {
       rethrow;
     }
   }
+  */
+
 }

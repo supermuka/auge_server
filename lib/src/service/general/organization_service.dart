@@ -20,7 +20,7 @@ class OrganizationService extends OrganizationServiceBase {
   Future<OrganizationsResponse> getOrganizations(ServiceCall call,
       OrganizationGetRequest request) async {
 
-    return OrganizationsResponse()..webListWorkAround = true..organizations.addAll(await querySelectOrganizations(request));
+    return OrganizationsResponse()..webWorkAround = true..organizations.addAll(await querySelectOrganizations(request));
   }
 
   @override
@@ -49,13 +49,6 @@ class OrganizationService extends OrganizationServiceBase {
     return queryDeleteOrganization(organization);
   }
 
-  @override
-  Future<Empty> softDeleteOrganization(ServiceCall call,
-      Organization organization) {
-    organization.isDeleted = true;
-    return queryUpdateOrganization(organization);
-  }
-
   // Query
   static Future<List<Organization>> querySelectOrganizations(OrganizationGetRequest request) async {
 
@@ -65,23 +58,16 @@ class OrganizationService extends OrganizationServiceBase {
 
     queryStatement = "SELECT organization.id," //0
     " organization.version," //1
-    " organization.is_deleted," //2
-    " organization.name," //3
-    " organization.code" //4
+    " organization.name," //2
+    " organization.code" //3
     " FROM general.organizations organization";
 
     Map<String, dynamic> substitutionValues;
 
     if (request.id != null && request.id.isNotEmpty) {
-      queryStatement += " WHERE organization.id = @id AND organization.is_deleted = @is_deleted";
+      queryStatement += " WHERE organization.id = @id";
       substitutionValues = {
         "id": request.id,
-        "is_deleted": request.isDeleted
-      };
-    } else {
-      queryStatement += " WHERE organization.is_deleted = @is_deleted";
-      substitutionValues = {
-        "is_deleted": request.isDeleted
       };
     }
 
@@ -92,9 +78,8 @@ class OrganizationService extends OrganizationServiceBase {
       Organization organization = new Organization()
         ..id = row[0]
         ..version = row[1]
-        ..isDeleted = row[2]
-        ..name = row[3]
-        ..code = row[4];
+        ..name = row[2]
+        ..code = row[3];
       organizations.add(organization);
     }
     return organizations;

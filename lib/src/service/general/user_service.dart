@@ -19,7 +19,7 @@ class UserService extends UserServiceBase {
   @override
   Future<UsersResponse> getUsers(ServiceCall call,
       UserGetRequest request) async {
-    return UsersResponse()..webListWorkAround = true..users.addAll(await querySelectUsers(request));
+    return UsersResponse()..webWorkAround = true..users.addAll(await querySelectUsers(request));
   }
 
   @override
@@ -49,12 +49,6 @@ class UserService extends UserServiceBase {
     return Empty()..webWorkAround = true;
   }
 
-  @override
-  Future<Empty> softDeleteUser(ServiceCall call,
-      User request) async {
-    return querySoftDeleteUser(request);
-  }
-
   // Query
   static Future<List<User>> querySelectUsers([UserGetRequest request] /* {String id, String eMail, String password, String organizationId, bool withProfile = false} */) async {
 
@@ -62,11 +56,11 @@ class UserService extends UserServiceBase {
 
     String queryStatement = '';
     if (request != null && request.withProfile == false) {
-      queryStatement = "SELECT u.id, u.version, u.is_deleted, u.name, u.email, u.password "
+      queryStatement = "SELECT u.id, u.version, u.name, u.email, u.password "
           "FROM general.users u ";
     }
     else {
-      queryStatement = "SELECT u.id, u.version, u.is_deleted, u.name, u.email, u.password, "
+      queryStatement = "SELECT u.id, u.version, u.name, u.email, u.password, "
           " user_profile.image, "
           " user_profile.is_super_admin, "
           " user_profile.idiom_locale "
@@ -98,12 +92,7 @@ class UserService extends UserServiceBase {
       queryStatement = queryStatement +
           " ${whereAnd} u.password = @password";
       _substitutionValues.putIfAbsent("password", () => request.password);
-      whereAnd = "AND";
-    }
-    if (request != null && request.isDeleted != null) {
-      queryStatement = queryStatement + " ${whereAnd} u.is_deleted = @is_deleted";
-      _substitutionValues.putIfAbsent("is_deleted", () => request.isDeleted);
-      // whereAnd = "AND";
+      //The last whereAnd = "AND";
     }
 
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: _substitutionValues);
@@ -113,16 +102,15 @@ class UserService extends UserServiceBase {
       User user = new User()
         ..id = row[0]
         ..version = row[1]
-        ..isDeleted = row[2]
-        ..name = row[3]
-        ..eMail = row[4]
-        ..password = row[5];
+        ..name = row[2]
+        ..eMail = row[3]
+        ..password = row[4];
 
       if (request != null && request.withProfile) {
         user.userProfile = UserProfile();
-        if (row[6] != null) user.userProfile.image = row[6];
-        if (row[7] != null) user.userProfile.isSuperAdmin = row[7];
-        if (row[8] != null) user.userProfile.idiomLocale = row[8];
+        if (row[5] != null) user.userProfile.image = row[5];
+        if (row[6] != null) user.userProfile.isSuperAdmin = row[6];
+        if (row[7] != null) user.userProfile.idiomLocale = row[7];
       }
       users.add(user);
     }
@@ -152,17 +140,15 @@ class UserService extends UserServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "INSERT INTO general.users(id, version, is_deleted, name, email, password) VALUES("
+            "INSERT INTO general.users(id, version,name, email, password) VALUES("
                 "@id,"
                 "@version,"
-                "@is_deleted,"
                 "@name,"
                 "@email,"
                 "@password)"
             , substitutionValues: {
           "id": user.id,
           "version": 0,
-          "is_deleted": false,
           "name": user.name,
           "email": user.eMail,
           "password": user.password});
@@ -230,42 +216,6 @@ class UserService extends UserServiceBase {
     });
     return Empty()..webWorkAround = true;
   }
-
-  static Future<Empty> querySoftDeleteUser(User user) async {
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
-        List<List<dynamic>> result = await ctx.query(
-            "UPDATE general.users "
-                "SET version = @version + 1, "
-                "is_deleted = @is_deleted "
-                "WHERE id = @id AND version = @version "
-                "RETURNING true", substitutionValues: {
-          "id": user.id,
-          "version": user.version,
-          "is_deleted": true});
-
-        // Optimistic concurrency control
-        if (result.length == 0) {
-          throw new GrpcError.failedPrecondition('Precondition Failed');
-        }
-
-        // Soft delete user_profile_organizations related to user
-        await ctx.query(
-            "UPDATE general.users_profile_organizations "
-                "SET version = version + 1, "
-                "is_deleted = @is_deleted "
-                "WHERE user_id = @user_id", substitutionValues: {
-          "user_id": user.id,
-          "is_deleted": true});
-
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
-    return Empty()..webWorkAround = true;
-  }
-
 
   static Future<Empty> queryDeleteUser(User user) async {
 

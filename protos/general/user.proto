@@ -18,38 +18,36 @@ service UserService {
     rpc CreateUser (User) returns (IdResponse) {}
     rpc UpdateUser (User) returns (google.protobuf.Empty) {}
     rpc DeleteUser (User) returns (google.protobuf.Empty) {}
-    rpc SoftDeleteUser (User) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+//    rpc SoftDeleteUser (User) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 }
 
 // Message to respective domain object.
 message User {
     string id = 1;
     int32 version = 2;
-    bool is_deleted = 3;
-    string name = 4;
-    string e_mail = 5;
-    string password = 6;
-    UserProfile userProfile = 7;
+    string name = 3;
+    string e_mail = 4;
+    string password = 5;
+    UserProfile user_profile = 6;
 }
 
 // Message to respective domain object.
 message UserProfile {
-    bool isSuperAdmin = 1;
+    bool is_super_admin = 1;
     string image = 2;
-    string idiomLocale = 3;
+    string idiom_locale = 3;
 }
 
 message UserGetRequest {
     string id = 1;
-    bool is_deleted = 2;
-    string e_mail = 3;
-    string password = 4;
-    string organization_id = 5;
-    bool with_profile = 6;
+    string e_mail = 2;
+    string password = 3;
+    string organization_id = 4;
+    bool with_profile = 5;
 }
 
 // Response list of the organization
 message UsersResponse {
     repeated User users = 1;
-    bool webListWorkAround = 2;
+    bool web_work_around = 2;
 }

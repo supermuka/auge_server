@@ -15,24 +15,22 @@ service StageService {
 
 // Message to respective domain object.
 message Stage {
-
     // Base
     string id = 1;
     int32 version = 2;
-    bool is_deleted = 3;
 
     // Specific
-    string name = 4;
-    State state = 5;
+    string name = 3;
+    State state = 4;
 
     // Define initiative stage order
-    int32 index = 6;
+    int32 index = 5;
 }
 
 // Response list of the stages
 message StagesResponse {
     repeated Stage stages = 1;
-    bool webListWorkAround = 2;
+    bool web_work_around = 2;
 }
 
 // Request for query param

@@ -21,7 +21,6 @@ class WorkItem {
   // Base
   String id;
   int version;
-  bool isDeleted;
 
   // Specific
   String name;
@@ -54,7 +53,6 @@ class WorkItem {
 
     if (this.id != null) workItemPb.id = this.id;
     if (this.version != null) workItemPb.version = this.version;
-    if (this.isDeleted != null) workItemPb.isDeleted = this.isDeleted;
     if (this.name != null) workItemPb.name = this.name;
     if (this.description != null) workItemPb.description = this.description;
     if (this.completed != null) workItemPb.completed = this.completed;
@@ -78,7 +76,6 @@ class WorkItem {
   readFromProtoBuf(work_item_pb.WorkItem workItemPb) {
     if (workItemPb.hasId()) this.id = workItemPb.id;
     if (workItemPb.hasVersion()) this.version = workItemPb.version;
-    if (workItemPb.hasIsDeleted()) this.isDeleted = workItemPb.isDeleted;
     if (workItemPb.hasName()) this.name = workItemPb.name;
     if (workItemPb.hasDescription()) this.description = workItemPb.description;
     if (workItemPb.hasCompleted()) this.completed = workItemPb.completed;

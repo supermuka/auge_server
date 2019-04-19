@@ -24,7 +24,6 @@ class Objective {
   static final String idField = 'Id';
   String id;
   int version;
-  bool isDeleted;
 
   // Transient
   HistoryItem lastHistoryItem;
@@ -81,7 +80,6 @@ class Objective {
 
     if (this.id != null) objectivePb.id = this.id;
     if (this.version != null) objectivePb.version = this.version;
-    if (this.isDeleted != null) objectivePb.isDeleted = this.isDeleted;
     if (this.name != null) objectivePb.name = this.name;
     if (this.description != null) objectivePb.description = this.description;
 
@@ -111,7 +109,6 @@ class Objective {
   readFromProtoBuf(objective_pb.Objective objectivePb) {
     if (objectivePb.hasId()) this.id = objectivePb.id;
     if (objectivePb.hasVersion()) this.version = objectivePb.version;
-    if (objectivePb.hasIsDeleted()) this.isDeleted = objectivePb.isDeleted;
     if (objectivePb.hasName()) this.name = objectivePb.name;
     if (objectivePb.hasDescription()) this.description = objectivePb.description;
     if (objectivePb.hasArchived()) this.archived = objectivePb.archived;

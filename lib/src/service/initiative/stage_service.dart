@@ -19,7 +19,7 @@ class StageService extends StageServiceBase {
   Future<StagesResponse> getStages(ServiceCall call,
       StageGetRequest stageRequest) async {
     StagesResponse statesResponse;
-    statesResponse = StagesResponse()..webListWorkAround = true
+    statesResponse = StagesResponse()..webWorkAround = true
       ..stages.addAll(
           await querySelectStages(stageRequest));
     return statesResponse;
@@ -44,7 +44,6 @@ class StageService extends StageServiceBase {
 
     queryStatement = "SELECT stage.id,"
         " stage.version,"
-        " stage.is_deleted,"
         " stage.name,"
         " stage.index,"
         " stage.initiative_id,"
@@ -68,14 +67,13 @@ class StageService extends StageServiceBase {
 
     List<Stage> stages = new List();
     for (var row in results) {
-      List<State> states = await StateService.querySelectStates((StateGetRequest()..id = row[6]));
+      List<State> states = await StateService.querySelectStates((StateGetRequest()..id = row[5]));
 
       stages.add(new Stage()
         ..id = row[0]
         ..version = row[1]
-        ..isDeleted = row[2]
-        ..name = row[3]
-        ..index = row[4]
+        ..name = row[2]
+        ..index = row[3]
         ..state = states?.first);
     }
     return stages;

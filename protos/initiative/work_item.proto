@@ -22,7 +22,7 @@ service WorkItemService {
     rpc CreateWorkItem (WorkItem) returns (IdResponse) {}
     rpc UpdateWorkItem (WorkItem) returns (google.protobuf.Empty) {}
     rpc DeleteWorkItem (WorkItem) returns (google.protobuf.Empty) {}
-    rpc SoftDeleteWorkItem (WorkItem) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+   // rpc SoftDeleteWorkItem (WorkItem) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 
     rpc GetWorkItemCheckItems (WorkItemCheckItemGetRequest) returns (WorkItemCheckItemsResponse) {}
 }
@@ -33,34 +33,32 @@ message WorkItem {
     // Base
     string id = 1;
     int32 version = 2;
-    bool is_deleted = 3;
 
     // Specific
-    string name = 4;
-    string description = 5;
-    google.protobuf.Timestamp due_date = 6;
-    int32 completed = 7;
-    Stage stage = 8;
+    string name = 3;
+    string description = 4;
+    google.protobuf.Timestamp due_date = 5;
+    int32 completed = 6;
+    Stage stage = 7;
 
-    string initiative_id = 9; // used just to identify parent on request
+    string initiative_id = 8; // used just to identify parent on request
 
-    HistoryItem history_item_log = 10;
+    HistoryItem history_item_log = 9;
 
-    repeated User assigned_to = 11;
-    repeated WorkItemCheckItem check_items = 12;
+    repeated User assigned_to = 10;
+    repeated WorkItemCheckItem check_items = 11;
 }
 
 // Response list of the WorkItems
 message WorkItemsResponse {
     repeated WorkItem workItems = 1;
-    bool webListWorkAround = 2;
+    bool webWorkAround = 2;
 }
 
 // Request for Work Item
 message WorkItemGetRequest {
 
     string id = 1;
-    bool is_deleted = 2;
     string initiative_id = 3;
 }
 
@@ -70,22 +68,21 @@ message WorkItemCheckItem {
     // Base
     string id = 1;
     int32 version = 2;
-    bool is_deleted = 3;
 
     // Specific
-    string name = 4;
-    bool finished = 5;
+    string name = 3;
+    bool finished = 4;
 
     // Define check item order
-    int32 index = 6;
-    string work_item_check_item_id = 7; // Just to pass parent id
+    int32 index = 5;
+    string work_item_check_item_id = 6; // Just to pass parent id
 
 }
 
 // Response list of the WorkItemCheckItems
 message WorkItemCheckItemsResponse {
-    repeated WorkItemCheckItem workItemCheckItems = 1;
-    bool webListWorkAround = 2;
+    repeated WorkItemCheckItem work_item_check_items = 1;
+    bool web_work_around = 2;
 }
 
 // Request for query param

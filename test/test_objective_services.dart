@@ -122,7 +122,6 @@ void main() {
             ..description = description
             ..organization = (Organization()..id = organizationId)
             ..archived = false
-            ..isDeleted = false
             ..historyItemLog = (HistoryItem()..user = (User()..id = userId)..changedValues.putIfAbsent('id',() => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
 
         Objective objective = await objectiveStub
@@ -135,25 +134,6 @@ void main() {
         expect(objective.description, description);
       });
 
-      test('Call operation softDeleteObjective', () async {
-        Empty emptyPb = await objectiveStub
-            .softDeleteObjective(Objective()
-          ..id = id
-          ..version = 1
-          ..historyItemLog = (HistoryItem()..user = (User()..id = userId)..changedValues.putIfAbsent('id',() => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
-
-        expect(emptyPb, isNotNull);
-
-        try {
-          Objective objective = await objectiveStub
-              .getObjective(ObjectiveGetRequest()
-            ..id = id);
-
-          expect(objective, isNull);
-        } on GrpcError catch (e) {
-          expect(e.code, StatusCode.notFound);
-        }
-      });
     });
 
     group('Measure Service.', () {
@@ -251,7 +231,6 @@ void main() {
             ..name = name
             ..description = description
             ..objectiveId = objectiveId
-            ..isDeleted = false
             ..historyItemLog = (HistoryItem()..user = (User()..id = userId)..changedValues.putIfAbsent('id',() => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
 
         Measure measure = await measureStub

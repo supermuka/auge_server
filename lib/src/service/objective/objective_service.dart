@@ -35,7 +35,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   Future<ObjectivesResponse> getObjectives(ServiceCall call,
       ObjectiveGetRequest request) async {
 
-    return ObjectivesResponse()..webListWorkAround = true..objectives.addAll(await querySelectObjectives(request));
+    return ObjectivesResponse()..webWorkAround = true..objectives.addAll(await querySelectObjectives(request));
   }
 
   @override
@@ -59,13 +59,6 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   @override
-  Future<Empty> softDeleteObjective(ServiceCall call,
-      Objective request) async {
-    request.isDeleted = true;
-    return queryUpdateObjective(request);
-  }
-
-  @override
   Future<Empty> deleteObjective(ServiceCall call,
       Objective request) async {
     return queryDeleteObjective(request);
@@ -79,27 +72,26 @@ class ObjectiveService extends ObjectiveServiceBase {
     // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
     String queryStatementColumns = "objective.id," //0
         " objective.version, " //1
-        " objective.is_deleted, " //2
-        " objective.name," //3
-        " objective.description," //4
-        " objective.start_date," //5
-        " objective.end_date," //6
-        " objective.archived," //7
-        " objective.leader_user_id," //8
-        " objective.aligned_to_objective_id," //9
-        " objective.organization_id," //10
-        " objective.group_id"; //11
+        " objective.name," //2
+        " objective.description," //3
+        " objective.start_date," //4
+        " objective.end_date," //5
+        " objective.archived," //6
+        " objective.leader_user_id," //7
+        " objective.aligned_to_objective_id," //8
+        " objective.organization_id," //9
+        " objective.group_id"; //10
 
     String queryStatementWhere = "";
     Map<String, dynamic> substitutionValues;
 
     if (objectiveSelectRequest.id != null && objectiveSelectRequest.id.isNotEmpty) {
-      queryStatementWhere = " objective.id = @id AND objective.is_deleted = @is_deleted";
-      substitutionValues = {"id": objectiveSelectRequest.id, "is_deleted": objectiveSelectRequest.isDeleted};
+      queryStatementWhere = " objective.id = @id";
+      substitutionValues = {"id": objectiveSelectRequest.id};
 
     } else if (objectiveSelectRequest.organizationId != null && objectiveSelectRequest.organizationId.isNotEmpty) {
-      queryStatementWhere = " objective.organization_id = @organization_id AND objective.is_deleted = @is_deleted";
-      substitutionValues = {"organization_id": objectiveSelectRequest.organizationId, "is_deleted": objectiveSelectRequest.isDeleted};
+      queryStatementWhere = " objective.organization_id = @organization_id";
+      substitutionValues = {"organization_id": objectiveSelectRequest.organizationId};
 
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.objectiveInvalidArgument );
@@ -180,31 +172,30 @@ class ObjectiveService extends ObjectiveServiceBase {
         objective = new Objective()
           ..id = row[0]
           ..version = row[1]
-          ..isDeleted = row[2]
-          ..name = row[3];
+           ..name = row[2];
 
-        if (row[4] != null) objective.description = row[4];
+        if (row[3] != null) objective.description = row[3];
         //if (row[4] != null) objective.startDate = row[4];
 
-        if (row[5] != null) {
+        if (row[4] != null) {
           Timestamp t = Timestamp();
-          int microsecondsSinceEpoch = row[5].toUtc().microsecondsSinceEpoch;
+          int microsecondsSinceEpoch = row[4].toUtc().microsecondsSinceEpoch;
           t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
           t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
           objective.startDate = t;
         }
 
         //  if (row[5] != null) objective.endDate = row[5];
-        if (row[6] != null) {
+        if (row[5] != null) {
           Timestamp t = Timestamp();
-          int microsecondsSinceEpoch = row[6].toUtc().microsecondsSinceEpoch;
+          int microsecondsSinceEpoch = row[5].toUtc().microsecondsSinceEpoch;
           t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
           t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
           objective.endDate = t;
         }
 
 
-        if (row[7] != null) objective.archived =  row[7];
+        if (row[6] != null) objective.archived =  row[6];
         if (organization != null) objective.organization = organization;
         if (leaderUser != null) objective.leader = leaderUser;
         if (measures.isNotEmpty) objective.measures.addAll(measures);
@@ -216,11 +207,11 @@ class ObjectiveService extends ObjectiveServiceBase {
 
         if (!objectiveSelectRequest.treeAlignedWithChildren) {
           // Parent must be present in the list (objectives);
-          if (row[9] == null)
+          if (row[8] == null)
             objectivesTree.add(objective);
           else {
             objectives
-                .singleWhere((o) => o.id == row[9])
+                .singleWhere((o) => o.id == row[8])
                 ?.alignedWithChildren
                 ?.add(objective);
           }
@@ -255,10 +246,9 @@ class ObjectiveService extends ObjectiveServiceBase {
 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
-        await ctx.query("INSERT INTO objective.objectives(id, version, is_deleted, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
+        await ctx.query("INSERT INTO objective.objectives(id, version, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
             "(@id,"
             "@version,"
-            "@is_deleted,"
             "@name,"
             "@description,"
             "@start_date,"
@@ -271,7 +261,6 @@ class ObjectiveService extends ObjectiveServiceBase {
             , substitutionValues: {
               "id": objective.id,
               "version": 0,
-              "is_deleted": objective.hasIsDeleted() ? objective.isDeleted : false,
               "name": objective.name,
               "description": objective.hasDescription() ?  objective.description : null,
               "start_date": objective.hasStartDate() ? objective.startDate : null,
@@ -311,48 +300,36 @@ class ObjectiveService extends ObjectiveServiceBase {
 
       List<List<dynamic>> result;
       await (await AugeConnection.getConnection()).transaction((ctx) async {
-        if (objective.isDeleted) {
-          result = await ctx.query("UPDATE objective.objectives "
-              " SET version = @version + 1, "
-              " is_deleted = @is_deleted "
-              " WHERE id = @id and version = @version"
-              " RETURNING true "
-              , substitutionValues: {
-                "id": objective.id,
-                "version": objective.version,
-                "is_deleted": objective.isDeleted,
-              });
-        } else {
-          result = await ctx.query(
-              "UPDATE objective.objectives "
-                  " SET version = @version + 1, "
-                  " name = @name,"
-                  " description = @description,"
-                  " start_date = @start_date,"
-                  " end_date = @end_date,"
-                  " archived = @archived,"
-                  " aligned_to_objective_id = @aligned_to_objective_id,"
-                  " organization_id = @organization_id,"
-                  " leader_user_id = @leader_user_id,"
-                  " group_id = @group_id,"
-                  " is_deleted = @is_deleted"
-                  " WHERE id = @id and version = @version"
-                  " RETURNING true"
-              , substitutionValues: {
-            "id": objective.id,
-            "version": objective.version,
-            "name": objective.name,
-            "description": objective.hasDescription() ? objective.description : null,
-            "start_date": objective.hasStartDate() ? objective.startDate : null,
-            "end_date": objective.hasEndDate() ? objective.endDate : null,
-            "archived": objective.hasArchived() ? objective.archived : null,
-            "aligned_to_objective_id": objective.hasAlignedTo() ? objective.alignedTo.id : null,
-            "organization_id": objective.hasOrganization() ? objective.organization.id : null,
-            "leader_user_id": objective.hasLeader() ? objective.leader.id : null,
-            "group_id": objective.hasGroup() ? objective.group.id : null,
-            "is_deleted": objective.hasIsDeleted() ? objective.isDeleted : null,
-          });
-        }
+
+        result = await ctx.query(
+            "UPDATE objective.objectives "
+                " SET version = @version + 1, "
+                " name = @name,"
+                " description = @description,"
+                " start_date = @start_date,"
+                " end_date = @end_date,"
+                " archived = @archived,"
+                " aligned_to_objective_id = @aligned_to_objective_id,"
+                " organization_id = @organization_id,"
+                " leader_user_id = @leader_user_id,"
+                " group_id = @group_id,"
+                " WHERE id = @id and version = @version"
+                " RETURNING true"
+            , substitutionValues: {
+          "id": objective.id,
+          "version": objective.version,
+          "name": objective.name,
+          "description": objective.hasDescription() ? objective.description : null,
+          "start_date": objective.hasStartDate() ? objective.startDate : null,
+          "end_date": objective.hasEndDate() ? objective.endDate : null,
+          "archived": objective.hasArchived() ? objective.archived : null,
+          "aligned_to_objective_id": objective.hasAlignedTo() ? objective.alignedTo.id : null,
+          "organization_id": objective.hasOrganization() ? objective.organization.id : null,
+          "leader_user_id": objective.hasLeader() ? objective.leader.id : null,
+          "group_id": objective.hasGroup() ? objective.group.id : null,
+
+        });
+
 
         // Optimistic concurrency control
         if (result.isEmpty) {

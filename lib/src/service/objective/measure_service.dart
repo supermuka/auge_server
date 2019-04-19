@@ -26,7 +26,7 @@ class MeasureService extends MeasureServiceBase {
   Future<MeasureUnitsResponse> getMeasureUnits(ServiceCall call,
       Empty) async {
     MeasureUnitsResponse measureUnitsResponse;
-    measureUnitsResponse = MeasureUnitsResponse()..webListWorkAround = true
+    measureUnitsResponse = MeasureUnitsResponse()..webWorkAround = true
       ..measureUnits.addAll(
           await querySelectMeasureUnits());
     return measureUnitsResponse;
@@ -36,7 +36,7 @@ class MeasureService extends MeasureServiceBase {
   Future<MeasuresResponse> getMeasures(ServiceCall call,
       MeasureGetRequest request) async {
     MeasuresResponse measuresResponse;
-    measuresResponse = MeasuresResponse()..webListWorkAround = true
+    measuresResponse = MeasuresResponse()..webWorkAround = true
       ..measures.addAll(
           await querySelectMeasures(request));
     return measuresResponse;
@@ -69,18 +69,12 @@ class MeasureService extends MeasureServiceBase {
     return queryDeleteMeasure(measure);
   }
 
-  @override
-  Future<Empty> softDeleteMeasure(ServiceCall call,
-      Measure measure) async {
-    measure.isDeleted = true;
-    return queryUpdateMeasure(measure);
-  }
 
   @override
   Future<MeasureProgressesResponse> getMeasureProgresses(ServiceCall call,
       MeasureProgressGetRequest request) async {
     return
-    MeasureProgressesResponse()..webListWorkAround = true..measureProgresses.addAll(await querySelectMeasureProgresses(request));
+    MeasureProgressesResponse()..webWorkAround = true..measureProgresses.addAll(await querySelectMeasureProgresses(request));
   }
 
   @override
@@ -110,14 +104,6 @@ class MeasureService extends MeasureServiceBase {
       MeasureProgress measureProgress) async {
     return queryDeleteMeasureProgress(measureProgress);
   }
-
-  @override
-  Future<Empty> softDeleteMeasureProgress(ServiceCall call,
-      MeasureProgress measureProgress) async {
-    measureProgress.isDeleted = true;
-    return queryUpdateMeasureProgress(measureProgress);
-  }
-
 
   // QUERY
   // *** MEASURE UNITS ***
@@ -158,28 +144,27 @@ class MeasureService extends MeasureServiceBase {
     String queryStatement;
 
     queryStatement = "SELECT id," //0
-        " is_deleted" //1
-        " version, " //2
-        " name," //3
-        " description," //4
-        " metric," //5
-        " decimals_number," //6
-        " start_value::REAL," //7
-        " end_value::REAL," //8
-        " (select current_value from objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //9
-        " measure_unit_id " //10
+        " version, " //1
+        " name," //2
+        " description," //3
+        " metric," //4
+        " decimals_number," //5
+        " start_value::REAL," //6
+        " end_value::REAL," //7
+        " (select current_value from objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //8
+        " measure_unit_id " //9
         " FROM objective.measures measure ";
 
     Map<String, dynamic> substitutionValues;
 
     if (request.id != null && request.id.isNotEmpty) {
-      queryStatement += " WHERE id = @id AND is_deleted = @is_deleted";
-      substitutionValues = {"id": request.id, "is_deleted": request.isDeleted};
+      queryStatement += " WHERE id = @id";
+      substitutionValues = {"id": request.id};
     } else if (request.objectiveId != null && request.objectiveId.isNotEmpty) {
       queryStatement +=
-      " WHERE objective_id = @objective_id AND is_deleted = @is_deleted";
+      " WHERE objective_id = @objective_id";
       substitutionValues =
-      {"objective_id": request.objectiveId, "is_deleted": request.isDeleted};
+      {"objective_id": request.objectiveId};
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.measureInvalidArgument );
     }
@@ -208,17 +193,15 @@ class MeasureService extends MeasureServiceBase {
         measure
           ..id = row[0]
           ..version = row[1]
-          ..isDeleted = row[2]
-          ..name = row[3];
+          ..name = row[2];
 
-        if (row[4] != null)  measure.description = row[4];
-        if (row[5] != null) measure.metric = row[5];
-        if (row[6] != null) measure.decimalsNumber = row[6];
-        if (row[7] != null) measure.startValue = row[7];
-        if (row[8] != null) measure.endValue = row[8];
-        if (row[9] != null) measure.currentValue = row[9];
+        if (row[3] != null)  measure.description = row[3];
+        if (row[4] != null) measure.metric = row[4];
+        if (row[5] != null) measure.decimalsNumber = row[5];
+        if (row[6] != null) measure.startValue = row[6];
+        if (row[7] != null) measure.endValue = row[7];
+        if (row[8] != null) measure.currentValue = row[8];
         if (measureUnit != null) measure.measureUnit = measureUnit;
-        if (row[11] != null) measure.isDeleted = row[11];
 
         measures.add(measure);
       }
@@ -246,10 +229,9 @@ class MeasureService extends MeasureServiceBase {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
-            "INSERT INTO objective.measures(id, version, is_deleted, name, description, metric, decimals_number, start_value, end_value, measure_unit_id, objective_id) VALUES"
+            "INSERT INTO objective.measures(id, version, name, description, metric, decimals_number, start_value, end_value, measure_unit_id, objective_id) VALUES"
                 "(@id,"
                 "@version,"
-                "@is_deleted,"
                 "@name,"
                 "@description,"
                 "@metric,"
@@ -261,7 +243,6 @@ class MeasureService extends MeasureServiceBase {
             , substitutionValues: {
           "id": measure.id,
           "version": 0,
-          "is_deleted": measure.hasIsDeleted() ? measure.isDeleted : false,
           "name": measure.name,
           "description": measure.hasDescription() ? measure.description : null,
           "metric": measure.hasMetric() ? measure.metric : null,
@@ -302,19 +283,6 @@ class MeasureService extends MeasureServiceBase {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         List<List<dynamic>> result;
 
-        // Soft delete
-        if (measure.isDeleted) {
-          result = await ctx.query("UPDATE objective.measures "
-              " SET version = @version + 1,"
-              " is_deleted = @is_deleted"
-              " WHERE id = @id AND version = @version"
-              " RETURNING true"
-              , substitutionValues: {
-                "id": measure.id,
-                "version": measure.version,
-                "is_deleted": measure.isDeleted,
-              });
-        } else {
           result = await ctx.query("UPDATE objective.measures "
               " SET version = @version + 1,"
               " name = @name,"
@@ -326,7 +294,6 @@ class MeasureService extends MeasureServiceBase {
              // " current_value = @current_value,"
               " objective_id = @objective_id,"
               " measure_unit_id = @measure_unit_id,"
-              " is_deleted = @is_deleted"
               " WHERE id = @id AND version = @version"
               " RETURNING true"
               , substitutionValues: {
@@ -341,9 +308,7 @@ class MeasureService extends MeasureServiceBase {
                 //"current_value": measureRequest.currentValue,
                 "measure_unit_id": measure.hasMeasureUnit() ? measure.measureUnit.id : null,
                 "objective_id": measure.hasObjectiveId() ? measure.objectiveId : null,
-                "is_deleted": measure.hasIsDeleted() ? measure.isDeleted : null,
               });
-        }
 
         // Optimistic concurrency control
         if (result.length == 0) {
@@ -399,23 +364,20 @@ class MeasureService extends MeasureServiceBase {
 
     queryStatement = "SELECT id," // 0
         " version," //1
-        " is_deleted," //2
-        " date," //3
-        " current_value," //4
-        " comment," //5
-        " measure_id" //6
+        " date," //2
+        " current_value," //3
+        " comment," //4
+        " measure_id" //5
         " FROM objective.measure_progress ";
 
     Map<String, dynamic> substitutionValues;
 
     if (request.hasId()) {
       queryStatement +=
-      " WHERE id = @id AND objective.measure_progress.is_deleted = @is_deleted";
-      substitutionValues = {"id": request.id, "is_deleted": request.isDeleted};
+      " WHERE id = @id";
     } else if (request.hasMeasureId()) {
       queryStatement +=
-      " WHERE measure_id = @measure_id AND objective.measure_progress.is_deleted = @is_deleted";
-      substitutionValues = {"measure_id": request.measureId, "is_deleted": request.isDeleted};
+      " WHERE measure_id = @measure_id";
     }
 
     results = await (await AugeConnection.getConnection()).query(
@@ -427,23 +389,22 @@ class MeasureService extends MeasureServiceBase {
       for (var row in results) {
         MeasureProgress measureProgress = MeasureProgress()
           ..id = row[0]
-          ..version = row[1]
-          ..isDeleted = row[2];
+          ..version = row[1];
 
         //  measureProgress.date = row[3]
-          if (row[3] != null) {
+          if (row[2] != null) {
             Timestamp t = Timestamp();
-            int microsecondsSinceEpoch = row[3].toUtc().microsecondsSinceEpoch;
+            int microsecondsSinceEpoch = row[2].toUtc().microsecondsSinceEpoch;
             t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
             t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
             measureProgress.date = t;
           }
 
-          if (row[4] != null) {
-            measureProgress.currentValue = row[4];
+          if (row[3] != null) {
+            measureProgress.currentValue = row[3];
           }
-          if (row[5] != null) {
-            measureProgress.comment = row[5];
+          if (row[4] != null) {
+            measureProgress.comment = row[4];
           }
 
         mesuareProgresses.add(measureProgress);
@@ -474,10 +435,9 @@ class MeasureService extends MeasureServiceBase {
         measureProgress.version = 0;
 
         await ctx.query(
-            "INSERT INTO objective.measure_progress(id, version, is_deleted, date, current_value, comment, measure_id) VALUES"
+            "INSERT INTO objective.measure_progress(id, version, date, current_value, comment, measure_id) VALUES"
                 "(@id,"
                 "@version,"
-                "@is_deleted,"
                 "@date,"
                 "@current_value,"
                 "@comment,"
@@ -489,7 +449,6 @@ class MeasureService extends MeasureServiceBase {
           "current_value": measureProgress.hasCurrentValue() ? measureProgress.currentValue : null,
           "comment": measureProgress.hasComment() ? measureProgress.comment : null,
           "measure_id": measureProgress.hasMeasureId() ? measureProgress.measureId : null,
-          "is_deleted": false,
         });
 
         // HistoryItem - server-side generation
@@ -524,65 +483,52 @@ class MeasureService extends MeasureServiceBase {
 
         List<List<dynamic>> result;
 
-        // Soft delete
-        if (measureProgress.isDeleted) {
-          result = await ctx.query(
-              "UPDATE objective.measure_progress "
-                  "SET is_deleted = @is_deleted, "
-                  "version = @version + 1"
-                  "WHERE id = @id AND version = @version "
-                  "RETURNING true"
-              , substitutionValues: {
-            "id": measureProgress.id,
-            "version": measureProgress.version,
-            "is_deleted": measureProgress.isDeleted,});
-        } else {
-          if (measureProgress.id == null) {
-            measureProgress.id = new Uuid().v4();
-          }
-
-          result = await ctx.query(
-              "UPDATE objective.measure_progress "
-                  "SET date = @date, "
-                  "current_value = @current_value, "
-                  "comment = @comment, "
-                  "measure_id = @measure_id, "
-                  "version = @version + 1"
-                  "WHERE id = @id AND version = @version "
-                  "RETURNING true"
-              , substitutionValues: {
-            "id": measureProgress.id,
-            "version": measureProgress.version,
-            "date": measureProgress.date == null
-                ? dateTimeNow
-                : measureProgress.date,
-            "current_value": measureProgress.hasCurrentValue() ? measureProgress.currentValue : null,
-            "comment": measureProgress.hasComment() ? measureProgress.comment : null,
-            "measure_id": measureProgress.hasMeasureId() ? measureProgress.measureId : null,
-
-          });
-
-          // Optimistic concurrency control
-          if (result.length == 0) {
-            throw new GrpcError.failedPrecondition(
-                RpcErrorDetailMessage.measurePreconditionFailed);
-          } else {
-            // HistoryItem - server-side generation
-            measureProgress.historyItemLog
-              ..id = new Uuid().v4()
-              ..objectId = measureProgress.id
-              ..objectVersion = measureProgress.version
-              ..objectClassName = 'MeasureProgress' // objectiveRequest.runtimeType.toString(),
-              ..systemFunctionIndex = SystemFunction.update.index;
-            // ..dateTime = DateTime.now().toUtc();
-
-            // Create a history item
-            await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-                substitutionValues: HistoryItemService
-                    .querySubstitutionValuesCreateHistoryItem(
-                    measureProgress.historyItemLog));
-          }
+        if (measureProgress.id == null) {
+          measureProgress.id = new Uuid().v4();
         }
+
+        result = await ctx.query(
+            "UPDATE objective.measure_progress "
+                "SET date = @date, "
+                "current_value = @current_value, "
+                "comment = @comment, "
+                "measure_id = @measure_id, "
+                "version = @version + 1"
+                "WHERE id = @id AND version = @version "
+                "RETURNING true"
+            , substitutionValues: {
+          "id": measureProgress.id,
+          "version": measureProgress.version,
+          "date": measureProgress.date == null
+              ? dateTimeNow
+              : measureProgress.date,
+          "current_value": measureProgress.hasCurrentValue() ? measureProgress.currentValue : null,
+          "comment": measureProgress.hasComment() ? measureProgress.comment : null,
+          "measure_id": measureProgress.hasMeasureId() ? measureProgress.measureId : null,
+
+        });
+
+        // Optimistic concurrency control
+        if (result.length == 0) {
+          throw new GrpcError.failedPrecondition(
+              RpcErrorDetailMessage.measurePreconditionFailed);
+        } else {
+          // HistoryItem - server-side generation
+          measureProgress.historyItemLog
+            ..id = new Uuid().v4()
+            ..objectId = measureProgress.id
+            ..objectVersion = measureProgress.version
+            ..objectClassName = 'MeasureProgress' // objectiveRequest.runtimeType.toString(),
+            ..systemFunctionIndex = SystemFunction.update.index;
+          // ..dateTime = DateTime.now().toUtc();
+
+          // Create a history item
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: HistoryItemService
+                  .querySubstitutionValuesCreateHistoryItem(
+                  measureProgress.historyItemLog));
+        }
+
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');

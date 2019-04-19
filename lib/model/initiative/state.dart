@@ -16,7 +16,6 @@ class State {
   // Base
   String id;
   int version;
-  bool isDeleted;
 
   // Specific
   String name;
@@ -37,7 +36,6 @@ class State {
 
     if (this.id != null) statePb.id = this.id;
     if (this.version != null) statePb.version = this.version;
-    if (this.isDeleted != null) statePb.isDeleted = this.isDeleted;
     if (this.name != null) statePb.name = this.name;
     if (this.index != null) statePb.index = this.index;
 
@@ -49,7 +47,6 @@ class State {
   readFromProtoBuf(state_pb.State statePb) {
     if (statePb.hasId()) this.id = statePb.id;
     if (statePb.hasVersion()) this.version = statePb.version;
-    if (statePb.hasIsDeleted()) this.isDeleted = statePb.isDeleted;
     if (statePb.hasName()) this.name = statePb.name;
     if (statePb.hasIndex()) this.index = statePb.index;
     if (statePb.color.isNotEmpty) this.color = statePb.color;

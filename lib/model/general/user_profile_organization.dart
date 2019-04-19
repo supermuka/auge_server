@@ -13,7 +13,6 @@ class UserProfileOrganization {
   // Base fields
   String id;
   int version;
-  bool isDeleted;
 
   // Specific fields
   int authorizationRole;
@@ -25,7 +24,6 @@ class UserProfileOrganization {
 
     if (this.id != null) userProfileOrganizationPb.id = this.id;
     if (this.version != null) userProfileOrganizationPb.version = this.version;
-    if (this.isDeleted != null) userProfileOrganizationPb.isDeleted = this.isDeleted;
     if (this.authorizationRole != null) userProfileOrganizationPb.authorizationRole = this.authorizationRole;
     if (this.user != null) userProfileOrganizationPb.user = this.user.writeToProtoBuf();
     if (this.organization != null) userProfileOrganizationPb.organization = this.organization.writeToProtoBuf();
@@ -36,10 +34,8 @@ class UserProfileOrganization {
   readFromProtoBuf(user_profile_organization_pb.UserProfileOrganization userProfileOrganizationPb) {
     if (userProfileOrganizationPb.hasId()) this.id = userProfileOrganizationPb.id;
     if (userProfileOrganizationPb.hasVersion()) this.version = userProfileOrganizationPb.version;
-    if (userProfileOrganizationPb.hasIsDeleted()) this.isDeleted = userProfileOrganizationPb.isDeleted;
     if (userProfileOrganizationPb.hasAuthorizationRole()) this.authorizationRole = userProfileOrganizationPb.authorizationRole;
     if (userProfileOrganizationPb.hasUser()) this.user = User()..readFromProtoBuf(userProfileOrganizationPb.user);
     if (userProfileOrganizationPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(userProfileOrganizationPb.organization);
   }
-
 }

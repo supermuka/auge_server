@@ -15,7 +15,6 @@ class Measure {
   static final String idField = 'Id';
   String id;
   int version;
-  bool isDeleted;
 
   // History
   // HistoryItem lastHistoryItem;
@@ -102,7 +101,6 @@ class Measure {
 
     if (this.id != null) measurePb.id = this.id;
     if (this.version != null) measurePb.version = this.version;
-    if (this.isDeleted != null) measurePb.isDeleted = this.isDeleted;
     if (this.name != null) measurePb.name = this.name;
     if (this.description != null) measurePb.description = this.description;
 
@@ -122,7 +120,6 @@ class Measure {
   readFromProtoBuf(measure_pb.Measure measurePb) {
     if (measurePb.hasId()) this.id = measurePb.id;
     if (measurePb.hasVersion()) this.version = measurePb.version;
-    if (measurePb.hasIsDeleted()) this.isDeleted = measurePb.isDeleted;
     if (measurePb.hasName()) this.name = measurePb.name;
     if (measurePb.hasDescription()) this.description = measurePb.description;
 
@@ -159,7 +156,6 @@ class MeasureProgress {
 
     if (this.id != null) measureProgressPb.id = this.id;
     if (this.version != null) measureProgressPb.version = this.version;
-    if (this.isDeleted != null) measureProgressPb.isDeleted = this.isDeleted;
 
     if (this.date != null) {
       Timestamp t = Timestamp();
@@ -178,7 +174,6 @@ class MeasureProgress {
   readFromProtoBuf(measure_pb.MeasureProgress measureProgressPb) {
     if (measureProgressPb.hasId()) this.id = measureProgressPb.id;
     if (measureProgressPb.hasVersion()) this.version = measureProgressPb.version;
-    if (measureProgressPb.hasIsDeleted()) this.isDeleted = measureProgressPb.isDeleted;
     if (measureProgressPb.hasDate()) this.date =  DateTime.fromMicrosecondsSinceEpoch(measureProgressPb.date.seconds.toInt() * 1000000 + measureProgressPb.date.nanos ~/ 1000 );
     if (measureProgressPb.hasCurrentValue()) this.currentValue = measureProgressPb.currentValue;
     if (measureProgressPb.hasComment()) this.comment = measureProgressPb.comment;

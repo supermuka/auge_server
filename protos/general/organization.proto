@@ -17,26 +17,24 @@ service OrganizationService {
     rpc CreateOrganization (Organization) returns (IdResponse) {}
     rpc UpdateOrganization (Organization) returns (google.protobuf.Empty) {}
     rpc DeleteOrganization (Organization) returns (google.protobuf.Empty) {}
-    rpc SoftDeleteOrganization(Organization) returns (google.protobuf.Empty) {}
+   // rpc SoftDeleteOrganization(Organization) returns (google.protobuf.Empty) {}
 }
 
 // Message to respective domain object.
 message Organization {
     string id = 1;
     int32 version = 2;
-    bool is_deleted = 3;
-    string name = 4;
-    string code = 5;
+    string name = 3;
+    string code = 4;
 }
 
 // Request for query select
 message OrganizationGetRequest {
     string id = 1;
-    bool is_deleted = 2;
 }
 
 // Response list of the organization
 message OrganizationsResponse {
     repeated Organization organizations = 1;
-    bool webListWorkAround = 2;
+    bool web_work_around = 2;
 }

@@ -26,44 +26,41 @@ service InitiativeService {
     rpc CreateInitiative (Initiative) returns (IdResponse) {}
     rpc UpdateInitiative (Initiative) returns (google.protobuf.Empty) {}
     rpc DeleteInitiative (Initiative) returns (google.protobuf.Empty) {}
-    rpc SoftDeleteInitiative (Initiative) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+   // rpc SoftDeleteInitiative (Initiative) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 
 }
 
 // Message to respective domain object.
 message Initiative {
-
     // Base
     string id = 1;
     int32 version = 2;
-    bool is_deleted = 3;
 
     // Specific
-    string name = 4;
-    string description = 5;
-    repeated Stage stages = 6;
-    repeated WorkItem work_items = 7;
+    string name = 3;
+    string description = 4;
+    repeated Stage stages = 5;
+    repeated WorkItem work_items = 6;
 
-    Objective objective = 8;
-    Organization organization = 9;
-    Group group = 10;
-    User leader = 11;
+    Objective objective = 7;
+    Organization organization = 8;
+    Group group = 9;
+    User leader = 10;
 
-    HistoryItem history_item_log = 14;
+    HistoryItem history_item_log = 11;
 }
 
 // Response list of the stages
 message InitiativesResponse {
     repeated Initiative initiatives = 1;
-    bool webListWorkAround = 2;
+    bool web_work_around = 2;
 }
 
 // Request for query param
 message InitiativeGetRequest {
     string id = 1;
-    bool is_deleted = 2;
-    string organization_id = 3;
-    string objective_id = 4;
-    bool with_work_items = 5;
-    bool with_profile = 6;
+    string organization_id = 2;
+    string objective_id = 3;
+    bool with_work_items = 4;
+    bool with_profile = 5;
 }
