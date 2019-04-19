@@ -5,7 +5,6 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as io;
 
 import 'package:rpc/rpc.dart';
-import 'package:rpc/src/utils.dart';
 
 import 'package:auge_server/augeapi.dart';
 import 'package:auge_server/initiativeaugeapi.dart';

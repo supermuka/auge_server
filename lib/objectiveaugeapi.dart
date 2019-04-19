@@ -387,8 +387,6 @@ class ObjectiveAugeApi {
   Future<VoidMessage> updateMeasureProgress(String measureId,  MeasureProgress measureProgress) async {
     try {
 
-      DateTime dateTimeNow = DateTime.now().toUtc();
-
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         DateTime dateTimeNow = DateTime.now().toUtc();
@@ -787,8 +785,6 @@ class ObjectiveAugeApi {
     if (objective.id == null) {
       objective.id = new Uuid().v4();
     }
-
-    DateTime dateTimeNow = DateTime.now().toUtc();
 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {

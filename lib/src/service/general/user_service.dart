@@ -10,7 +10,6 @@ import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
 import 'package:auge_server/augeconnection.dart';
-import 'package:protobuf/protobuf.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -29,7 +28,6 @@ class UserService extends UserServiceBase {
     User user = await querySelectUser(request);
     // if (user == null) call.sendTrailers(status: StatusCode.notFound, message: "User not found.");
     if (user == null) throw new GrpcError.notFound("User not found.");
-    print(user);
     return user;
   }
 

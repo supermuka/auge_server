@@ -1,12 +1,9 @@
 import 'package:test/test.dart';
 
-
-import 'package:auge_server/src/protos/generated/general/organization.pb.dart' as organization_pb;
 import 'package:auge_server/src/protos/generated/initiative/initiative.pb.dart' as initiative_pb;
 import 'package:auge_server/src/protos/generated/initiative/work_item.pb.dart' as work_item_pb;
 import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart' as stage_pb;
 import 'package:auge_server/src/protos/generated/initiative/state.pb.dart' as state_pb;
-
 
 import 'package:auge_server/model/general/organization.dart' as organization_m;
 import 'package:auge_server/model/general/group.dart' as group_m;

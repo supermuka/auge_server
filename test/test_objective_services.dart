@@ -63,7 +63,6 @@ void main() {
         UsersResponse usersResponse = await userStub
             .getUsers(UserGetRequest());
         expect(usersResponse.users, isNotNull);
-        print(usersResponse.users.length);
         if (usersResponse.users.length != 0)
           userId = usersResponse.users.first.id;
 
@@ -178,7 +177,7 @@ void main() {
       description = 'Description test';
 
       test('Call operation createMeasure', () async {
-        print('111');
+
         IdResponse idResponsePb = await measureStub
             .createMeasure(Measure()
           ..name = name
@@ -188,11 +187,11 @@ void main() {
         expect(idResponsePb.hasId(), isTrue);
 
         id = idResponsePb.id;
-        print('222');
+
         Measure measure = await measureStub
             .getMeasure(MeasureGetRequest()
           ..id = id);
-        print('333');
+
         expect(measure, isNotNull);
         expect(measure.id, id);
         expect(measure.name, name);

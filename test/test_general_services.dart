@@ -201,7 +201,6 @@ void main() {
       test('Call operation deleteUserProfileOrganization - all items', () async {
 
         for (final i in usersProfileOrganizationsResponse.usersProfileOrganizations) {
-          print(i.id);
           await stub.deleteUserProfileOrganization(
               UserProfileOrganization()
                 ..id = i.id);

@@ -622,12 +622,8 @@ class AugeApi {
           ..superGroup = superGroup
           ..leader = leader
           ..members = (members != null && members.length != 0) ? members : null;
-
+/*
         if (withAudit) {
-
-          List<User> createdByList;
-          List<User> updatedByList;
-          List<User> deletedByList;
 
           if (row[8] != null) {
             createdByList = await AugeApi.queryUsers(id: row[8], withProfile: false);
@@ -641,7 +637,7 @@ class AugeApi {
             deletedByList = await AugeApi.queryUsers(id: row[12], withProfile: false);
           }
         }
-
+*/
         groups.add(group);
       }
     }
@@ -695,8 +691,7 @@ class AugeApi {
 
         // Assigned Members Users
         for (var user in group.members) {
-          print(user.runtimeType);
-          print(user.id);
+
           await ctx.query("INSERT INTO auge.groups_users"
               " (group_id,"
               " user_id)"

@@ -1,6 +1,7 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel.
 
+import 'dart:async';
 
 import 'package:postgres/postgres.dart';
 

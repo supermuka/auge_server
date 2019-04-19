@@ -40,7 +40,7 @@ class GroupService extends GroupServiceBase {
     try {
       return GroupsResponse()..webListWorkAround = true..groups.addAll(await querySelectGroups(request));
     } catch (e) {
-      print(e);
+      print('${e.runtimeType}, ${e}');
       rethrow;
     }
   }
@@ -88,13 +88,15 @@ class GroupService extends GroupServiceBase {
     String queryStatement = '';
 
     queryStatement = "SELECT"
-        " g.id,"     //0
-        " g.name,"            //1
-        " g.active,"          //2
-        " g.organization_id," //3
-        " g.group_type_id,"   //4
-        " g.leader_user_id,"  //5
-        " g.super_group_id " //6
+        " g.id,"              //0
+        " g.version, "        //1
+        " g.is_deleted, "     //2
+        " g.name,"            //3
+        " g.active,"          //4
+        " g.organization_id," //5
+        " g.group_type_id,"   //6
+        " g.leader_user_id,"  //7
+        " g.super_group_id "  //8
         " FROM general.groups g ";
 
     Map<String, dynamic> substitutionValues;
@@ -125,26 +127,28 @@ class GroupService extends GroupServiceBase {
       Organization organization;
 
       for (var row in results) {
-        if (row[3] != null) {
-            organization =
-            await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[3], cache: organizationCache);
-        }
         if (row[5] != null) {
-            leader =
-            await UserService.querySelectUser(row[5], cache: userCache);
+            organization =
+            await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[5], cache: organizationCache);
         }
-        if (row[6] != null && request.alignedToRecursive > 0) {
+        if (row[7] != null) {
+            leader =
+            await UserService.querySelectUser(UserGetRequest()..id = row[7], cache: userCache);
+        }
+        if (row[8] != null && request.alignedToRecursive > 0) {
             superGroup =
-            await querySelectGroup(GroupGetRequest()..id = row[6]..alignedToRecursive = --request.alignedToRecursive, cache: groupCache);
+            await querySelectGroup(GroupGetRequest()..id = row[8]..alignedToRecursive = --request.alignedToRecursive, cache: groupCache);
         }
         // No need of the cache. It´s doesn't persist on data base.
-        groupType = await GroupService.querySelectGroupType(GroupTypeGetRequest()..id = row[4]);
+        groupType = await GroupService.querySelectGroupType(GroupTypeGetRequest()..id = row[6]);
         //sleep(Duration(seconds: 1));
         members = await querySelectGroupMembers(row[0]);
         Group group = Group()
           ..id = row[0]
-          ..name = row[1]
-          ..active = row[2]
+          ..version = row[1]
+          ..isDeleted = row[2]
+          ..name = row[3]
+          ..active = row[4]
           ..organization = organization
           ..groupType = groupType;
         if (superGroup != null) {

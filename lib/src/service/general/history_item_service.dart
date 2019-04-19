@@ -102,7 +102,6 @@ class HistoryItemService extends HistoryItemServiceBase {
         queryStatement, substitutionValues: substitutionValues);
 
     List<HistoryItem> history = new List();
-    List<User> users;
 
     User user;
 
