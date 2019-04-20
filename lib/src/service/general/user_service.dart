@@ -46,7 +46,8 @@ class UserService extends UserServiceBase {
   @override
   Future<Empty> deleteUser(ServiceCall call,
       User request) async {
-    return Empty()..webWorkAround = true;
+    
+    return await queryDeleteUser(request);
   }
 
   // Query
@@ -221,6 +222,11 @@ class UserService extends UserServiceBase {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
+        await ctx.query(
+            "DELETE FROM general.users_profile_organizations user_profile_organizations WHERE user_profile_organizations.user_id = @user_id"
+            , substitutionValues: {
+          "user_id": user.id});
+
         await ctx.query(
             "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id"
             , substitutionValues: {

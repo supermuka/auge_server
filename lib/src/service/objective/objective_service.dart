@@ -273,6 +273,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
             });
 
+
         // HistoryItem
         objective.historyItemLog
           ..id = new Uuid().v4()
