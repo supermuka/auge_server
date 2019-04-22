@@ -1,3 +1,4 @@
+import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:test/test.dart';
 
 import 'package:grpc/grpc.dart';
@@ -60,9 +61,9 @@ void main() {
 
       test('Call operation createOrganization', () async {
         IdResponse idResponsePb = await stub
-            .createOrganization(Organization()
+            .createOrganization(OrganizationRequest()..organization = (Organization()
           ..name = name
-          ..code = code);
+          ..code = code));
         expect(idResponsePb.hasId(), isTrue);
         id = idResponsePb.id;
 
@@ -73,10 +74,9 @@ void main() {
         code = '123456';
 
         await stub
-            .updateOrganization(Organization()
-          ..id = id
+            .updateOrganization(OrganizationRequest()..organization = (Organization()
           ..name = name
-          ..code = code);
+          ..code = code));
 
         Organization organizationPb = await stub.getOrganization(OrganizationGetRequest()..id = id);
 
@@ -89,8 +89,8 @@ void main() {
 
       test('Call operation deleteOrganization', () async {
 
-        Empty emptyPb = await stub.deleteOrganization(Organization()
-          ..id = id);
+        Empty emptyPb = await stub.deleteOrganization(OrganizationRequest()..organization = (Organization()
+          ..id = id));
 
         expect(emptyPb, isNotNull);
 
@@ -122,9 +122,9 @@ void main() {
 
       test('Call operation createUser', () async {
         IdResponse idResponsePb = await stub
-            .createUser(User()
+            .createUser(UserRequest()..user = (User()
           ..name = 'Unit Test'
-          ..eMail = 's@levius.com');
+          ..eMail = 's@levius.com'));
         expect(idResponsePb.hasId(), isTrue);
 
         id = idResponsePb.id;
@@ -136,10 +136,10 @@ void main() {
         String eMail = 'samuel.schwebel@levius.com.br';
 
         await stub
-            .updateUser(User()
+            .updateUser(UserRequest()..user = (User()
           ..id = id
           ..name = name
-          ..eMail = eMail);
+          ..eMail = eMail));
 
         User userPb = await stub.getUser(UserGetRequest()..id = id);
 
@@ -151,8 +151,8 @@ void main() {
       test('Call operation deleteUser', () async {
 
         Empty emptyPb = await stub
-            .deleteUser(User()
-          ..id = id);
+            .deleteUser(UserRequest()..user = (User()
+          ..id = id));
 
         expect(emptyPb, isNotNull);
 
@@ -185,19 +185,19 @@ void main() {
       test('Call operation deleteUserProfileOrganization - all items', () async {
 
         for (final i in usersProfileOrganizationsResponse.usersProfileOrganizations) {
-          await stub.deleteUserProfileOrganization(
-              UserProfileOrganization()
-                ..id = i.id);
+          await stub.deleteUserProfileOrganization(UserProfileOrganizationRequest()..userProfileOrganization =
+          (UserProfileOrganization()
+                ..id = i.id));
         }
       });
 
       test('Call operation createUserProfileOrganization', () async {
 
         IdResponse idResponse = await stub
-            .createUserProfileOrganization(UserProfileOrganization()
+            .createUserProfileOrganization(UserProfileOrganizationRequest()..userProfileOrganization = (UserProfileOrganization()
           ..organization = (Organization()..id = organizationId)
           ..user = (User()..id = userId)
-          ..authorizationRole = SystemRole.admin.index );
+          ..authorizationRole = SystemRole.admin.index));
 
         expect(idResponse.hasId(), isTrue);
 
@@ -207,19 +207,19 @@ void main() {
       test('Call operation updateUserProfileOrganization', () async {
 
         await stub
-            .updateUserProfileOrganization(UserProfileOrganization()
+            .updateUserProfileOrganization(UserProfileOrganizationRequest()..userProfileOrganization = (UserProfileOrganization()
           ..id = id
           ..organization = (Organization()..id = organizationId)
           ..user = (User()..id = userId)
-          ..authorizationRole = SystemRole.standard.index );
+          ..authorizationRole = SystemRole.standard.index ));
 
       });
 
       test('Call operation deleteUserProfileOrganization', () async {
 
         Empty emptyPb = await stub
-            .deleteUserProfileOrganization(UserProfileOrganization()
-          ..id = id);
+            .deleteUserProfileOrganization(UserProfileOrganizationRequest()..userProfileOrganization = (UserProfileOrganization()
+          ..id = id));
 
         expect(emptyPb, isNotNull);
 
@@ -263,11 +263,11 @@ void main() {
 
       test('Call operation createGroup', () async {
           IdResponse idResponsePb = await stub
-            .createGroup(Group()
+            .createGroup(GroupRequest()..group = (Group()
           ..name = 'Unit Test'
           ..active = true
           ..organization = (Organization()..id = organizationId)
-          ..groupType = (GroupType()..id = groupTypeId));
+          ..groupType = (GroupType()..id = groupTypeId)));
 
         id = idResponsePb.id;
 
@@ -303,12 +303,12 @@ void main() {
         bool active  = false;
 
         await stub
-            .updateGroup(Group()
+            .updateGroup(GroupRequest()..group = (Group()
           ..id = id
           ..name = name
           ..active = active
           ..organization = (Organization()..id = organizationId)
-          ..groupType = (GroupType()..id = groupTypeId));
+          ..groupType = (GroupType()..id = groupTypeId)));
 
         Group groupPb = await stub.getGroup(GroupGetRequest()..id = id);
 
@@ -320,8 +320,8 @@ void main() {
       test('Call operation deleteGroup', () async {
 
         Empty emptyPb = await stub
-            .deleteGroup(Group()
-          ..id = id);
+            .deleteGroup(GroupRequest()..group = (Group()
+          ..id = id));
 
         expect(emptyPb, isNotNull);
 

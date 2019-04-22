@@ -55,20 +55,20 @@ class GroupService extends GroupServiceBase {
 
   @override
   Future<IdResponse> createGroup(ServiceCall call,
-      Group group) async {
-    return queryInsertGroup(group);
+      GroupRequest request) async {
+    return queryInsertGroup(request);
   }
 
   @override
   Future<Empty> updateGroup(ServiceCall call,
-      Group group) async {
-    return queryUpdateGroup(group);
+      GroupRequest request) async {
+    return queryUpdateGroup(request);
   }
 
   @override
   Future<Empty> deleteGroup(ServiceCall call,
-      Group group) async {
-    return queryDeleteGroup(group);
+      GroupRequest request) async {
+    return queryDeleteGroup(request);
   }
 
   // Query
@@ -182,10 +182,10 @@ class GroupService extends GroupServiceBase {
     }
   }
 
-  static Future<IdResponse> queryInsertGroup(Group group) async {
+  static Future<IdResponse> queryInsertGroup(GroupRequest request) async {
 
-    if (!group.hasId()) {
-      group.id = Uuid().v4();
+    if (!request.group.hasId()) {
+      request.group.id = Uuid().v4();
     }
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -202,17 +202,17 @@ class GroupService extends GroupServiceBase {
                 "@super_group_id,"
                 "@leader_user_id)"
             , substitutionValues: {
-          "id": group.id,
+          "id": request.group.id,
           "version": 0,
-          "name": group.name,
-          "active": group.active,
-          "organization_id": group.hasOrganization() ? group.organization.id : null,
-          "group_type_id": group.hasGroupType() ? group.groupType.id : null,
-          "super_group_id": group.hasSuperGroup() ? group.superGroup.id : null,
-          "leader_user_id": group.hasLeader() ? group.leader.id : null});
+          "name": request.group.name,
+          "active": request.group.active,
+          "organization_id": request.group.hasOrganization() ? request.group.organization.id : null,
+          "group_type_id": request.group.hasGroupType() ? request.group.groupType.id : null,
+          "super_group_id": request.group.hasSuperGroup() ? request.group.superGroup.id : null,
+          "leader_user_id": request.group.hasLeader() ? request.group.leader.id : null});
 
         // Assigned Members Users
-        for (User user in group.members) {
+        for (User user in request.group.members) {
           await ctx.query("INSERT INTO general.groups_users"
               " (group_id,"
               " user_id)"
@@ -220,7 +220,7 @@ class GroupService extends GroupServiceBase {
               " (@id,"
               " @user_id)"
               , substitutionValues: {
-                "id": group.id,
+                "id": request.group.id,
                 "user_id": user.id});
         }
       } catch (e) {
@@ -229,10 +229,10 @@ class GroupService extends GroupServiceBase {
       }
     });
 
-    return IdResponse()..id = group.id;
+    return IdResponse()..id = request.group.id;
   }
 
-  static Future<Empty> queryUpdateGroup(Group group) async {
+  static Future<Empty> queryUpdateGroup(GroupRequest request) async {
     List<List<dynamic>> result;
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -248,19 +248,19 @@ class GroupService extends GroupServiceBase {
                 " leader_user_id = @leader_user_id"
                 " WHERE id = @id AND version = @version"
                 " RETURNING true", substitutionValues: {
-          "id": group.id,
-          "version": group.version,
-          "name": group.name,
-          "active": group.active,
-          "organization_id": group.hasOrganization() ? group.organization.id : null,
-          "group_type_id": group.hasGroupType() ?  group.groupType.id : null,
-          "super_group_id": group.hasSuperGroup() ? group.superGroup.id : null,
-          "leader_user_id": group.hasLeader() ? group.leader.id : null}
+          "id": request.group.id,
+          "version": request.group.version,
+          "name": request.group.name,
+          "active": request.group.active,
+          "organization_id": request.group.hasOrganization() ? request.group.organization.id : null,
+          "group_type_id": request.group.hasGroupType() ?  request.group.groupType.id : null,
+          "super_group_id": request.group.hasSuperGroup() ? request.group.superGroup.id : null,
+          "leader_user_id": request.group.hasLeader() ? request.group.leader.id : null}
         );
 
         // Members users
         StringBuffer membersUsersId = new StringBuffer();
-        for (User user in group.members) {
+        for (User user in request.group.members) {
           await ctx.query("INSERT INTO general.groups_users"
               " (group_id,"
               " user_id)"
@@ -269,7 +269,7 @@ class GroupService extends GroupServiceBase {
               " @user_id)"
               " ON CONFLICT (group_id, user_id) DO NOTHING"
               , substitutionValues: {
-                "id": group.id,
+                "id": request.group.id,
                 "user_id": user.id
               });
 
@@ -286,7 +286,7 @@ class GroupService extends GroupServiceBase {
               " WHERE group_id = @id"
               " AND user_id NOT IN (${membersUsersId.toString()})"
               , substitutionValues: {
-                "id": group.id
+                "id": request.group.id
               });
         }
 
@@ -303,7 +303,7 @@ class GroupService extends GroupServiceBase {
     return Empty()..webWorkAround = true;
   }
 
-  static Future<Empty> queryDeleteGroup(Group group) async {
+  static Future<Empty> queryDeleteGroup(GroupRequest request) async {
     List<List<dynamic>> result;
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
@@ -312,14 +312,14 @@ class GroupService extends GroupServiceBase {
             "DELETE FROM general.groups_users gu WHERE gu.group_id = @group_id "
                 "RETURNING true"
             , substitutionValues: {
-          "group_id": group.id});
+          "group_id": request.group.id});
 
         result = await ctx.query(
             "DELETE FROM general.groups g WHERE g.id = @id AND g.version = @version "
             "RETURNING true"
             , substitutionValues: {
-          "id": group.id,
-           "version": group.version});
+          "id": request.group.id,
+           "version": request.group.version});
 
         // Optimistic concurrency control
         if (result.length == 0) {

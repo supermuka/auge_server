@@ -13,6 +13,7 @@ import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/work_item.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/initiative.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/objective/objective.pb.dart';
+import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/shared/rpc_error_message.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
@@ -24,6 +25,7 @@ import 'package:auge_server/src/service/initiative/work_item_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
 
 import 'package:auge_server/model/general/authorization.dart';
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 
 
 import 'package:auge_server/augeconnection.dart';
@@ -54,20 +56,20 @@ class InitiativeService extends InitiativeServiceBase {
 
   @override
   Future<IdResponse> createInitiative(ServiceCall call,
-      Initiative initiative) async {
-    return queryInsertInitiative(initiative);
+      InitiativeRequest request) async {
+    return queryInsertInitiative(request);
   }
 
   @override
   Future<Empty> updateInitiative(ServiceCall call,
-      Initiative initiative) async {
-    return queryUpdateInitiative(initiative);
+      InitiativeRequest request) async {
+    return queryUpdateInitiative(request);
   }
 
   @override
   Future<Empty> deleteInitiative(ServiceCall call,
-      Initiative initiative) async {
-    return queryDeleteInitiative(initiative);
+      InitiativeRequest request) async {
+    return queryDeleteInitiative(request);
   }
 
   // QUERY
@@ -198,10 +200,10 @@ class InitiativeService extends InitiativeServiceBase {
   }
 
   /// Create (insert) a new initiative
-  static Future<IdResponse> queryInsertInitiative(Initiative initiative) async {
+  static Future<IdResponse> queryInsertInitiative(InitiativeRequest request) async {
 
-    if (!initiative.hasId()) {
-      initiative.id = new Uuid().v4();
+    if (!request.initiative.hasId()) {
+      request.initiative.id = new Uuid().v4();
     }
 
     try {
@@ -217,16 +219,16 @@ class InitiativeService extends InitiativeServiceBase {
                 "@objective_id,"
                 "@group_id)"
             , substitutionValues: {
-          "id": initiative.id,
+          "id": request.initiative.id,
           "version": 0,
-          "name": initiative.name,
-          "description": initiative.description,
-          "organization_id": initiative.organization.id,
-          "leader_user_id": initiative.hasLeader() ? initiative.leader.id : null,
-          "objective_id": initiative.hasObjective() ? initiative.objective.id : null,
-          "group_id": initiative.hasGroup() ? initiative.group.id : null });
+          "name": request.initiative.name,
+          "description": request.initiative.description,
+          "organization_id": request.initiative.organization.id,
+          "leader_user_id": request.initiative.hasLeader() ? request.initiative.leader.id : null,
+          "objective_id": request.initiative.hasObjective() ? request.initiative.objective.id : null,
+          "group_id": request.initiative.hasGroup() ? request.initiative.group.id : null });
 
-        for (Stage stage in initiative.stages) {
+        for (Stage stage in request.initiative.stages) {
           stage.id = new Uuid().v4();
 
           await ctx.query(
@@ -241,7 +243,7 @@ class InitiativeService extends InitiativeServiceBase {
             "name": stage.name,
             "index": stage.index,
             "state_id": stage.hasState() ? stage.state.id : null,
-            "initiative_id": initiative.id});
+            "initiative_id": request.initiative.id});
         }
       });
     } catch (e) {
@@ -249,14 +251,18 @@ class InitiativeService extends InitiativeServiceBase {
       rethrow;
     }
 
-    return IdResponse()..id = initiative.id;
+    return IdResponse()..id = request.initiative.id;
   }
 
   /// Update an initiative passing an instance of [Initiative]
-  Future<Empty> queryUpdateInitiative(Initiative initiative) async {
+  Future<Empty> queryUpdateInitiative(InitiativeRequest request) async {
+
+    // Recovery to log to history
+    Initiative previousInitiative = await querySelectInitiative(InitiativeGetRequest()..id = request.initiative.id);
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
+
         List<List<dynamic>> result;
 
         result = await ctx.query("UPDATE initiative.initiatives "
@@ -270,18 +276,18 @@ class InitiativeService extends InitiativeServiceBase {
           " WHERE id = @id AND version = @version"
           " RETURNING true "
           , substitutionValues: {
-            "id": initiative.id,
-            "version": initiative.version,
-            "name": initiative.name,
-            "description": initiative.description,
-            "organization_id": initiative.hasOrganization() ? initiative.organization.id : null,
-            "leader_user_id": initiative.hasLeader() ? initiative.leader.id : null,
-            "objective_id": initiative.hasObjective() ? initiative.objective.id : null,
-            "group_id": initiative.hasGroup() ? initiative.group.id : null });
+            "id": request.initiative.id,
+            "version": request.initiative.version,
+            "name": request.initiative.name,
+            "description": request.initiative.description,
+            "organization_id": request.initiative.hasOrganization() ? request.initiative.organization.id : null,
+            "leader_user_id": request.initiative.hasLeader() ? request.initiative.leader.id : null,
+            "objective_id": request.initiative.hasObjective() ? request.initiative.objective.id : null,
+            "group_id": request.initiative.hasGroup() ? request.initiative.group.id : null });
 
         // Stages
         StringBuffer stagesId = new StringBuffer();
-        for (Stage stage in initiative.stages) {
+        for (Stage stage in request.initiative.stages) {
           if (stage.id == null) {
             stage.id = new Uuid().v4();
 
@@ -297,7 +303,7 @@ class InitiativeService extends InitiativeServiceBase {
               "name": stage.name,
               "index": stage.index,
               "state_id": stage.state.id,
-              "initiative_id": initiative.id});
+              "initiative_id": request.initiative.id});
           } else {
             await ctx.query("UPDATE initiative.stages SET"
                 " name = @name,"
@@ -310,7 +316,7 @@ class InitiativeService extends InitiativeServiceBase {
                   "name": stage.name,
                   "index": stage.index,
                   "state_id": stage.state.id,
-                  "initiative_id": initiative.id});
+                  "initiative_id": request.initiative.id});
           }
 
           if (stagesId.isNotEmpty)
@@ -325,7 +331,7 @@ class InitiativeService extends InitiativeServiceBase {
               " WHERE id NOT IN (${stagesId.toString()}) "
               " AND initiative_id  = @initiative_id "
               , substitutionValues: {
-                "initiative_id": initiative.id});
+                "initiative_id": request.initiative.id});
         }
 
         // Optimistic concurrency control
@@ -334,16 +340,24 @@ class InitiativeService extends InitiativeServiceBase {
         }
         else {
           // HistoryItem
-          initiative.historyItemLog
+          HistoryItem historyItem;
+
+          Map<String, dynamic> valuesPrevious = previousInitiative.writeToJsonMap();
+          Map<String, dynamic> valuesCurrent = request.initiative.writeToJsonMap();
+
+          historyItem
             ..id = new Uuid().v4()
-            ..objectId = initiative.id
-            ..objectVersion = initiative.version
+            ..objectId = request.initiative.id
+            ..objectVersion = request.initiative.version
             ..objectClassName = 'Initiative' // objectiveRequest.runtimeType.toString(),
-            ..systemFunctionIndex = SystemFunction.create.index;
-          // ..dateTime = DateTime.now().toUtc();
+            ..systemFunctionIndex = SystemFunction.create.index
+            // ..dateTime
+            ..description = request.initiative.name
+            ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+            ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
 
           // Create a history item
-          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(initiative.historyItemLog));
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
         }
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -354,7 +368,7 @@ class InitiativeService extends InitiativeServiceBase {
   }
 
   /// Delete an initiative by [id]
-  static Future<Empty> queryDeleteInitiative(Initiative initiative) async {
+  static Future<Empty> queryDeleteInitiative(InitiativeRequest request) async {
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
@@ -362,13 +376,13 @@ class InitiativeService extends InitiativeServiceBase {
             "DELETE FROM initiative.stages stage"
                 " WHERE stage.initiative_id = @id"
             , substitutionValues: {
-          "id": initiative.id});
+          "id": request.initiative.id});
 
         await ctx.query(
             "DELETE FROM initiative.initiatives initiative"
                 " WHERE initiative.id = @id"
             , substitutionValues: {
-          "id": initiative.id});
+          "id": request.initiative.id});
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');

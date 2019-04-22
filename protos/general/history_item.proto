@@ -30,7 +30,8 @@ message HistoryItem {
    User user = 8;
    string description = 9;
 
-   map<string, string> changed_values = 10;
+   map<string, string> changed_values_previous = 10;
+   map<string, string> changed_values_current = 11;
 }
 
 // Request for query select

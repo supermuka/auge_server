@@ -8,17 +8,17 @@ package auge.protobuf;
 import "general/common.proto";
 import "google/protobuf/empty.proto";
 
-
 // The service definition.
 service UserService {
 
     rpc GetUsers (UserGetRequest) returns (UsersResponse) {}
     rpc GetUser (UserGetRequest) returns (User) {}
 
-    rpc CreateUser (User) returns (IdResponse) {}
-    rpc UpdateUser (User) returns (google.protobuf.Empty) {}
-    rpc DeleteUser (User) returns (google.protobuf.Empty) {}
+    rpc CreateUser (UserRequest) returns (IdResponse) {}
+    rpc UpdateUser (UserRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteUser (UserRequest) returns (google.protobuf.Empty) {}
 //    rpc SoftDeleteUser (User) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+
 }
 
 // Message to respective domain object.
@@ -29,6 +29,12 @@ message User {
     string e_mail = 4;
     string password = 5;
     UserProfile user_profile = 6;
+}
+
+// Message request related to domain object.
+message UserRequest {
+    User user = 1;
+    User authenticated_user = 2;
 }
 
 // Message to respective domain object.

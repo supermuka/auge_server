@@ -6,7 +6,6 @@ import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
@@ -121,7 +120,7 @@ void main() {
       test('Call operation createInitiative', () async {
 
         IdResponse idResponsePb = await initiativeStub
-            .createInitiative(Initiative()
+            .createInitiative(InitiativeRequest()..initiative = (Initiative()
           ..name = name
           ..description = description
           ..organization = (Organization()
@@ -134,12 +133,7 @@ void main() {
             ..id = 'f9ea90d6-79ab-42c2-b238-0323c4b20a78'
             ..name = 'Test Stage'
             ..state = (State()
-              ..id = stateId))
-          ..historyItemLog = (HistoryItem()
-            ..user = (User()
-              ..id = userId)
-            ..changedValues.putIfAbsent(
-                'id', () => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+              ..id = stateId))));
 
         expect(idResponsePb.hasId(), isTrue);
 
@@ -176,17 +170,12 @@ void main() {
         description = 'Description test 2';
 
         await initiativeStub
-          ..updateInitiative(Initiative()
+          ..updateInitiative(InitiativeRequest()..initiative = (Initiative()
             ..id = initiativeId
             ..name = name
             ..description = description
             ..organization = (Organization()
-              ..id = organizationId)
-            ..historyItemLog = (HistoryItem()
-              ..user = (User()
-                ..id = userId)
-              ..changedValues.putIfAbsent(
-                  'id', () => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+              ..id = organizationId)));
 
         Initiative initiative = await initiativeStub
             .getInitiative(InitiativeGetRequest()
@@ -221,19 +210,13 @@ void main() {
         description = 'Description test';
 
         IdResponse idResponsePb = await workItemStub
-            .createWorkItem(WorkItem()
+            .createWorkItem(WorkItemRequest()..workItem = (WorkItem()
           ..name = name
           ..description = description
-          ..initiativeId = initiativeId
           ..checkItems.add(WorkItemCheckItem()
             ..id = 'f9ea90d6-79ab-42c2-b238-0323c4b20a78'
             ..name = 'Check Item Test')
-          ..stage = stage
-          ..historyItemLog = (HistoryItem()
-            ..user = (User()
-              ..id = userId)
-            ..changedValues.putIfAbsent(
-                'id', () => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+          ..stage = stage)..initiativeId = initiativeId);
 
         expect(idResponsePb.hasId(), isTrue);
 
@@ -266,18 +249,12 @@ void main() {
         description = 'Description test 2';
 
         await workItemStub
-          ..updateWorkItem(WorkItem()
+          ..updateWorkItem(WorkItemRequest()..workItem = (WorkItem()
             ..id = workItemId
             ..version = 0
             ..name = name
             ..description = description
-            ..initiativeId = initiativeId
-            ..stage = stage
-            ..historyItemLog = (HistoryItem()
-              ..user = (User()
-                ..id = userId)
-              ..changedValues.putIfAbsent(
-                  'id', () => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+            ..stage = stage)..initiativeId = initiativeId);
 
         WorkItem workItem = await workItemStub
             .getWorkItem(WorkItemGetRequest()

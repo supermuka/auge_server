@@ -5,9 +5,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
-
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
+//import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/augeconnection.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
@@ -28,26 +28,29 @@ class HistoryItemService extends HistoryItemServiceBase {
   // History to auge_objective schema
   static String queryStatementCreateHistoryItem = "INSERT INTO auge_objective.history(id, object_id, object_version, object_class_name, system_function_index, date_time, user_id, description, changed_values) VALUES"
       "(@id,"
+      "@user_id,"
       "@object_id,"
       "@object_version,"
       "@object_class_name,"
       "@system_function_index,"
       "@date_time,"
-      "@user_id,"
       "@description,"
-      "@changed_values)";
+      "@changed_values_previous,"
+      "@changed_values_current)";
 
   static Map<String, dynamic> querySubstitutionValuesCreateHistoryItem(HistoryItem request) {
 
     return {"id": request.id,
-      "date_time": DateTime.now().toUtc(),
-      "system_function_index": request.systemFunctionIndex,
-      "changed_values": request.changedValues.isNotEmpty ? request.changedValues.toString() : null,
-      "description": request.hasDescription() ? request.description : null,
       "user_id": request.hasUser() ? request.user.id : null,
+
       "object_id": request.hasObjectId() ? request.objectId : null,
       "object_version": request.hasObjectVersion() ? request.objectVersion : null,
-      "object_class_name": request.hasObjectClassName() ? request.objectClassName : null};
+      "object_class_name": request.hasObjectClassName() ? request.objectClassName : null,
+      "system_function_index": request.systemFunctionIndex,
+      "date_time": DateTime.now().toUtc(),
+      "changed_values_previous": request.changedValuesPrevious.isNotEmpty ? request.changedValuesPrevious.toString() : null,
+      "changed_values_current": request.changedValuesCurrent.isNotEmpty ? request.changedValuesCurrent.toString() : null,
+      "description": request.hasDescription() ? request.description : null};
   }
 
   // *** HISTORY TO OBJECTIVE SCHEMA ***
@@ -56,14 +59,15 @@ class HistoryItemService extends HistoryItemServiceBase {
     List<List> results;
 
     String queryStatementSelect = "SELECT history_item.id, " //0
-        "history_item.object_id, " //1
-        "history_item.object_version, " //2
-        "history_item.object_class_name, " //3
-        "history_item.system_function_index, " //4
-        "history_item.date_time, " //5
-        "history_item.user_id, " //6
+        "history_item.user_id, " //1
+        "history_item.object_id, " //2
+        "history_item.object_version, " //3
+        "history_item.object_class_name, " //4
+        "history_item.system_function_index, " //5
+        "history_item.date_time, " //6
         "history_item.description, " //7
-        "history_item.changed_values "; //8
+        "history_item.changed_values_previous, " //8
+        "history_item.changed_values_current"; //9
 
     String queryStatement;
 
@@ -109,24 +113,25 @@ class HistoryItemService extends HistoryItemServiceBase {
 
       for (var row in results) {
 
-        user = await UserService.querySelectUser(UserGetRequest()..id = row[6]..withProfile = true, cache: userCache);
-
+        user = await UserService.querySelectUser(UserGetRequest()..id = row[1]..withProfile = true, cache: userCache);
+/*
         Map changedDataMap = json.decode(row[8]);
 
         if (historyItemGetRequest.withIdRemoved)
           changedDataMap.keys.where((k) =>  (k == 'id' || changedDataMap[k] is Map && changedDataMap[k].keys.where((kk) => (kk == 'id') ))
           ).toList().forEach(changedDataMap.remove);
-
+*/
         history.add(new HistoryItem()
           ..id = row[0]
-          ..objectId = row[1]
-          ..objectVersion = row[2]
-          ..objectClassName = row[3]
-          ..systemFunctionIndex = row[4]
-          ..dateTime = row[5]
           ..user = user
+          ..objectId = row[2]
+          ..objectVersion = row[3]
+          ..objectClassName = row[4]
+          ..systemFunctionIndex = row[5]
+          ..dateTime = row[6]
           ..description = row[7]
-          ..changedValues.addAll(json.decode(row[8]))
+          ..changedValuesPrevious.addAll(json.decode(row[8]))
+          ..changedValuesCurrent.addAll(json.decode(row[9]))
         );
       }
     }

@@ -35,22 +35,22 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
   @override
   Future<IdResponse> createUserProfileOrganization(ServiceCall call,
-      UserProfileOrganization userProfileOrganization) async {
-    IdResponse idResponse = await queryInsertUserProfileOrganization(userProfileOrganization);
+      UserProfileOrganizationRequest request) async {
+    IdResponse idResponse = await queryInsertUserProfileOrganization(request);
     if (idResponse == null ) throw new GrpcError.notFound("User Profile Organization not found.");
     return idResponse;
   }
 
   @override
   Future<Empty> updateUserProfileOrganization(ServiceCall call,
-      UserProfileOrganization userProfileOrganization) async {
-    return queryUpdateUserProfileOrganization(userProfileOrganization);
+      UserProfileOrganizationRequest request) async {
+    return queryUpdateUserProfileOrganization(request);
   }
 
   @override
   Future<Empty> deleteUserProfileOrganization(ServiceCall call,
-      UserProfileOrganization userProfileOrganization) async {
-    return queryDeleteUserProfileOrganization(userProfileOrganization);
+      UserProfileOrganizationRequest request) async {
+    return queryDeleteUserProfileOrganization(request);
   }
 
   // Query
@@ -154,13 +154,13 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     return usersProfileOrganizations.first;
   }
 
-  static Future<IdResponse> queryInsertUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
+  static Future<IdResponse> queryInsertUserProfileOrganization(UserProfileOrganizationRequest request) async {
 
-    if (!userProfileOrganization.hasId()) {
-      userProfileOrganization.id = new Uuid().v4();
+    if (!request.userProfileOrganization.hasId()) {
+      request.userProfileOrganization.id = new Uuid().v4();
     }
 
-    userProfileOrganization.version = 0;
+    request.userProfileOrganization.version = 0;
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
@@ -173,11 +173,11 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
                 "@organization_id,"
                 "@authorization_role)"
             , substitutionValues: {
-          "id": userProfileOrganization.id,
-          "version": userProfileOrganization.version,
-          "user_id": userProfileOrganization.hasUser() ? userProfileOrganization.user.id : null,
-          "organization_id": userProfileOrganization.hasOrganization() ? userProfileOrganization.organization.id : null,
-          "authorization_role": userProfileOrganization.authorizationRole});
+          "id": request.userProfileOrganization.id,
+          "version": request.userProfileOrganization.version,
+          "user_id": request.userProfileOrganization.hasUser() ? request.userProfileOrganization.user.id : null,
+          "organization_id": request.userProfileOrganization.hasOrganization() ? request.userProfileOrganization.organization.id : null,
+          "authorization_role": request.userProfileOrganization.authorizationRole});
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -185,10 +185,10 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
       }
     });
 
-    return IdResponse()..id = userProfileOrganization.id;
+    return IdResponse()..id = request.userProfileOrganization.id;
   }
 
-  static Future<Empty> queryUpdateUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
+  static Future<Empty> queryUpdateUserProfileOrganization(UserProfileOrganizationRequest request) async {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         List<List<dynamic>> result = await ctx.query(
@@ -199,11 +199,11 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
                   "organization_id = @organization_id "
                   "WHERE id = @id "
                   "RETURNING true", substitutionValues: {
-            "id": userProfileOrganization.id,
-            "version": userProfileOrganization.version,
-            "user_id": userProfileOrganization.user.id,
-            "organization_id": userProfileOrganization.organization.id,
-            "authorization_role": userProfileOrganization.authorizationRole});
+            "id": request.userProfileOrganization.id,
+            "version": request.userProfileOrganization.version,
+            "user_id": request.userProfileOrganization.user.id,
+            "organization_id": request.userProfileOrganization.organization.id,
+            "authorization_role": request.userProfileOrganization.authorizationRole});
 
           // Optimistic concurrency control
           if (result.length == 0) {
@@ -218,14 +218,14 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     return Empty()..webWorkAround = true;
   }
 
-  static Future<Empty> queryDeleteUserProfileOrganization(UserProfileOrganization userProfileOrganization) async {
+  static Future<Empty> queryDeleteUserProfileOrganization(UserProfileOrganizationRequest request) async {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM general.users_profile_organizations user_profile_organization "
                 "WHERE user_profile_organization.id = @id "
             , substitutionValues: {
-          "id": userProfileOrganization.id});
+          "id": request.userProfileOrganization.id});
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

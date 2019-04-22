@@ -10,12 +10,15 @@ import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.da
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/measure.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/augeconnection.dart';
 import 'package:auge_server/model/general/authorization.dart';
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 import 'package:auge_server/shared/rpc_error_message.dart';
 
 import 'package:auge_server/src/service/general/history_item_service.dart';
+
 
 import 'package:uuid/uuid.dart';
 
@@ -53,20 +56,20 @@ class MeasureService extends MeasureServiceBase {
 
   @override
   Future<IdResponse> createMeasure(ServiceCall call,
-      Measure measure) async {
-    return queryInsertMeasure(measure);
+      MeasureRequest request) async {
+    return queryInsertMeasure(request);
   }
 
   @override
   Future<Empty> updateMeasure(ServiceCall call,
-      Measure measure) async {
-    return queryUpdateMeasure(measure);
+      MeasureRequest request) async {
+    return queryUpdateMeasure(request);
   }
 
   @override
   Future<Empty> deleteMeasure(ServiceCall call,
-      Measure measure) async {
-    return queryDeleteMeasure(measure);
+      MeasureRequest request) async {
+    return queryDeleteMeasure(request);
   }
 
 
@@ -89,20 +92,20 @@ class MeasureService extends MeasureServiceBase {
 
   @override
   Future<IdResponse> createMeasureProgress(ServiceCall call,
-      MeasureProgress measureProgress) async {
-    return queryInsertMeasureProgress(measureProgress);
+      MeasureProgressRequest request) async {
+    return queryInsertMeasureProgress(request);
   }
 
   @override
   Future<Empty> updateMeasureProgress(ServiceCall call,
-      MeasureProgress measureProgress) async {
-    return queryUpdateMeasureProgress(measureProgress);
+      MeasureProgressRequest request) async {
+    return queryUpdateMeasureProgress(request);
   }
 
   @override
   Future<Empty> deleteMeasureProgress(ServiceCall call,
-      MeasureProgress measureProgress) async {
-    return queryDeleteMeasureProgress(measureProgress);
+      MeasureProgressRequest request) async {
+    return queryDeleteMeasureProgress(request);
   }
 
   // QUERY
@@ -220,9 +223,9 @@ class MeasureService extends MeasureServiceBase {
 
   /// Create (insert) a new measures
   static Future<IdResponse> queryInsertMeasure(
-      Measure measure) async {
-    if (!measure.hasId()) {
-      measure.id = new Uuid().v4();
+      MeasureRequest request) async {
+    if (!request.measure.hasId()) {
+      request.measure.id = new Uuid().v4();
     }
 
     try {
@@ -241,45 +244,57 @@ class MeasureService extends MeasureServiceBase {
                 "@measure_unit_id,"
                 "@objective_id)"
             , substitutionValues: {
-          "id": measure.id,
+          "id": request.measure.id,
           "version": 0,
-          "name": measure.name,
-          "description": measure.hasDescription() ? measure.description : null,
-          "metric": measure.hasMetric() ? measure.metric : null,
-          "decimals_number": measure.hasDecimalsNumber() ? measure.decimalsNumber : null,
-          "start_value": measure.hasStartValue() ? measure.startValue : null,
-          "end_value": measure.hasEndValue() ? measure.endValue : null,
-          "measure_unit_id": measure.hasMeasureUnit() ? measure.measureUnit.id : null,
-          "objective_id": measure.hasObjectiveId() ? measure.objectiveId : null,
+          "name": request.measure.name,
+          "description": request.measure.hasDescription() ? request.measure.description : null,
+          "metric": request.measure.hasMetric() ? request.measure.metric : null,
+          "decimals_number": request.measure.hasDecimalsNumber() ? request.measure.decimalsNumber : null,
+          "start_value": request.measure.hasStartValue() ? request.measure.startValue : null,
+          "end_value": request.measure.hasEndValue() ? request.measure.endValue : null,
+          "measure_unit_id": request.measure.hasMeasureUnit() ? request.measure.measureUnit.id : null,
+          "objective_id": request.hasObjectiveId() ? request.objectiveId : null,
         });
 
-        // HistoryItem - server-side generation
-        measure.historyItemLog
-          ..id = new Uuid().v4()
-          ..objectId = measure.id
-          ..objectVersion = measure.version
-          ..objectClassName = 'Measure' // objectiveRequest.runtimeType.toString(),
-          ..systemFunctionIndex = SystemFunction.create.index;
-        // ..dateTime = DateTime.now().toUtc();
 
+        // HistoryItem
+        HistoryItem historyItem;
+
+        Map<String, dynamic> valuesCurrent = request.measure.writeToJsonMap();
+
+        historyItem
+          ..id = new Uuid().v4()
+          ..objectId = request.measure.id
+          ..objectVersion = request.measure.version
+          ..objectClassName = 'Measure' // objectiveRequest.runtimeType.toString(),
+          ..systemFunctionIndex = SystemFunction.create.index
+          ..description = request.measure.name
+        // ..dateTime
+          ..description = ''
+         // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+          ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: HistoryItemService
                 .querySubstitutionValuesCreateHistoryItem(
-                measure.historyItemLog));
+                historyItem));
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
 
-    return IdResponse()..id = measure.id;
+    return IdResponse()..id = request.measure.id;
   }
 
   /// Update [Measure]
-  Future<Empty> queryUpdateMeasure(Measure measure) async {
+  Future<Empty> queryUpdateMeasure(MeasureRequest request) async {
     try {
+
+      // Recovery to log to history
+      Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measure.id);
+
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         List<List<dynamic>> result;
 
@@ -297,17 +312,17 @@ class MeasureService extends MeasureServiceBase {
               " WHERE id = @id AND version = @version"
               " RETURNING true"
               , substitutionValues: {
-                "id": measure.id,
-                "version": measure.version,
-                "name": measure.name,
-                "description": measure.hasDescription() ? measure.description : null,
-                "metric": measure.hasMetric() ? measure.metric : null,
-                "decimals_number": measure.hasDecimalsNumber() ? measure.decimalsNumber : null,
-                "start_value": measure.hasStartValue() ? measure.startValue : null,
-                "end_value": measure.hasEndValue() ? measure.endValue : null,
+                "id": request.measure.id,
+                "version": request.measure.version,
+                "name": request.measure.name,
+                "description": request.measure.hasDescription() ? request.measure.description : null,
+                "metric": request.measure.hasMetric() ? request.measure.metric : null,
+                "decimals_number": request.measure.hasDecimalsNumber() ? request.measure.decimalsNumber : null,
+                "start_value": request.measure.hasStartValue() ? request.measure.startValue : null,
+                "end_value": request.measure.hasEndValue() ? request.measure.endValue : null,
                 //"current_value": measureRequest.currentValue,
-                "measure_unit_id": measure.hasMeasureUnit() ? measure.measureUnit.id : null,
-                "objective_id": measure.hasObjectiveId() ? measure.objectiveId : null,
+                "measure_unit_id": request.measure.hasMeasureUnit() ? request.measure.measureUnit.id : null,
+                "objective_id": request.hasObjectiveId() ? request.objectiveId : null,
               });
 
         // Optimistic concurrency control
@@ -315,20 +330,31 @@ class MeasureService extends MeasureServiceBase {
           throw new GrpcError.failedPrecondition(
               RpcErrorDetailMessage.measurePreconditionFailed);
         } else {
-          // HistoryItem - server-side generation
-          measure.historyItemLog
+
+          // HistoryItem
+          HistoryItem historyItem;
+
+          Map<String, dynamic> valuesPrevious = previousMeasure.writeToJsonMap();
+          Map<String, dynamic> valuesCurrent = request.measure.writeToJsonMap();
+
+          historyItem
             ..id = new Uuid().v4()
-            ..objectId = measure.id
-            ..objectVersion = measure.version
+            ..objectId = request.measure.id
+            ..objectVersion = request.measure.version
             ..objectClassName = 'Measure' // objectiveRequest.runtimeType.toString(),
-            ..systemFunctionIndex = SystemFunction.update.index;
-          // ..dateTime = DateTime.now().toUtc();
+            ..systemFunctionIndex = SystemFunction.update.index
+            ..description = request.measure.name
+          // ..dateTime
+            ..description = ''
+            ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+            ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: HistoryItemService
                   .querySubstitutionValuesCreateHistoryItem(
-                  measure.historyItemLog));
+                  historyItem));
+
         }
       });
     } catch (e) {
@@ -339,14 +365,14 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Delete a [Measure] by id
-  Future<Empty> queryDeleteMeasure(Measure measure) async {
+  Future<Empty> queryDeleteMeasure(MeasureRequest request) async {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM objective.measures measure"
                 " WHERE measure.id = @id"
             , substitutionValues: {
-          "id": measure.id});
+          "id": request.measure.id});
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -425,14 +451,14 @@ class MeasureService extends MeasureServiceBase {
 
   /// Create current value of the [MeasureProgress]
   static Future<IdResponse> queryInsertMeasureProgress(
-      MeasureProgress measureProgress) async {
+      MeasureProgressRequest request) async {
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
-        if (!measureProgress.hasId()) {
-          measureProgress.id = new Uuid().v4();
+        if (!request.measureProgress.hasId()) {
+          request.measureProgress.id = new Uuid().v4();
         }
 
-        measureProgress.version = 0;
+        request.measureProgress.version = 0;
 
         await ctx.query(
             "INSERT INTO objective.measure_progress(id, version, date, current_value, comment, measure_id) VALUES"
@@ -443,48 +469,64 @@ class MeasureService extends MeasureServiceBase {
                 "@comment,"
                 "@measure_id)"
             , substitutionValues: {
-          "id": measureProgress.id,
-          "version": measureProgress.version,
-          "date": measureProgress.hasDate() ?  DateTime.fromMicrosecondsSinceEpoch(measureProgress.date.seconds.toInt() * 1000000 + measureProgress.date.nanos ~/ 1000 )  : DateTime.now().toUtc(),
-          "current_value": measureProgress.hasCurrentValue() ? measureProgress.currentValue : null,
-          "comment": measureProgress.hasComment() ? measureProgress.comment : null,
-          "measure_id": measureProgress.hasMeasureId() ? measureProgress.measureId : null,
+          "id": request.measureProgress.id,
+          "version": request.measureProgress.version,
+          "date": request.measureProgress.hasDate() ?  DateTime.fromMicrosecondsSinceEpoch(request.measureProgress.date.seconds.toInt() * 1000000 + request.measureProgress.date.nanos ~/ 1000 )  : DateTime.now().toUtc(),
+          "current_value": request.measureProgress.hasCurrentValue() ? request.measureProgress.currentValue : null,
+          "comment": request.measureProgress.hasComment() ? request.measureProgress.comment : null,
+          "measure_id": request.hasMeasureId() ? request.measureId : null,
         });
 
-        // HistoryItem - server-side generation
-        measureProgress.historyItemLog
+        // HistoryItem
+        HistoryItem historyItem;
+
+      //  Map<String, dynamic> valuesPrevious = previousMeasureProgress.writeToJsonMap();
+        Map<String, dynamic> valuesCurrent = request.measureProgress.writeToJsonMap();
+
+        historyItem
           ..id = new Uuid().v4()
-          ..objectId = measureProgress.id
-          ..objectVersion = measureProgress.version
+          ..objectId = request.measureProgress.id
+          ..objectVersion = request.measureProgress.version
           ..objectClassName = 'MeasureProgress' // objectiveRequest.runtimeType.toString(),
-          ..systemFunctionIndex = SystemFunction.create.index;
-        // ..dateTime = DateTime.now().toUtc();
+          ..systemFunctionIndex = SystemFunction.create.index
+        // ..dateTime
+          ..description = ''
+         // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+          ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
+
         // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+            substitutionValues: HistoryItemService
+                .querySubstitutionValuesCreateHistoryItem(
+                historyItem));
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: HistoryItemService
                 .querySubstitutionValuesCreateHistoryItem(
-                measureProgress.historyItemLog));
+                historyItem));
 
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return IdResponse()..id = measureProgress.id;
+    return IdResponse()..id = request.measureProgress.id;
   }
 
   /// Create current value of the [MeasureProgress]
   Future<Empty> queryUpdateMeasureProgress(
-      MeasureProgress measureProgress) async {
+      MeasureProgressRequest request) async {
+    // Recovery to log to history
+    MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgress.id);
+
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         DateTime dateTimeNow = DateTime.now().toUtc();
 
         List<List<dynamic>> result;
 
-        if (measureProgress.id == null) {
-          measureProgress.id = new Uuid().v4();
+        if (request.measureProgress.id == null) {
+          request.measureProgress.id = new Uuid().v4();
         }
 
         result = await ctx.query(
@@ -497,14 +539,14 @@ class MeasureService extends MeasureServiceBase {
                 "WHERE id = @id AND version = @version "
                 "RETURNING true"
             , substitutionValues: {
-          "id": measureProgress.id,
-          "version": measureProgress.version,
-          "date": measureProgress.date == null
+          "id": request.measureProgress.id,
+          "version": request.measureProgress.version,
+          "date": request.measureProgress.date == null
               ? dateTimeNow
-              : measureProgress.date,
-          "current_value": measureProgress.hasCurrentValue() ? measureProgress.currentValue : null,
-          "comment": measureProgress.hasComment() ? measureProgress.comment : null,
-          "measure_id": measureProgress.hasMeasureId() ? measureProgress.measureId : null,
+              : request.measureProgress.date,
+          "current_value": request.measureProgress.hasCurrentValue() ? request.measureProgress.currentValue : null,
+          "comment": request.measureProgress.hasComment() ? request.measureProgress.comment : null,
+          "measure_id": request.hasMeasureId() ? request.measureId : null,
 
         });
 
@@ -513,20 +555,29 @@ class MeasureService extends MeasureServiceBase {
           throw new GrpcError.failedPrecondition(
               RpcErrorDetailMessage.measurePreconditionFailed);
         } else {
-          // HistoryItem - server-side generation
-          measureProgress.historyItemLog
+
+          // HistoryItem
+          HistoryItem historyItem;
+
+          Map<String, dynamic> valuesPrevious = previousMeasureProgress.writeToJsonMap();
+          Map<String, dynamic> valuesCurrent = request.measureProgress.writeToJsonMap();
+
+          historyItem
             ..id = new Uuid().v4()
-            ..objectId = measureProgress.id
-            ..objectVersion = measureProgress.version
+            ..objectId = request.measureProgress.id
+            ..objectVersion = request.measureProgress.version
             ..objectClassName = 'MeasureProgress' // objectiveRequest.runtimeType.toString(),
-            ..systemFunctionIndex = SystemFunction.update.index;
-          // ..dateTime = DateTime.now().toUtc();
+            ..systemFunctionIndex = SystemFunction.update.index
+          // ..dateTime
+            ..description = ''
+            ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+            ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: HistoryItemService
                   .querySubstitutionValuesCreateHistoryItem(
-                  measureProgress.historyItemLog));
+                  historyItem));
         }
 
       });
@@ -538,14 +589,14 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Delete a [MeasureProgress] by id
-  Future<Empty> queryDeleteMeasureProgress(MeasureProgress measureProgress) async {
+  Future<Empty> queryDeleteMeasureProgress(MeasureProgressRequest request) async {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM objective.measure_progress measure_progress"
                 " WHERE measure_progress.id = @id"
             , substitutionValues: {
-          "id": measureProgress.id});
+          "id": request.measureProgress.id});
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

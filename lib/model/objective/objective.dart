@@ -26,7 +26,7 @@ class Objective {
   int version;
 
   // Transient
-  HistoryItem lastHistoryItem;
+ // HistoryItem lastHistoryItem;
 
   // Specific
   static final String nameField = 'Name';
@@ -52,7 +52,7 @@ class Objective {
   Objective() {
     initializeDateFormatting(Intl.defaultLocale);
 
-    lastHistoryItem = HistoryItem();
+   // lastHistoryItem = HistoryItem();
     alignedWithChildren = List<Objective>();
     measures = List<Measure>();
     history = List<HistoryItem>();

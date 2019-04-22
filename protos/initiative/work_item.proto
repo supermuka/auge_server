@@ -11,7 +11,6 @@ import "google/protobuf/timestamp.proto";
 
 import "general/user.proto";
 import "initiative/stage.proto";
-import "general/history_item.proto";
 
 // The service definition.
 service WorkItemService {
@@ -19,9 +18,9 @@ service WorkItemService {
     rpc GetWorkItems (WorkItemGetRequest) returns (WorkItemsResponse) {}
     rpc GetWorkItem (WorkItemGetRequest) returns (WorkItem) {}
 
-    rpc CreateWorkItem (WorkItem) returns (IdResponse) {}
-    rpc UpdateWorkItem (WorkItem) returns (google.protobuf.Empty) {}
-    rpc DeleteWorkItem (WorkItem) returns (google.protobuf.Empty) {}
+    rpc CreateWorkItem (WorkItemRequest) returns (IdResponse) {}
+    rpc UpdateWorkItem (WorkItemRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteWorkItem (WorkItemRequest) returns (google.protobuf.Empty) {}
    // rpc SoftDeleteWorkItem (WorkItem) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 
     rpc GetWorkItemCheckItems (WorkItemCheckItemGetRequest) returns (WorkItemCheckItemsResponse) {}
@@ -41,12 +40,15 @@ message WorkItem {
     int32 completed = 6;
     Stage stage = 7;
 
-    string initiative_id = 8; // used just to identify parent on request
-
-    HistoryItem history_item_log = 9;
-
     repeated User assigned_to = 10;
     repeated WorkItemCheckItem check_items = 11;
+}
+
+// Request for query select
+message WorkItemRequest {
+    WorkItem work_item = 1;
+    string initiative_id = 8; // used just to identify parent on request
+    User authenticated_user = 2;
 }
 
 // Response list of the WorkItems
@@ -90,5 +92,4 @@ message WorkItemCheckItemGetRequest {
     // Base
     string id = 1;
     string work_item_id = 2;
-
 }

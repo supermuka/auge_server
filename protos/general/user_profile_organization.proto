@@ -17,9 +17,9 @@ service UserProfileOrganizationService {
     rpc GetUsersProfileOrganizations (UserProfileOrganizationGetRequest) returns (UsersProfileOrganizationsResponse) {}
     rpc GetUserProfileOrganization (UserProfileOrganizationGetRequest) returns (UserProfileOrganization) {}
 
-    rpc CreateUserProfileOrganization (UserProfileOrganization) returns (IdResponse) {}
-    rpc UpdateUserProfileOrganization (UserProfileOrganization) returns (google.protobuf.Empty) {}
-    rpc DeleteUserProfileOrganization (UserProfileOrganization) returns (google.protobuf.Empty) {}
+    rpc CreateUserProfileOrganization (UserProfileOrganizationRequest) returns (IdResponse) {}
+    rpc UpdateUserProfileOrganization (UserProfileOrganizationRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteUserProfileOrganization (UserProfileOrganizationRequest) returns (google.protobuf.Empty) {}
    //  rpc SoftDeleteUserProfileOrganization (UserProfileOrganization) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 }
 
@@ -30,6 +30,12 @@ message UserProfileOrganization {
     User user = 3;
     Organization organization = 4;
     int32 authorization_role = 5;
+}
+
+// Message request related to domain object.
+message UserProfileOrganizationRequest {
+    UserProfileOrganization user_profile_organization = 1;
+    User authenticated_user = 2;
 }
 
 message UserProfileOrganizationGetRequest {

@@ -8,7 +8,6 @@ package auge.protobuf;
 import "google/protobuf/empty.proto";
 
 import "general/common.proto";
-import "general/history_item.proto";
 import "general/organization.proto";
 import "general/group.proto";
 import "general/user.proto";
@@ -23,9 +22,9 @@ service InitiativeService {
     rpc GetInitiatives (InitiativeGetRequest) returns (InitiativesResponse) {}
     rpc GetInitiative (InitiativeGetRequest) returns (Initiative) {}
 
-    rpc CreateInitiative (Initiative) returns (IdResponse) {}
-    rpc UpdateInitiative (Initiative) returns (google.protobuf.Empty) {}
-    rpc DeleteInitiative (Initiative) returns (google.protobuf.Empty) {}
+    rpc CreateInitiative (InitiativeRequest) returns (IdResponse) {}
+    rpc UpdateInitiative (InitiativeRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteInitiative (InitiativeRequest) returns (google.protobuf.Empty) {}
    // rpc SoftDeleteInitiative (Initiative) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 
 }
@@ -47,7 +46,12 @@ message Initiative {
     Group group = 9;
     User leader = 10;
 
-    HistoryItem history_item_log = 11;
+}
+
+// Request for query select
+message InitiativeRequest {
+    Initiative initiative = 1;
+    User authenticated_user = 2;
 }
 
 // Response list of the stages

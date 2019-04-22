@@ -11,20 +11,22 @@ import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.da
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pb.dart';
+//import 'package:auge_server/src/protos/generated/general/history_item.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/objective.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/objective/measure.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pb.dart';
+import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/augeconnection.dart';
 import 'package:auge_server/model/general/authorization.dart';
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 import 'package:auge_server/shared/rpc_error_message.dart';
 
 import 'package:auge_server/src/service/objective/measure_service.dart';
-import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/group_service.dart';
+import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -48,19 +50,19 @@ class ObjectiveService extends ObjectiveServiceBase {
 
   @override
   Future<IdResponse> createObjective(ServiceCall call,
-      Objective request) async {
+      ObjectiveRequest request) async {
     return queryInsertObjective(request);
   }
 
   @override
   Future<Empty> updateObjective(ServiceCall call,
-      Objective request) async {
+      ObjectiveRequest request) async {
     return queryUpdateObjective(request);
   }
 
   @override
   Future<Empty> deleteObjective(ServiceCall call,
-      Objective request) async {
+      ObjectiveRequest request) async {
     return queryDeleteObjective(request);
   }
 
@@ -239,9 +241,9 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   /// Create (insert) a new objective
-  static Future<IdResponse> queryInsertObjective(Objective objective) async {
-    if (!objective.hasId()) {
-      objective.id = new Uuid().v4();
+  static Future<IdResponse> queryInsertObjective(ObjectiveRequest request) async {
+    if (!request.objective.hasId()) {
+      request.objective.id = new Uuid().v4();
     }
 
     try {
@@ -259,43 +261,53 @@ class ObjectiveService extends ObjectiveServiceBase {
             "@leader_user_id,"
             "@group_id)"
             , substitutionValues: {
-              "id": objective.id,
+              "id": request.objective.id,
               "version": 0,
-              "name": objective.name,
-              "description": objective.hasDescription() ?  objective.description : null,
-              "start_date": objective.hasStartDate() ? objective.startDate : null,
-              "end_date": objective.hasEndDate() ? objective.endDate : null,
-              "archived": objective.hasArchived() ? objective.archived : false,
-              "aligned_to_objective_id": objective.hasAlignedTo() ? objective.alignedTo.id : null,
-              "organization_id": objective.hasOrganization() ? objective.organization.id : null,
-              "leader_user_id": objective.hasLeader() ? objective.leader.id : null,
-              "group_id": objective.hasGroup() ? objective.group.id : null,
+              "name": request.objective.name,
+              "description": request.objective.hasDescription() ?  request.objective.description : null,
+              "start_date": request.objective.hasStartDate() ? request.objective.startDate : null,
+              "end_date": request.objective.hasEndDate() ? request.objective.endDate : null,
+              "archived": request.objective.hasArchived() ? request.objective.archived : false,
+              "aligned_to_objective_id": request.objective.hasAlignedTo() ? request.objective.alignedTo.id : null,
+              "organization_id": request.objective.hasOrganization() ? request.objective.organization.id : null,
+              "leader_user_id": request.objective.hasLeader() ? request.objective.leader.id : null,
+              "group_id": request.objective.hasGroup() ? request.objective.group.id : null,
 
             });
 
 
         // HistoryItem
-        objective.historyItemLog
+        HistoryItem historyItem;
+
+        Map<String, dynamic> valuesCurrent = request.objective.writeToJsonMap();
+
+        historyItem
           ..id = new Uuid().v4()
-          ..objectId = objective.id
-          ..objectVersion = objective.version
+          ..objectId = request.objective.id
+          ..objectVersion = request.objective.version
           ..objectClassName = 'Objective' // objectiveRequest.runtimeType.toString(),
-          ..systemFunctionIndex = SystemFunction.create.index;
-         // ..dateTime = DateTime.now().toUtc();
+          ..systemFunctionIndex = SystemFunction.create.index
+        // ..dateTime
+          ..description = ''
+        //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+          ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
 
         // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(objective.historyItemLog));
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
 
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return (IdResponse()..id = objective.id);
+    return (IdResponse()..id = request.objective.id);
   }
 
   /// Update an initiative passing an instance of [Objective]
-  static Future<Empty> queryUpdateObjective(Objective objective) async {
+  static Future<Empty> queryUpdateObjective(ObjectiveRequest request) async {
+
+    // Recovery to log to history
+    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objective.id);
 
     try {
 
@@ -317,17 +329,17 @@ class ObjectiveService extends ObjectiveServiceBase {
                 " WHERE id = @id and version = @version"
                 " RETURNING true"
             , substitutionValues: {
-          "id": objective.id,
-          "version": objective.version,
-          "name": objective.name,
-          "description": objective.hasDescription() ? objective.description : null,
-          "start_date": objective.hasStartDate() ? objective.startDate : null,
-          "end_date": objective.hasEndDate() ? objective.endDate : null,
-          "archived": objective.hasArchived() ? objective.archived : null,
-          "aligned_to_objective_id": objective.hasAlignedTo() ? objective.alignedTo.id : null,
-          "organization_id": objective.hasOrganization() ? objective.organization.id : null,
-          "leader_user_id": objective.hasLeader() ? objective.leader.id : null,
-          "group_id": objective.hasGroup() ? objective.group.id : null,
+          "id": request.objective.id,
+          "version": request.objective.version,
+          "name": request.objective.name,
+          "description": request.objective.hasDescription() ? request.objective.description : null,
+          "start_date": request.objective.hasStartDate() ? request.objective.startDate : null,
+          "end_date": request.objective.hasEndDate() ? request.objective.endDate : null,
+          "archived": request.objective.hasArchived() ? request.objective.archived : null,
+          "aligned_to_objective_id": request.objective.hasAlignedTo() ? request.objective.alignedTo.id : null,
+          "organization_id": request.objective.hasOrganization() ? request.objective.organization.id : null,
+          "leader_user_id": request.objective.hasLeader() ? request.objective.leader.id : null,
+          "group_id": request.objective.hasGroup() ? request.objective.group.id : null,
 
         });
 
@@ -338,16 +350,24 @@ class ObjectiveService extends ObjectiveServiceBase {
         }
         else {
           // HistoryItem
-          objective.historyItemLog
+          HistoryItem historyItem;
+
+          Map<String, dynamic> valuesCurrent = request.objective.writeToJsonMap();
+          Map<String, dynamic> valuesPrevious = previousObjective.writeToJsonMap();
+
+          historyItem
             ..id = new Uuid().v4()
-            ..objectId = objective.id
-            ..objectVersion = objective.version
+            ..objectId = request.objective.id
+            ..objectVersion = request.objective.version
             ..objectClassName = 'Objective' // objectiveRequest.runtimeType.toString(),
-            ..systemFunctionIndex = SystemFunction.create.index;
-          // ..dateTime = DateTime.now().toUtc();
+            ..systemFunctionIndex = SystemFunction.update.index
+          // ..dateTime
+            ..description = ''
+            ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+            ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
 
           // Create a history item
-          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(objective.historyItemLog));
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
         }
 
       });
@@ -360,7 +380,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   /// Delete an objective by [id]
-  static Future<Empty> queryDeleteObjective(Objective objective) async {
+  static Future<Empty> queryDeleteObjective(ObjectiveRequest objectiveRequest) async {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
@@ -368,7 +388,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             "DELETE FROM objective.objectives objective"
                 " WHERE objective.id = @id"
             , substitutionValues: {
-          "id": objective.id});
+          "id": objectiveRequest.objective.id});
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

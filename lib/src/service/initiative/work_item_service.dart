@@ -9,6 +9,7 @@ import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/work_item.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/shared/rpc_error_message.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
@@ -16,6 +17,7 @@ import 'package:auge_server/src/service/initiative/stage_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 
 import 'package:auge_server/model/general/authorization.dart';
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 
 import 'package:auge_server/augeconnection.dart';
 
@@ -45,20 +47,20 @@ class WorkItemService extends WorkItemServiceBase {
 
   @override
   Future<IdResponse> createWorkItem(ServiceCall call,
-      WorkItem workItem) async {
-    return queryInsertWorkItem(workItem);
+      WorkItemRequest request) async {
+    return queryInsertWorkItem(request);
   }
 
   @override
   Future<Empty> updateWorkItem(ServiceCall call,
-      WorkItem workItem) async {
-    return queryUpdateWorkItem(workItem);
+      WorkItemRequest request) async {
+    return queryUpdateWorkItem(request);
   }
 
   @override
   Future<Empty> deleteWorkItem(ServiceCall call,
-      WorkItem workItem) async {
-    return queryDeleteWorkItem(workItem);
+      WorkItemRequest request) async {
+    return queryDeleteWorkItem(request);
   }
 
   @override
@@ -200,10 +202,10 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Create (insert) a new instance of [WorkItem]
-  static Future<IdResponse> queryInsertWorkItem(WorkItem workItem) async {
+  static Future<IdResponse> queryInsertWorkItem(WorkItemRequest request) async {
 
-    if (!workItem.hasId()) {
-      workItem.id = new Uuid().v4();
+    if (!request.workItem.hasId()) {
+      request.workItem.id = new Uuid().v4();
     }
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -227,17 +229,17 @@ class WorkItemService extends WorkItemServiceBase {
             "@initiative_id,"
             "@stage_id)"
             , substitutionValues: {
-              "id": workItem.id,
+              "id": request.workItem.id,
               "version": 0,
-              "name": workItem.name,
-              "description": workItem.hasDescription() ? workItem.description : null,
-              "due_date": workItem.hasDueDate() ? workItem.dueDate : null,
-              "completed": workItem.hasCompleted() ? workItem.completed : null,
-              "initiative_id": workItem.hasInitiativeId() ? workItem.initiativeId : null,
-              "stage_id": workItem.hasStage() ? workItem.stage.id : null});
+              "name": request.workItem.name,
+              "description": request.workItem.hasDescription() ? request.workItem.description : null,
+              "due_date": request.workItem.hasDueDate() ? request.workItem.dueDate : null,
+              "completed": request.workItem.hasCompleted() ? request.workItem.completed : null,
+              "initiative_id": request.hasInitiativeId() ? request.initiativeId : null,
+              "stage_id": request.workItem.hasStage() ? request.workItem.stage.id : null});
 
         // Assigned Members Users
-        for (User user in workItem.assignedTo) {
+        for (User user in request.workItem.assignedTo) {
           await ctx.query("INSERT INTO initiative.work_item_assigned_users"
               " (work_item_id,"
               " user_id)"
@@ -245,13 +247,12 @@ class WorkItemService extends WorkItemServiceBase {
               " (@id,"
               " @user_id)"
               , substitutionValues: {
-                "id": workItem.id,
+                "id": request.workItem.id,
                 "user_id": user.id});
         }
 
         // Check item list
-
-        for (WorkItemCheckItem checkItem in workItem.checkItems) {
+        for (WorkItemCheckItem checkItem in request.workItem.checkItems) {
           checkItem.id = new Uuid().v4();
 
           await ctx.query("INSERT INTO initiative.work_item_check_items"
@@ -271,7 +272,7 @@ class WorkItemService extends WorkItemServiceBase {
                 "version": 0,
                 "name": checkItem.name,
                 "finished": checkItem.hasFinished() ? checkItem.finished : false,
-                "work_item_id": workItem.id});
+                "work_item_id": request.workItem.id});
         }
 
       } catch (e) {
@@ -279,11 +280,14 @@ class WorkItemService extends WorkItemServiceBase {
         rethrow;
       }
     });
-    return IdResponse()..id = workItem.id;
+    return IdResponse()..id = request.workItem.id;
   }
 
   /// Update an initiative passing an instance of [WorkItem]
-  static Future<Empty> queryUpdateWorkItem(WorkItem workItem) async {
+  static Future<Empty> queryUpdateWorkItem(WorkItemRequest request) async {
+
+    // Recovery to log to history
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id);
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
@@ -301,22 +305,22 @@ class WorkItemService extends WorkItemServiceBase {
             " WHERE id = @id AND version = @version"
             " RETURNING true"
             , substitutionValues: {
-              "id": workItem.id,
-              "version": workItem.version,
-              "name": workItem.name,
-              "description": workItem.hasDescription()
-                  ? workItem.description
+              "id": request.workItem.id,
+              "version": request.workItem.version,
+              "name": request.workItem.name,
+              "description": request.workItem.hasDescription()
+                  ? request.workItem.description
                   : null,
-              "due_date": workItem.hasDueDate() ? workItem.dueDate : null,
-              "completed": workItem.hasCompleted()
-                  ? workItem.completed
+              "due_date": request.workItem.hasDueDate() ? request.workItem.dueDate : null,
+              "completed": request.workItem.hasCompleted()
+                  ? request.workItem.completed
                   : null,
-              "initiative_id": workItem.initiativeId,
-              "stage_id": workItem.hasStage() ? workItem.stage.id : null});
+              "initiative_id": request.initiativeId,
+              "stage_id": request.workItem.hasStage() ? request.workItem.stage.id : null});
 
         // Assigned Members Users
         StringBuffer assignedToUsersId = new StringBuffer();
-        for (User user in workItem.assignedTo) {
+        for (User user in request.workItem.assignedTo) {
           await ctx.query(
               "INSERT INTO initiative.work_item_assigned_users"
                   " (work_item_id,"
@@ -326,7 +330,7 @@ class WorkItemService extends WorkItemServiceBase {
                   " @user_id)"
                   " ON CONFLICT (work_item_id, user_id) DO NOTHING"
               , substitutionValues: {
-            "id": workItem.id,
+            "id": request.workItem.id,
             "user_id": user.id});
 
 
@@ -343,12 +347,12 @@ class WorkItemService extends WorkItemServiceBase {
                   " WHERE work_item_id = @id"
                   " AND user_id NOT IN (${assignedToUsersId.toString()})"
               , substitutionValues: {
-            "id": workItem.id});
+            "id": request.workItem.id});
         }
 
         // Check item list
         StringBuffer checkItemsId = new StringBuffer();
-        for (WorkItemCheckItem checkItem in workItem.checkItems) {
+        for (WorkItemCheckItem checkItem in request.workItem.checkItems) {
           if (checkItem.id == null) {
             checkItem.id = new Uuid().v4();
 
@@ -367,7 +371,7 @@ class WorkItemService extends WorkItemServiceBase {
               "id": checkItem.id,
               "name": checkItem.name,
               "finished": checkItem.finished,
-              "work_item_id": workItem.id});
+              "work_item_id": request.workItem.id});
           } else {
             await ctx.query("UPDATE initiative.work_item_check_items SET"
                 " name = @name,"
@@ -378,7 +382,7 @@ class WorkItemService extends WorkItemServiceBase {
                   "id": checkItem.id,
                   "name": checkItem.name,
                   "finished": checkItem.finished,
-                  "work_item_id": workItem.id});
+                  "work_item_id": request.workItem.id});
           }
 
           if (checkItemsId.isNotEmpty)
@@ -402,17 +406,27 @@ class WorkItemService extends WorkItemServiceBase {
           throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.workItemPreconditionFailed );
         }
         else {
+
           // HistoryItem
-          workItem.historyItemLog
+          HistoryItem historyItem;
+
+          Map<String, dynamic> valuesPrevious = previousWorkItem.writeToJsonMap();
+          Map<String, dynamic> valuesCurrent = request.workItem.writeToJsonMap();
+
+          historyItem
             ..id = new Uuid().v4()
-            ..objectId = workItem.id
-            ..objectVersion = workItem.version
+            ..objectId = request.workItem.id
+            ..objectVersion = request.workItem.version
             ..objectClassName = 'WorkItem' // objectiveRequest.runtimeType.toString(),
-            ..systemFunctionIndex = SystemFunction.create.index;
-          // ..dateTime = DateTime.now().toUtc();
+            ..systemFunctionIndex = SystemFunction.create.index
+          // ..dateTime
+            ..description = request.workItem.name
+            ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+            ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
+
 
           // Create a history item
-          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(workItem.historyItemLog));
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
         }
 
       } catch (e) {
@@ -424,14 +438,14 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Delete a WorkItem by [id]
-  static Future<Empty> queryDeleteWorkItem(WorkItem workItem) async {
+  static Future<Empty> queryDeleteWorkItem(WorkItemRequest request) async {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM initiative.work_items work_item"
                 " WHERE work_item.id = @id"
             , substitutionValues: {
-          "id": workItem.id});
+          "id": request.workItem.id});
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');

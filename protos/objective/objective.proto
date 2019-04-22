@@ -20,10 +20,10 @@ service ObjectiveService {
   rpc GetObjectives (ObjectiveGetRequest) returns (ObjectivesResponse) {}
   rpc GetObjective (ObjectiveGetRequest) returns (Objective) {}
 
-  rpc CreateObjective (Objective) returns (IdResponse) {}
-  rpc UpdateObjective (Objective) returns (google.protobuf.Empty) {}
+  rpc CreateObjective (ObjectiveRequest) returns (IdResponse) {}
+  rpc UpdateObjective (ObjectiveRequest) returns (google.protobuf.Empty) {}
   // rpc SoftDeleteObjective (Objective) returns (google.protobuf.Empty) {}
-  rpc DeleteObjective (Objective) returns (google.protobuf.Empty) {}
+  rpc DeleteObjective (ObjectiveRequest) returns (google.protobuf.Empty) {}
 }
 
 // Message to respective domain object.
@@ -45,11 +45,16 @@ message Objective {
   bool archived = 11;
 
   // Transients fields.
-  HistoryItem history_item_log = 12;
   repeated Objective aligned_with_children = 13;
   repeated Measure measures = 14;
   repeated HistoryItem history = 15;
 }
+// Message to request param related to domain object.
+message ObjectiveRequest {
+   Objective objective = 1;
+   User authenticated_user = 2;
+}
+
 
 // Response list of the objectives
 message Objectives {

@@ -33,19 +33,19 @@ class OrganizationService extends OrganizationServiceBase {
 
   @override
   Future<IdResponse> createOrganization(ServiceCall call,
-      Organization organization) {
+      OrganizationRequest organization) {
     return queryInsertOrganization(organization);
   }
 
   @override
   Future<Empty> updateOrganization(ServiceCall call,
-      Organization organization) {
+      OrganizationRequest organization) {
     return queryUpdateOrganization(organization);
   }
 
   @override
   Future<Empty> deleteOrganization(ServiceCall call,
-      Organization organization) async {
+      OrganizationRequest organization) async {
     return queryDeleteOrganization(organization);
   }
 
@@ -99,10 +99,10 @@ class OrganizationService extends OrganizationServiceBase {
     }
   }
 
-  static Future<IdResponse> queryInsertOrganization(Organization organization) async {
+  static Future<IdResponse> queryInsertOrganization(OrganizationRequest request) async {
 
-    if (!organization.hasId()) {
-      organization.id = new Uuid().v4();
+    if (!request.organization.hasId()) {
+      request.organization.id = new Uuid().v4();
     }
 
     try {
@@ -112,27 +112,27 @@ class OrganizationService extends OrganizationServiceBase {
               "@name,"
               "@code)"
           , substitutionValues: {
-        "id": organization.id,
-        "name": organization.name,
-        "code": organization.code});
+        "id": request.organization.id,
+        "name": request.organization.name,
+        "code": request.organization.code});
 
-      return IdResponse()..id = organization.id;
+      return IdResponse()..id = request.organization.id;
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
   }
 
-  static Future<Empty> queryUpdateOrganization(Organization organization) async {
+  static Future<Empty> queryUpdateOrganization(OrganizationRequest request) async {
     try {
       await (await AugeConnection.getConnection()).query(
           "UPDATE general.organizations SET name = @name,"
               " code = @code"
               " WHERE id = @id "
           , substitutionValues: {
-        "id": organization.id,
-        "name": organization.name,
-        "code": organization.code});
+        "id": request.organization.id,
+        "name": request.organization.name,
+        "code": request.organization.code});
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -142,12 +142,12 @@ class OrganizationService extends OrganizationServiceBase {
   }
 
   // Delete
-  static Future<Empty> queryDeleteOrganization(Organization organization) async {
+  static Future<Empty> queryDeleteOrganization(OrganizationRequest request) async {
     try {
       await (await AugeConnection.getConnection()).query(
           "DELETE FROM general.organizations organization WHERE organization.id = @id"
           , substitutionValues: {
-        "id": organization.id});
+        "id": request.organization.id});
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;

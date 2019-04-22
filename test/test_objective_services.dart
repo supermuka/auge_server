@@ -2,11 +2,8 @@ import 'package:test/test.dart';
 
 import 'package:grpc/grpc.dart';
 
-import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
@@ -26,7 +23,6 @@ void main() {
 
     String id;
     String organizationId;
-    String userId;
     String objectiveId;
     String measureId;
 
@@ -63,9 +59,6 @@ void main() {
         UsersResponse usersResponse = await userStub
             .getUsers(UserGetRequest());
         expect(usersResponse.users, isNotNull);
-        if (usersResponse.users.length != 0)
-          userId = usersResponse.users.first.id;
-
       });
     });
 
@@ -92,11 +85,10 @@ void main() {
 
       test('Call operation createObjective', () async {
         IdResponse idResponsePb = await objectiveStub
-            .createObjective(Objective()
+            .createObjective(ObjectiveRequest()..objective = (Objective()
           ..name = name
           ..description = description
-          ..organization = (Organization()..id = organizationId)
-          ..historyItemLog = (HistoryItem()..user = (User()..id = userId)..changedValues.putIfAbsent('id',() => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+          ..organization = (Organization()..id = organizationId)));
         expect(idResponsePb.hasId(), isTrue);
 
         id = idResponsePb.id;
@@ -116,13 +108,13 @@ void main() {
 
       test('Call operation updateObjective', () async {
         await objectiveStub
-          ..updateObjective(Objective()
+          ..updateObjective(ObjectiveRequest()..objective = (Objective()
             ..id = id
             ..name = name
             ..description = description
             ..organization = (Organization()..id = organizationId)
             ..archived = false
-            ..historyItemLog = (HistoryItem()..user = (User()..id = userId)..changedValues.putIfAbsent('id',() => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+            ));
 
         Objective objective = await objectiveStub
             .getObjective(ObjectiveGetRequest()
@@ -143,11 +135,10 @@ void main() {
 
       test('Call operation createObjective to measure', () async {
         IdResponse idResponsePb = await objectiveStub
-            .createObjective(Objective()
+            .createObjective(ObjectiveRequest()..objective = (Objective()
           ..name = name
           ..description = description
-          ..organization = (Organization()..id = organizationId)
-          ..historyItemLog = (HistoryItem()..user = (User()..id = userId)..changedValues.putIfAbsent('id',() => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+          ..organization = (Organization()..id = organizationId)));
         expect(idResponsePb.hasId(), isTrue);
 
         objectiveId = idResponsePb.id;
@@ -159,11 +150,9 @@ void main() {
       test('Call operation createMeasure', () async {
 
         IdResponse idResponsePb = await measureStub
-            .createMeasure(Measure()
+            .createMeasure(MeasureRequest()..measure = (Measure()
           ..name = name
-          ..description = description
-          ..objectiveId = objectiveId
-          ..historyItemLog = (HistoryItem()..user = (User()..id = userId)..changedValues.putIfAbsent('id',() => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+          ..description = description)..objectiveId = objectiveId);
         expect(idResponsePb.hasId(), isTrue);
 
         id = idResponsePb.id;
@@ -200,11 +189,10 @@ void main() {
 
       test('Call operation createMeasure', () async {
         IdResponse idResponsePb = await measureStub
-            .createMeasure(Measure()
+            .createMeasure(MeasureRequest()..measure = (Measure()
           ..name = name
           ..description = description
-          ..objectiveId = objectiveId
-          ..historyItemLog = (HistoryItem()..user = (User()..id = userId)..changedValues.putIfAbsent('id',() => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+          )..objectiveId = objectiveId);
         expect(idResponsePb.hasId(), isTrue);
 
         id = idResponsePb.id;
@@ -226,12 +214,10 @@ void main() {
 
       test('Call operation updateMeasure', () async {
         await measureStub
-          ..updateMeasure(Measure()
+          ..updateMeasure(MeasureRequest()..measure = (Measure()
             ..id = id
             ..name = name
-            ..description = description
-            ..objectiveId = objectiveId
-            ..historyItemLog = (HistoryItem()..user = (User()..id = userId)..changedValues.putIfAbsent('id',() => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+            ..description = description)..objectiveId = objectiveId);
 
         Measure measure = await measureStub
             .getMeasure(MeasureGetRequest()
@@ -248,10 +234,8 @@ void main() {
 
       test('Call operation createMeasureProgress', () async {
         IdResponse idResponsePb = await measureStub
-            .createMeasureProgress(MeasureProgress()
-          ..comment = comment
-          ..measureId = measureId
-          ..historyItemLog = (HistoryItem()..user = (User()..id = userId)..changedValues.putIfAbsent('id',() => 'f9ea90d6-79ab-42c2-b238-0323c4b20a78')));
+            .createMeasureProgress(MeasureProgressRequest()..measureProgress = (MeasureProgress()
+          ..comment = comment)..measureId = measureId);
         expect(idResponsePb.hasId(), isTrue);
 
         id = idResponsePb.id;

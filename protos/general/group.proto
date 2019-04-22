@@ -20,9 +20,9 @@ service GroupService {
     rpc GetGroups (GroupGetRequest) returns (GroupsResponse) {}
     rpc GetGroup (GroupGetRequest) returns (Group) {}
 
-    rpc CreateGroup (Group) returns (IdResponse) {}
-    rpc UpdateGroup (Group) returns (google.protobuf.Empty) {}
-    rpc DeleteGroup (Group) returns (google.protobuf.Empty) {}
+    rpc CreateGroup (GroupRequest) returns (IdResponse) {}
+    rpc UpdateGroup (GroupRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteGroup (GroupRequest) returns (google.protobuf.Empty) {}
 //    rpc SoftDeleteGroup (Group) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 }
 
@@ -49,6 +49,12 @@ message Group {
     Group super_group = 7;
     User leader = 8;
     repeated User members = 9;
+}
+
+// Message request related to domain object.
+message GroupRequest {
+    Group group = 1;
+    User authenticated_user = 2;
 }
 
 // Request for query select

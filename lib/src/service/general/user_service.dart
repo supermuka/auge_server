@@ -33,19 +33,19 @@ class UserService extends UserServiceBase {
 
   @override
   Future<IdResponse> createUser(ServiceCall call,
-      User request) async {
+      UserRequest request) async {
     return queryInsertUser(request);
   }
 
   @override
   Future<Empty> updateUser(ServiceCall call,
-      User request) async {
+      UserRequest request) async {
     return queryUpdateUser(request);
   }
 
   @override
   Future<Empty> deleteUser(ServiceCall call,
-      User request) async {
+      UserRequest request) async {
     
     return await queryDeleteUser(request);
   }
@@ -134,9 +134,9 @@ class UserService extends UserServiceBase {
     }
   }
 
-  static Future<IdResponse> queryInsertUser(User user) async {
-    if (!user.hasId()) {
-      user.id = new Uuid().v4();
+  static Future<IdResponse> queryInsertUser(UserRequest userRequest) async {
+    if (!userRequest.user.hasId()) {
+      userRequest.user.id = new Uuid().v4();
     }
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
@@ -148,33 +148,33 @@ class UserService extends UserServiceBase {
                 "@email,"
                 "@password)"
             , substitutionValues: {
-          "id": user.id,
+          "id": userRequest.user.id,
           "version": 0,
-          "name": user.name,
-          "email": user.eMail,
-          "password": user.password});
-        if (user.userProfile != null)
+          "name": userRequest.user.name,
+          "email": userRequest.user.eMail,
+          "password": userRequest.user.password});
+        if (userRequest.user.userProfile != null)
           await ctx.query(
               "INSERT INTO general.users_profile(user_id, image, is_super_admin, idiom_locale) VALUES("
                   "@id,"
                   "@image,"
                   "@is_super_admin,"
                   "@idiom_locale)", substitutionValues: {
-            "id": user.id,
-            "image": user.userProfile.image,
-            "is_super_admin": user.userProfile.isSuperAdmin,
-            "idiom_locale": user.userProfile.idiomLocale});
+            "id": userRequest.user.id,
+            "image": userRequest.user.userProfile.image,
+            "is_super_admin": userRequest.user.userProfile.isSuperAdmin,
+            "idiom_locale": userRequest.user.userProfile.idiomLocale});
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
       }
     });
 
-    return IdResponse()..id = user.id;
+    return IdResponse()..id = userRequest.user.id;
 
   }
 
-  static Future<Empty> queryUpdateUser(User user) async {
+  static Future<Empty> queryUpdateUser(UserRequest userRequest) async {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
 
@@ -186,11 +186,11 @@ class UserService extends UserServiceBase {
                 "password = @password "
                 " WHERE id = @id AND version = @version"
                 " RETURNING true", substitutionValues: {
-          "id": user.id,
-          "version": user.version,
-          "name": user.name,
-          "email": user.eMail,
-          "password": user.password});
+          "id": userRequest.user.id,
+          "version": userRequest.user.version,
+          "name": userRequest.user.name,
+          "email": userRequest.user.eMail,
+          "password": userRequest.user.password});
 
         await ctx.query(
             "UPDATE general.users_profile "
@@ -199,10 +199,10 @@ class UserService extends UserServiceBase {
                 "idiom_locale = @idiom_locale "
                 "WHERE user_id = @user_id"
             , substitutionValues: {
-          "user_id": user.id,
-          "image": user.userProfile.image,
-          "is_super_admin": user.userProfile.isSuperAdmin,
-          "idiom_locale": user.userProfile.idiomLocale});
+          "user_id": userRequest.user.id,
+          "image": userRequest.user.userProfile.image,
+          "is_super_admin": userRequest.user.userProfile.isSuperAdmin,
+          "idiom_locale": userRequest.user.userProfile.idiomLocale});
 
         // Optimistic concurrency control
         if (result.length == 0) {
@@ -218,24 +218,24 @@ class UserService extends UserServiceBase {
     return Empty()..webWorkAround = true;
   }
 
-  static Future<Empty> queryDeleteUser(User user) async {
+  static Future<Empty> queryDeleteUser(UserRequest userRequest) async {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM general.users_profile_organizations user_profile_organizations WHERE user_profile_organizations.user_id = @user_id"
             , substitutionValues: {
-          "user_id": user.id});
+          "user_id": userRequest.user.id});
 
         await ctx.query(
             "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id"
             , substitutionValues: {
-          "user_id": user.id});
+          "user_id": userRequest.user.id});
 
         await ctx.query(
             "DELETE FROM general.users u WHERE u.id = @id"
             , substitutionValues: {
-          "id": user.id});
+          "id": userRequest.user.id});
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
