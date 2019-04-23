@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
@@ -290,7 +291,7 @@ class ObjectiveService extends ObjectiveServiceBase {
         // ..dateTime
           ..description = ''
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
+          ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -363,8 +364,8 @@ class ObjectiveService extends ObjectiveServiceBase {
             ..systemFunctionIndex = SystemFunction.update.index
           // ..dateTime
             ..description = ''
-            ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-            ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
+            ..changedValuesPreviousJson = json.encode(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+            ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

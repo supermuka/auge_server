@@ -2,14 +2,21 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
+
+import 'package:auge_server/model/general/authorization.dart';
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 
 import 'package:auge_server/augeconnection.dart';
+
+import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -134,12 +141,14 @@ class UserService extends UserServiceBase {
     }
   }
 
-  static Future<IdResponse> queryInsertUser(UserRequest userRequest) async {
-    if (!userRequest.user.hasId()) {
-      userRequest.user.id = new Uuid().v4();
+  static Future<IdResponse> queryInsertUser(UserRequest request) async {
+    if (!request.user.hasId()) {
+      request.user.id = new Uuid().v4();
     }
     await (await AugeConnection.getConnection()).transaction((ctx) async {
+
       try {
+
         await ctx.query(
             "INSERT INTO general.users(id, version,name, email, password) VALUES("
                 "@id,"
@@ -148,29 +157,48 @@ class UserService extends UserServiceBase {
                 "@email,"
                 "@password)"
             , substitutionValues: {
-          "id": userRequest.user.id,
+          "id": request.user.id,
           "version": 0,
-          "name": userRequest.user.name,
-          "email": userRequest.user.eMail,
-          "password": userRequest.user.password});
-        if (userRequest.user.userProfile != null)
+          "name": request.user.name,
+          "email": request.user.eMail,
+          "password": request.user.password});
+        if (request.user.userProfile != null)
           await ctx.query(
               "INSERT INTO general.users_profile(user_id, image, is_super_admin, idiom_locale) VALUES("
                   "@id,"
                   "@image,"
                   "@is_super_admin,"
                   "@idiom_locale)", substitutionValues: {
-            "id": userRequest.user.id,
-            "image": userRequest.user.userProfile.image,
-            "is_super_admin": userRequest.user.userProfile.isSuperAdmin,
-            "idiom_locale": userRequest.user.userProfile.idiomLocale});
+            "id": request.user.id,
+            "image": request.user.userProfile.image,
+            "is_super_admin": request.user.userProfile.isSuperAdmin,
+            "idiom_locale": request.user.userProfile.idiomLocale});
+
+        // HistoryItem
+        Map<String, dynamic> valuesCurrent = request.user.writeToJsonMap();
+
+        HistoryItem  historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.user.id
+          ..objectVersion = request.user.version
+          ..objectClassName = request.user.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.users.index
+          ..systemFunctionIndex = SystemFunction.create.index
+        // ..dateTime
+          ..description = request.user.name
+        //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+          ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, {}) );
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
       }
     });
-
-    return IdResponse()..id = userRequest.user.id;
+    return IdResponse()..id = request.user.id;
 
   }
 

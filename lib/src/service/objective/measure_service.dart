@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
@@ -272,7 +273,7 @@ class MeasureService extends MeasureServiceBase {
         // ..dateTime
           ..description = ''
          // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
+          ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -346,8 +347,8 @@ class MeasureService extends MeasureServiceBase {
             ..description = request.measure.name
           // ..dateTime
             ..description = ''
-            ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-            ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
+            ..changedValuesPreviousJson = json.encode(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+            ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -492,7 +493,7 @@ class MeasureService extends MeasureServiceBase {
         // ..dateTime
           ..description = ''
          // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
+          ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -570,8 +571,8 @@ class MeasureService extends MeasureServiceBase {
             ..systemFunctionIndex = SystemFunction.update.index
           // ..dateTime
             ..description = ''
-            ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-            ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
+            ..changedValuesPreviousJson = json.encode(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+            ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,

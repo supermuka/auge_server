@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
@@ -421,8 +422,8 @@ class WorkItemService extends WorkItemServiceBase {
             ..systemFunctionIndex = SystemFunction.create.index
           // ..dateTime
             ..description = request.workItem.name
-            ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-            ..changedValuesCurrent.addAll(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
+            ..changedValuesPreviousJson = json.encode(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+            ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
 
 
           // Create a history item
