@@ -249,8 +249,8 @@ class UserService extends UserServiceBase {
           ..systemFunctionIndex = SystemFunction.update.index
         // ..dateTime
           ..description = request.user.name
-          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToMap(request.user) )
-          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToMap(previousUser) );
+          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToMap(request.user, previousUser) )
+          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToMap(previousUser, request.user) );
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

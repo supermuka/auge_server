@@ -63,15 +63,15 @@ class User {
       ..[User.userProfileField] = this.userProfile.toMap();
   }
 
-  static Map<String, dynamic> fromProtoBufToMap(user_pb.User userPb) {
+  static Map<String, dynamic> fromProtoBufToMap(user_pb.User userPb, [user_pb.User deltaComparedToUserPb]) {
     Map<String, dynamic> map = Map();
 
-    if (userPb.hasId()) map[User.idField] = userPb.id;
-    if (userPb.hasVersion()) map[User.versionField] = userPb.version;
-    if (userPb.hasName()) map[User.nameField] = userPb.name;
-    if (userPb.hasEMail()) map[User.eMailField] = userPb.eMail;
-    if (userPb.hasPassword()) map[User.passwordField] = userPb.password;
-    if (userPb.hasUserProfile()) map[User.userProfileField] = UserProfile.fromProtoBufToMap(userPb.userProfile);
+    if (userPb.hasId() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasId() && userPb.id != deltaComparedToUserPb.id)) map[User.idField] = userPb.id;
+    if (userPb.hasVersion() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasVersion() &&  userPb.version != deltaComparedToUserPb.version)) map[User.versionField] = userPb.version;
+    if (userPb.hasName() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasName() && userPb.name != deltaComparedToUserPb.name)) map[User.nameField] = userPb.name;
+    if (userPb.hasEMail() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasEMail() && userPb.eMail != deltaComparedToUserPb.eMail)) map[User.eMailField] = userPb.eMail;
+    if (userPb.hasPassword() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasPassword() && userPb.password != deltaComparedToUserPb.password)) map[User.passwordField] = userPb.password;
+    if (userPb.hasUserProfile() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasUserProfile() && userPb.userProfile != deltaComparedToUserPb.userProfile)) map[User.userProfileField] = UserProfile.fromProtoBufToMap(userPb.userProfile, deltaComparedToUserPb.userProfile);
 
     return map;
   }
@@ -116,11 +116,11 @@ class UserProfile {
       ..[UserProfile.idiomLocaleField] = this.idiomLocale;
   }
 
-  static Map<String, dynamic> fromProtoBufToMap(user_pb.UserProfile userProfilePb) {
+  static Map<String, dynamic> fromProtoBufToMap(user_pb.UserProfile userProfilePb, [user_pb.UserProfile deltaComparedToUserProfilePb]) {
     Map<String, dynamic> map = Map();
-    if (userProfilePb.hasIsSuperAdmin()) map[UserProfile.isSuperAdminField] = userProfilePb.isSuperAdmin;
-    if (userProfilePb.hasImage()) map[UserProfile.imageField] = userProfilePb.image;
-    if (userProfilePb.hasIdiomLocale()) map[UserProfile.idiomLocaleField]= userProfilePb.idiomLocale;
+    if (userProfilePb.hasIsSuperAdmin() && (deltaComparedToUserProfilePb == null || deltaComparedToUserProfilePb.hasIsSuperAdmin() && userProfilePb.isSuperAdmin != deltaComparedToUserProfilePb.isSuperAdmin)) map[UserProfile.isSuperAdminField] = userProfilePb.isSuperAdmin;
+    if (userProfilePb.hasImage() && (deltaComparedToUserProfilePb == null || deltaComparedToUserProfilePb.hasImage() && userProfilePb.image != deltaComparedToUserProfilePb.image)) map[UserProfile.imageField] = userProfilePb.image;
+    if (userProfilePb.hasIdiomLocale() && (deltaComparedToUserProfilePb == null || deltaComparedToUserProfilePb.hasIdiomLocale() && userProfilePb.idiomLocale != deltaComparedToUserProfilePb.idiomLocale)) map[UserProfile.idiomLocaleField]= userProfilePb.idiomLocale;
     return map;
   }
 }
