@@ -5,7 +5,7 @@ import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/general/user_history_item.pbgrpc.dart';
 
 import 'package:auge_server/src/protos/generated/objective/objective.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/objective/measure.pbgrpc.dart';

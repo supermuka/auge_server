@@ -13,17 +13,23 @@ class User {
   }
 
   // Base fields
+  static final String idField = 'id';
   String id;
+  static final String versionField = 'version';
   int version;
 
   // Specific fields
+  static final String nameField = 'name';
   String name;
+  static final String eMailField = 'eMail';
   String eMail;
 
   // sha-256
+  static final String passwordField = 'password';
   String password;
 
   // Profile
+  static final String userProfileField = 'userProfile';
   UserProfile userProfile;
 
   user_pb.User writeToProtoBuf() {
@@ -47,44 +53,44 @@ class User {
     if (userPb.hasPassword()) this.password = userPb.password;
     if (userPb.hasUserProfile()) this.userProfile = UserProfile()..readFromProtoBuf(userPb.userProfile);
   }
-}
 
-/*
-/// User classes
-class UserBase {
-  String id;
-}
+  Map<String, dynamic> toMap() {
+    return Map<String, dynamic>()
+      ..[User.idField] = this.id
+      ..[User.nameField] = this.name
+      ..[User.eMailField] = this.eMail
+      ..[User.passwordField] = this.password
+      ..[User.userProfileField] = this.userProfile.toMap();
+  }
 
-class User implements UserBase {
-  String id;
-  int version;
-  bool isDeleted;
-  String name;
-  String eMail;
+  static Map<String, dynamic> fromProtoBufToMap(user_pb.User userPb) {
+    Map<String, dynamic> map = Map();
 
-  // sha-256
-  String password;
+    if (userPb.hasId()) map[User.idField] = userPb.id;
+    if (userPb.hasVersion()) map[User.versionField] = userPb.version;
+    if (userPb.hasName()) map[User.nameField] = userPb.name;
+    if (userPb.hasEMail()) map[User.eMailField] = userPb.eMail;
+    if (userPb.hasPassword()) map[User.passwordField] = userPb.password;
+    if (userPb.hasUserProfile()) map[User.userProfileField] = UserProfile.fromProtoBufToMap(userPb.userProfile);
 
-  // Profile
-  UserProfile userProfile;
-
-  User() {
-    userProfile = UserProfile();
+    return map;
   }
 }
-*/
 
 /// Domain model class to represent an user account profile
 class UserProfile {
 
   // Super Admin does not need authorization. It is SAAS administration and has access to full data and functions
   // bool isSuperAdmin = false;
+  static final String isSuperAdminField = 'isSuperAdmin';
   bool isSuperAdmin;
 
-  // base64
+  // Base64
+  static final String imageField = 'image';
   String image;
 
   // pt_BR, en es_ES
+  static final String idiomLocaleField = 'idiomLocale';
   String idiomLocale;
 
   user_pb.UserProfile writeToProtoBuf() {
@@ -101,5 +107,20 @@ class UserProfile {
     if (userProfilePb.hasIsSuperAdmin()) this.isSuperAdmin = userProfilePb.isSuperAdmin;
     if (userProfilePb.hasImage()) this.image = userProfilePb.image;
     if (userProfilePb.hasIdiomLocale()) this.idiomLocale = userProfilePb.idiomLocale;
+  }
+
+  Map<String, dynamic> toMap() {
+    return Map<String, dynamic>()
+      ..[UserProfile.isSuperAdminField] = this.isSuperAdmin
+      ..[UserProfile.imageField] = this.image
+      ..[UserProfile.idiomLocaleField] = this.idiomLocale;
+  }
+
+  static Map<String, dynamic> fromProtoBufToMap(user_pb.UserProfile userProfilePb) {
+    Map<String, dynamic> map = Map();
+    if (userProfilePb.hasIsSuperAdmin()) map[UserProfile.isSuperAdminField] = userProfilePb.isSuperAdmin;
+    if (userProfilePb.hasImage()) map[UserProfile.imageField] = userProfilePb.image;
+    if (userProfilePb.hasIdiomLocale()) map[UserProfile.idiomLocaleField]= userProfilePb.idiomLocale;
+    return map;
   }
 }

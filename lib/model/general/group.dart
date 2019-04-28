@@ -12,16 +12,25 @@ import 'package:auge_server/src/protos/generated/general/group.pb.dart' as group
 class Group {
 
   // Base fields
+  static final String idField = 'id';
   String id;
+  static final String versionField = 'version';
   int version;
 
   // Specific
+  static final String nameField = 'name';
   String name;
+  static final String activeField = 'active';
   bool active;
+  static final String organizationField = 'organization';
   Organization organization;
+  static final String groupTypeField = 'groupType';
   GroupType groupType;
+  static final String superGroupField = 'superGroup';
   Group superGroup;
+  static final String leaderField = 'leader';
   User leader;
+  static final String membersField = 'members';
   List<User> members = [];
 
   group_pb.Group writeToProtoBuf() {

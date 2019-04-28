@@ -135,16 +135,22 @@ class Measure {
 
 class MeasureProgress {
   // Base - implements
+  static final String idField = 'id';
   String id;
+  static final String versionField = 'version';
   int version;
+  static final String isDeletedField = 'isDeleted';
   bool isDeleted;
 
   // Base - History - Transient
   // REFACTOR HistoryItem lastHistoryItem;
 
   // Specific
+  static final String dateField = 'date';
   DateTime date;
+  static final String currentValueField = 'currentValue';
   double currentValue;
+  static final String commentField = 'comment';
   String comment;
 
   MeasureProgress() {

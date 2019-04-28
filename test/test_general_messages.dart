@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart' as organization_pb;
-import 'package:auge_server/src/protos/generated/general/user.pb.dart' as user_pb;
+import 'package:auge_server/src/protos/generated/general/user_history_item.pb.dart' as user_pb;
 import 'package:auge_server/src/protos/generated/general/user_profile_organization.pb.dart' as user_profile_organization_pb;
 import 'package:auge_server/src/protos/generated/general/group.pb.dart' as group_pb;
 

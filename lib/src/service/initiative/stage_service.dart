@@ -8,7 +8,7 @@ import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/protos/generated/initiative/state.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/stage.pbgrpc.dart';
 
-import 'package:auge_server/augeconnection.dart';
+import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
 import 'package:auge_server/src/service/initiative/state_service.dart';
 

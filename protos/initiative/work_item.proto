@@ -47,8 +47,9 @@ message WorkItem {
 // Request for query select
 message WorkItemRequest {
     WorkItem work_item = 1;
-    string initiative_id = 8; // used just to identify parent on request
     User authenticated_user = 2;
+    string initiative_id = 3; // used just to identify parent on request
+
 }
 
 // Response list of the WorkItems

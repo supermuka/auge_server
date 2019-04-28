@@ -17,20 +17,30 @@ import 'package:auge_server/src/protos/generated/initiative/initiative.pb.dart' 
 /// Domain model class to represent an initiative (action plan, projects)
 class Initiative  {
   // Base
+  static final String idField = 'id';
   String id;
+
+  static final String versionField = 'version';
   int version;
 
   // Specific
+  static final String nameField = 'name';
   String name;
+  static final String descriptionField = 'description';
   String description;
+  static final String stagesField = 'stages';
   List<Stage> stages;
-
+  static final String objectiveField = 'objective';
   Objective objective;
+  static final String organizationField = 'organization';
   Organization organization;
+  static final String groupField = 'group';
   Group group;
+  static final String leaderField = 'leader';
   User leader;
 
   // Transient fields
+  static final String workItemsField = 'workItems';
   List<WorkItem> workItems;
 
   Initiative() {

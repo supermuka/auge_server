@@ -21,27 +21,32 @@ import 'package:auge_server/src/protos/generated/objective/objective.pb.dart' as
 class Objective {
 
   // Base
-  static final String idField = 'Id';
+  static final String idField = 'id';
   String id;
+  static final String versionField = 'version';
   int version;
 
   // Transient
  // HistoryItem lastHistoryItem;
 
   // Specific
-  static final String nameField = 'Name';
+  static final String nameField = 'name';
   String name;
-  static final String descriptionField = 'Description';
+  static final String descriptionField = 'description';
   String description;
-  static final String startDateField = 'Start Date';
+  static final String startDateField = 'startDate';
   DateTime startDate;
-  static final String endDateField = 'End Date';
+  static final String endDateField = 'endDate';
   DateTime endDate;
+  static final String organizationField = 'organization';
   Organization organization;
+  static final String groupField = 'group';
   Group group;
+  static final String alignedToField = 'alignedTo';
   Objective alignedTo;
-  static final String leaderField = 'Leader';
+  static final String leaderField = 'leader';
   User leader;
+  static final String archivedField = 'archived';
   bool archived;
 
   // Transients fields

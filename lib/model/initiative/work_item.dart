@@ -19,17 +19,25 @@ import 'package:auge_server/src/protos/generated/initiative/work_item.pb.dart' a
 /// Domain model class to represent an initiative item work (task, issue, feature, etc.)
 class WorkItem {
   // Base
+  static final String idField = 'id';
   String id;
+  static final String versionField = 'version';
   int version;
 
   // Specific
+  static final String nameField = 'name';
   String name;
+  static final String descriptionField = 'description';
   String description;
+  static final String dueDateField = 'dueDate';
   DateTime dueDate;
+  static final String completedField = 'completed';
   int completed;
+  static final String checkItemsField = 'checkItems';
   List<WorkItemCheckItem> checkItems;
-
+  static final String stageField = 'stage';
   Stage stage;
+  static final String assignedToField = 'assignedTo';
   List<User> assignedTo;
 
   WorkItem() {

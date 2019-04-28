@@ -18,7 +18,7 @@ import 'package:auge_server/src/protos/generated/objective/measure.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pb.dart';
 import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
-import 'package:auge_server/augeconnection.dart';
+import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/model/general/authorization.dart';
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 import 'package:auge_server/shared/rpc_error_message.dart';

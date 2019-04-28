@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import 'package:auge_server/src/protos/generated/general/user.pb.dart';
+import 'package:auge_server/src/protos/generated/general/user_test.pb.dart';
 
 void main() {
 
@@ -21,31 +21,29 @@ void main() {
       userCurrent.version = 123;
       userCurrent.name = 'XXXXX';
 
+      userCurrent.userProfile = UserProfile()..image = '-XYZ-';
+
 
       Map<String, dynamic> userPreviousDiffMap = {};
       Map<String, dynamic> userCurrentDiffMap = {};
       Map<String, dynamic> userPreviousMap = userPrevious.writeToJsonMap();
       Map<String, dynamic> userCurrentMap = userCurrent.writeToJsonMap();
 
-      userPreviousMap.forEach((k, v) {
-        if (userPreviousMap[k] != userCurrentMap[k]) {
-          userCurrentDiffMap[k] = userCurrentMap[k];
-          userPreviousDiffMap[k] = userPreviousMap[k];
-        }
-      });
+      print(userCurrent);
+      print(userCurrent.writeToJson());
+      print(userCurrent.writeToJsonMap());
 
-      userCurrentMap.forEach((k, v) {
-        if (userPreviousMap[k] != userCurrentMap[k]) {
-          userCurrentDiffMap[k] = userCurrentMap[k];
-          userPreviousDiffMap[k] = userPreviousMap[k];
-        }
-      });
+      print(userCurrent.name);
+      print(userCurrent.userProfile.runtimeType);
+      print(userCurrent.info_.fieldInfo);
+      print(userCurrent.info_.fieldInfo[1].type);
+      print(userCurrent.info_.fieldInfo[1].isMapField);
+      print(userCurrent.info_.fieldInfo[6].type);
+      print(userCurrent.info_.toString());
+      print(userCurrent.info_.byIndex);
+      print(userCurrent.info_.messageName);
+      print(userCurrent.info_.qualifiedMessageName);
 
-      print(userCurrentDiffMap);
-      print(userPreviousDiffMap);
-
-
-      //expect(user.id, isNotNull);
     });
   });
 

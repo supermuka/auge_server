@@ -7,7 +7,7 @@ import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/general/user_history_item.pbgrpc.dart';
 
 import 'package:auge_server/src/protos/generated/initiative/initiative.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/initiative/work_item.pbgrpc.dart';

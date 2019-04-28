@@ -8,13 +8,17 @@ import 'package:auge_server/src/protos/generated/general/organization.pb.dart' a
 class Organization {
 
   // Base fields
+  static final String idField = 'id';
   String id;
+  static final String versionField = 'version';
   int version;
 
   /// Specific fields
+  static final String nameField = 'name';
   String name;
 
   /// i.e. CNPJ (Brazil), EIN (USA)
+  static final String codeField = 'code';
   String code;
 
   organization_pb.Organization writeToProtoBuf() {

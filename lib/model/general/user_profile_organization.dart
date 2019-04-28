@@ -11,12 +11,17 @@ import 'package:auge_server/src/protos/generated/general/user_profile_organizati
 class UserProfileOrganization {
 
   // Base fields
+  static final String idField = 'id';
   String id;
+  static final String versionField = 'version';
   int version;
 
   // Specific fields
+  static final String authorizationRoleField = 'authorizationRole';
   int authorizationRole;
+  static final String userField = 'userRole';
   User user;
+  static final String organizationField = 'organizationRole';
   Organization organization;
 
   user_profile_organization_pb.UserProfileOrganization writeToProtoBuf() {

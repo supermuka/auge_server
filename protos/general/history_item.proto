@@ -6,20 +6,15 @@ syntax = "proto3";
 package auge.protobuf;
 
 import "google/protobuf/timestamp.proto";
-//import "google/protobuf/struct.proto";
-//import "google/protobuf/any.proto";
 import "general/user.proto";
 
 // The service definition.
 service HistoryItemService {
-
    rpc GetHistory (HistoryItemGetRequest) returns (HistoryResponse) {}
-
 }
 
 // Message to respective domain object.
 message HistoryItem {
-
    string id = 1;
    string object_class_name = 2;
    string object_id = 3;
@@ -29,7 +24,6 @@ message HistoryItem {
    google.protobuf.Timestamp date_time = 7;
    User user = 8;
    string description = 9;
-
    string changed_values_previous_json = 10;
    string changed_values_current_json = 11;
 }
@@ -38,9 +32,6 @@ message HistoryItem {
 message HistoryItemGetRequest {
    string id = 1;
    int32 system_module_index = 4;
-
-   // Used to query filter
-   bool with_id_removed = 5;
 }
 
 // Response list of the history item

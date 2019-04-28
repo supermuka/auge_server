@@ -12,9 +12,9 @@ import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/model/general/authorization.dart';
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/general/user.dart' as user_m;
 
-import 'package:auge_server/augeconnection.dart';
+import 'package:auge_server/src/service/general/db_connection_service.dart';
 
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
@@ -175,8 +175,6 @@ class UserService extends UserServiceBase {
             "idiom_locale": request.user.userProfile.idiomLocale});
 
         // HistoryItem
-        Map<String, dynamic> valuesCurrent = request.user.writeToJsonMap();
-
         HistoryItem  historyItem = HistoryItem()
           ..id = Uuid().v4()
           ..user = request.authenticatedUser
@@ -188,7 +186,7 @@ class UserService extends UserServiceBase {
         // ..dateTime
           ..description = request.user.name
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, {}) );
+          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToMap(request.user) );
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -202,7 +200,10 @@ class UserService extends UserServiceBase {
 
   }
 
-  static Future<Empty> queryUpdateUser(UserRequest userRequest) async {
+  static Future<Empty> queryUpdateUser(UserRequest request) async {
+
+    User previousUser = await querySelectUser(UserGetRequest()..id = request.user.id);
+
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
 
@@ -214,11 +215,11 @@ class UserService extends UserServiceBase {
                 "password = @password "
                 " WHERE id = @id AND version = @version"
                 " RETURNING true", substitutionValues: {
-          "id": userRequest.user.id,
-          "version": userRequest.user.version,
-          "name": userRequest.user.name,
-          "email": userRequest.user.eMail,
-          "password": userRequest.user.password});
+          "id": request.user.id,
+          "version": request.user.version,
+          "name": request.user.name,
+          "email": request.user.eMail,
+          "password": request.user.password});
 
         await ctx.query(
             "UPDATE general.users_profile "
@@ -227,16 +228,32 @@ class UserService extends UserServiceBase {
                 "idiom_locale = @idiom_locale "
                 "WHERE user_id = @user_id"
             , substitutionValues: {
-          "user_id": userRequest.user.id,
-          "image": userRequest.user.userProfile.image,
-          "is_super_admin": userRequest.user.userProfile.isSuperAdmin,
-          "idiom_locale": userRequest.user.userProfile.idiomLocale});
+          "user_id": request.user.id,
+          "image": request.user.userProfile.image,
+          "is_super_admin": request.user.userProfile.isSuperAdmin,
+          "idiom_locale": request.user.userProfile.idiomLocale});
 
         // Optimistic concurrency control
         if (result.length == 0) {
           throw new GrpcError.failedPrecondition('Precondition Failed');
         }
 
+        // HistoryItem
+        HistoryItem  historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.user.id
+          ..objectVersion = request.user.version
+          ..objectClassName = request.user.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.users.index
+          ..systemFunctionIndex = SystemFunction.update.index
+        // ..dateTime
+          ..description = request.user.name
+          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToMap(request.user) )
+          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToMap(previousUser) );
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');

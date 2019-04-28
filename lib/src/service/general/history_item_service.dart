@@ -10,7 +10,7 @@ import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.da
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
-import 'package:auge_server/augeconnection.dart';
+import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 
 class HistoryItemService extends HistoryItemServiceBase {

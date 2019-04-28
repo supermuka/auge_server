@@ -23,7 +23,9 @@ enum SystemFunction {
 // In-memory class. It is't persistent
 class Authorization {
 
+  static final String authorizationRoleField = 'authorizationRole';
   SystemRole authorizationRole;
+  static final String authorizationModuleField = 'authorizationModule';
   SystemModule authorizationModule;
 
   // Key is the function

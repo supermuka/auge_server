@@ -11,14 +11,19 @@ import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart' as st
 /// Domain model class to represent an initiative stage (activies, bucket or swimlanes)
 class Stage {
   // Base
+  static final String idField = 'id';
   String id;
+  static final String versionField = 'version';
   int version;
 
   // Specific
+  static final String nameField = 'name';
   String name;
+  static final String stateField = 'state';
   State state;
 
   // Define initiative state order
+  static final String indexField = 'index';
   int index;
 
   stage_pb.Stage writeToProtoBuf() {

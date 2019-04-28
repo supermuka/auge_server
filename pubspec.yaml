@@ -5,13 +5,13 @@ version: 0.0.1
 # author: Samuel <email@example.com>
 
 environment:
-  sdk: '>=2.0.0 <3.0.0'
+  sdk: '>=2.2.0 <3.0.0'
 
 dependencies:
-  args: ^1.5.0
+  #args: ^1.5.0
   intl: ^0.15.7
-  shelf: ^0.7.3+3
-  rpc: ^0.6.0
+  #shelf: ^0.7.3+3
+  #rpc: ^0.6.0
   fixnum: ^0.10.9
   #rpc:
   #  git:
@@ -28,9 +28,9 @@ dependencies:
   protoc_plugin: ^16.0.5
   postgres: ^1.0.2
   uuid: ^2.0.0-rc1
-  http: ^0.12.0
-  http2: ^1.0.0
-  _discoveryapis_commons: ^0.1.8+1
+  #http: ^0.12.0
+  #http2: ^1.0.0
+  #_discoveryapis_commons: ^0.1.8+1
   protobuf: ^0.13.11
   grpc:
     git:

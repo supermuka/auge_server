@@ -40,6 +40,7 @@ message UserRequest {
 // Message to respective domain object.
 message UserProfile {
     bool is_super_admin = 1;
+    // string image = 2;
     string image = 2;
     string idiom_locale = 3;
 }

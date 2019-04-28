@@ -14,13 +14,18 @@ const _colorLightness = 'lightness';
 /// Domain model class to represent an initiative  phase (backlog, workflow, archive)
 class State {
   // Base
+  static final String idField = 'id';
   String id;
+  static final String versionField = 'version';
   int version;
 
   // Specific
+  static final String nameField = 'name';
   String name;
   // Define initiative state order
+  static final String indexField = 'index';
   int index;
+  static final String colorField = 'color';
   Map<String, int> color;
 
   String get colorHue => color[_colorHue].toString();

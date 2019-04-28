@@ -13,6 +13,9 @@ pub global activate discoveryapis_generator
 
 protoc --dart_out=grpc:lib/src/protos/generated -Iprotos protos/general/group.proto --plugin=protoc-gen-dart=c:\Users\samue\AppData\Roaming\Pub\Cache\bin\protoc-gen-dart.bat
 
+cd bin
+dart --snapshot=auge-server.dart.snapshot server.dart
+
 https://cloud.google.com/apis/design/standard_methods
 
 
@@ -75,8 +78,7 @@ https://certbot.eff.org/lets-encrypt/debianstretch-apache
 https://dart-lang.github.io/server/tls-ssl.html
 
 
-cd bin
-dart --snapshot=auge-server.dart.snapshot server.dart
+
 
 API RETURN
 
