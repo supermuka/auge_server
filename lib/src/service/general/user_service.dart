@@ -204,16 +204,19 @@ class UserService extends UserServiceBase {
 
     User previousUser = await querySelectUser(UserGetRequest()..id = request.user.id);
 
+    // increment version
+    ++request.user.version;
+
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
 
         List<List<dynamic>> result = await ctx.query(
             "UPDATE general.users "
-                "SET version = @version + 1,"
+                "SET version = @version,"
                 "name = @name,"
                 "email = @email,"
                 "password = @password "
-                " WHERE id = @id AND version = @version"
+                " WHERE id = @id AND version = @version - 1"
                 " RETURNING true", substitutionValues: {
           "id": request.user.id,
           "version": request.user.version,
@@ -249,8 +252,8 @@ class UserService extends UserServiceBase {
           ..systemFunctionIndex = SystemFunction.update.index
         // ..dateTime
           ..description = request.user.name
-          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToMap(request.user, previousUser) )
-          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToMap(previousUser, request.user) );
+          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToMap(previousUser, request.user) )
+          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToMap(request.user, previousUser) );
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -263,24 +266,41 @@ class UserService extends UserServiceBase {
     return Empty()..webWorkAround = true;
   }
 
-  static Future<Empty> queryDeleteUser(UserRequest userRequest) async {
+  static Future<Empty> queryDeleteUser(UserRequest request) async {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
             "DELETE FROM general.users_profile_organizations user_profile_organizations WHERE user_profile_organizations.user_id = @user_id"
             , substitutionValues: {
-          "user_id": userRequest.user.id});
+          "user_id": request.user.id});
 
         await ctx.query(
             "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id"
             , substitutionValues: {
-          "user_id": userRequest.user.id});
+          "user_id": request.user.id});
 
         await ctx.query(
             "DELETE FROM general.users u WHERE u.id = @id"
             , substitutionValues: {
-          "id": userRequest.user.id});
+          "id": request.user.id});
+
+        // HistoryItem
+        HistoryItem  historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.user.id
+          ..objectVersion = request.user.version
+          ..objectClassName = request.user.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.users.index
+          ..systemFunctionIndex = SystemFunction.delete.index
+        // ..dateTime
+          ..description = request.user.name
+          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToMap(request.user) );
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

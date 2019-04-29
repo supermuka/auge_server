@@ -71,7 +71,7 @@ class User {
     if (userPb.hasName() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasName() && userPb.name != deltaComparedToUserPb.name)) map[User.nameField] = userPb.name;
     if (userPb.hasEMail() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasEMail() && userPb.eMail != deltaComparedToUserPb.eMail)) map[User.eMailField] = userPb.eMail;
     if (userPb.hasPassword() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasPassword() && userPb.password != deltaComparedToUserPb.password)) map[User.passwordField] = userPb.password;
-    if (userPb.hasUserProfile() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasUserProfile() && userPb.userProfile != deltaComparedToUserPb.userProfile)) map[User.userProfileField] = UserProfile.fromProtoBufToMap(userPb.userProfile, deltaComparedToUserPb.userProfile);
+    if (userPb.hasUserProfile() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasUserProfile() && userPb.userProfile != deltaComparedToUserPb.userProfile)) map[User.userProfileField] = UserProfile.fromProtoBufToMap(userPb.userProfile, deltaComparedToUserPb?.userProfile);
 
     return map;
   }
