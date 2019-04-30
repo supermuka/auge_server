@@ -49,19 +49,15 @@ class Stage {
 
   }
 
-  void cloneTo(Stage to) {
-    to.id = this.id;
-    to.name = this.name;
-    to.index = this.index;
+  static Map<String, dynamic> fromProtoBufToModelMap(stage_pb.Stage stagePb, [stage_pb.Stage deltaComparedToStagePb ]) {
+    Map<String, dynamic> map = Map();
 
-    if (this.state != null) {
-      to.state = this.state.clone();
-    }
-  }
+    if (stagePb.hasId() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasId() && stagePb.id != deltaComparedToStagePb.id)) map[Stage.idField] = stagePb.id;
+    if (stagePb.hasVersion() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasVersion() &&  stagePb.version != deltaComparedToStagePb.version)) map[Stage.versionField] = stagePb.version;
+    if (stagePb.hasName() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasName() && stagePb.name != deltaComparedToStagePb.name)) map[Stage.nameField] = stagePb.name;
+    if (stagePb.hasIndex() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasIndex() && stagePb.index != deltaComparedToStagePb.index)) map[Stage.indexField] = stagePb.index;
+    if (stagePb.hasState() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasState() && stagePb.state != deltaComparedToStagePb.state)) map[Stage.stateField] = stagePb.state;
 
-  Stage clone() {
-    Stage to = new Stage();
-    cloneTo(to);
-    return to;
+    return map;
   }
 }

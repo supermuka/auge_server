@@ -1,6 +1,7 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'package:collection/collection.dart';
 import 'package:fixnum/fixnum.dart';
 
 // Proto buffer transport layer.
@@ -12,33 +13,34 @@ import 'package:auge_server/src/protos/generated/objective/measure.pb.dart' as m
 class Measure {
 
   // Base - implements
-  static final String idField = 'Id';
+  static final String idField = 'id';
   String id;
+  static final String versionField = 'version';
   int version;
 
   // History
   // HistoryItem lastHistoryItem;
 
   // Specific
-  static final String nameField = 'Name';
+  static final String nameField = 'name';
   String name;
   static final String descriptionField = 'Description';
   String description;
-  static final String metricField = 'Metric';
+  static final String metricField = 'metric';
   String metric;
-  static final String decimalsNumberField = 'Decimals Number';
+  static final String decimalsNumberField = 'decimalsNumber';
   int decimalsNumber;
-  static final String startValueField = 'Start Value';
+  static final String startValueField = 'startValue';
   double startValue;
-  static final String endValueField = 'End Value';
+  static final String endValueField = 'endValue';
   double endValue;
-  static final String measureUnitField = 'Unit';
+  static final String measureUnitField = 'unit';
   MeasureUnit measureUnit;
 
   // Transient
-  static final String currentValueField = 'Current  Value';
+  static final String currentValueField = 'currentValue';
   double currentValue; // field calculeted on measureProgress
-
+  static final String measureProgressField = 'measureProgress';
   List<MeasureProgress> measureProgress;
 
   Measure() {
@@ -76,26 +78,6 @@ class Measure {
     return _progress;
   }
 
-  void cloneTo(Measure to) {
-    to.name = this.name;
-    to.id = this.id;
-    to.description = this.description;
-    to.metric = this.metric;
-    to.decimalsNumber = this.decimalsNumber;
-    to.startValue = this.startValue;
-    to.endValue = this.endValue;
-    to.currentValue = this.currentValue;
-    if (this.measureUnit != null) {
-      to.measureUnit = this.measureUnit.clone();
-    }
-  }
-
-  Measure clone() {
-    Measure to = new Measure();
-    cloneTo(to);
-    return to;
-  }
-
   measure_pb.Measure writeToProtoBuf() {
     measure_pb.Measure measurePb = measure_pb.Measure();
 
@@ -131,6 +113,64 @@ class Measure {
     if (measurePb.hasMeasureUnit()) this.measureUnit = MeasureUnit()..readFromProtoBuf(measurePb.measureUnit);
     if (measurePb.measureProgress.isNotEmpty) this.measureProgress = measurePb.measureProgress.map((u) => MeasureProgress()..readFromProtoBuf(u)).toList();
   }
+
+  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.Measure measurePb, [measure_pb.Measure  deltaComparedToMeasurePb]) {
+    Map<String, dynamic> map = Map();
+
+    if (measurePb.hasId() && (deltaComparedToMeasurePb == null ||
+        deltaComparedToMeasurePb.hasId() &&
+            measurePb.id != deltaComparedToMeasurePb.id))
+      map[Measure.idField] = measurePb.id;
+    if (measurePb.hasVersion() && (deltaComparedToMeasurePb == null ||
+        deltaComparedToMeasurePb.hasVersion() &&
+            measurePb.version != deltaComparedToMeasurePb.version))
+      map[Measure.versionField] = measurePb.version;
+    if (measurePb.hasName() && (deltaComparedToMeasurePb == null ||
+        deltaComparedToMeasurePb.hasName() &&
+            measurePb.name != deltaComparedToMeasurePb.name))
+      map[Measure.nameField] = measurePb.name;
+    if (measurePb.hasDescription() && (deltaComparedToMeasurePb == null ||
+        deltaComparedToMeasurePb.hasDescription() &&
+            measurePb.description != deltaComparedToMeasurePb.description))
+      map[Measure.descriptionField] = measurePb.description;
+    if (measurePb.hasMetric() && (deltaComparedToMeasurePb == null ||
+        deltaComparedToMeasurePb.hasMetric() &&
+            measurePb.metric != deltaComparedToMeasurePb.metric))
+      map[Measure.metricField] = measurePb.metric;
+    if (measurePb.hasDecimalsNumber() && (deltaComparedToMeasurePb == null ||
+        deltaComparedToMeasurePb.hasDecimalsNumber() &&
+            measurePb.decimalsNumber !=
+                deltaComparedToMeasurePb.decimalsNumber))
+      map[Measure.decimalsNumberField] = measurePb.decimalsNumber;
+    if (measurePb.hasStartValue() && (deltaComparedToMeasurePb == null ||
+        deltaComparedToMeasurePb.hasStartValue() &&
+            measurePb.startValue != deltaComparedToMeasurePb.startValue))
+      map[Measure.startValueField] = measurePb.startValue;
+    if (measurePb.hasEndValue() && (deltaComparedToMeasurePb == null ||
+        deltaComparedToMeasurePb.hasEndValue() &&
+            measurePb.endValue != deltaComparedToMeasurePb.endValue))
+      map[Measure.endValueField] = measurePb.endValue;
+    if (measurePb.hasCurrentValue() && (deltaComparedToMeasurePb == null ||
+        deltaComparedToMeasurePb.hasCurrentValue() &&
+            measurePb.currentValue != deltaComparedToMeasurePb.currentValue))
+      map[Measure.currentValueField] = measurePb.currentValue;
+    if (measurePb.hasMeasureUnit() && (deltaComparedToMeasurePb == null ||
+        deltaComparedToMeasurePb.hasMeasureUnit() &&
+            measurePb.measureUnit != deltaComparedToMeasurePb.measureUnit))
+      map[Measure.measureUnitField] = MeasureUnit.fromProtoBufToModelMap(
+          measurePb.measureUnit, deltaComparedToMeasurePb?.measureUnit);
+    if (measurePb.measureProgress.isNotEmpty &&
+        (deltaComparedToMeasurePb == null ||
+            deltaComparedToMeasurePb.measureProgress.isNotEmpty &&
+                !DeepCollectionEquality.unordered().equals(
+                    measurePb.measureProgress,
+                    deltaComparedToMeasurePb.measureProgress)))
+      map[Measure.measureProgressField] = measurePb.measureProgress.map((mp) =>
+          MeasureProgress.fromProtoBufToModelMap(mp)).toList();
+
+    return map;
+  }
+
 }
 
 class MeasureProgress {
@@ -185,27 +225,27 @@ class MeasureProgress {
     if (measureProgressPb.hasComment()) this.comment = measureProgressPb.comment;
   }
 
-  void cloneTo(MeasureProgress to) {
-    to.id = this.id;
-    to.date = this.date;
-    to.currentValue = this.currentValue;
-    to.comment = this.comment;
+  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureProgress measureProgressPb, [measure_pb.MeasureProgress  deltaComparedToMeasureProgressPb]) {
+    Map<String, dynamic> map = Map();
+
+    if (measureProgressPb.hasId() && (deltaComparedToMeasureProgressPb == null || deltaComparedToMeasureProgressPb.hasId() && measureProgressPb.id != deltaComparedToMeasureProgressPb.id)) map[MeasureProgress.idField] = measureProgressPb.id;
+    if (measureProgressPb.hasVersion() && (deltaComparedToMeasureProgressPb == null || deltaComparedToMeasureProgressPb.hasVersion() && measureProgressPb.version != deltaComparedToMeasureProgressPb.version)) map[MeasureProgress.versionField] = measureProgressPb.version;
+    if (measureProgressPb.hasDate() && (deltaComparedToMeasureProgressPb == null || deltaComparedToMeasureProgressPb.hasDate() && measureProgressPb.date != deltaComparedToMeasureProgressPb.date)) map[MeasureProgress.dateField] = measureProgressPb.date;
+    if (measureProgressPb.hasCurrentValue() && (deltaComparedToMeasureProgressPb == null || deltaComparedToMeasureProgressPb.hasCurrentValue() && measureProgressPb.currentValue != deltaComparedToMeasureProgressPb.currentValue)) map[MeasureProgress.currentValueField] = measureProgressPb.currentValue;
+    if (measureProgressPb.hasComment() && (deltaComparedToMeasureProgressPb == null || deltaComparedToMeasureProgressPb.hasComment() && measureProgressPb.comment != deltaComparedToMeasureProgressPb.comment)) map[MeasureProgress.commentField] = measureProgressPb.comment;
+
+    return map;
   }
-
-  MeasureProgress clone() {
-    MeasureProgress to = new MeasureProgress();
-    cloneTo(to);
-    return to;
-  }
-
-
 
 }
 
 class MeasureUnit {
 
+  static const idField = 'id';
   String id;
+  static const symbolField = 'symbol';
   String symbol;
+  static const nameField = 'name';
   String name;
 
   measure_pb.MeasureUnit writeToProtoBuf() {
@@ -224,182 +264,14 @@ class MeasureUnit {
     if (measureUnitPb.hasName()) this.name = measureUnitPb.name;
   }
 
-  void cloneTo(MeasureUnit to) {
-    to.id = this.id;
-    to.name = this.name;
-    to.symbol = this.symbol;
-  }
+  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureUnit measureUnitPb, [measure_pb.MeasureUnit  deltaComparedToMeasureUnitPb]) {
+    Map<String, dynamic> map = Map();
 
-  MeasureUnit clone() {
-    MeasureUnit to = new MeasureUnit();
-    cloneTo(to);
-    return to;
+    if (measureUnitPb.hasId() && (deltaComparedToMeasureUnitPb == null || deltaComparedToMeasureUnitPb.hasId() && measureUnitPb.id != deltaComparedToMeasureUnitPb.id)) map[MeasureUnit.idField] = measureUnitPb.id;
+    if (measureUnitPb.hasSymbol() && (deltaComparedToMeasureUnitPb == null || deltaComparedToMeasureUnitPb.hasSymbol() &&  measureUnitPb.symbol != deltaComparedToMeasureUnitPb.symbol)) map[MeasureUnit.symbolField] = measureUnitPb.symbol;
+    if (measureUnitPb.hasName() && (deltaComparedToMeasureUnitPb == null || deltaComparedToMeasureUnitPb.hasName() && measureUnitPb.name != deltaComparedToMeasureUnitPb.name)) map[MeasureUnit.nameField] = measureUnitPb.name;
+
+    return map;
   }
 }
 
-
-/// Facilities to [Measure] class
-class MeasureFacilities {
-/*
-  /// Delta diff between [current] and [previous].
-  /// ids = A list from IDs changed.
-  /// values =  Values (in user view) changed. ids and values are maintained in structure separately per performance reason (Json stored document strategy)
-  static String differenceToJson(Measure current, Measure previous) {
-
-    Map<String, Map<String, dynamic>> difference = Map();
-
-    const idsKey = 'ids';
-    const valuesKey = 'values';
-
-    const currentDataChangedKey = 'current';
-    const previousDataChangedKey = 'previous';
-
-    difference[idsKey] = {};
-    difference[valuesKey] = {};
-
-    // String id;
-    if (previous != null && current.id != previous.id) {
-      difference[idsKey][Measure.idField] = {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
-    } else if (previous == null && current.id != null) {
-      difference[Measure.idField] = {currentDataChangedKey: current.id};
-    }
-
-    // String name;
-    if (previous != null && current.name != previous.name) {
-      difference[valuesKey][Measure.nameField] = {currentDataChangedKey: current.name, previousDataChangedKey: previous.name};
-    } else if (previous == null && current.name != null) {
-      difference[valuesKey][Measure.nameField] = {currentDataChangedKey: current.name};
-    }
-
-    // String description;
-    if (previous != null && current.description != previous.description) {
-      difference[valuesKey][Measure.descriptionField] = {currentDataChangedKey: current.description, previousDataChangedKey: previous.description};
-    } else if (previous == null && current.description != null ) {
-      difference[valuesKey][Measure.descriptionField] = {currentDataChangedKey: current.description};
-    }
-
-    // String metric;
-    if (previous != null && current.metric != previous.metric) {
-      difference[valuesKey][Measure.metricField] = {currentDataChangedKey: current.metric, previousDataChangedKey: previous.metric};
-    } else if (previous == null && current.metric != null ) {
-      difference[valuesKey][Measure.metricField] = {currentDataChangedKey: current.metric};
-    }
-
-    // MeasureUnit measureUnit - complex object - save id and specification name/description;
-
-    if (previous != null && current.measureUnit.id != previous.measureUnit.id) {
-      difference[idsKey][MeasureUnit.idField] = {currentDataChangedKey: current.measureUnit.id, previousDataChangedKey: previous.measureUnit.id};
-      difference[valuesKey][Measure.measureUnitField] = {currentDataChangedKey: current.measureUnit.name, previousDataChangedKey: previous.measureUnit.name};
-    } else if (previous == null && current.measureUnit != null ) {
-      difference[idsKey][Measure.measureUnitField] = {currentDataChangedKey: current.measureUnit.id};
-      difference[valuesKey][Measure.measureUnitField] = {currentDataChangedKey: current.measureUnit.name};
-    }
-
-    // int decimalsNumber;
-    if (previous != null && current.decimalsNumber != previous.decimalsNumber) {
-      difference[valuesKey][Measure.decimalsNumberField] = {currentDataChangedKey: current.decimalsNumber, previousDataChangedKey: previous.decimalsNumber};
-    } else if (previous == null && current.decimalsNumber != null ) {
-      difference[valuesKey][Measure.decimalsNumberField] = {currentDataChangedKey: current.decimalsNumber};
-    }
-
-    // double startValue;
-    if (previous != null && current.startValue != previous.startValue) {
-      difference[valuesKey][Measure.startValueField] = {currentDataChangedKey: current.startValue, previousDataChangedKey: previous.startValue};
-    } else if (previous == null && current.startValue != null ) {
-      difference[valuesKey][Measure.startValueField] = {currentDataChangedKey: current.startValue};
-    }
-
-    // double endValue;
-    if (previous != null && current.endValue != previous.endValue) {
-      difference[valuesKey][Measure.endValueField] = {currentDataChangedKey: current.endValue, previousDataChangedKey: previous.endValue};
-    } else if (previous == null && current.endValue != null ) {
-      difference[valuesKey][Measure.endValueField] = {currentDataChangedKey: current.endValue};
-    }
-
-    // double currentValue;
-    if (previous != null && current.currentValue != previous.currentValue) {
-      difference[valuesKey][Measure.endValueField] = {currentDataChangedKey: current.currentValue, previousDataChangedKey: previous.currentValue};
-    } else if (previous == null && current.currentValue != null ) {
-      difference[valuesKey][Measure.endValueField] = {currentDataChangedKey: current.currentValue};
-    }
-
-    //List<Measure> measures;
-    return json.encode(difference);
-  }
-
-  static Map<String, dynamic> differenceToMap(String jsonDifference) {
-    return json.decode(jsonDifference);
-  }
-}
-
-
-/// Facilities to [MeasureProgress] class
-class MeasureProgressFacilities {
-
-  /// Delta diff between [current] and [previous].
-  /// ids = A list from IDs changed.
-  /// values =  Values (in user view) changed. ids and values are maintained in structure separately per performance reason (Json stored document strategy)
-  static String differenceToJson(MeasureProgress current, MeasureProgress previous) {
-
-    Map<String, Map<String, dynamic>> difference = Map();
-
-    const idsKey = 'ids';
-    const valuesKey = 'values';
-
-    const currentDataChangedKey = 'current';
-    const previousDataChangedKey = 'previous';
-
-    difference[idsKey] = {};
-    difference[valuesKey] = {};
-
-    // String id;
-    if (previous != null && current.id != previous.id) {
-      difference[idsKey][MeasureProgress.idField] = {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
-    } else if (previous == null && current.id != null) {
-      difference[MeasureProgress.idField] = {currentDataChangedKey: current.id};
-    }
-
-    // String version;
-    if (previous != null && current.version != previous.version) {
-      difference[valuesKey][MeasureProgress.versionField] = {currentDataChangedKey: current.version, previousDataChangedKey: previous.version};
-    } else if (previous == null && current.version != null) {
-      difference[valuesKey][MeasureProgress.versionField] = {currentDataChangedKey: current.version};
-    }
-
-    // String description;
-    if (previous != null && current.isDeleted != previous.isDeleted) {
-      difference[valuesKey][MeasureProgress.isDeletedField] = {currentDataChangedKey: current.isDeleted, previousDataChangedKey: previous.isDeleted};
-    } else if (previous == null && current.isDeleted != null ) {
-      difference[valuesKey][MeasureProgress.isDeletedField] = {currentDataChangedKey: current.isDeleted};
-    }
-
-    // DateTime date;
-    if (previous != null && current.date != previous.date) {
-      difference[valuesKey][MeasureProgress.dateField] = {currentDataChangedKey: current.date, previousDataChangedKey: previous.date};
-    } else if (previous == null && current.date != null ) {
-      difference[valuesKey][MeasureProgress.dateField] = {currentDataChangedKey: current.date};
-    }
-
-    // double currentValue;
-    if (previous != null && current.currentValue != previous.currentValue) {
-      difference[valuesKey][MeasureProgress.currentValueField] = {currentDataChangedKey: current.currentValue, previousDataChangedKey: previous.currentValue};
-    } else if (previous == null && current.currentValue != null ) {
-      difference[valuesKey][MeasureProgress.currentValueField] = {currentDataChangedKey: current.currentValue};
-    }
-
-    // String comment;
-    if (previous != null && current.comment != previous.comment) {
-      difference[valuesKey][MeasureProgress.commentField] = {currentDataChangedKey: current.comment, previousDataChangedKey: previous.comment};
-    } else if (previous == null && current.comment != null ) {
-      difference[valuesKey][MeasureProgress.commentField] = {currentDataChangedKey: current.comment};
-    }
-
-    //List<Measure> measures;
-    return json.encode(difference);
-  }
-
-  static Map<String, dynamic> differenceToMap(String jsonDifference) {
-    return json.decode(jsonDifference);
-  }
-  */
-}

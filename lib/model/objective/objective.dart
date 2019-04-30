@@ -130,112 +130,20 @@ class Objective {
     if (objectivePb.hasLeader()) this.leader = User()..readFromProtoBuf(objectivePb.leader);
 
   }
-}
 
-/// Facilities to [Objective] class
-class ObjectiveFacilities {
-  /// Delta diff between [current] and [previous] Objective.
-  /// Like a document (json) idea, then just store user readly data, don't have IDs, FKs, etc.
-  /// identification
-  /// dataChanged
-  ///
-  /*
-  static String differenceToJson(Objective current, Objective previous) {
+  static Map<String, dynamic> fromProtoBufToModelMap(objective_pb.Objective objectivePb, [objective_pb.Objective deltaComparedToObjectivePb]) {
+    Map<String, dynamic> map = Map();
 
-    Map<String, Map<String, dynamic>> difference = Map();
+    if (objectivePb.hasId() && (deltaComparedToObjectivePb == null || deltaComparedToObjectivePb.hasId() && objectivePb.id != deltaComparedToObjectivePb.id)) map[Objective.idField] = objectivePb.id;
+    if (objectivePb.hasVersion() && (deltaComparedToObjectivePb == null || deltaComparedToObjectivePb.hasVersion() &&  objectivePb.version != deltaComparedToObjectivePb.version)) map[Objective.versionField] = objectivePb.version;
+    if (objectivePb.hasName() && (deltaComparedToObjectivePb == null || deltaComparedToObjectivePb.hasName() && objectivePb.name != deltaComparedToObjectivePb.name)) map[Objective.nameField] = objectivePb.name;
+    if (objectivePb.hasDescription() && (deltaComparedToObjectivePb == null || deltaComparedToObjectivePb.hasDescription() && objectivePb.description != deltaComparedToObjectivePb.description)) map[Objective.descriptionField] = objectivePb.description;
+    if (objectivePb.hasArchived() && (deltaComparedToObjectivePb == null || deltaComparedToObjectivePb.hasArchived() && objectivePb.archived != deltaComparedToObjectivePb.archived)) map[Objective.archivedField] = objectivePb.archived;
+    if (objectivePb.hasStartDate() && (deltaComparedToObjectivePb == null || deltaComparedToObjectivePb.hasStartDate() && objectivePb.startDate != deltaComparedToObjectivePb.startDate)) map[Objective.startDateField] = objectivePb.startDate;
+    if (objectivePb.hasEndDate() && (deltaComparedToObjectivePb == null || deltaComparedToObjectivePb.hasEndDate() && objectivePb.endDate != deltaComparedToObjectivePb.endDate)) map[Objective.endDateField] = objectivePb.endDate;
+    if (objectivePb.hasOrganization() && (deltaComparedToObjectivePb == null || deltaComparedToObjectivePb.hasOrganization() && objectivePb.organization != deltaComparedToObjectivePb.organization)) Organization.fromProtoBufToModelMap(objectivePb.organization, deltaComparedToObjectivePb?.organization);
+    if (objectivePb.hasLeader() && (deltaComparedToObjectivePb == null || deltaComparedToObjectivePb.hasLeader() && objectivePb.leader != deltaComparedToObjectivePb.leader)) map[Objective.leaderField] = User.fromProtoBufToModelMap(objectivePb.leader, deltaComparedToObjectivePb?.leader);
 
-    const idsKey = 'ids';
-    const valuesKey = 'values';
-
-    const currentDataChangedKey = 'current';
-    const previousDataChangedKey = 'previous';
-
-    difference[idsKey] = {};
-    difference[valuesKey] = {};
-
-    // String id;
-    if (previous != null  && current.id != previous.id) {
-      difference[idsKey][Objective.idField] =  {currentDataChangedKey: current.id, previousDataChangedKey: previous.id};
-    } else if (previous == null && current.id != null) {
-      difference[idsKey][Objective.idField] = {currentDataChangedKey: current.id};
-    }
-
-    // String name;
-    if (previous != null && current.name != previous.name) {
-      difference[valuesKey][Objective.nameField] =  {currentDataChangedKey: current.name, previousDataChangedKey: previous.name};
-    } else if (previous == null && current.name != null) {
-      difference[valuesKey][Objective.nameField] = {currentDataChangedKey: current.name};
-    }
-
-    // String description;
-    if (previous != null && current.description != previous.description) {
-      difference[valuesKey][Objective.descriptionField] = {currentDataChangedKey: current.description, previousDataChangedKey: previous.description};
-    } else if (previous == null && current.description != null ) {
-      difference[valuesKey][Objective.descriptionField] = {currentDataChangedKey: current.description};
-    }
-
-    //DateTime startDate;
-    if (previous != null && current.startDate != previous.startDate) {
-      difference[valuesKey][Objective.startDateField] = {currentDataChangedKey: current.startDate?.toIso8601String(), previousDataChangedKey: previous.startDate?.toIso8601String()};
-    } else if (previous == null && current.startDate != null ) {
-      difference[valuesKey][Objective.startDateField] = {currentDataChangedKey: current.startDate?.toIso8601String()};
-    }
-
-    //DateTime endDate;
-    if (previous != null && current.endDate != previous.endDate) {
-      difference[valuesKey][Objective.endDateField] = {currentDataChangedKey: current.endDate?.toIso8601String(), previousDataChangedKey: previous.endDate?.toIso8601String()};
-    } else if (previous == null && current.endDate != null ) {
-      difference[valuesKey][Objective.endDateField] = {currentDataChangedKey: current.endDate?.toIso8601String()};
-    }
-
-    //Group group;
-    if (previous != null && current.group?.id != previous.group?.id) {
-      difference[valuesKey][Objective.groupField] = {currentDataChangedKey: current.group?.name, previousDataChangedKey: previous.group?.name};
-
-    } else if (previous == null && current.group != null ) {
-      difference[valuesKey][Objective.groupField] = {currentDataChangedKey: current.group.name};
-    }
-
-    //Objective alignedTo;
-    if (previous != null && current.alignedTo?.id != previous.alignedTo?.id) {
-
-      //Save just specitication.
-
-      difference[valuesKey][Objective.alignedToField] = {
-        currentDataChangedKey: current.alignedTo?.name,
-        previousDataChangedKey: previous.alignedTo?.name
-      };
-    } else if (previous == null && current.alignedTo != null ) {
-
-      difference[valuesKey][Objective.alignedToField] = {
-        currentDataChangedKey: current.alignedTo.name};
-    }
-
-    //User leader;
-    if (previous != null && current.leader?.id != previous.leader?.id) {
-
-      difference[valuesKey][Objective.leaderField] = {currentDataChangedKey: current.leader?.name, previousDataChangedKey: previous.leader?.name};
-    } else if (previous == null && current.leader != null ) {
-      difference[valuesKey][Objective.leaderField] = {currentDataChangedKey: current.leader.name};
-    }
-
-    //List<Measure> measures;
-    return json.encode(difference);
+    return map;
   }
-
-  static Map<String, dynamic> differenceToMap(String jsonDifference) {
-    return json.decode(jsonDifference, reviver: (k, v) {
-      if (k == Objective.endDateField || k == Objective.startDateField) {
-        try {
-          return Map()..[(v as Map).keys.first] = DateTime.parse((v as Map).values.first)
-            ..[(v as Map).keys.last] = DateTime.parse((v as Map).values.last);
-        } on FormatException {
-          return v;
-        }
-      } else {
-        return v;
-      }
-    });
-  }
-  */
 }

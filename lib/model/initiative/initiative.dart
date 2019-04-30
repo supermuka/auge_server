@@ -1,6 +1,8 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'package:collection/collection.dart';
+
 import 'package:auge_server/model/general/organization.dart';
 import 'package:auge_server/model/general/user.dart';
 import 'package:auge_server/model/initiative/state.dart';
@@ -117,48 +119,20 @@ class Initiative  {
     if (initiativePb.stages.isNotEmpty) this.stages = initiativePb.stages.map((u) => Stage()..readFromProtoBuf(u)).toList();
   }
 
-/*
-  void cloneTo(Initiative to) {
-    to.id = this.id;
-    to.name = this.name;
-    to.description = this.description;
+  static Map<String, dynamic> fromProtoBufToModelMap(initiative_pb.Initiative initiativePb, [initiative_pb.Initiative deltaComparedToInitiativePb]) {
+    Map<String, dynamic> map = Map();
 
-    if (this.organization != null) {
-      to.organization = this.organization.clone();
-    }
+    if (initiativePb.hasId() && (deltaComparedToInitiativePb == null || deltaComparedToInitiativePb.hasId() && initiativePb.id != deltaComparedToInitiativePb.id)) map[Initiative.idField] = initiativePb.id;
+    if (initiativePb.hasVersion() && (deltaComparedToInitiativePb == null || deltaComparedToInitiativePb.hasVersion() &&  initiativePb.version != deltaComparedToInitiativePb.version)) map[Initiative.versionField] = initiativePb.version;
+    if (initiativePb.hasName() && (deltaComparedToInitiativePb == null || deltaComparedToInitiativePb.hasName() && initiativePb.name != deltaComparedToInitiativePb.name)) map[Initiative.nameField] = initiativePb.name;
+    if (initiativePb.hasDescription() && (deltaComparedToInitiativePb == null || deltaComparedToInitiativePb.hasDescription() && initiativePb.description != deltaComparedToInitiativePb.description)) map[Initiative.descriptionField] = initiativePb.description;
+    if (initiativePb.hasObjective() && (deltaComparedToInitiativePb == null || deltaComparedToInitiativePb.hasObjective() && initiativePb.objective != deltaComparedToInitiativePb.objective)) map[Initiative.objectiveField] = Objective.fromProtoBufToModelMap(initiativePb.objective, deltaComparedToInitiativePb?.objective);
+    if (initiativePb.hasGroup() && (deltaComparedToInitiativePb == null || deltaComparedToInitiativePb.hasGroup() && initiativePb.group != deltaComparedToInitiativePb.group)) map[Initiative.groupField] = Group.fromProtoBufToModelMap(initiativePb.group, deltaComparedToInitiativePb?.group);
+    if (initiativePb.hasOrganization() && (deltaComparedToInitiativePb == null || deltaComparedToInitiativePb.hasOrganization() && initiativePb.organization != deltaComparedToInitiativePb.organization)) map[Initiative.organizationField] = Organization.fromProtoBufToModelMap(initiativePb.organization, deltaComparedToInitiativePb?.organization);
+    if (initiativePb.hasLeader() && (deltaComparedToInitiativePb == null || deltaComparedToInitiativePb.hasLeader() && initiativePb.leader != deltaComparedToInitiativePb.leader)) map[Initiative.leaderField] = User.fromProtoBufToModelMap(initiativePb.leader, deltaComparedToInitiativePb?.leader);
+    if (initiativePb.workItems.isNotEmpty && (deltaComparedToInitiativePb == null || deltaComparedToInitiativePb.workItems.isNotEmpty && !DeepCollectionEquality.unordered().equals(initiativePb.workItems, deltaComparedToInitiativePb.workItems))) map[Initiative.workItemsField] = initiativePb.workItems.map((wi) => WorkItem.fromProtoBufToModelMap(wi)).toList();
+    if (initiativePb.stages.isNotEmpty && (deltaComparedToInitiativePb == null || deltaComparedToInitiativePb.stages.isNotEmpty && !DeepCollectionEquality.unordered().equals(initiativePb.stages, deltaComparedToInitiativePb.stages))) map[Initiative.stagesField] = initiativePb.stages.map((s) => Stage.fromProtoBufToModelMap(s)).toList();
 
-    if (this.group != null) {
-      to.group = this.group.clone();
-    }
-
-    if (this.leader != null) {
-      to.leader = this.leader.clone();
-    }
-
-    if (this.objective != null) {
-      to.objective = this.objective.clone();
-    }
-
-    if (this.stages != null && this.stages.length >= 0) {
-      to.stages.clear();
-      this.stages.forEach((s) =>
-          to.stages.add(s.clone()));
-    }
-
-    if (this.workItems != null && this.workItems.length >= 0) {
-      to.workItems.clear();
-      this.workItems.forEach((wi) {
-        to.workItems.add( wi.clone());
-      });
-    }
-
+    return map;
   }
-
-  Initiative clone() {
-    Initiative to = new Initiative();
-    cloneTo(to);
-    return to;
-  }
-*/
-
 }

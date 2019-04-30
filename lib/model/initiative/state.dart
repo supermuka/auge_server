@@ -5,6 +5,9 @@
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
+
+import 'package:collection/collection.dart';
+
 import 'package:auge_server/src/protos/generated/initiative/state.pb.dart' as state_pb;
 
 const _colorHue = 'hue';
@@ -58,18 +61,16 @@ class State {
 
   }
 
-  void cloneTo(State to) {
-    to.id = this.id;
-    to.name = this.name;
-    to.index = this.index;
-    if (this.color != null) {
-      to.color = new Map.from(this.color);
-    }
+  static Map<String, dynamic> fromProtoBufToModelMap(state_pb.State statePb, [state_pb.State deltaComparedToStatePb ]) {
+    Map<String, dynamic> map = Map();
+
+    if (statePb.hasId() && (deltaComparedToStatePb == null || deltaComparedToStatePb.hasId() && statePb.id != deltaComparedToStatePb.id)) map[State.idField] = statePb.id;
+    if (statePb.hasVersion() && (deltaComparedToStatePb == null || deltaComparedToStatePb.hasVersion() &&  statePb.version != deltaComparedToStatePb.version)) map[State.versionField] = statePb.version;
+    if (statePb.hasName() && (deltaComparedToStatePb == null || deltaComparedToStatePb.hasName() && statePb.name != deltaComparedToStatePb.name)) map[State.nameField] = statePb.name;
+    if (statePb.hasIndex() && (deltaComparedToStatePb == null || deltaComparedToStatePb.hasIndex() && statePb.index != deltaComparedToStatePb.index)) map[State.indexField] = statePb.index;
+    if (statePb.color.isNotEmpty && (deltaComparedToStatePb == null || deltaComparedToStatePb.color.isNotEmpty  && !DeepCollectionEquality.unordered().equals(statePb.color, deltaComparedToStatePb.color))) map[State.colorField] = statePb.color;
+
+    return map;
   }
 
-  State clone() {
-    State to = new State();
-    cloneTo(to);
-    return to;
-  }
 }

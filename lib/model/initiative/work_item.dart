@@ -1,6 +1,7 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'package:collection/collection.dart';
 
 import 'package:fixnum/fixnum.dart';
 
@@ -98,54 +99,43 @@ class WorkItem {
 
   }
 
-  void cloneTo(WorkItem to) {
+  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItem workItemPb, [work_item_pb.WorkItem deltaComparedToWorkItemPb ]) {
+    Map<String, dynamic> map = Map();
 
-    to.id = this.id;
-    to.name = this.name;
-    to.description = this.description;
-    to.dueDate = this.dueDate;
-    to.completed = this.completed;
+    if (workItemPb.hasId() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasId() && workItemPb.id != deltaComparedToWorkItemPb.id)) map[WorkItem.idField] = workItemPb.id;
+    if (workItemPb.hasVersion() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasVersion() &&  workItemPb.version != deltaComparedToWorkItemPb.version)) map[WorkItem.versionField] = workItemPb.version;
+    if (workItemPb.hasName() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasName() && workItemPb.name != deltaComparedToWorkItemPb.name)) map[WorkItem.nameField] = workItemPb.name;
+    if (workItemPb.hasDescription() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasDescription() && workItemPb.description != deltaComparedToWorkItemPb.description)) map[WorkItem.descriptionField] = workItemPb.description;
+    if (workItemPb.hasCompleted() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasCompleted() && workItemPb.completed != deltaComparedToWorkItemPb.completed)) map[WorkItem.completedField] = workItemPb.completed;
+    if (workItemPb.hasStage() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasStage() && workItemPb.stage != deltaComparedToWorkItemPb.stage)) map[WorkItem.stageField] = workItemPb.stage;
+    if (workItemPb.hasDueDate() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasDueDate() && workItemPb.dueDate != deltaComparedToWorkItemPb.dueDate)) map[WorkItem.dueDateField] = workItemPb.dueDate;
 
-    if (this.stage != null) {
-      to.stage = this.stage.clone();
-    }
+    if (workItemPb.checkItems.isNotEmpty && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.checkItems.isNotEmpty && !DeepCollectionEquality.unordered().equals(workItemPb.checkItems, deltaComparedToWorkItemPb.checkItems))) map[WorkItem.checkItemsField] = workItemPb.checkItems.map((ci) => WorkItemCheckItem.fromProtoBufToModelMap(ci)).toList();
+    if (workItemPb.assignedTo.isNotEmpty && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.assignedTo.isNotEmpty && !DeepCollectionEquality.unordered().equals(workItemPb.assignedTo, deltaComparedToWorkItemPb.assignedTo))) map[WorkItem.assignedToField] = workItemPb.assignedTo.map((at) => User.fromProtoBufToModelMap(at)).toList();
 
-    if (this.checkItems != null) {
-      to.checkItems.clear();
-      this.checkItems.forEach((ci) {
-        to.checkItems.add(ci.clone());
-      });
-    }
-
-    if (this.assignedTo != null) {
-      to.assignedTo.clear();
-      this.assignedTo.forEach((at) {
-       // to.assignedTo.add(at.clone());
-      });
-    }
-  }
-
-  WorkItem clone() {
-    WorkItem to = new WorkItem();
-    cloneTo(to);
-    return to;
+    return map;
   }
 }
 
 class WorkItemCheckItem {
+  static const String idField = 'id';
   String id;
-
+  static const String versionField = 'version';
+  int version;
+  static const String nameField = 'name';
   String name;
+  static const String finishedField = 'finished';
   bool finished;
 
   // Define check item order
+  static const String indexField = 'index';
   int index;
-
 
   work_item_pb.WorkItemCheckItem writeToProtoBuf() {
     work_item_pb.WorkItemCheckItem workItemCheckItemPb = work_item_pb.WorkItemCheckItem();
 
     if (this.id != null) workItemCheckItemPb.id = this.id;
+    if (this.version != null) workItemCheckItemPb.version = this.version;
     if (this.name != null) workItemCheckItemPb.name = this.name;
     if (this.finished != null) workItemCheckItemPb.finished = this.finished;
     if (this.index != null) workItemCheckItemPb.index = this.index;
@@ -160,16 +150,16 @@ class WorkItemCheckItem {
     if (workItemCheckItemPb.hasIndex()) this.index = workItemCheckItemPb.index;
   }
 
-  void closeTo(WorkItemCheckItem to) {
-    to.id = this.id;
-    to.name = this.name;
-    to.finished = this.finished;
-    to.index = this.index;
+  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItemCheckItem workItemCheckItemPb, [work_item_pb.WorkItemCheckItem deltaComparedToWorkItemCheckItemPb]) {
+    Map<String, dynamic> map = Map();
+
+    if (workItemCheckItemPb.hasId() && (deltaComparedToWorkItemCheckItemPb == null || deltaComparedToWorkItemCheckItemPb.hasId() && workItemCheckItemPb.id != deltaComparedToWorkItemCheckItemPb.id)) map[WorkItemCheckItem.idField] = workItemCheckItemPb.id;
+    if (workItemCheckItemPb.hasVersion() && (deltaComparedToWorkItemCheckItemPb == null || deltaComparedToWorkItemCheckItemPb.hasVersion() &&  workItemCheckItemPb.version != deltaComparedToWorkItemCheckItemPb.version)) map[WorkItemCheckItem.versionField] = workItemCheckItemPb.version;
+    if (workItemCheckItemPb.hasName() && (deltaComparedToWorkItemCheckItemPb == null || deltaComparedToWorkItemCheckItemPb.hasName() && workItemCheckItemPb.name != deltaComparedToWorkItemCheckItemPb.name)) map[WorkItemCheckItem.nameField] = workItemCheckItemPb.name;
+    if (workItemCheckItemPb.hasFinished() && (deltaComparedToWorkItemCheckItemPb == null || deltaComparedToWorkItemCheckItemPb.hasFinished() && workItemCheckItemPb.finished != deltaComparedToWorkItemCheckItemPb.finished)) map[WorkItemCheckItem.finishedField] = workItemCheckItemPb.finished;
+    if (workItemCheckItemPb.hasIndex() && (deltaComparedToWorkItemCheckItemPb == null || deltaComparedToWorkItemCheckItemPb.hasIndex() && workItemCheckItemPb.index != deltaComparedToWorkItemCheckItemPb.index)) map[WorkItemCheckItem.indexField] = workItemCheckItemPb.index;
+
+    return map;
   }
 
-  WorkItemCheckItem clone() {
-    WorkItemCheckItem to = new WorkItemCheckItem();
-    closeTo(to);
-    return to;
-  }
 }

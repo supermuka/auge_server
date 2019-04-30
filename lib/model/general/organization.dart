@@ -40,13 +40,13 @@ class Organization {
 
   }
 
-  static Map<String, dynamic> fromProtoBufToModelMap(organization_pb.Organization organizationPb, [organization_pb.Organization deltaComparedToorganizationPb]) {
+  static Map<String, dynamic> fromProtoBufToModelMap(organization_pb.Organization organizationPb, [organization_pb.Organization deltaComparedToOrganizationPb]) {
     Map<String, dynamic> map = Map();
 
-    if (organizationPb.hasId() && (deltaComparedToorganizationPb == null || deltaComparedToorganizationPb.hasId() && organizationPb.id != deltaComparedToorganizationPb.id)) map[Organization.idField] = organizationPb.id;
-    if (organizationPb.hasVersion() && (deltaComparedToorganizationPb == null || deltaComparedToorganizationPb.hasVersion() &&  organizationPb.version != deltaComparedToorganizationPb.version)) map[Organization.versionField] = organizationPb.version;
-    if (organizationPb.hasName() && (deltaComparedToorganizationPb == null || deltaComparedToorganizationPb.hasName() && organizationPb.name != deltaComparedToorganizationPb.name)) map[Organization.nameField] = organizationPb.name;
-    if (organizationPb.hasCode() && (deltaComparedToorganizationPb == null || deltaComparedToorganizationPb.hasCode() && organizationPb.code != deltaComparedToorganizationPb.code)) map[Organization.codeField] = organizationPb.code;
+    if (organizationPb.hasId() && (deltaComparedToOrganizationPb == null || deltaComparedToOrganizationPb.hasId() && organizationPb.id != deltaComparedToOrganizationPb.id)) map[Organization.idField] = organizationPb.id;
+    if (organizationPb.hasVersion() && (deltaComparedToOrganizationPb == null || deltaComparedToOrganizationPb.hasVersion() &&  organizationPb.version != deltaComparedToOrganizationPb.version)) map[Organization.versionField] = organizationPb.version;
+    if (organizationPb.hasName() && (deltaComparedToOrganizationPb == null || deltaComparedToOrganizationPb.hasName() && organizationPb.name != deltaComparedToOrganizationPb.name)) map[Organization.nameField] = organizationPb.name;
+    if (organizationPb.hasCode() && (deltaComparedToOrganizationPb == null || deltaComparedToOrganizationPb.hasCode() && organizationPb.code != deltaComparedToOrganizationPb.code)) map[Organization.codeField] = organizationPb.code;
 
     return map;
   }
