@@ -1,6 +1,8 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'package:collection/collection.dart';
+
 import 'package:auge_server/model/general/organization.dart';
 import 'package:auge_server/model/general/user.dart';
 
@@ -60,12 +62,30 @@ class Group {
     if (groupPb.hasLeader()) this.leader = User()..readFromProtoBuf(groupPb.leader);
     if (groupPb.members.isNotEmpty) this.members = groupPb.members.map((u) => User()..readFromProtoBuf(u)).toList();
   }
+
+  static Map<String, dynamic> fromProtoBufToModelMap(group_pb.Group groupPb, [group_pb.Group deltaComparedToGroupPb]) {
+    Map<String, dynamic> map = Map();
+
+    if (groupPb.hasId() && (deltaComparedToGroupPb == null || deltaComparedToGroupPb.hasId() && groupPb.id != deltaComparedToGroupPb.id)) map[Group.idField] = groupPb.id;
+    if (groupPb.hasVersion() && (deltaComparedToGroupPb == null || deltaComparedToGroupPb.hasVersion() &&  groupPb.version != deltaComparedToGroupPb.version)) map[Group.versionField] = groupPb.version;
+    if (groupPb.hasName() && (deltaComparedToGroupPb == null || deltaComparedToGroupPb.hasName() && groupPb.name != deltaComparedToGroupPb.name)) map[Group.nameField] = groupPb.name;
+    if (groupPb.hasActive() && (deltaComparedToGroupPb == null || deltaComparedToGroupPb.hasActive() && groupPb.active != deltaComparedToGroupPb.active)) map[Group.activeField] = groupPb.active;
+    if (groupPb.hasOrganization() && (deltaComparedToGroupPb == null || deltaComparedToGroupPb.hasOrganization() && groupPb.organization != deltaComparedToGroupPb.organization)) map[Group.organizationField] = Organization.fromProtoBufToModelMap(groupPb.organization);
+    if (groupPb.hasGroupType() && (deltaComparedToGroupPb == null || deltaComparedToGroupPb.hasGroupType() && groupPb.groupType != deltaComparedToGroupPb.groupType)) map[Group.groupTypeField] = GroupType.fromProtoBufToModelMap(groupPb.groupType);
+    if (groupPb.hasSuperGroup() && (deltaComparedToGroupPb == null || deltaComparedToGroupPb.hasSuperGroup() && groupPb.superGroup != deltaComparedToGroupPb.superGroup)) map[Group.superGroupField] = Group.fromProtoBufToModelMap(groupPb.superGroup);
+    if (groupPb.hasLeader() && (deltaComparedToGroupPb == null || deltaComparedToGroupPb.hasLeader() && groupPb.leader != deltaComparedToGroupPb.leader)) map[Group.leaderField] = User.fromProtoBufToModelMap(groupPb.leader);
+    if (groupPb.members.isNotEmpty && (deltaComparedToGroupPb == null || deltaComparedToGroupPb.members.isNotEmpty && !DeepCollectionEquality.unordered().equals(groupPb.members, deltaComparedToGroupPb.members))) map[Group.membersField] = groupPb.members.map((u) => User.fromProtoBufToModelMap(u)).toList();
+
+    return map;
+  }
 }
 
 /// Domain model class to represent a group type
 class GroupType {
 
+  static const String idField = 'id';
   String id;
+  static const String nameField = 'name';
   String name;
 
   group_pb.GroupType writeToProtoBuf() {
@@ -81,4 +101,14 @@ class GroupType {
     if (groupPb.hasId()) this.id = groupPb.id;
     if (groupPb.hasName()) this.name = groupPb.name;
   }
+
+  static Map<String, dynamic> fromProtoBufToModelMap(group_pb.GroupType groupTypePb, [group_pb.GroupType deltaComparedToGroupTypePb]) {
+    Map<String, dynamic> map = Map();
+
+    if (groupTypePb.hasId() && (deltaComparedToGroupTypePb == null || deltaComparedToGroupTypePb.hasId() && groupTypePb.id != deltaComparedToGroupTypePb.id)) map[GroupType.idField] = groupTypePb.id;
+    if (groupTypePb.hasName() && (deltaComparedToGroupTypePb == null || deltaComparedToGroupTypePb.hasName() && groupTypePb.name != deltaComparedToGroupTypePb.name)) map[GroupType.nameField] = groupTypePb.name;
+
+    return map;
+  }
+
 }

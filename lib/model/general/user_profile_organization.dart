@@ -43,4 +43,15 @@ class UserProfileOrganization {
     if (userProfileOrganizationPb.hasUser()) this.user = User()..readFromProtoBuf(userProfileOrganizationPb.user);
     if (userProfileOrganizationPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(userProfileOrganizationPb.organization);
   }
+
+  static Map<String, dynamic> fromProtoBufToModelMap(user_profile_organization_pb.UserProfileOrganization userProfileOrganizationPb, [user_profile_organization_pb.UserProfileOrganization deltaComparedTouserProfileOrganizationPb]) {
+    Map<String, dynamic> map = Map();
+
+    if (userProfileOrganizationPb.hasId() && (deltaComparedTouserProfileOrganizationPb == null || deltaComparedTouserProfileOrganizationPb.hasId() && userProfileOrganizationPb.id != deltaComparedTouserProfileOrganizationPb.id)) map[UserProfileOrganization.idField] = userProfileOrganizationPb.id;
+    if (userProfileOrganizationPb.hasVersion() && (deltaComparedTouserProfileOrganizationPb == null || deltaComparedTouserProfileOrganizationPb.hasVersion() &&  userProfileOrganizationPb.version != deltaComparedTouserProfileOrganizationPb.version)) map[UserProfileOrganization.versionField] = userProfileOrganizationPb.version;
+    if (userProfileOrganizationPb.hasUser() && (deltaComparedTouserProfileOrganizationPb == null || deltaComparedTouserProfileOrganizationPb.hasUser() &&  userProfileOrganizationPb.user != deltaComparedTouserProfileOrganizationPb.user)) map[UserProfileOrganization.userField] = User.fromProtoBufToModelMap(userProfileOrganizationPb.user, deltaComparedTouserProfileOrganizationPb?.user);
+    if (userProfileOrganizationPb.hasOrganization() && (deltaComparedTouserProfileOrganizationPb == null || deltaComparedTouserProfileOrganizationPb.hasOrganization() &&  userProfileOrganizationPb.organization != deltaComparedTouserProfileOrganizationPb.organization)) map[UserProfileOrganization.organizationField] = Organization.fromProtoBufToModelMap(userProfileOrganizationPb.organization, deltaComparedTouserProfileOrganizationPb?.organization);
+
+    return map;
+  }
 }

@@ -186,7 +186,7 @@ class UserService extends UserServiceBase {
         // ..dateTime
           ..description = request.user.name
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToMap(request.user) );
+          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToModelMap(request.user) );
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -197,12 +197,11 @@ class UserService extends UserServiceBase {
       }
     });
     return IdResponse()..id = request.user.id;
-
   }
 
   static Future<Empty> queryUpdateUser(UserRequest request) async {
 
-    User previousUser = await querySelectUser(UserGetRequest()..id = request.user.id);
+    User previousUser = await querySelectUser(UserGetRequest()..id = request.user.id..withProfile = true);
 
     // increment version
     ++request.user.version;
@@ -252,8 +251,8 @@ class UserService extends UserServiceBase {
           ..systemFunctionIndex = SystemFunction.update.index
         // ..dateTime
           ..description = request.user.name
-          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToMap(previousUser, request.user) )
-          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToMap(request.user, previousUser) );
+          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToModelMap(previousUser, request.user) )
+          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToModelMap(request.user, previousUser) );
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -296,7 +295,7 @@ class UserService extends UserServiceBase {
           ..systemFunctionIndex = SystemFunction.delete.index
         // ..dateTime
           ..description = request.user.name
-          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToMap(request.user) );
+          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToModelMap(request.user) );
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
