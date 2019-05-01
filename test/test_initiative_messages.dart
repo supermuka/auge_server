@@ -253,11 +253,14 @@ void main() {
       test('Call fromProtoBufToModelMap.', () async {
         Map<String, dynamic> m = work_item_m.WorkItem.fromProtoBufToModelMap(proto);
 
-        expect(m[initiative_m.Initiative.idField], equals(proto.id));
-        expect(m[initiative_m.Initiative.versionField], equals(proto.version));
-        expect(m[initiative_m.Initiative.nameField], equals(proto.name));
-        expect(m[initiative_m.Initiative.descriptionField], equals(proto.description));
-
+        expect(m[work_item_m.WorkItem.idField], equals(proto.id));
+        expect(m[work_item_m.WorkItem.versionField], equals(proto.version));
+        expect(m[work_item_m.WorkItem.nameField], equals(proto.name));
+        expect(m[work_item_m.WorkItem.descriptionField], equals(proto.description));
+        expect(m[work_item_m.WorkItem.completedField], equals(proto.completed));
+        expect(m[work_item_m.WorkItem.dueDateField], equals(proto.dueDate));
+        expect(m[work_item_m.WorkItem.checkItemsField].first[work_item_m.WorkItemCheckItem.idField], equals(proto.checkItems.first.id));
+        expect(m[work_item_m.WorkItem.assignedToField].first[user_m.User.idField], equals(proto.assignedTo.first.id));
       });
     });
   });

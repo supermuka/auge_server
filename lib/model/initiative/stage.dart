@@ -56,7 +56,7 @@ class Stage {
     if (stagePb.hasVersion() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasVersion() &&  stagePb.version != deltaComparedToStagePb.version)) map[Stage.versionField] = stagePb.version;
     if (stagePb.hasName() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasName() && stagePb.name != deltaComparedToStagePb.name)) map[Stage.nameField] = stagePb.name;
     if (stagePb.hasIndex() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasIndex() && stagePb.index != deltaComparedToStagePb.index)) map[Stage.indexField] = stagePb.index;
-    if (stagePb.hasState() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasState() && stagePb.state != deltaComparedToStagePb.state)) map[Stage.stateField] = stagePb.state;
+    if (stagePb.hasState() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasState() && stagePb.state != deltaComparedToStagePb.state)) map[Stage.stateField] = State.fromProtoBufToModelMap(stagePb.state, deltaComparedToStagePb?.state);
 
     return map;
   }
