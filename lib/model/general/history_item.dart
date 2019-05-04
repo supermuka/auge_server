@@ -3,7 +3,10 @@
 
 import 'dart:convert';
 import 'package:fixnum/fixnum.dart';
+import 'package:collection/collection.dart';
+
 import 'package:auge_server/model/general/user.dart';
+
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
@@ -33,21 +36,9 @@ class HistoryItem {
   String description;
 
   // values are dynamic, contents json
-  static final String changedValuesPreviousField = 'changedValuesPrevious';
-  Map<String, dynamic> changedValuesPrevious;  // previousValuesChanged;
-  static final String changedValuesCurrentField = 'changedValuesCurrent';
-  Map<String, dynamic> changedValuesCurrent; // currentChangedValues;
+  static final String changedValuesField = 'changedValues';
+  Map<String, dynamic> changedValues;  // previousValuesChanged;
 
-  // Used to create a Map to differences
-  static Map<String, dynamic> changedValues(Map<String, dynamic> baseline, Map<String, dynamic> comparedTo) {
-    Map<String, dynamic> changedValues = {};
-    baseline.forEach((k, v) {
-      if (baseline[k] != comparedTo[k]) {
-        changedValues[k] = baseline[k];
-      }
-    });
-    return changedValues;
-  }
 
   history_item_pb.HistoryItem writeToProtoBuf() {
     history_item_pb.HistoryItem historyItemPb = history_item_pb.HistoryItem();
@@ -70,20 +61,11 @@ class HistoryItem {
     if (this.user != null) historyItemPb.user = this.user.writeToProtoBuf();
     if (this.description != null) historyItemPb.description = this.description;
 
-    if (this.changedValuesPrevious != null) {
+    if (this.changedValues != null) {
 
       // Convert value from dart json to protobuf string
-      historyItemPb.changedValuesPreviousJson = json.encode(this.changedValuesPrevious);
+      historyItemPb.changedValuesJson = json.encode(this.changedValues);
     }
-
-    if (this.changedValuesCurrent != null) {
-
-      historyItemPb.changedValuesCurrentJson = json.encode(this.changedValuesCurrent);
-
-      // Convert value from dart json to protobuf string
-     // historyItemPb.changedValuesCurrent.addAll(this.changedValuesCurrent.map((key, value) => Map().putIfAbsent(key, () => json.encode(value))));
-    }
-
     return historyItemPb;
   }
 
@@ -103,8 +85,90 @@ class HistoryItem {
     if (historyItemPb.hasDescription()) this.description = historyItemPb.description;
     //if (historyItemPb.changedValues.isNotEmpty) this.changedValues = historyItemPb.changedValues;
     // Convert value from protobuf string to dart json
-    if (historyItemPb.hasChangedValuesPreviousJson()) this.changedValuesPrevious = json.decode(historyItemPb.changedValuesPreviousJson);
-    if (historyItemPb.hasChangedValuesCurrentJson()) this.changedValuesCurrent  = json.decode(historyItemPb.changedValuesCurrentJson);
+    if (historyItemPb.hasChangedValuesJson()) this.changedValues = json.decode(historyItemPb.changedValuesJson);
 
+  }
+}
+
+abstract class HistoryItemUtils {
+
+  static const p = 'p', c = 'c';
+
+  static Map<dynamic, dynamic> changedValuesMap(Map<dynamic, dynamic> previous, Map<dynamic, dynamic> current, [bool onlyDiff = true]) {
+
+    Map<dynamic, dynamic> previousCurrentMap = {};
+
+    Map<dynamic, dynamic> processPrevious(Map<dynamic, dynamic> previous) {
+      //   Map<String, dynamic> mP = Map.from(map);
+      Map<dynamic, dynamic> mP = {};
+      previous.forEach((k, v) {
+        if (v is Map) {
+          mP[k] = processPrevious(v /*, mP[k] ?? {} */);
+        } else {
+          mP.putIfAbsent(k, () => {});
+          // mP[k].putIfAbsent(p, () => v);
+
+          mP[k][p] = v;
+        }
+      });
+      return mP;
+    }
+
+    Map<dynamic, dynamic> processCurrent(Map<dynamic, dynamic> current /*, Map<String, dynamic> map */) {
+      // Map<String, dynamic> mC = Map.from(map);
+      Map<dynamic, dynamic> mC = {};
+      current.forEach((k, v) {
+        if (v is Map) {
+          mC[k] = processCurrent(v /*, mC[k] ?? {} */);
+        } else {
+          mC.putIfAbsent(k, () => {});
+          //  mC[k].putIfAbsent(c, () => v);
+          mC[k][c] = v;
+        }
+      });
+      return mC;
+    }
+
+    Map<dynamic, dynamic> processMerge(Map<dynamic, dynamic> mapWithP, Map<dynamic, dynamic> mapWithC) {
+
+      Map<dynamic, dynamic> mergeMap = Map.from(mapWithP ?? {});
+
+      mapWithC.forEach((k, v) {
+        if (v is Map) {
+          mergeMap[k] = processMerge(mapWithP[k], mapWithC[k]);
+        }
+        mergeMap.putIfAbsent(k, () => mapWithC[k]);
+      });
+      return mergeMap;
+    }
+
+    Map<dynamic, dynamic> processOnlyDiffPreviousCurrent(Map<dynamic, dynamic> merge) {
+
+      Map<dynamic, dynamic> diff = Map.from(merge);
+
+      merge.forEach((k,v) {
+        if (diff[k][p] is List && diff[k][c] is List && DeepCollectionEquality().equals(diff[k][p], diff[k][c]))
+          diff.remove(k);
+        else if (diff[k][p] == diff[k][c]) {
+          diff.remove(k);
+        }
+      });
+
+      return diff;
+    }
+
+    Map<dynamic, dynamic> withP = processPrevious(previous);
+    Map<dynamic, dynamic> withC = processCurrent(current);
+
+    Map<dynamic, dynamic> merge = processMerge(withP, withC);
+
+    if (onlyDiff)
+      return processOnlyDiffPreviousCurrent(merge);
+    else
+      return merge;
+  }
+
+  static changedValuesJson(Map<dynamic, dynamic> previous, Map<dynamic, dynamic> current, [bool onlyDiff = true]) {
+    return json.encode(changedValuesMap(previous, current, onlyDiff));
   }
 }

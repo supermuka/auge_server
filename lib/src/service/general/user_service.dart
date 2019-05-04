@@ -11,8 +11,9 @@ import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
-import 'package:auge_server/model/general/authorization.dart';
-import 'package:auge_server/model/general/user.dart' as user_m;
+import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
+import 'package:auge_server/model/general/user.dart' show UserUtils;
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 
@@ -186,10 +187,11 @@ class UserService extends UserServiceBase {
         // ..dateTime
           ..description = request.user.name
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToModelMap(request.user) );
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, UserUtils.fromProtoBufToModelMap(request.user));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -251,11 +253,11 @@ class UserService extends UserServiceBase {
           ..systemFunctionIndex = SystemFunction.update.index
         // ..dateTime
           ..description = request.user.name
-          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToModelMap(previousUser, request.user) )
-          ..changedValuesCurrentJson = json.encode(user_m.User.fromProtoBufToModelMap(request.user, previousUser) );
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserUtils.fromProtoBufToModelMap(previousUser), UserUtils.fromProtoBufToModelMap(request.user));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -265,24 +267,27 @@ class UserService extends UserServiceBase {
     return Empty()..webWorkAround = true;
   }
 
+
   static Future<Empty> queryDeleteUser(UserRequest request) async {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
-            "DELETE FROM general.users_profile_organizations user_profile_organizations WHERE user_profile_organizations.user_id = @user_id"
+            "DELETE FROM general.users_profile_organizations user_profile_organizations WHERE user_profile_organizations.user_id = @user_id AND user_profile_organizations.version = @version "
             , substitutionValues: {
-          "user_id": request.user.id});
+          "user_id": request.user.id,
+          "version": request.user.version});
 
         await ctx.query(
-            "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id"
+            "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id AND user_profile_organizations.version = @version "
             , substitutionValues: {
-          "user_id": request.user.id});
-
+          "user_id": request.user.id,
+          "version": request.user.version});
         await ctx.query(
-            "DELETE FROM general.users u WHERE u.id = @id"
+            "DELETE FROM general.users u WHERE u.id = @id AND user_profile_organizations.version = @version "
             , substitutionValues: {
-          "id": request.user.id});
+          "user_id": request.user.id,
+          "version": request.user.version});
 
         // HistoryItem
         HistoryItem  historyItem = HistoryItem()
@@ -295,7 +300,7 @@ class UserService extends UserServiceBase {
           ..systemFunctionIndex = SystemFunction.delete.index
         // ..dateTime
           ..description = request.user.name
-          ..changedValuesPreviousJson = json.encode(user_m.User.fromProtoBufToModelMap(request.user) );
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserUtils.fromProtoBufToModelMap(request.user), {});
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

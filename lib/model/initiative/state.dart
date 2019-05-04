@@ -60,17 +60,18 @@ class State {
     if (statePb.color.isNotEmpty) this.color = statePb.color;
 
   }
+}
 
-  static Map<String, dynamic> fromProtoBufToModelMap(state_pb.State statePb, [state_pb.State deltaComparedToStatePb ]) {
+abstract class StateUtils {
+  static Map<String, dynamic> fromProtoBufToModelMap(state_pb.State statePb) {
     Map<String, dynamic> map = Map();
 
-    if (statePb.hasId() && (deltaComparedToStatePb == null || deltaComparedToStatePb.hasId() && statePb.id != deltaComparedToStatePb.id)) map[State.idField] = statePb.id;
-    if (statePb.hasVersion() && (deltaComparedToStatePb == null || deltaComparedToStatePb.hasVersion() &&  statePb.version != deltaComparedToStatePb.version)) map[State.versionField] = statePb.version;
-    if (statePb.hasName() && (deltaComparedToStatePb == null || deltaComparedToStatePb.hasName() && statePb.name != deltaComparedToStatePb.name)) map[State.nameField] = statePb.name;
-    if (statePb.hasIndex() && (deltaComparedToStatePb == null || deltaComparedToStatePb.hasIndex() && statePb.index != deltaComparedToStatePb.index)) map[State.indexField] = statePb.index;
-    if (statePb.color.isNotEmpty && (deltaComparedToStatePb == null || deltaComparedToStatePb.color.isNotEmpty  && !DeepCollectionEquality.unordered().equals(statePb.color, deltaComparedToStatePb.color))) map[State.colorField] = statePb.color;
+    if (statePb.hasId()) map[State.idField] = statePb.id;
+    if (statePb.hasVersion()) map[State.versionField] = statePb.version;
+    if (statePb.hasName()) map[State.nameField] = statePb.name;
+    if (statePb.hasIndex()) map[State.indexField] = statePb.index;
+    if (statePb.color.isNotEmpty) map[State.colorField] = statePb.color;
 
     return map;
   }
-
 }

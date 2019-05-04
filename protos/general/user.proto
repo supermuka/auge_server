@@ -53,6 +53,7 @@ message UserGetRequest {
     bool with_profile = 5;
 }
 
+
 // Response list of the organization
 message UsersResponse {
     repeated User users = 1;

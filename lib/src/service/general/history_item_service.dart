@@ -49,8 +49,7 @@ class HistoryItemService extends HistoryItemServiceBase {
       "system_function_index": request.systemFunctionIndex,
       "date_time": DateTime.now().toUtc(),
       "description": request.hasDescription() ? request.description : null,
-      "changed_values_previous": request.hasChangedValuesPreviousJson() ? request.changedValuesPreviousJson : null,
-      "changed_values_current": request.hasChangedValuesCurrentJson() ? request.changedValuesCurrentJson : null};
+      "changed_values": request.hasChangedValuesJson() ? request.changedValuesJson : null};
   }
 
   // *** HISTORY TO OBJECTIVE SCHEMA ***
@@ -68,8 +67,7 @@ class HistoryItemService extends HistoryItemServiceBase {
         "history_item.system_function_index, " //6
         "history_item.date_time, " //7
         "history_item.description, " //8
-        "history_item.changed_values_previous, " //9
-        "history_item.changed_values_current " //10
+        "history_item.changed_values " //9
         "FROM general.history history_item "
         "WHERE history_item.system_module_index = @system_module_index "
         "ORDER BY 6 DESC ";
@@ -120,8 +118,7 @@ class HistoryItemService extends HistoryItemServiceBase {
           }
 
           if (row[8] != null) historyItem.description = row[8];
-          if (row[9] != null) historyItem.changedValuesPreviousJson = row[9];
-          if (row[10] != null) historyItem.changedValuesCurrentJson = row[10];
+          if (row[9] != null) historyItem.changedValuesJson = row[9];
 
           history.add(historyItem);
         }

@@ -25,9 +25,9 @@ import 'package:auge_server/src/service/initiative/stage_service.dart';
 import 'package:auge_server/src/service/initiative/work_item_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
 
-import 'package:auge_server/model/general/authorization.dart';
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
-
+import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
+import 'package:auge_server/model/initiative/initiative.dart' show InitiativeUtils;
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 
@@ -354,8 +354,7 @@ class InitiativeService extends InitiativeServiceBase {
             ..systemFunctionIndex = SystemFunction.create.index
             // ..dateTime
             ..description = request.initiative.name
-            ..changedValuesPreviousJson = json.encode(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-            ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
+            ..changedValuesJson = HistoryItemUtils.changedValuesJson(InitiativeUtils.fromProtoBufToModelMap(previousInitiative), InitiativeUtils.fromProtoBufToModelMap(request.initiative));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

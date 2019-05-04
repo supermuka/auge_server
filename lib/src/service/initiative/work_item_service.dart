@@ -17,8 +17,9 @@ import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/initiative/stage_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 
-import 'package:auge_server/model/general/authorization.dart';
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
+import 'package:auge_server/model/initiative/work_item.dart' show WorkItemUtils;
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 
@@ -422,9 +423,7 @@ class WorkItemService extends WorkItemServiceBase {
             ..systemFunctionIndex = SystemFunction.create.index
           // ..dateTime
             ..description = request.workItem.name
-            ..changedValuesPreviousJson = json.encode(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-            ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
-
+            ..changedValuesJson = HistoryItemUtils.changedValuesJson(WorkItemUtils.fromProtoBufToModelMap(previousWorkItem), WorkItemUtils.fromProtoBufToModelMap(request.workItem));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

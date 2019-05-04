@@ -48,15 +48,17 @@ class Stage {
     if (stagePb.hasState()) this.state = State()..readFromProtoBuf(stagePb.state);
 
   }
+}
 
-  static Map<String, dynamic> fromProtoBufToModelMap(stage_pb.Stage stagePb, [stage_pb.Stage deltaComparedToStagePb ]) {
+abstract class StageUtils {
+  static Map<String, dynamic> fromProtoBufToModelMap(stage_pb.Stage stagePb) {
     Map<String, dynamic> map = Map();
 
-    if (stagePb.hasId() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasId() && stagePb.id != deltaComparedToStagePb.id)) map[Stage.idField] = stagePb.id;
-    if (stagePb.hasVersion() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasVersion() &&  stagePb.version != deltaComparedToStagePb.version)) map[Stage.versionField] = stagePb.version;
-    if (stagePb.hasName() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasName() && stagePb.name != deltaComparedToStagePb.name)) map[Stage.nameField] = stagePb.name;
-    if (stagePb.hasIndex() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasIndex() && stagePb.index != deltaComparedToStagePb.index)) map[Stage.indexField] = stagePb.index;
-    if (stagePb.hasState() && (deltaComparedToStagePb == null || deltaComparedToStagePb.hasState() && stagePb.state != deltaComparedToStagePb.state)) map[Stage.stateField] = State.fromProtoBufToModelMap(stagePb.state, deltaComparedToStagePb?.state);
+    if (stagePb.hasId()) map[Stage.idField] = stagePb.id;
+    if (stagePb.hasVersion()) map[Stage.versionField] = stagePb.version;
+    if (stagePb.hasName()) map[Stage.nameField] = stagePb.name;
+    if (stagePb.hasIndex()) map[Stage.indexField] = stagePb.index;
+    if (stagePb.hasState()) map[Stage.stateField] = StateUtils.fromProtoBufToModelMap(stagePb.state);
 
     return map;
   }

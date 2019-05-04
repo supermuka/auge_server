@@ -2,14 +2,21 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
+import 'package:auge_server/src/service/general/history_item_service.dart';
+
+import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
+import 'package:auge_server/model/general/organization.dart' show OrganizationUtils;
 
 import 'package:uuid/uuid.dart';
 
@@ -105,53 +112,122 @@ class OrganizationService extends OrganizationServiceBase {
       request.organization.id = new Uuid().v4();
     }
 
-    try {
-      await (await AugeConnection.getConnection()).query(
-          "INSERT INTO general.organizations(id, name, code) VALUES"
-              "(@id,"
-              "@name,"
-              "@code)"
-          , substitutionValues: {
-        "id": request.organization.id,
-        "name": request.organization.name,
-        "code": request.organization.code});
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
+      try {
+        await ctx.query(
+            "INSERT INTO general.organizations(id, version, name, code) VALUES"
+                "(@id,"
+                "@version,"
+                "@name,"
+                "@code)"
+            , substitutionValues: {
+          "id": request.organization.id,
+          "version": request.organization.version,
+          "name": request.organization.name,
+          "code": request.organization.code});
 
-      return IdResponse()..id = request.organization.id;
-    } catch (e) {
-      print('${e.runtimeType}, ${e}');
-      rethrow;
-    }
+        // HistoryItem
+        HistoryItem  historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.organization.id
+          ..objectVersion = request.organization.version
+          ..objectClassName = request.organization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.users.index
+          ..systemFunctionIndex = SystemFunction.create.index
+        // ..dateTime
+          ..description = request.organization.name
+        //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, OrganizationUtils.fromProtoBufToModelMap(request.organization));
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
+      }
+    });
+    return IdResponse()
+      ..id = request.organization.id;
   }
 
   static Future<Empty> queryUpdateOrganization(OrganizationRequest request) async {
-    try {
-      await (await AugeConnection.getConnection()).query(
-          "UPDATE general.organizations SET name = @name,"
-              " code = @code"
-              " WHERE id = @id "
-          , substitutionValues: {
-        "id": request.organization.id,
-        "name": request.organization.name,
-        "code": request.organization.code});
-    } catch (e) {
-      print('${e.runtimeType}, ${e}');
-      rethrow;
-    }
+
+    Organization previousOrganization = await querySelectOrganization(OrganizationGetRequest()..id = request.organization.id);
+
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
+      try {
+        await ctx.query(
+            "UPDATE general.organizations SET name = @name,"
+                " version = @version,"
+                " code = @code"
+                " WHERE id = @id AND version = @version - 1"
+            , substitutionValues: {
+          "id": request.organization.id,
+          "version": request.organization.version,
+          "name": request.organization.name,
+          "code": request.organization.code});
+
+        // HistoryItem
+        HistoryItem  historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.organization.id
+          ..objectVersion = request.organization.version
+          ..objectClassName = request.organization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.users.index
+          ..systemFunctionIndex = SystemFunction.update.index
+        // ..dateTime
+        //  ..description = request.user.name
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(OrganizationUtils.fromProtoBufToModelMap(previousOrganization), OrganizationUtils.fromProtoBufToModelMap(request.organization));
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
+      }
+    });
     return Empty()..webWorkAround = true;
 
   }
 
   // Delete
   static Future<Empty> queryDeleteOrganization(OrganizationRequest request) async {
-    try {
-      await (await AugeConnection.getConnection()).query(
-          "DELETE FROM general.organizations organization WHERE organization.id = @id"
-          , substitutionValues: {
-        "id": request.organization.id});
-    } catch (e) {
-      print('${e.runtimeType}, ${e}');
-      rethrow;
-    }
-    return Empty()..webWorkAround = true;
+    await (await AugeConnection.getConnection()).transaction((ctx) async {
+      try {
+        await ctx.query(
+            "DELETE FROM general.organizations organization WHERE organization.id = @id AND organization.version = @version"
+            , substitutionValues: {
+          "id": request.organization.id,
+          "version": request.organization.version});
+
+        // HistoryItem
+        HistoryItem historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.organization.id
+          ..objectVersion = request.organization.version
+          ..objectClassName = request.organization.runtimeType
+              .toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.users.index
+          ..systemFunctionIndex = SystemFunction.delete.index
+        // ..dateTime
+        //  ..description = request.user.name
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(OrganizationUtils.fromProtoBufToModelMap(request.organization), {});
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+            substitutionValues: HistoryItemService
+                .querySubstitutionValuesCreateHistoryItem(historyItem));
+      } catch (e) {
+        print('${e.runtimeType}, ${e}');
+        rethrow;
+      }
+    });
+    return Empty()
+      ..webWorkAround = true;
   }
 }

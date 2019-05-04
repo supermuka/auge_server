@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
 
@@ -10,10 +11,18 @@ import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
+
+import 'package:auge_server/src/service/general/history_item_service.dart';
+
+import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
+import 'package:auge_server/model/general/group.dart' show GroupUtils;
+
 
 import 'package:uuid/uuid.dart';
 
@@ -223,6 +232,25 @@ class GroupService extends GroupServiceBase {
                 "id": request.group.id,
                 "user_id": user.id});
         }
+
+        // HistoryItem
+        HistoryItem  historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.group.id
+          ..objectVersion = request.group.version
+          ..objectClassName = request.group.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.groups.index
+          ..systemFunctionIndex = SystemFunction.create.index
+        // ..dateTime
+          ..description = request.group.name
+        //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, GroupUtils.fromProtoBufToModelMap(request.group));
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -233,6 +261,9 @@ class GroupService extends GroupServiceBase {
   }
 
   static Future<Empty> queryUpdateGroup(GroupRequest request) async {
+
+    Group previousGroup = await querySelectGroup(GroupGetRequest()..id = request.group.id);
+
     List<List<dynamic>> result;
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -295,6 +326,24 @@ class GroupService extends GroupServiceBase {
           throw new GrpcError.failedPrecondition('Precondition Failed');
         }
 
+        // HistoryItem
+        HistoryItem  historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.group.id
+          ..objectVersion = request.group.version
+          ..objectClassName = request.group.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.groups.index
+          ..systemFunctionIndex = SystemFunction.update.index
+        // ..dateTime
+        //  ..description = request.user.name
+        //  ..changedValuesJson = json.encode(group_m.Group.fromProtoBufToModelMap(previousGroup, request.group) )
+        //  ..changedValuesCurrentJson = json.encode(group_m.Group.fromProtoBufToModelMap(request.group, previousGroup) );
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(GroupUtils.fromProtoBufToModelMap(previousGroup), GroupUtils.fromProtoBufToModelMap(request.group));
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -309,10 +358,11 @@ class GroupService extends GroupServiceBase {
       try {
 
         await ctx.query(
-            "DELETE FROM general.groups_users gu WHERE gu.group_id = @group_id "
+            "DELETE FROM general.groups_users gu WHERE gu.group_id = @group_id AND gu.version = @version "
                 "RETURNING true"
             , substitutionValues: {
-          "group_id": request.group.id});
+          "group_id": request.group.id,
+          "version": request.group.version});
 
         result = await ctx.query(
             "DELETE FROM general.groups g WHERE g.id = @id AND g.version = @version "
@@ -325,6 +375,25 @@ class GroupService extends GroupServiceBase {
         if (result.length == 0) {
            throw new GrpcError.failedPrecondition('Precondition Failed');
         }
+
+        // HistoryItem
+        HistoryItem historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.group.id
+          ..objectVersion = request.group.version
+          ..objectClassName = request.group.runtimeType
+              .toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.groups.index
+          ..systemFunctionIndex = SystemFunction.delete.index
+        // ..dateTime
+        //  ..description = request.user.name
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(GroupUtils.fromProtoBufToModelMap(request.group), {});
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+            substitutionValues: HistoryItemService
+                .querySubstitutionValuesCreateHistoryItem(historyItem));
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');

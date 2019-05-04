@@ -18,11 +18,13 @@ import 'package:auge_server/src/protos/generated/objective/measure.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pb.dart';
 import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
-import 'package:auge_server/src/service/general/db_connection_service.dart';
-import 'package:auge_server/model/general/authorization.dart';
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+
+import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
+import 'package:auge_server/model/objective/objective.dart' show ObjectiveUtils;
 import 'package:auge_server/shared/rpc_error_message.dart';
 
+import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/objective/measure_service.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
@@ -280,8 +282,6 @@ class ObjectiveService extends ObjectiveServiceBase {
         // HistoryItem
         HistoryItem historyItem;
 
-        Map<String, dynamic> valuesCurrent = request.objective.writeToJsonMap();
-
         historyItem
           ..id = new Uuid().v4()
           ..objectId = request.objective.id
@@ -291,7 +291,7 @@ class ObjectiveService extends ObjectiveServiceBase {
         // ..dateTime
           ..description = ''
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, ObjectiveUtils.fromProtoBufToModelMap(request.objective));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -353,9 +353,6 @@ class ObjectiveService extends ObjectiveServiceBase {
           // HistoryItem
           HistoryItem historyItem;
 
-          Map<String, dynamic> valuesCurrent = request.objective.writeToJsonMap();
-          Map<String, dynamic> valuesPrevious = previousObjective.writeToJsonMap();
-
           historyItem
             ..id = new Uuid().v4()
             ..objectId = request.objective.id
@@ -364,8 +361,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             ..systemFunctionIndex = SystemFunction.update.index
           // ..dateTime
             ..description = ''
-            ..changedValuesPreviousJson = json.encode(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-            ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, valuesPrevious));
+            ..changedValuesJson = HistoryItemUtils.changedValuesJson(ObjectiveUtils.fromProtoBufToModelMap(previousObjective), ObjectiveUtils.fromProtoBufToModelMap(request.objective));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

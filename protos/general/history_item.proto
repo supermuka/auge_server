@@ -24,8 +24,7 @@ message HistoryItem {
    google.protobuf.Timestamp date_time = 7;
    User user = 8;
    string description = 9;
-   string changed_values_previous_json = 10;
-   string changed_values_current_json = 11;
+   string changed_values_json = 10;
 }
 
 // Request for query select

@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
 
@@ -10,10 +11,17 @@ import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user_profile_organization.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
+
+import 'package:auge_server/src/service/general/history_item_service.dart';
+
+import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
+import 'package:auge_server/model/general/user_profile_organization.dart' show UserProfileOrganizationUtils;
 
 import 'package:uuid/uuid.dart';
 
@@ -179,6 +187,22 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           "organization_id": request.userProfileOrganization.hasOrganization() ? request.userProfileOrganization.organization.id : null,
           "authorization_role": request.userProfileOrganization.authorizationRole});
 
+        // HistoryItem
+        HistoryItem  historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.userProfileOrganization.id
+          ..objectVersion = request.userProfileOrganization.version
+          ..objectClassName = request.userProfileOrganization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.users.index
+          ..systemFunctionIndex = SystemFunction.create.index
+        // ..dateTime
+        //  ..description = request.userProfileOrganization.name
+        //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, UserProfileOrganizationUtils.fromProtoBufToModelMap(request.userProfileOrganization));
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -189,15 +213,21 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
   }
 
   static Future<Empty> queryUpdateUserProfileOrganization(UserProfileOrganizationRequest request) async {
+
+    UserProfileOrganization previousUserProfileOrganization = await querySelectUserProfileOrganization(UserProfileOrganizationGetRequest()..id = request.userProfileOrganization.id);
+
+    // increment version
+    ++request.userProfileOrganization.version;
+
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         List<List<dynamic>> result = await ctx.query(
               "UPDATE general.users_profile_organizations "
-                  "SET version = @version + 1, "
+                  "SET version = @version, "
                   "authorization_role = @authorization_role, "
                   "user_id = @user_id, "
                   "organization_id = @organization_id "
-                  "WHERE id = @id "
+                  "WHERE id = @id AND version = @version - 1 "
                   "RETURNING true", substitutionValues: {
             "id": request.userProfileOrganization.id,
             "version": request.userProfileOrganization.version,
@@ -209,6 +239,22 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           if (result.length == 0) {
             throw new GrpcError.failedPrecondition('Precondition Failed');
           }
+
+        // HistoryItem
+        HistoryItem  historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.userProfileOrganization.id
+          ..objectVersion = request.userProfileOrganization.version
+          ..objectClassName = request.userProfileOrganization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.users.index
+          ..systemFunctionIndex = SystemFunction.update.index
+        // ..dateTime
+        //  ..description = request.user.name
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserProfileOrganizationUtils.fromProtoBufToModelMap(previousUserProfileOrganization), UserProfileOrganizationUtils.fromProtoBufToModelMap(request.userProfileOrganization));
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -225,7 +271,25 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
             "DELETE FROM general.users_profile_organizations user_profile_organization "
                 "WHERE user_profile_organization.id = @id "
             , substitutionValues: {
-          "id": request.userProfileOrganization.id});
+          "id": request.userProfileOrganization.id,
+          "version": request.userProfileOrganization.version});
+
+        // HistoryItem
+        HistoryItem  historyItem = HistoryItem()
+          ..id = Uuid().v4()
+          ..user = request.authenticatedUser
+          ..objectId = request.userProfileOrganization.id
+          ..objectVersion = request.userProfileOrganization.version
+          ..objectClassName = request.userProfileOrganization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..systemModuleIndex = SystemModule.users.index
+          ..systemFunctionIndex = SystemFunction.delete.index
+        // ..dateTime
+        //  ..description = request.user.name
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserProfileOrganizationUtils.fromProtoBufToModelMap(request.userProfileOrganization), {});
+
+      // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

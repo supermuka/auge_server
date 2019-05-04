@@ -157,8 +157,8 @@ class Measure {
     if (measurePb.hasMeasureUnit() && (deltaComparedToMeasurePb == null ||
         deltaComparedToMeasurePb.hasMeasureUnit() &&
             measurePb.measureUnit != deltaComparedToMeasurePb.measureUnit))
-      map[Measure.measureUnitField] = MeasureUnit.fromProtoBufToModelMap(
-          measurePb.measureUnit, deltaComparedToMeasurePb?.measureUnit);
+      map[Measure.measureUnitField] = MeasureUnitUtils.fromProtoBufToModelMap(
+          measurePb.measureUnit);
     if (measurePb.measureProgress.isNotEmpty &&
         (deltaComparedToMeasurePb == null ||
             deltaComparedToMeasurePb.measureProgress.isNotEmpty &&
@@ -166,11 +166,44 @@ class Measure {
                     measurePb.measureProgress,
                     deltaComparedToMeasurePb.measureProgress)))
       map[Measure.measureProgressField] = measurePb.measureProgress.map((mp) =>
-          MeasureProgress.fromProtoBufToModelMap(mp)).toList();
+          MeasureProgressUtils.fromProtoBufToModelMap(mp)).toList();
 
     return map;
   }
 
+}
+
+abstract class MeasureUtils {
+  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.Measure measurePb) {
+    Map<String, dynamic> map = Map();
+
+    if (measurePb.hasId())
+      map[Measure.idField] = measurePb.id;
+    if (measurePb.hasVersion())
+      map[Measure.versionField] = measurePb.version;
+    if (measurePb.hasName())
+      map[Measure.nameField] = measurePb.name;
+    if (measurePb.hasDescription())
+      map[Measure.descriptionField] = measurePb.description;
+    if (measurePb.hasMetric())
+      map[Measure.metricField] = measurePb.metric;
+    if (measurePb.hasDecimalsNumber())
+      map[Measure.decimalsNumberField] = measurePb.decimalsNumber;
+    if (measurePb.hasStartValue())
+      map[Measure.startValueField] = measurePb.startValue;
+    if (measurePb.hasEndValue())
+      map[Measure.endValueField] = measurePb.endValue;
+    if (measurePb.hasCurrentValue())
+      map[Measure.currentValueField] = measurePb.currentValue;
+    if (measurePb.hasMeasureUnit())
+      map[Measure.measureUnitField] = MeasureUnitUtils.fromProtoBufToModelMap(
+          measurePb.measureUnit);
+    if (measurePb.measureProgress.isNotEmpty)
+      map[Measure.measureProgressField] = measurePb.measureProgress.map((mp) =>
+          MeasureProgressUtils.fromProtoBufToModelMap(mp)).toList();
+
+    return map;
+  }
 }
 
 class MeasureProgress {
@@ -194,7 +227,7 @@ class MeasureProgress {
   String comment;
 
   MeasureProgress() {
-   // lastHistoryItem = HistoryItem();
+    // lastHistoryItem = HistoryItem();
   }
 
   measure_pb.MeasureProgress writeToProtoBuf() {
@@ -205,13 +238,16 @@ class MeasureProgress {
 
     if (this.date != null) {
       Timestamp t = Timestamp();
-      int microsecondsSinceEpoch = this.date.toUtc().microsecondsSinceEpoch;
+      int microsecondsSinceEpoch = this.date
+          .toUtc()
+          .microsecondsSinceEpoch;
       t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
       t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
       measureProgressPb.date = t;
     }
 
-    if (this.currentValue != null) measureProgressPb.currentValue = this.currentValue;
+    if (this.currentValue != null)
+      measureProgressPb.currentValue = this.currentValue;
     if (this.comment != null) measureProgressPb.comment = this.comment;
 
     return measureProgressPb;
@@ -219,20 +255,34 @@ class MeasureProgress {
 
   readFromProtoBuf(measure_pb.MeasureProgress measureProgressPb) {
     if (measureProgressPb.hasId()) this.id = measureProgressPb.id;
-    if (measureProgressPb.hasVersion()) this.version = measureProgressPb.version;
-    if (measureProgressPb.hasDate()) this.date =  DateTime.fromMicrosecondsSinceEpoch(measureProgressPb.date.seconds.toInt() * 1000000 + measureProgressPb.date.nanos ~/ 1000 );
-    if (measureProgressPb.hasCurrentValue()) this.currentValue = measureProgressPb.currentValue;
-    if (measureProgressPb.hasComment()) this.comment = measureProgressPb.comment;
+    if (measureProgressPb.hasVersion())
+      this.version = measureProgressPb.version;
+    if (measureProgressPb.hasDate()) this.date =
+        DateTime.fromMicrosecondsSinceEpoch(
+            measureProgressPb.date.seconds.toInt() * 1000000 +
+                measureProgressPb.date.nanos ~/ 1000);
+    if (measureProgressPb.hasCurrentValue())
+      this.currentValue = measureProgressPb.currentValue;
+    if (measureProgressPb.hasComment())
+      this.comment = measureProgressPb.comment;
   }
+}
 
-  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureProgress measureProgressPb, [measure_pb.MeasureProgress  deltaComparedToMeasureProgressPb]) {
+abstract class MeasureProgressUtils {
+
+  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureProgress measureProgressPb) {
     Map<String, dynamic> map = Map();
 
-    if (measureProgressPb.hasId() && (deltaComparedToMeasureProgressPb == null || deltaComparedToMeasureProgressPb.hasId() && measureProgressPb.id != deltaComparedToMeasureProgressPb.id)) map[MeasureProgress.idField] = measureProgressPb.id;
-    if (measureProgressPb.hasVersion() && (deltaComparedToMeasureProgressPb == null || deltaComparedToMeasureProgressPb.hasVersion() && measureProgressPb.version != deltaComparedToMeasureProgressPb.version)) map[MeasureProgress.versionField] = measureProgressPb.version;
-    if (measureProgressPb.hasDate() && (deltaComparedToMeasureProgressPb == null || deltaComparedToMeasureProgressPb.hasDate() && measureProgressPb.date != deltaComparedToMeasureProgressPb.date)) map[MeasureProgress.dateField] = measureProgressPb.date;
-    if (measureProgressPb.hasCurrentValue() && (deltaComparedToMeasureProgressPb == null || deltaComparedToMeasureProgressPb.hasCurrentValue() && measureProgressPb.currentValue != deltaComparedToMeasureProgressPb.currentValue)) map[MeasureProgress.currentValueField] = measureProgressPb.currentValue;
-    if (measureProgressPb.hasComment() && (deltaComparedToMeasureProgressPb == null || deltaComparedToMeasureProgressPb.hasComment() && measureProgressPb.comment != deltaComparedToMeasureProgressPb.comment)) map[MeasureProgress.commentField] = measureProgressPb.comment;
+    if (measureProgressPb.hasId())
+      map[MeasureProgress.idField] = measureProgressPb.id;
+    if (measureProgressPb.hasVersion())
+      map[MeasureProgress.versionField] = measureProgressPb.version;
+    if (measureProgressPb.hasDate())
+      map[MeasureProgress.dateField] = measureProgressPb.date;
+    if (measureProgressPb.hasCurrentValue())
+      map[MeasureProgress.currentValueField] = measureProgressPb.currentValue;
+    if (measureProgressPb.hasComment())
+      map[MeasureProgress.commentField] = measureProgressPb.comment;
 
     return map;
   }
@@ -263,13 +313,15 @@ class MeasureUnit {
     if (measureUnitPb.hasSymbol()) this.symbol = measureUnitPb.symbol;
     if (measureUnitPb.hasName()) this.name = measureUnitPb.name;
   }
+}
 
-  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureUnit measureUnitPb, [measure_pb.MeasureUnit  deltaComparedToMeasureUnitPb]) {
+abstract class MeasureUnitUtils {
+  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureUnit measureUnitPb) {
     Map<String, dynamic> map = Map();
 
-    if (measureUnitPb.hasId() && (deltaComparedToMeasureUnitPb == null || deltaComparedToMeasureUnitPb.hasId() && measureUnitPb.id != deltaComparedToMeasureUnitPb.id)) map[MeasureUnit.idField] = measureUnitPb.id;
-    if (measureUnitPb.hasSymbol() && (deltaComparedToMeasureUnitPb == null || deltaComparedToMeasureUnitPb.hasSymbol() &&  measureUnitPb.symbol != deltaComparedToMeasureUnitPb.symbol)) map[MeasureUnit.symbolField] = measureUnitPb.symbol;
-    if (measureUnitPb.hasName() && (deltaComparedToMeasureUnitPb == null || deltaComparedToMeasureUnitPb.hasName() && measureUnitPb.name != deltaComparedToMeasureUnitPb.name)) map[MeasureUnit.nameField] = measureUnitPb.name;
+    if (measureUnitPb.hasId()) map[MeasureUnit.idField] = measureUnitPb.id;
+    if (measureUnitPb.hasSymbol()) map[MeasureUnit.symbolField] = measureUnitPb.symbol;
+    if (measureUnitPb.hasName()) map[MeasureUnit.nameField] = measureUnitPb.name;
 
     return map;
   }

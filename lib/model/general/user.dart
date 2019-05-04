@@ -53,26 +53,20 @@ class User {
     if (userPb.hasPassword()) this.password = userPb.password;
     if (userPb.hasUserProfile()) this.userProfile = UserProfile()..readFromProtoBuf(userPb.userProfile);
   }
-/*
-  Map<String, dynamic> toMap() {
-    return Map<String, dynamic>()
-      ..[User.idField] = this.id
-      ..[User.nameField] = this.name
-      ..[User.eMailField] = this.eMail
-      ..[User.passwordField] = this.password
-      ..[User.userProfileField] = this.userProfile.toMap();
-  }
-*/
 
-  static Map<String, dynamic> fromProtoBufToModelMap(user_pb.User userPb, [user_pb.User deltaComparedToUserPb]) {
+
+}
+
+abstract class UserUtils {
+  static Map<String, dynamic> fromProtoBufToModelMap(user_pb.User userPb) {
     Map<String, dynamic> map = Map();
 
-    if (userPb.hasId() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasId() && userPb.id != deltaComparedToUserPb.id)) map[User.idField] = userPb.id;
-    if (userPb.hasVersion() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasVersion() &&  userPb.version != deltaComparedToUserPb.version)) map[User.versionField] = userPb.version;
-    if (userPb.hasName() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasName() && userPb.name != deltaComparedToUserPb.name)) map[User.nameField] = userPb.name;
-    if (userPb.hasEMail() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasEMail() && userPb.eMail != deltaComparedToUserPb.eMail)) map[User.eMailField] = userPb.eMail;
-    if (userPb.hasPassword() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasPassword() && userPb.password != deltaComparedToUserPb.password)) map[User.passwordField] = userPb.password;
-    if (userPb.hasUserProfile() && (deltaComparedToUserPb == null || deltaComparedToUserPb.hasUserProfile() && userPb.userProfile != deltaComparedToUserPb.userProfile)) map[User.userProfileField] = UserProfile.fromProtoBufToModelMap(userPb.userProfile, deltaComparedToUserPb?.userProfile);
+    if (userPb.hasId()) map[User.idField] = userPb.id;
+    if (userPb.hasVersion()) map[User.versionField] = userPb.version;
+    if (userPb.hasName()) map[User.nameField] = userPb.name;
+    if (userPb.hasEMail()) map[User.eMailField] = userPb.eMail;
+    if (userPb.hasPassword()) map[User.passwordField] = userPb.password;
+    if (userPb.hasUserProfile()) map[User.userProfileField] = UserProfileUtils.fromProtoBufToModelMap(userPb.userProfile);
 
     return map;
   }
@@ -109,20 +103,15 @@ class UserProfile {
     if (userProfilePb.hasImage()) this.image = userProfilePb.image;
     if (userProfilePb.hasIdiomLocale()) this.idiomLocale = userProfilePb.idiomLocale;
   }
-/*
-  Map<String, dynamic> toMap() {
-    return Map<String, dynamic>()
-      ..[UserProfile.isSuperAdminField] = this.isSuperAdmin
-      ..[UserProfile.imageField] = this.image
-      ..[UserProfile.idiomLocaleField] = this.idiomLocale;
-  }
-*/
-  static Map<String, dynamic> fromProtoBufToModelMap(user_pb.UserProfile userProfilePb, [user_pb.UserProfile deltaComparedToUserProfilePb]) {
+}
+
+abstract class UserProfileUtils {
+  static Map<String, dynamic> fromProtoBufToModelMap(user_pb.UserProfile userProfilePb) {
     Map<String, dynamic> map = Map();
 
-    if (userProfilePb.hasIsSuperAdmin() && (deltaComparedToUserProfilePb == null || deltaComparedToUserProfilePb.hasIsSuperAdmin() && userProfilePb.isSuperAdmin != deltaComparedToUserProfilePb.isSuperAdmin)) map[UserProfile.isSuperAdminField] = userProfilePb.isSuperAdmin;
-    if (userProfilePb.hasImage() && (deltaComparedToUserProfilePb == null || deltaComparedToUserProfilePb.hasImage() && userProfilePb.image != deltaComparedToUserProfilePb.image)) map[UserProfile.imageField] = userProfilePb.image;
-    if (userProfilePb.hasIdiomLocale() && (deltaComparedToUserProfilePb == null || deltaComparedToUserProfilePb.hasIdiomLocale() && userProfilePb.idiomLocale != deltaComparedToUserProfilePb.idiomLocale)) map[UserProfile.idiomLocaleField]= userProfilePb.idiomLocale;
+    if (userProfilePb.hasIsSuperAdmin()) map[UserProfile.isSuperAdminField] = userProfilePb.isSuperAdmin;
+    if (userProfilePb.hasImage()) map[UserProfile.imageField] = userProfilePb.image;
+    if (userProfilePb.hasIdiomLocale()) map[UserProfile.idiomLocaleField]= userProfilePb.idiomLocale;
     return map;
   }
 }

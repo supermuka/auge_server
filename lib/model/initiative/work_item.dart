@@ -99,19 +99,22 @@ class WorkItem {
 
   }
 
-  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItem workItemPb, [work_item_pb.WorkItem deltaComparedToWorkItemPb ]) {
+}
+
+abstract class WorkItemUtils {
+  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItem workItemPb) {
     Map<String, dynamic> map = Map();
 
-    if (workItemPb.hasId() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasId() && workItemPb.id != deltaComparedToWorkItemPb.id)) map[WorkItem.idField] = workItemPb.id;
-    if (workItemPb.hasVersion() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasVersion() &&  workItemPb.version != deltaComparedToWorkItemPb.version)) map[WorkItem.versionField] = workItemPb.version;
-    if (workItemPb.hasName() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasName() && workItemPb.name != deltaComparedToWorkItemPb.name)) map[WorkItem.nameField] = workItemPb.name;
-    if (workItemPb.hasDescription() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasDescription() && workItemPb.description != deltaComparedToWorkItemPb.description)) map[WorkItem.descriptionField] = workItemPb.description;
-    if (workItemPb.hasCompleted() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasCompleted() && workItemPb.completed != deltaComparedToWorkItemPb.completed)) map[WorkItem.completedField] = workItemPb.completed;
-    if (workItemPb.hasStage() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasStage() && workItemPb.stage != deltaComparedToWorkItemPb.stage)) map[WorkItem.stageField] = workItemPb.stage;
-    if (workItemPb.hasDueDate() && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.hasDueDate() && workItemPb.dueDate != deltaComparedToWorkItemPb.dueDate)) map[WorkItem.dueDateField] = workItemPb.dueDate;
+    if (workItemPb.hasId()) map[WorkItem.idField] = workItemPb.id;
+    if (workItemPb.hasVersion()) map[WorkItem.versionField] = workItemPb.version;
+    if (workItemPb.hasName()) map[WorkItem.nameField] = workItemPb.name;
+    if (workItemPb.hasDescription()) map[WorkItem.descriptionField] = workItemPb.description;
+    if (workItemPb.hasCompleted()) map[WorkItem.completedField] = workItemPb.completed;
+    if (workItemPb.hasStage()) map[WorkItem.stageField] = workItemPb.stage;
+    if (workItemPb.hasDueDate()) map[WorkItem.dueDateField] = workItemPb.dueDate;
 
-    if (workItemPb.checkItems.isNotEmpty && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.checkItems.isNotEmpty && !DeepCollectionEquality.unordered().equals(workItemPb.checkItems, deltaComparedToWorkItemPb.checkItems))) map[WorkItem.checkItemsField] = workItemPb.checkItems.map((ci) => WorkItemCheckItem.fromProtoBufToModelMap(ci)).toList();
-    if (workItemPb.assignedTo.isNotEmpty && (deltaComparedToWorkItemPb == null || deltaComparedToWorkItemPb.assignedTo.isNotEmpty && !DeepCollectionEquality.unordered().equals(workItemPb.assignedTo, deltaComparedToWorkItemPb.assignedTo))) map[WorkItem.assignedToField] = workItemPb.assignedTo.map((at) => User.fromProtoBufToModelMap(at)).toList();
+    if (workItemPb.checkItems.isNotEmpty) map[WorkItem.checkItemsField] = workItemPb.checkItems.map((ci) => WorkItemCheckItemUtils.fromProtoBufToModelMap(ci)).toList();
+    if (workItemPb.assignedTo.isNotEmpty) map[WorkItem.assignedToField] = workItemPb.assignedTo.map((at) => UserUtils.fromProtoBufToModelMap(at)).toList();
 
     return map;
   }
@@ -149,17 +152,18 @@ class WorkItemCheckItem {
     if (workItemCheckItemPb.hasFinished()) this.finished = workItemCheckItemPb.finished;
     if (workItemCheckItemPb.hasIndex()) this.index = workItemCheckItemPb.index;
   }
+}
 
-  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItemCheckItem workItemCheckItemPb, [work_item_pb.WorkItemCheckItem deltaComparedToWorkItemCheckItemPb]) {
+abstract class WorkItemCheckItemUtils {
+  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItemCheckItem workItemCheckItemPb) {
     Map<String, dynamic> map = Map();
 
-    if (workItemCheckItemPb.hasId() && (deltaComparedToWorkItemCheckItemPb == null || deltaComparedToWorkItemCheckItemPb.hasId() && workItemCheckItemPb.id != deltaComparedToWorkItemCheckItemPb.id)) map[WorkItemCheckItem.idField] = workItemCheckItemPb.id;
-    if (workItemCheckItemPb.hasVersion() && (deltaComparedToWorkItemCheckItemPb == null || deltaComparedToWorkItemCheckItemPb.hasVersion() &&  workItemCheckItemPb.version != deltaComparedToWorkItemCheckItemPb.version)) map[WorkItemCheckItem.versionField] = workItemCheckItemPb.version;
-    if (workItemCheckItemPb.hasName() && (deltaComparedToWorkItemCheckItemPb == null || deltaComparedToWorkItemCheckItemPb.hasName() && workItemCheckItemPb.name != deltaComparedToWorkItemCheckItemPb.name)) map[WorkItemCheckItem.nameField] = workItemCheckItemPb.name;
-    if (workItemCheckItemPb.hasFinished() && (deltaComparedToWorkItemCheckItemPb == null || deltaComparedToWorkItemCheckItemPb.hasFinished() && workItemCheckItemPb.finished != deltaComparedToWorkItemCheckItemPb.finished)) map[WorkItemCheckItem.finishedField] = workItemCheckItemPb.finished;
-    if (workItemCheckItemPb.hasIndex() && (deltaComparedToWorkItemCheckItemPb == null || deltaComparedToWorkItemCheckItemPb.hasIndex() && workItemCheckItemPb.index != deltaComparedToWorkItemCheckItemPb.index)) map[WorkItemCheckItem.indexField] = workItemCheckItemPb.index;
+    if (workItemCheckItemPb.hasId()) map[WorkItemCheckItem.idField] = workItemCheckItemPb.id;
+    if (workItemCheckItemPb.hasVersion()) map[WorkItemCheckItem.versionField] = workItemCheckItemPb.version;
+    if (workItemCheckItemPb.hasName()) map[WorkItemCheckItem.nameField] = workItemCheckItemPb.name;
+    if (workItemCheckItemPb.hasFinished()) map[WorkItemCheckItem.finishedField] = workItemCheckItemPb.finished;
+    if (workItemCheckItemPb.hasIndex()) map[WorkItemCheckItem.indexField] = workItemCheckItemPb.index;
 
     return map;
   }
-
 }
