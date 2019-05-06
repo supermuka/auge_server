@@ -2,7 +2,6 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
@@ -411,9 +410,6 @@ class WorkItemService extends WorkItemServiceBase {
 
           // HistoryItem
           HistoryItem historyItem;
-
-          Map<String, dynamic> valuesPrevious = previousWorkItem.writeToJsonMap();
-          Map<String, dynamic> valuesCurrent = request.workItem.writeToJsonMap();
 
           historyItem
             ..id = new Uuid().v4()

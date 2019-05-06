@@ -2,7 +2,6 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
@@ -342,9 +341,6 @@ class InitiativeService extends InitiativeServiceBase {
         else {
           // HistoryItem
           HistoryItem historyItem;
-
-          Map<String, dynamic> valuesPrevious = previousInitiative.writeToJsonMap();
-          Map<String, dynamic> valuesCurrent = request.initiative.writeToJsonMap();
 
           historyItem
             ..id = new Uuid().v4()

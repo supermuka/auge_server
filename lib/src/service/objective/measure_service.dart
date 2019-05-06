@@ -2,7 +2,6 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-import 'dart:convert';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
@@ -15,7 +14,6 @@ import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dar
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/model/general/authorization.dart';
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 import 'package:auge_server/shared/rpc_error_message.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
@@ -23,7 +21,6 @@ import 'package:auge_server/model/general/history_item.dart' show HistoryItemUti
 import 'package:auge_server/model/objective/measure.dart' show MeasureUtils, MeasureProgressUtils, MeasureUnitUtils;
 
 import 'package:auge_server/src/service/general/history_item_service.dart';
-
 
 import 'package:uuid/uuid.dart';
 
@@ -478,9 +475,6 @@ class MeasureService extends MeasureServiceBase {
 
         // HistoryItem
         HistoryItem historyItem;
-
-      //  Map<String, dynamic> valuesPrevious = previousMeasureProgress.writeToJsonMap();
-        Map<String, dynamic> valuesCurrent = request.measureProgress.writeToJsonMap();
 
         historyItem
           ..id = new Uuid().v4()

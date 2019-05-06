@@ -2,7 +2,6 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
 
@@ -188,6 +187,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           "authorization_role": request.userProfileOrganization.authorizationRole});
 
         // HistoryItem
+        /*
         HistoryItem  historyItem = HistoryItem()
           ..id = Uuid().v4()
           ..user = request.authenticatedUser
@@ -196,12 +196,10 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           ..objectClassName = request.userProfileOrganization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
           ..systemModuleIndex = SystemModule.users.index
           ..systemFunctionIndex = SystemFunction.create.index
-        // ..dateTime
-        //  ..description = request.userProfileOrganization.name
-        //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
           ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, UserProfileOrganizationUtils.fromProtoBufToModelMap(request.userProfileOrganization));
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+*/
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -241,6 +239,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           }
 
         // HistoryItem
+        /*
         HistoryItem  historyItem = HistoryItem()
           ..id = Uuid().v4()
           ..user = request.authenticatedUser
@@ -255,6 +254,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+*/
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -269,12 +269,13 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
       try {
         await ctx.query(
             "DELETE FROM general.users_profile_organizations user_profile_organization "
-                "WHERE user_profile_organization.id = @id "
+            "WHERE user_profile_organization.id = @id AND user_profile_organization.version = @version "
             , substitutionValues: {
           "id": request.userProfileOrganization.id,
           "version": request.userProfileOrganization.version});
 
         // HistoryItem
+        /*
         HistoryItem  historyItem = HistoryItem()
           ..id = Uuid().v4()
           ..user = request.authenticatedUser
@@ -283,13 +284,11 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           ..objectClassName = request.userProfileOrganization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
           ..systemModuleIndex = SystemModule.users.index
           ..systemFunctionIndex = SystemFunction.delete.index
-        // ..dateTime
-        //  ..description = request.user.name
           ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserProfileOrganizationUtils.fromProtoBufToModelMap(request.userProfileOrganization), {});
 
       // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
-
+*/
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

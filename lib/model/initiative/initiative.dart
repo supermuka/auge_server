@@ -1,8 +1,6 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-import 'package:collection/collection.dart';
-
 import 'package:auge_server/model/general/organization.dart';
 import 'package:auge_server/model/general/user.dart';
 import 'package:auge_server/model/initiative/state.dart';

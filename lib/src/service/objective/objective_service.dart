@@ -2,7 +2,6 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-import 'dart:convert';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
@@ -12,7 +11,6 @@ import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.da
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
-//import 'package:auge_server/src/protos/generated/general/history_item.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/objective.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/objective/measure.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pb.dart';

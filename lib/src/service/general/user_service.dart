@@ -2,7 +2,6 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
 
@@ -146,6 +145,7 @@ class UserService extends UserServiceBase {
     if (!request.user.hasId()) {
       request.user.id = new Uuid().v4();
     }
+
     await (await AugeConnection.getConnection()).transaction((ctx) async {
 
       try {
@@ -163,7 +163,9 @@ class UserService extends UserServiceBase {
           "name": request.user.name,
           "email": request.user.eMail,
           "password": request.user.password});
-        if (request.user.userProfile != null)
+
+
+        if (request.user.userProfile != null) {
           await ctx.query(
               "INSERT INTO general.users_profile(user_id, image, is_super_admin, idiom_locale) VALUES("
                   "@id,"
@@ -174,6 +176,7 @@ class UserService extends UserServiceBase {
             "image": request.user.userProfile.image,
             "is_super_admin": request.user.userProfile.isSuperAdmin,
             "idiom_locale": request.user.userProfile.idiomLocale});
+        }
 
         // HistoryItem
         HistoryItem  historyItem = HistoryItem()
@@ -190,6 +193,7 @@ class UserService extends UserServiceBase {
           ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, UserUtils.fromProtoBufToModelMap(request.user));
 
         // Create a history item
+
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
 
 
@@ -272,22 +276,28 @@ class UserService extends UserServiceBase {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
+        /*
         await ctx.query(
-            "DELETE FROM general.users_profile_organizations user_profile_organizations WHERE user_profile_organizations.user_id = @user_id AND user_profile_organizations.version = @version "
+            "DELETE FROM general.users_profile_organizations user_profile_organization WHERE user_profile_organization.user_id = @user_id AND user_profile_organization.version = @version "
             , substitutionValues: {
           "user_id": request.user.id,
+          "version": request.user.version});
+*/
+        await ctx.query(
+            "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id "
+            , substitutionValues: {
+          "user_id": request.user.id});
+
+        List<List<dynamic>> result = await ctx.query(
+            "DELETE FROM general.users u WHERE u.id = @id AND u.version = @version RETURNING true"
+            , substitutionValues: {
+          "id": request.user.id,
           "version": request.user.version});
 
-        await ctx.query(
-            "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id AND user_profile_organizations.version = @version "
-            , substitutionValues: {
-          "user_id": request.user.id,
-          "version": request.user.version});
-        await ctx.query(
-            "DELETE FROM general.users u WHERE u.id = @id AND user_profile_organizations.version = @version "
-            , substitutionValues: {
-          "user_id": request.user.id,
-          "version": request.user.version});
+        // Optimistic concurrency control
+        if (result.length == 0) {
+          throw new GrpcError.failedPrecondition('Precondition Failed');
+        }
 
         // HistoryItem
         HistoryItem  historyItem = HistoryItem()

@@ -92,11 +92,9 @@ class HistoryItem {
 
 abstract class HistoryItemUtils {
 
-  static const p = 'p', c = 'c';
+  static const previousKey = 'p', currentKey = 'c';
 
   static Map<dynamic, dynamic> changedValuesMap(Map<dynamic, dynamic> previous, Map<dynamic, dynamic> current, [bool onlyDiff = true]) {
-
-    Map<dynamic, dynamic> previousCurrentMap = {};
 
     Map<dynamic, dynamic> processPrevious(Map<dynamic, dynamic> previous) {
       //   Map<String, dynamic> mP = Map.from(map);
@@ -108,7 +106,7 @@ abstract class HistoryItemUtils {
           mP.putIfAbsent(k, () => {});
           // mP[k].putIfAbsent(p, () => v);
 
-          mP[k][p] = v;
+          mP[k][previousKey] = v;
         }
       });
       return mP;
@@ -123,19 +121,18 @@ abstract class HistoryItemUtils {
         } else {
           mC.putIfAbsent(k, () => {});
           //  mC[k].putIfAbsent(c, () => v);
-          mC[k][c] = v;
+          mC[k][currentKey] = v;
         }
       });
       return mC;
     }
 
     Map<dynamic, dynamic> processMerge(Map<dynamic, dynamic> mapWithP, Map<dynamic, dynamic> mapWithC) {
-
       Map<dynamic, dynamic> mergeMap = Map.from(mapWithP ?? {});
 
       mapWithC.forEach((k, v) {
         if (v is Map) {
-          mergeMap[k] = processMerge(mapWithP[k], mapWithC[k]);
+          mergeMap[k] = processMerge(mapWithP[k] ?? {}, mapWithC[k]);
         }
         mergeMap.putIfAbsent(k, () => mapWithC[k]);
       });
@@ -147,13 +144,12 @@ abstract class HistoryItemUtils {
       Map<dynamic, dynamic> diff = Map.from(merge);
 
       merge.forEach((k,v) {
-        if (diff[k][p] is List && diff[k][c] is List && DeepCollectionEquality().equals(diff[k][p], diff[k][c]))
+        if (diff[k][previousKey] is List && diff[k][currentKey] is List && DeepCollectionEquality().equals(diff[k][previousKey], diff[k][currentKey]))
           diff.remove(k);
-        else if (diff[k][p] == diff[k][c]) {
+        else if (diff[k][previousKey] == diff[k][currentKey]) {
           diff.remove(k);
         }
       });
-
       return diff;
     }
 

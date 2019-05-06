@@ -25,7 +25,7 @@ class HistoryItemService extends HistoryItemServiceBase {
 
   // QUERY
   // History to auge_objective schema
-  static String queryStatementCreateHistoryItem = "INSERT INTO general.history(id, user_id, object_id, object_version, object_class_name, system_module_index, system_function_index, date_time, description, changed_values_previous, changed_values_current) VALUES"
+  static String queryStatementCreateHistoryItem = "INSERT INTO general.history(id, user_id, object_id, object_version, object_class_name, system_module_index, system_function_index, date_time, description, changed_values) VALUES"
       "(@id,"
       "@user_id,"
       "@object_id,"
@@ -35,8 +35,7 @@ class HistoryItemService extends HistoryItemServiceBase {
       "@system_function_index,"
       "@date_time,"
       "@description,"
-      "@changed_values_previous,"
-      "@changed_values_current)";
+      "@changed_values)";
 
   static Map<String, dynamic> querySubstitutionValuesCreateHistoryItem(HistoryItem request) {
 

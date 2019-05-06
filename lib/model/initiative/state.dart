@@ -6,8 +6,6 @@
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
 
-import 'package:collection/collection.dart';
-
 import 'package:auge_server/src/protos/generated/initiative/state.pb.dart' as state_pb;
 
 const _colorHue = 'hue';
