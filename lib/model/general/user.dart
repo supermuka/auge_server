@@ -57,16 +57,27 @@ class User {
 }
 
 abstract class UserUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(user_pb.User userPb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(user_pb.User userPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (userPb.hasId()) map[User.idField] = userPb.id;
-    if (userPb.hasVersion()) map[User.versionField] = userPb.version;
-    if (userPb.hasName()) map[User.nameField] = userPb.name;
-    if (userPb.hasEMail()) map[User.eMailField] = userPb.eMail;
-    if (userPb.hasPassword()) map[User.passwordField] = userPb.password;
-    if (userPb.hasUserProfile()) map[User.userProfileField] = UserProfileUtils.fromProtoBufToModelMap(userPb.userProfile);
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (userPb.hasId()) map[User.idField] = userPb.id;
+      if (userPb.hasName()) map[User.nameField] = userPb.name;
+    } else
+    {
+      if (userPb.hasId()) map[User.idField] = userPb.id;
+      if (userPb.hasVersion()) map[User.versionField] = userPb.version;
+      if (userPb.hasName()) map[User.nameField] = userPb.name;
+      if (userPb.hasEMail()) map[User.eMailField] = userPb.eMail;
+      if (userPb.hasPassword()) map[User.passwordField] = userPb.password;
+      if (userPb.hasUserProfile()) {
+        map[User.userProfileField] =
+            UserProfileUtils.fromProtoBufToModelMap(
+                userPb.userProfile, onlyIdAndSpecificationForDepthFields,
+                false); // here isDeep is false, because UserProfile is like an extention
 
+      }
+    }
     return map;
   }
 }
@@ -105,12 +116,19 @@ class UserProfile {
 }
 
 abstract class UserProfileUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(user_pb.UserProfile userProfilePb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(user_pb.UserProfile userProfilePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (userProfilePb.hasIsSuperAdmin()) map[UserProfile.isSuperAdminField] = userProfilePb.isSuperAdmin;
-    if (userProfilePb.hasImage()) map[UserProfile.imageField] = userProfilePb.image;
-    if (userProfilePb.hasIdiomLocale()) map[UserProfile.idiomLocaleField]= userProfilePb.idiomLocale;
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      //
+    } else {
+      if (userProfilePb.hasIsSuperAdmin())
+        map[UserProfile.isSuperAdminField] = userProfilePb.isSuperAdmin;
+      if (userProfilePb.hasImage())
+        map[UserProfile.imageField] = userProfilePb.image;
+      if (userProfilePb.hasIdiomLocale())
+        map[UserProfile.idiomLocaleField] = userProfilePb.idiomLocale;
+    }
     return map;
   }
 }

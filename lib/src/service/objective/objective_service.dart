@@ -289,7 +289,7 @@ class ObjectiveService extends ObjectiveServiceBase {
         // ..dateTime
           ..description = ''
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, ObjectiveUtils.fromProtoBufToModelMap(request.objective));
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, ObjectiveUtils.fromProtoBufToModelMap(request.objective, true));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -359,7 +359,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             ..systemFunctionIndex = SystemFunction.update.index
           // ..dateTime
             ..description = ''
-            ..changedValuesJson = HistoryItemUtils.changedValuesJson(ObjectiveUtils.fromProtoBufToModelMap(previousObjective), ObjectiveUtils.fromProtoBufToModelMap(request.objective));
+            ..changedValuesJson = HistoryItemUtils.changedValuesJson(ObjectiveUtils.fromProtoBufToModelMap(previousObjective, true), ObjectiveUtils.fromProtoBufToModelMap(request.objective, true));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

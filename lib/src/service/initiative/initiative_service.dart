@@ -350,7 +350,7 @@ class InitiativeService extends InitiativeServiceBase {
             ..systemFunctionIndex = SystemFunction.create.index
             // ..dateTime
             ..description = request.initiative.name
-            ..changedValuesJson = HistoryItemUtils.changedValuesJson(InitiativeUtils.fromProtoBufToModelMap(previousInitiative), InitiativeUtils.fromProtoBufToModelMap(request.initiative));
+            ..changedValuesJson = HistoryItemUtils.changedValuesJson(InitiativeUtils.fromProtoBufToModelMap(previousInitiative, true), InitiativeUtils.fromProtoBufToModelMap(request.initiative, true));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

@@ -114,59 +114,41 @@ class Measure {
     if (measurePb.measureProgress.isNotEmpty) this.measureProgress = measurePb.measureProgress.map((u) => MeasureProgress()..readFromProtoBuf(u)).toList();
   }
 
-  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.Measure measurePb, [measure_pb.Measure  deltaComparedToMeasurePb]) {
+  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.Measure measurePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (measurePb.hasId() && (deltaComparedToMeasurePb == null ||
-        deltaComparedToMeasurePb.hasId() &&
-            measurePb.id != deltaComparedToMeasurePb.id))
-      map[Measure.idField] = measurePb.id;
-    if (measurePb.hasVersion() && (deltaComparedToMeasurePb == null ||
-        deltaComparedToMeasurePb.hasVersion() &&
-            measurePb.version != deltaComparedToMeasurePb.version))
-      map[Measure.versionField] = measurePb.version;
-    if (measurePb.hasName() && (deltaComparedToMeasurePb == null ||
-        deltaComparedToMeasurePb.hasName() &&
-            measurePb.name != deltaComparedToMeasurePb.name))
-      map[Measure.nameField] = measurePb.name;
-    if (measurePb.hasDescription() && (deltaComparedToMeasurePb == null ||
-        deltaComparedToMeasurePb.hasDescription() &&
-            measurePb.description != deltaComparedToMeasurePb.description))
-      map[Measure.descriptionField] = measurePb.description;
-    if (measurePb.hasMetric() && (deltaComparedToMeasurePb == null ||
-        deltaComparedToMeasurePb.hasMetric() &&
-            measurePb.metric != deltaComparedToMeasurePb.metric))
-      map[Measure.metricField] = measurePb.metric;
-    if (measurePb.hasDecimalsNumber() && (deltaComparedToMeasurePb == null ||
-        deltaComparedToMeasurePb.hasDecimalsNumber() &&
-            measurePb.decimalsNumber !=
-                deltaComparedToMeasurePb.decimalsNumber))
-      map[Measure.decimalsNumberField] = measurePb.decimalsNumber;
-    if (measurePb.hasStartValue() && (deltaComparedToMeasurePb == null ||
-        deltaComparedToMeasurePb.hasStartValue() &&
-            measurePb.startValue != deltaComparedToMeasurePb.startValue))
-      map[Measure.startValueField] = measurePb.startValue;
-    if (measurePb.hasEndValue() && (deltaComparedToMeasurePb == null ||
-        deltaComparedToMeasurePb.hasEndValue() &&
-            measurePb.endValue != deltaComparedToMeasurePb.endValue))
-      map[Measure.endValueField] = measurePb.endValue;
-    if (measurePb.hasCurrentValue() && (deltaComparedToMeasurePb == null ||
-        deltaComparedToMeasurePb.hasCurrentValue() &&
-            measurePb.currentValue != deltaComparedToMeasurePb.currentValue))
-      map[Measure.currentValueField] = measurePb.currentValue;
-    if (measurePb.hasMeasureUnit() && (deltaComparedToMeasurePb == null ||
-        deltaComparedToMeasurePb.hasMeasureUnit() &&
-            measurePb.measureUnit != deltaComparedToMeasurePb.measureUnit))
-      map[Measure.measureUnitField] = MeasureUnitUtils.fromProtoBufToModelMap(
-          measurePb.measureUnit);
-    if (measurePb.measureProgress.isNotEmpty &&
-        (deltaComparedToMeasurePb == null ||
-            deltaComparedToMeasurePb.measureProgress.isNotEmpty &&
-                !DeepCollectionEquality.unordered().equals(
-                    measurePb.measureProgress,
-                    deltaComparedToMeasurePb.measureProgress)))
-      map[Measure.measureProgressField] = measurePb.measureProgress.map((mp) =>
-          MeasureProgressUtils.fromProtoBufToModelMap(mp)).toList();
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (measurePb.hasId())
+        map[Measure.idField] = measurePb.id;
+      if (measurePb.hasName())
+        map[Measure.nameField] = measurePb.name;
+    } else {
+      if (measurePb.hasId())
+        map[Measure.idField] = measurePb.id;
+      if (measurePb.hasVersion())
+        map[Measure.versionField] = measurePb.version;
+      if (measurePb.hasName())
+        map[Measure.nameField] = measurePb.name;
+      if (measurePb.hasDescription())
+        map[Measure.descriptionField] = measurePb.description;
+      if (measurePb.hasMetric())
+        map[Measure.metricField] = measurePb.metric;
+      if (measurePb.hasDecimalsNumber())
+        map[Measure.decimalsNumberField] = measurePb.decimalsNumber;
+      if (measurePb.hasStartValue())
+        map[Measure.startValueField] = measurePb.startValue;
+      if (measurePb.hasEndValue())
+        map[Measure.endValueField] = measurePb.endValue;
+      if (measurePb.hasCurrentValue())
+        map[Measure.currentValueField] = measurePb.currentValue;
+      if (measurePb.hasMeasureUnit())
+        map[Measure.measureUnitField] = MeasureUnitUtils.fromProtoBufToModelMap(
+            measurePb.measureUnit, onlyIdAndSpecificationForDepthFields, true);
+      if (measurePb.measureProgress.isNotEmpty)
+        map[Measure.measureProgressField] =
+            measurePb.measureProgress.map((mp) =>
+                MeasureProgressUtils.fromProtoBufToModelMap(mp, onlyIdAndSpecificationForDepthFields, true)).toList();
+    }
 
     return map;
   }
@@ -174,33 +156,40 @@ class Measure {
 }
 
 abstract class MeasureUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.Measure measurePb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.Measure measurePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
-
-    if (measurePb.hasId())
-      map[Measure.idField] = measurePb.id;
-    if (measurePb.hasVersion())
-      map[Measure.versionField] = measurePb.version;
-    if (measurePb.hasName())
-      map[Measure.nameField] = measurePb.name;
-    if (measurePb.hasDescription())
-      map[Measure.descriptionField] = measurePb.description;
-    if (measurePb.hasMetric())
-      map[Measure.metricField] = measurePb.metric;
-    if (measurePb.hasDecimalsNumber())
-      map[Measure.decimalsNumberField] = measurePb.decimalsNumber;
-    if (measurePb.hasStartValue())
-      map[Measure.startValueField] = measurePb.startValue;
-    if (measurePb.hasEndValue())
-      map[Measure.endValueField] = measurePb.endValue;
-    if (measurePb.hasCurrentValue())
-      map[Measure.currentValueField] = measurePb.currentValue;
-    if (measurePb.hasMeasureUnit())
-      map[Measure.measureUnitField] = MeasureUnitUtils.fromProtoBufToModelMap(
-          measurePb.measureUnit);
-    if (measurePb.measureProgress.isNotEmpty)
-      map[Measure.measureProgressField] = measurePb.measureProgress.map((mp) =>
-          MeasureProgressUtils.fromProtoBufToModelMap(mp)).toList();
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (measurePb.hasId())
+        map[Measure.idField] = measurePb.id;
+      if (measurePb.hasName())
+        map[Measure.nameField] = measurePb.name;
+    } else {
+      if (measurePb.hasId())
+        map[Measure.idField] = measurePb.id;
+      if (measurePb.hasVersion())
+        map[Measure.versionField] = measurePb.version;
+      if (measurePb.hasName())
+        map[Measure.nameField] = measurePb.name;
+      if (measurePb.hasDescription())
+        map[Measure.descriptionField] = measurePb.description;
+      if (measurePb.hasMetric())
+        map[Measure.metricField] = measurePb.metric;
+      if (measurePb.hasDecimalsNumber())
+        map[Measure.decimalsNumberField] = measurePb.decimalsNumber;
+      if (measurePb.hasStartValue())
+        map[Measure.startValueField] = measurePb.startValue;
+      if (measurePb.hasEndValue())
+        map[Measure.endValueField] = measurePb.endValue;
+      if (measurePb.hasCurrentValue())
+        map[Measure.currentValueField] = measurePb.currentValue;
+      if (measurePb.hasMeasureUnit())
+        map[Measure.measureUnitField] = MeasureUnitUtils.fromProtoBufToModelMap(
+            measurePb.measureUnit, onlyIdAndSpecificationForDepthFields, true);
+      if (measurePb.measureProgress.isNotEmpty)
+        map[Measure.measureProgressField] =
+            measurePb.measureProgress.map((mp) =>
+                MeasureProgressUtils.fromProtoBufToModelMap(mp, onlyIdAndSpecificationForDepthFields, true)).toList();
+    }
 
     return map;
   }
@@ -270,20 +259,26 @@ class MeasureProgress {
 
 abstract class MeasureProgressUtils {
 
-  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureProgress measureProgressPb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureProgress measureProgressPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (measureProgressPb.hasId())
-      map[MeasureProgress.idField] = measureProgressPb.id;
-    if (measureProgressPb.hasVersion())
-      map[MeasureProgress.versionField] = measureProgressPb.version;
-    if (measureProgressPb.hasDate())
-      map[MeasureProgress.dateField] = measureProgressPb.date;
-    if (measureProgressPb.hasCurrentValue())
-      map[MeasureProgress.currentValueField] = measureProgressPb.currentValue;
-    if (measureProgressPb.hasComment())
-      map[MeasureProgress.commentField] = measureProgressPb.comment;
-
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (measureProgressPb.hasId())
+        map[MeasureProgress.idField] = measureProgressPb.id;
+      if (measureProgressPb.hasComment())
+        map[MeasureProgress.commentField] = measureProgressPb.comment;
+    } else {
+      if (measureProgressPb.hasId())
+        map[MeasureProgress.idField] = measureProgressPb.id;
+      if (measureProgressPb.hasVersion())
+        map[MeasureProgress.versionField] = measureProgressPb.version;
+      if (measureProgressPb.hasDate())
+        map[MeasureProgress.dateField] = measureProgressPb.date;
+      if (measureProgressPb.hasCurrentValue())
+        map[MeasureProgress.currentValueField] = measureProgressPb.currentValue;
+      if (measureProgressPb.hasComment())
+        map[MeasureProgress.commentField] = measureProgressPb.comment;
+    }
     return map;
   }
 
@@ -316,13 +311,20 @@ class MeasureUnit {
 }
 
 abstract class MeasureUnitUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureUnit measureUnitPb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureUnit measureUnitPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (measureUnitPb.hasId()) map[MeasureUnit.idField] = measureUnitPb.id;
-    if (measureUnitPb.hasSymbol()) map[MeasureUnit.symbolField] = measureUnitPb.symbol;
-    if (measureUnitPb.hasName()) map[MeasureUnit.nameField] = measureUnitPb.name;
-
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (measureUnitPb.hasId()) map[MeasureUnit.idField] = measureUnitPb.id;
+      if (measureUnitPb.hasName())
+        map[MeasureUnit.nameField] = measureUnitPb.name;
+    } else {
+      if (measureUnitPb.hasId()) map[MeasureUnit.idField] = measureUnitPb.id;
+      if (measureUnitPb.hasSymbol())
+        map[MeasureUnit.symbolField] = measureUnitPb.symbol;
+      if (measureUnitPb.hasName())
+        map[MeasureUnit.nameField] = measureUnitPb.name;
+    }
     return map;
   }
 }

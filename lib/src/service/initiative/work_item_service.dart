@@ -419,7 +419,7 @@ class WorkItemService extends WorkItemServiceBase {
             ..systemFunctionIndex = SystemFunction.create.index
           // ..dateTime
             ..description = request.workItem.name
-            ..changedValuesJson = HistoryItemUtils.changedValuesJson(WorkItemUtils.fromProtoBufToModelMap(previousWorkItem), WorkItemUtils.fromProtoBufToModelMap(request.workItem));
+            ..changedValuesJson = HistoryItemUtils.changedValuesJson(WorkItemUtils.fromProtoBufToModelMap(previousWorkItem, true), WorkItemUtils.fromProtoBufToModelMap(request.workItem, true));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

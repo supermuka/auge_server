@@ -48,14 +48,30 @@ class UserProfileOrganization {
 }
 
 abstract class UserProfileOrganizationUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(user_profile_organization_pb.UserProfileOrganization userProfileOrganizationPb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(user_profile_organization_pb.UserProfileOrganization userProfileOrganizationPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (userProfileOrganizationPb.hasId()) map[UserProfileOrganization.idField] = userProfileOrganizationPb.id;
-    if (userProfileOrganizationPb.hasVersion()) map[UserProfileOrganization.versionField] = userProfileOrganizationPb.version;
-    if (userProfileOrganizationPb.hasUser()) map[UserProfileOrganization.userField] = UserUtils.fromProtoBufToModelMap(userProfileOrganizationPb.user);
-    if (userProfileOrganizationPb.hasOrganization()) map[UserProfileOrganization.organizationField] = OrganizationUtils.fromProtoBufToModelMap(userProfileOrganizationPb.organization);
-
+    if (onlyIdAndSpecificationForDepthFields && !isDeep) {
+      if (userProfileOrganizationPb.hasId())
+        map[UserProfileOrganization.idField] = userProfileOrganizationPb.id;
+      if (userProfileOrganizationPb.hasUser()) {
+        map[UserProfileOrganization.userField] =
+            UserUtils.fromProtoBufToModelMap(userProfileOrganizationPb.user, onlyIdAndSpecificationForDepthFields, true);
+      }
+    } else {
+      if (userProfileOrganizationPb.hasId())
+        map[UserProfileOrganization.idField] = userProfileOrganizationPb.id;
+      if (userProfileOrganizationPb.hasVersion())
+        map[UserProfileOrganization.versionField] =
+            userProfileOrganizationPb.version;
+      if (userProfileOrganizationPb.hasUser())
+        map[UserProfileOrganization.userField] =
+            UserUtils.fromProtoBufToModelMap(userProfileOrganizationPb.user, onlyIdAndSpecificationForDepthFields, true);
+      if (userProfileOrganizationPb.hasOrganization())
+        map[UserProfileOrganization.organizationField] =
+            OrganizationUtils.fromProtoBufToModelMap(
+                userProfileOrganizationPb.organization, onlyIdAndSpecificationForDepthFields, true);
+    }
     return map;
   }
 }

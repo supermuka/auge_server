@@ -61,15 +61,19 @@ class State {
 }
 
 abstract class StateUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(state_pb.State statePb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(state_pb.State statePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (statePb.hasId()) map[State.idField] = statePb.id;
-    if (statePb.hasVersion()) map[State.versionField] = statePb.version;
-    if (statePb.hasName()) map[State.nameField] = statePb.name;
-    if (statePb.hasIndex()) map[State.indexField] = statePb.index;
-    if (statePb.color.isNotEmpty) map[State.colorField] = statePb.color;
-
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (statePb.hasId()) map[State.idField] = statePb.id;
+      if (statePb.hasName()) map[State.nameField] = statePb.name;
+    } else {
+      if (statePb.hasId()) map[State.idField] = statePb.id;
+      if (statePb.hasVersion()) map[State.versionField] = statePb.version;
+      if (statePb.hasName()) map[State.nameField] = statePb.name;
+      if (statePb.hasIndex()) map[State.indexField] = statePb.index;
+      if (statePb.color.isNotEmpty) map[State.colorField] = statePb.color;
+    }
     return map;
   }
 }

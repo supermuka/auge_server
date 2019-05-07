@@ -63,18 +63,30 @@ class Group {
 }
 
 abstract class GroupUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(group_pb.Group groupPb) {
+
+  static Map<String, dynamic> fromProtoBufToModelMap(group_pb.Group groupPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (groupPb.hasId()) map[Group.idField] = groupPb.id;
-    if (groupPb.hasVersion()) map[Group.versionField] = groupPb.version;
-    if (groupPb.hasName()) map[Group.nameField] = groupPb.name;
-    if (groupPb.hasActive()) map[Group.activeField] = groupPb.active;
-    if (groupPb.hasOrganization()) map[Group.organizationField] = OrganizationUtils.fromProtoBufToModelMap(groupPb.organization);
-    if (groupPb.hasGroupType()) map[Group.groupTypeField] = GroupTypeUtils.fromProtoBufToModelMap(groupPb.groupType);
-    if (groupPb.hasSuperGroup()) map[Group.superGroupField] = GroupUtils.fromProtoBufToModelMap(groupPb.superGroup);
-    if (groupPb.hasLeader()) map[Group.leaderField] = UserUtils.fromProtoBufToModelMap(groupPb.leader);
-    if (groupPb.members.isNotEmpty) map[Group.membersField] = groupPb.members.map((u) => UserUtils.fromProtoBufToModelMap(u)).toList();
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (groupPb.hasId()) map[Group.idField] = groupPb.id;
+      if (groupPb.hasName()) map[Group.nameField] = groupPb.name;
+    } else {
+      if (groupPb.hasId()) map[Group.idField] = groupPb.id;
+      if (groupPb.hasVersion()) map[Group.versionField] = groupPb.version;
+      if (groupPb.hasName()) map[Group.nameField] = groupPb.name;
+      if (groupPb.hasActive()) map[Group.activeField] = groupPb.active;
+      if (groupPb.hasOrganization()) map[Group.organizationField] =
+          OrganizationUtils.fromProtoBufToModelMap(groupPb.organization, onlyIdAndSpecificationForDepthFields, true);
+      if (groupPb.hasGroupType()) map[Group.groupTypeField] =
+          GroupTypeUtils.fromProtoBufToModelMap(groupPb.groupType, onlyIdAndSpecificationForDepthFields, true);
+      if (groupPb.hasSuperGroup()) map[Group.superGroupField] =
+          GroupUtils.fromProtoBufToModelMap(groupPb.superGroup, onlyIdAndSpecificationForDepthFields, true);
+      if (groupPb.hasLeader()) map[Group.leaderField] =
+          UserUtils.fromProtoBufToModelMap(groupPb.leader, onlyIdAndSpecificationForDepthFields, true);
+      if (groupPb.members.isNotEmpty) map[Group.membersField] =
+          groupPb.members.map((u) => UserUtils.fromProtoBufToModelMap(u, onlyIdAndSpecificationForDepthFields, true))
+              .toList();
+    }
 
     return map;
   }
@@ -105,11 +117,16 @@ class GroupType {
 }
 
 abstract class GroupTypeUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(group_pb.GroupType groupTypePb, [group_pb.GroupType deltaComparedToGroupTypePb]) {
+  static Map<String, dynamic> fromProtoBufToModelMap(group_pb.GroupType groupTypePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (groupTypePb.hasId() && (deltaComparedToGroupTypePb == null || deltaComparedToGroupTypePb.hasId() && groupTypePb.id != deltaComparedToGroupTypePb.id)) map[GroupType.idField] = groupTypePb.id;
-    if (groupTypePb.hasName() && (deltaComparedToGroupTypePb == null || deltaComparedToGroupTypePb.hasName() && groupTypePb.name != deltaComparedToGroupTypePb.name)) map[GroupType.nameField] = groupTypePb.name;
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (groupTypePb.hasId()) map[GroupType.idField] = groupTypePb.id;
+      if (groupTypePb.hasName()) map[GroupType.nameField] = groupTypePb.name;
+    } else  {
+      if (groupTypePb.hasId()) map[GroupType.idField] = groupTypePb.id;
+      if (groupTypePb.hasName()) map[GroupType.nameField] = groupTypePb.name;
+    }
 
     return map;
   }

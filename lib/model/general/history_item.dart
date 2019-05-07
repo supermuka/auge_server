@@ -101,26 +101,22 @@ abstract class HistoryItemUtils {
       Map<dynamic, dynamic> mP = {};
       previous.forEach((k, v) {
         if (v is Map) {
-          mP[k] = processPrevious(v /*, mP[k] ?? {} */);
+          mP[k] = processPrevious(v);
         } else {
           mP.putIfAbsent(k, () => {});
-          // mP[k].putIfAbsent(p, () => v);
-
           mP[k][previousKey] = v;
         }
       });
       return mP;
     }
 
-    Map<dynamic, dynamic> processCurrent(Map<dynamic, dynamic> current /*, Map<String, dynamic> map */) {
-      // Map<String, dynamic> mC = Map.from(map);
+    Map<dynamic, dynamic> processCurrent(Map<dynamic, dynamic> current) {
       Map<dynamic, dynamic> mC = {};
       current.forEach((k, v) {
         if (v is Map) {
-          mC[k] = processCurrent(v /*, mC[k] ?? {} */);
+          mC[k] = processCurrent(v);
         } else {
           mC.putIfAbsent(k, () => {});
-          //  mC[k].putIfAbsent(c, () => v);
           mC[k][currentKey] = v;
         }
       });
@@ -144,22 +140,37 @@ abstract class HistoryItemUtils {
       Map<dynamic, dynamic> diff = Map.from(merge);
 
       merge.forEach((k,v) {
-        if (diff[k][previousKey] is List && diff[k][currentKey] is List && DeepCollectionEquality().equals(diff[k][previousKey], diff[k][currentKey]))
-          diff.remove(k);
-        else if (diff[k][previousKey] == diff[k][currentKey]) {
-          diff.remove(k);
+        if (v is Map) {
+          if (v.containsKey(previousKey) || v.containsKey(currentKey)) {
+            if (v[previousKey] is List && v[currentKey] is List &&
+                DeepCollectionEquality().equals(v[previousKey], v[currentKey]))
+              diff.remove(k);
+            else if (v[previousKey] == v[currentKey]) {
+              diff.remove(k);
+            }
+          } else {
+            diff[k] = processOnlyDiffPreviousCurrent(v);
+          }
         }
       });
       return diff;
     }
 
+    print('previous ${previous}');
     Map<dynamic, dynamic> withP = processPrevious(previous);
+    print('withP ${withP}');
+    print('current ${current}');
     Map<dynamic, dynamic> withC = processCurrent(current);
+    print('withC ${withC}');
 
     Map<dynamic, dynamic> merge = processMerge(withP, withC);
+    print('merge ${merge}');
 
-    if (onlyDiff)
+    if (onlyDiff) {
+      print('processOnlyDiffPreviousCurrent ${processOnlyDiffPreviousCurrent(
+          merge)}');
       return processOnlyDiffPreviousCurrent(merge);
+    }
     else
       return merge;
   }

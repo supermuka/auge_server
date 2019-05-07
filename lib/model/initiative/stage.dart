@@ -51,15 +51,20 @@ class Stage {
 }
 
 abstract class StageUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(stage_pb.Stage stagePb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(stage_pb.Stage stagePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (stagePb.hasId()) map[Stage.idField] = stagePb.id;
-    if (stagePb.hasVersion()) map[Stage.versionField] = stagePb.version;
-    if (stagePb.hasName()) map[Stage.nameField] = stagePb.name;
-    if (stagePb.hasIndex()) map[Stage.indexField] = stagePb.index;
-    if (stagePb.hasState()) map[Stage.stateField] = StateUtils.fromProtoBufToModelMap(stagePb.state);
-
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (stagePb.hasId()) map[Stage.idField] = stagePb.id;
+      if (stagePb.hasName()) map[Stage.nameField] = stagePb.name;
+    } else {
+      if (stagePb.hasId()) map[Stage.idField] = stagePb.id;
+      if (stagePb.hasVersion()) map[Stage.versionField] = stagePb.version;
+      if (stagePb.hasName()) map[Stage.nameField] = stagePb.name;
+      if (stagePb.hasIndex()) map[Stage.indexField] = stagePb.index;
+      if (stagePb.hasState()) map[Stage.stateField] =
+          StateUtils.fromProtoBufToModelMap(stagePb.state, onlyIdAndSpecificationForDepthFields, true);
+    }
     return map;
   }
 }

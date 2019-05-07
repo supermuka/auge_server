@@ -272,7 +272,7 @@ class MeasureService extends MeasureServiceBase {
         // ..dateTime
           ..description = ''
          // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, MeasureUtils.fromProtoBufToModelMap(request.measure));
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, MeasureUtils.fromProtoBufToModelMap(request.measure, true));
        //   ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
 
         // Create a history item
@@ -344,7 +344,7 @@ class MeasureService extends MeasureServiceBase {
             ..description = request.measure.name
           // ..dateTime
             ..description = ''
-            ..changedValuesJson = HistoryItemUtils.changedValuesJson(MeasureUtils.fromProtoBufToModelMap(previousMeasure), MeasureUtils.fromProtoBufToModelMap(request.measure));
+            ..changedValuesJson = HistoryItemUtils.changedValuesJson(MeasureUtils.fromProtoBufToModelMap(previousMeasure, true), MeasureUtils.fromProtoBufToModelMap(request.measure, true));
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: HistoryItemService
@@ -485,7 +485,7 @@ class MeasureService extends MeasureServiceBase {
         // ..dateTime
           ..description = ''
          // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, MeasureProgressUtils.fromProtoBufToModelMap(request.measureProgress));
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, MeasureProgressUtils.fromProtoBufToModelMap(request.measureProgress, true));
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: HistoryItemService

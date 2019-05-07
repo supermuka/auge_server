@@ -96,24 +96,35 @@ class WorkItem {
     if (workItemPb.assignedTo.isNotEmpty) this.assignedTo = workItemPb.assignedTo.map((u) => User()..readFromProtoBuf(u)).toList();
 
   }
-
 }
 
 abstract class WorkItemUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItem workItemPb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItem workItemPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (workItemPb.hasId()) map[WorkItem.idField] = workItemPb.id;
-    if (workItemPb.hasVersion()) map[WorkItem.versionField] = workItemPb.version;
-    if (workItemPb.hasName()) map[WorkItem.nameField] = workItemPb.name;
-    if (workItemPb.hasDescription()) map[WorkItem.descriptionField] = workItemPb.description;
-    if (workItemPb.hasCompleted()) map[WorkItem.completedField] = workItemPb.completed;
-    if (workItemPb.hasStage()) map[WorkItem.stageField] = workItemPb.stage;
-    if (workItemPb.hasDueDate()) map[WorkItem.dueDateField] = workItemPb.dueDate;
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (workItemPb.hasId()) map[WorkItem.idField] = workItemPb.id;
+      if (workItemPb.hasName()) map[WorkItem.nameField] = workItemPb.name;
+    } else {
+      if (workItemPb.hasId()) map[WorkItem.idField] = workItemPb.id;
+      if (workItemPb.hasVersion())
+        map[WorkItem.versionField] = workItemPb.version;
+      if (workItemPb.hasName()) map[WorkItem.nameField] = workItemPb.name;
+      if (workItemPb.hasDescription())
+        map[WorkItem.descriptionField] = workItemPb.description;
+      if (workItemPb.hasCompleted())
+        map[WorkItem.completedField] = workItemPb.completed;
+      if (workItemPb.hasStage()) map[WorkItem.stageField] = workItemPb.stage;
+      if (workItemPb.hasDueDate())
+        map[WorkItem.dueDateField] = workItemPb.dueDate;
 
-    if (workItemPb.checkItems.isNotEmpty) map[WorkItem.checkItemsField] = workItemPb.checkItems.map((ci) => WorkItemCheckItemUtils.fromProtoBufToModelMap(ci)).toList();
-    if (workItemPb.assignedTo.isNotEmpty) map[WorkItem.assignedToField] = workItemPb.assignedTo.map((at) => UserUtils.fromProtoBufToModelMap(at)).toList();
-
+      if (workItemPb.checkItems.isNotEmpty) map[WorkItem.checkItemsField] =
+          workItemPb.checkItems.map((ci) =>
+              WorkItemCheckItemUtils.fromProtoBufToModelMap(ci, onlyIdAndSpecificationForDepthFields, true)).toList();
+      if (workItemPb.assignedTo.isNotEmpty) map[WorkItem.assignedToField] =
+          workItemPb.assignedTo.map((at) =>
+              UserUtils.fromProtoBufToModelMap(at, onlyIdAndSpecificationForDepthFields, true)).toList();
+    }
     return map;
   }
 }
@@ -153,15 +164,26 @@ class WorkItemCheckItem {
 }
 
 abstract class WorkItemCheckItemUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItemCheckItem workItemCheckItemPb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItemCheckItem workItemCheckItemPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (workItemCheckItemPb.hasId()) map[WorkItemCheckItem.idField] = workItemCheckItemPb.id;
-    if (workItemCheckItemPb.hasVersion()) map[WorkItemCheckItem.versionField] = workItemCheckItemPb.version;
-    if (workItemCheckItemPb.hasName()) map[WorkItemCheckItem.nameField] = workItemCheckItemPb.name;
-    if (workItemCheckItemPb.hasFinished()) map[WorkItemCheckItem.finishedField] = workItemCheckItemPb.finished;
-    if (workItemCheckItemPb.hasIndex()) map[WorkItemCheckItem.indexField] = workItemCheckItemPb.index;
-
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (workItemCheckItemPb.hasId())
+        map[WorkItemCheckItem.idField] = workItemCheckItemPb.id;
+      if (workItemCheckItemPb.hasName())
+        map[WorkItemCheckItem.nameField] = workItemCheckItemPb.name;
+    } else {
+      if (workItemCheckItemPb.hasId())
+        map[WorkItemCheckItem.idField] = workItemCheckItemPb.id;
+      if (workItemCheckItemPb.hasVersion())
+        map[WorkItemCheckItem.versionField] = workItemCheckItemPb.version;
+      if (workItemCheckItemPb.hasName())
+        map[WorkItemCheckItem.nameField] = workItemCheckItemPb.name;
+      if (workItemCheckItemPb.hasFinished())
+        map[WorkItemCheckItem.finishedField] = workItemCheckItemPb.finished;
+      if (workItemCheckItemPb.hasIndex())
+        map[WorkItemCheckItem.indexField] = workItemCheckItemPb.index;
+    }
     return map;
   }
 }

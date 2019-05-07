@@ -116,25 +116,37 @@ class Initiative  {
     if (initiativePb.workItems.isNotEmpty) this.workItems = initiativePb.workItems.map((u) => WorkItem()..readFromProtoBuf(u)).toList();
     if (initiativePb.stages.isNotEmpty) this.stages = initiativePb.stages.map((u) => Stage()..readFromProtoBuf(u)).toList();
   }
-
-
 }
 
 abstract class InitiativeUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(initiative_pb.Initiative initiativePb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(initiative_pb.Initiative initiativePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (initiativePb.hasId()) map[Initiative.idField] = initiativePb.id;
-    if (initiativePb.hasVersion()) map[Initiative.versionField] = initiativePb.version;
-    if (initiativePb.hasName()) map[Initiative.nameField] = initiativePb.name;
-    if (initiativePb.hasDescription()) map[Initiative.descriptionField] = initiativePb.description;
-    if (initiativePb.hasObjective()) map[Initiative.objectiveField] = ObjectiveUtils.fromProtoBufToModelMap(initiativePb.objective);
-    if (initiativePb.hasGroup()) map[Initiative.groupField] = GroupUtils.fromProtoBufToModelMap(initiativePb.group);
-    if (initiativePb.hasOrganization()) map[Initiative.organizationField] = OrganizationUtils.fromProtoBufToModelMap(initiativePb.organization);
-    if (initiativePb.hasLeader()) map[Initiative.leaderField] = UserUtils.fromProtoBufToModelMap(initiativePb.leader);
-    if (initiativePb.workItems.isNotEmpty) map[Initiative.workItemsField] = initiativePb.workItems.map((wi) => WorkItemUtils.fromProtoBufToModelMap(wi)).toList();
-    if (initiativePb.stages.isNotEmpty) map[Initiative.stagesField] = initiativePb.stages.map((s) => StageUtils.fromProtoBufToModelMap(s)).toList();
-
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (initiativePb.hasId()) map[Initiative.idField] = initiativePb.id;
+      if (initiativePb.hasName()) map[Initiative.nameField] = initiativePb.name;
+    } else {
+      if (initiativePb.hasId()) map[Initiative.idField] = initiativePb.id;
+      if (initiativePb.hasVersion())
+        map[Initiative.versionField] = initiativePb.version;
+      if (initiativePb.hasName()) map[Initiative.nameField] = initiativePb.name;
+      if (initiativePb.hasDescription())
+        map[Initiative.descriptionField] = initiativePb.description;
+      if (initiativePb.hasObjective()) map[Initiative.objectiveField] =
+          ObjectiveUtils.fromProtoBufToModelMap(initiativePb.objective, onlyIdAndSpecificationForDepthFields, true);
+      if (initiativePb.hasGroup()) map[Initiative.groupField] =
+          GroupUtils.fromProtoBufToModelMap(initiativePb.group, onlyIdAndSpecificationForDepthFields, true);
+      if (initiativePb.hasOrganization()) map[Initiative.organizationField] =
+          OrganizationUtils.fromProtoBufToModelMap(initiativePb.organization, onlyIdAndSpecificationForDepthFields, true);
+      if (initiativePb.hasLeader()) map[Initiative.leaderField] =
+          UserUtils.fromProtoBufToModelMap(initiativePb.leader, onlyIdAndSpecificationForDepthFields, true);
+      if (initiativePb.workItems.isNotEmpty) map[Initiative.workItemsField] =
+          initiativePb.workItems.map((wi) =>
+              WorkItemUtils.fromProtoBufToModelMap(wi, onlyIdAndSpecificationForDepthFields, true)).toList();
+      if (initiativePb.stages.isNotEmpty) map[Initiative.stagesField] =
+          initiativePb.stages.map((s) => StageUtils.fromProtoBufToModelMap(s, onlyIdAndSpecificationForDepthFields, true))
+              .toList();
+    }
     return map;
   }
 }

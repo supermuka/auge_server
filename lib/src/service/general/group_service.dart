@@ -244,7 +244,7 @@ class GroupService extends GroupServiceBase {
         // ..dateTime
           ..description = request.group.name
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, GroupUtils.fromProtoBufToModelMap(request.group));
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, GroupUtils.fromProtoBufToModelMap(request.group, true));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -338,7 +338,7 @@ class GroupService extends GroupServiceBase {
         //  ..description = request.user.name
         //  ..changedValuesJson = json.encode(group_m.Group.fromProtoBufToModelMap(previousGroup, request.group) )
         //  ..changedValuesCurrentJson = json.encode(group_m.Group.fromProtoBufToModelMap(request.group, previousGroup) );
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(GroupUtils.fromProtoBufToModelMap(previousGroup), GroupUtils.fromProtoBufToModelMap(request.group));
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(GroupUtils.fromProtoBufToModelMap(previousGroup, true), GroupUtils.fromProtoBufToModelMap(request.group, true));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -356,12 +356,12 @@ class GroupService extends GroupServiceBase {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
 
+        // It hasn´t version concurrent control, because just it is included or deleted.
         await ctx.query(
-            "DELETE FROM general.groups_users gu WHERE gu.group_id = @group_id AND gu.version = @version "
+            "DELETE FROM general.groups_users gu WHERE gu.group_id = @group_id  "
                 "RETURNING true"
             , substitutionValues: {
-          "group_id": request.group.id,
-          "version": request.group.version});
+          "group_id": request.group.id});
 
         result = await ctx.query(
             "DELETE FROM general.groups g WHERE g.id = @id AND g.version = @version "
@@ -387,7 +387,7 @@ class GroupService extends GroupServiceBase {
           ..systemFunctionIndex = SystemFunction.delete.index
         // ..dateTime
         //  ..description = request.user.name
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(GroupUtils.fromProtoBufToModelMap(request.group), {});
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(GroupUtils.fromProtoBufToModelMap(request.group, true), {});
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,

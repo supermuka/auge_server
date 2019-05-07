@@ -179,23 +179,26 @@ class UserService extends UserServiceBase {
         }
 
         // HistoryItem
-        HistoryItem  historyItem = HistoryItem()
+        HistoryItem historyItem = HistoryItem()
           ..id = Uuid().v4()
           ..user = request.authenticatedUser
           ..objectId = request.user.id
           ..objectVersion = request.user.version
-          ..objectClassName = request.user.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..objectClassName = request.user.runtimeType
+              .toString() // 'User' // objectiveRequest.runtimeType.toString(),
           ..systemModuleIndex = SystemModule.users.index
           ..systemFunctionIndex = SystemFunction.create.index
         // ..dateTime
           ..description = request.user.name
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, UserUtils.fromProtoBufToModelMap(request.user));
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(
+              {}, UserUtils.fromProtoBufToModelMap(request.user, true));
 
         // Create a history item
 
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
-
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+            substitutionValues: HistoryItemService
+                .querySubstitutionValuesCreateHistoryItem(historyItem));
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -257,7 +260,7 @@ class UserService extends UserServiceBase {
           ..systemFunctionIndex = SystemFunction.update.index
         // ..dateTime
           ..description = request.user.name
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserUtils.fromProtoBufToModelMap(previousUser), UserUtils.fromProtoBufToModelMap(request.user));
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserUtils.fromProtoBufToModelMap(previousUser, true), UserUtils.fromProtoBufToModelMap(request.user, true));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -310,7 +313,7 @@ class UserService extends UserServiceBase {
           ..systemFunctionIndex = SystemFunction.delete.index
         // ..dateTime
           ..description = request.user.name
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserUtils.fromProtoBufToModelMap(request.user), {});
+          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserUtils.fromProtoBufToModelMap(request.user, true), {});
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

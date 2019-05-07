@@ -144,6 +144,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         UserProfileOrganization userProfileOrganization = new UserProfileOrganization();
 
         userProfileOrganization.id = row[0];
+        userProfileOrganization.version = row[1];
         userProfileOrganization.user = user;
         userProfileOrganization.organization = organization;
         userProfileOrganization.authorizationRole = row[4];
@@ -187,7 +188,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           "authorization_role": request.userProfileOrganization.authorizationRole});
 
         // HistoryItem
-        /*
         HistoryItem  historyItem = HistoryItem()
           ..id = Uuid().v4()
           ..user = request.authenticatedUser
@@ -199,7 +199,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, UserProfileOrganizationUtils.fromProtoBufToModelMap(request.userProfileOrganization));
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
-*/
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');

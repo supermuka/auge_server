@@ -133,19 +133,30 @@ class Objective {
 }
 
 abstract class ObjectiveUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(objective_pb.Objective objectivePb) {
+  static Map<String, dynamic> fromProtoBufToModelMap(objective_pb.Objective objectivePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (objectivePb.hasId()) map[Objective.idField] = objectivePb.id;
-    if (objectivePb.hasVersion()) map[Objective.versionField] = objectivePb.version;
-    if (objectivePb.hasName()) map[Objective.nameField] = objectivePb.name;
-    if (objectivePb.hasDescription()) map[Objective.descriptionField] = objectivePb.description;
-    if (objectivePb.hasArchived()) map[Objective.archivedField] = objectivePb.archived;
-    if (objectivePb.hasStartDate()) map[Objective.startDateField] = objectivePb.startDate;
-    if (objectivePb.hasEndDate()) map[Objective.endDateField] = objectivePb.endDate;
-    if (objectivePb.hasOrganization()) OrganizationUtils.fromProtoBufToModelMap(objectivePb.organization);
-    if (objectivePb.hasLeader()) map[Objective.leaderField] = UserUtils.fromProtoBufToModelMap(objectivePb.leader);
-
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (objectivePb.hasId()) map[Objective.idField] = objectivePb.id;
+      if (objectivePb.hasName()) map[Objective.nameField] = objectivePb.name;
+    } else {
+      if (objectivePb.hasId()) map[Objective.idField] = objectivePb.id;
+      if (objectivePb.hasVersion())
+        map[Objective.versionField] = objectivePb.version;
+      if (objectivePb.hasName()) map[Objective.nameField] = objectivePb.name;
+      if (objectivePb.hasDescription())
+        map[Objective.descriptionField] = objectivePb.description;
+      if (objectivePb.hasArchived())
+        map[Objective.archivedField] = objectivePb.archived;
+      if (objectivePb.hasStartDate())
+        map[Objective.startDateField] = objectivePb.startDate;
+      if (objectivePb.hasEndDate())
+        map[Objective.endDateField] = objectivePb.endDate;
+      if (objectivePb.hasOrganization()) OrganizationUtils
+          .fromProtoBufToModelMap(objectivePb.organization, onlyIdAndSpecificationForDepthFields, true);
+      if (objectivePb.hasLeader()) map[Objective.leaderField] =
+          UserUtils.fromProtoBufToModelMap(objectivePb.leader, onlyIdAndSpecificationForDepthFields, true);
+    }
     return map;
   }
 }
