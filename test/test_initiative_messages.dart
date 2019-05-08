@@ -64,7 +64,7 @@ void main() {
       });
 
       test('Call fromProtoBufToModelMap.', () async {
-        Map<String, dynamic> m = stage_m.StageUtils.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = stage_m.Stage.fromProtoBufToModelMap(proto);
         expect(m[stage_m.Stage.idField], equals(proto.id));
         expect(m[stage_m.Stage.versionField], equals(proto.version));
         expect(m[stage_m.Stage.nameField], equals(proto.name));
@@ -113,7 +113,7 @@ void main() {
       });
 
       test('Call fromProtoBufToModelMap.', () async {
-        Map<String, dynamic> m = state_m.StateUtils.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = state_m.State.fromProtoBufToModelMap(proto);
         expect(m[state_m.State.idField], equals(proto.id));
         expect(m[state_m.State.versionField], equals(proto.version));
         expect(m[state_m.State.nameField], equals(proto.name));
@@ -184,7 +184,7 @@ void main() {
       });
 
       test('Call fromProtoBufToModelMap.', () async {
-        Map<String, dynamic> m = initiative_m.InitiativeUtils.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = initiative_m.Initiative.fromProtoBufToModelMap(proto);
         expect(m[initiative_m.Initiative.idField], equals(proto.id));
         expect(m[initiative_m.Initiative.versionField], equals(proto.version));
         expect(m[initiative_m.Initiative.nameField], equals(proto.name));
@@ -251,7 +251,7 @@ void main() {
       });
 
       test('Call fromProtoBufToModelMap.', () async {
-        Map<String, dynamic> m = work_item_m.WorkItemUtils.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = work_item_m.WorkItem.fromProtoBufToModelMap(proto);
 
         expect(m[work_item_m.WorkItem.idField], equals(proto.id));
         expect(m[work_item_m.WorkItem.versionField], equals(proto.version));

@@ -19,6 +19,7 @@ import 'package:auge_server/src/protos/generated/objective/objective.pb.dart' as
 
 /// Domain model class to represent an objective
 class Objective {
+  static final String className = 'Objective';
 
   // Base
   static final String idField = 'id';
@@ -130,9 +131,7 @@ class Objective {
     if (objectivePb.hasLeader()) this.leader = User()..readFromProtoBuf(objectivePb.leader);
 
   }
-}
 
-abstract class ObjectiveUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(objective_pb.Objective objectivePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
@@ -152,10 +151,10 @@ abstract class ObjectiveUtils {
         map[Objective.startDateField] = objectivePb.startDate;
       if (objectivePb.hasEndDate())
         map[Objective.endDateField] = objectivePb.endDate;
-      if (objectivePb.hasOrganization()) OrganizationUtils
+      if (objectivePb.hasOrganization()) Organization
           .fromProtoBufToModelMap(objectivePb.organization, onlyIdAndSpecificationForDepthFields, true);
       if (objectivePb.hasLeader()) map[Objective.leaderField] =
-          UserUtils.fromProtoBufToModelMap(objectivePb.leader, onlyIdAndSpecificationForDepthFields, true);
+          User.fromProtoBufToModelMap(objectivePb.leader, onlyIdAndSpecificationForDepthFields, true);
     }
     return map;
   }

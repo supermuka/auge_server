@@ -88,9 +88,6 @@ class HistoryItem {
     if (historyItemPb.hasChangedValuesJson()) this.changedValues = json.decode(historyItemPb.changedValuesJson);
 
   }
-}
-
-abstract class HistoryItemUtils {
 
   static const previousKey = 'p', currentKey = 'c';
 

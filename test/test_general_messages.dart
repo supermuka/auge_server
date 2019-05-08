@@ -54,7 +54,7 @@ void main() {
       });
 
       test('Organization entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = organization_m.OrganizationUtils.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = organization_m.Organization.fromProtoBufToModelMap(proto);
         expect(m[organization_m.Organization.idField], equals(proto.id));
         expect(m[organization_m.Organization.versionField], equals(proto.version));
         expect(m[organization_m.Organization.nameField], equals(proto.name));
@@ -102,7 +102,7 @@ void main() {
       });
 
       test('User entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = user_m.UserUtils.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = user_m.User.fromProtoBufToModelMap(proto);
         expect(m[user_m.User.idField], equals(proto.id));
         expect(m[user_m.User.versionField], equals(proto.version));
         expect(m[user_m.User.nameField], equals(proto.name));
@@ -147,7 +147,7 @@ void main() {
       });
 
       test('UserProfileOrganization entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = user_profile_organization_m.UserProfileOrganizationUtils.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(proto);
         expect(m[user_profile_organization_m.UserProfileOrganization.idField], equals(proto.id));
         expect(m[user_profile_organization_m.UserProfileOrganization.versionField], equals(proto.version));
         expect(m[user_profile_organization_m.UserProfileOrganization.userField][user_m.User.idField], equals(proto.user.id));
@@ -204,7 +204,7 @@ void main() {
       });
 
       test('Group entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = group_m.GroupUtils.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = group_m.Group.fromProtoBufToModelMap(proto);
         expect(m[group_m.Group.idField], equals(proto.id));
         expect(m[group_m.Group.versionField], equals(proto.version));
         expect(m[group_m.Group.nameField], equals(proto.name));

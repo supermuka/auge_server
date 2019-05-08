@@ -10,6 +10,7 @@ import 'package:auge_server/src/protos/generated/general/group.pb.dart' as group
 
 /// Domain model class to represent a group
 class Group {
+  static final String className = 'Group';
 
   // Base fields
   static final String idField = 'id';
@@ -60,9 +61,7 @@ class Group {
     if (groupPb.hasLeader()) this.leader = User()..readFromProtoBuf(groupPb.leader);
     if (groupPb.members.isNotEmpty) this.members = groupPb.members.map((u) => User()..readFromProtoBuf(u)).toList();
   }
-}
 
-abstract class GroupUtils {
 
   static Map<String, dynamic> fromProtoBufToModelMap(group_pb.Group groupPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
@@ -76,20 +75,21 @@ abstract class GroupUtils {
       if (groupPb.hasName()) map[Group.nameField] = groupPb.name;
       if (groupPb.hasActive()) map[Group.activeField] = groupPb.active;
       if (groupPb.hasOrganization()) map[Group.organizationField] =
-          OrganizationUtils.fromProtoBufToModelMap(groupPb.organization, onlyIdAndSpecificationForDepthFields, true);
+          Organization.fromProtoBufToModelMap(groupPb.organization, onlyIdAndSpecificationForDepthFields, true);
       if (groupPb.hasGroupType()) map[Group.groupTypeField] =
-          GroupTypeUtils.fromProtoBufToModelMap(groupPb.groupType, onlyIdAndSpecificationForDepthFields, true);
+          GroupType.fromProtoBufToModelMap(groupPb.groupType, onlyIdAndSpecificationForDepthFields, true);
       if (groupPb.hasSuperGroup()) map[Group.superGroupField] =
-          GroupUtils.fromProtoBufToModelMap(groupPb.superGroup, onlyIdAndSpecificationForDepthFields, true);
+          Group.fromProtoBufToModelMap(groupPb.superGroup, onlyIdAndSpecificationForDepthFields, true);
       if (groupPb.hasLeader()) map[Group.leaderField] =
-          UserUtils.fromProtoBufToModelMap(groupPb.leader, onlyIdAndSpecificationForDepthFields, true);
+          User.fromProtoBufToModelMap(groupPb.leader, onlyIdAndSpecificationForDepthFields, true);
       if (groupPb.members.isNotEmpty) map[Group.membersField] =
-          groupPb.members.map((u) => UserUtils.fromProtoBufToModelMap(u, onlyIdAndSpecificationForDepthFields, true))
+          groupPb.members.map((u) => User.fromProtoBufToModelMap(u, onlyIdAndSpecificationForDepthFields, true))
               .toList();
     }
 
     return map;
   }
+
 }
 
 /// Domain model class to represent a group type
@@ -114,9 +114,6 @@ class GroupType {
     if (groupPb.hasName()) this.name = groupPb.name;
   }
 
-}
-
-abstract class GroupTypeUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(group_pb.GroupType groupTypePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 

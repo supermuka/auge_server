@@ -9,6 +9,7 @@ import 'package:auge_server/src/protos/generated/general/user_profile_organizati
 
 /// Domain model class to represent a relationship between users and organizations
 class UserProfileOrganization {
+  static final String className = 'UserProfileOrganization';
 
   // Base fields
   static final String idField = 'id';
@@ -19,10 +20,14 @@ class UserProfileOrganization {
   // Specific fields
   static final String authorizationRoleField = 'authorizationRole';
   int authorizationRole;
-  static final String userField = 'userRole';
+  static final String userField = 'user';
   User user;
-  static final String organizationField = 'organizationRole';
+  static final String organizationField = 'organization';
   Organization organization;
+
+  UserProfileOrganization() {
+    user = User();
+  }
 
   user_profile_organization_pb.UserProfileOrganization writeToProtoBuf() {
     user_profile_organization_pb.UserProfileOrganization userProfileOrganizationPb = user_profile_organization_pb.UserProfileOrganization();
@@ -43,11 +48,6 @@ class UserProfileOrganization {
     if (userProfileOrganizationPb.hasUser()) this.user = User()..readFromProtoBuf(userProfileOrganizationPb.user);
     if (userProfileOrganizationPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(userProfileOrganizationPb.organization);
   }
-
-
-}
-
-abstract class UserProfileOrganizationUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(user_profile_organization_pb.UserProfileOrganization userProfileOrganizationPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
@@ -56,7 +56,7 @@ abstract class UserProfileOrganizationUtils {
         map[UserProfileOrganization.idField] = userProfileOrganizationPb.id;
       if (userProfileOrganizationPb.hasUser()) {
         map[UserProfileOrganization.userField] =
-            UserUtils.fromProtoBufToModelMap(userProfileOrganizationPb.user, onlyIdAndSpecificationForDepthFields, true);
+            User.fromProtoBufToModelMap(userProfileOrganizationPb.user, onlyIdAndSpecificationForDepthFields, true);
       }
     } else {
       if (userProfileOrganizationPb.hasId())
@@ -66,10 +66,10 @@ abstract class UserProfileOrganizationUtils {
             userProfileOrganizationPb.version;
       if (userProfileOrganizationPb.hasUser())
         map[UserProfileOrganization.userField] =
-            UserUtils.fromProtoBufToModelMap(userProfileOrganizationPb.user, onlyIdAndSpecificationForDepthFields, true);
+            User.fromProtoBufToModelMap(userProfileOrganizationPb.user, onlyIdAndSpecificationForDepthFields, true);
       if (userProfileOrganizationPb.hasOrganization())
         map[UserProfileOrganization.organizationField] =
-            OrganizationUtils.fromProtoBufToModelMap(
+            Organization.fromProtoBufToModelMap(
                 userProfileOrganizationPb.organization, onlyIdAndSpecificationForDepthFields, true);
     }
     return map;

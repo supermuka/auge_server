@@ -11,6 +11,7 @@ import 'package:auge_server/src/protos/generated/objective/measure.pb.dart' as m
 
 /// Domain model class to represent an measure
 class Measure {
+  static final String className = 'Measure';
 
   // Base - implements
   static final String idField = 'id';
@@ -142,53 +143,12 @@ class Measure {
       if (measurePb.hasCurrentValue())
         map[Measure.currentValueField] = measurePb.currentValue;
       if (measurePb.hasMeasureUnit())
-        map[Measure.measureUnitField] = MeasureUnitUtils.fromProtoBufToModelMap(
+        map[Measure.measureUnitField] = MeasureUnit.fromProtoBufToModelMap(
             measurePb.measureUnit, onlyIdAndSpecificationForDepthFields, true);
       if (measurePb.measureProgress.isNotEmpty)
         map[Measure.measureProgressField] =
             measurePb.measureProgress.map((mp) =>
-                MeasureProgressUtils.fromProtoBufToModelMap(mp, onlyIdAndSpecificationForDepthFields, true)).toList();
-    }
-
-    return map;
-  }
-
-}
-
-abstract class MeasureUtils {
-  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.Measure measurePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
-    Map<String, dynamic> map = Map();
-    if (onlyIdAndSpecificationForDepthFields && isDeep) {
-      if (measurePb.hasId())
-        map[Measure.idField] = measurePb.id;
-      if (measurePb.hasName())
-        map[Measure.nameField] = measurePb.name;
-    } else {
-      if (measurePb.hasId())
-        map[Measure.idField] = measurePb.id;
-      if (measurePb.hasVersion())
-        map[Measure.versionField] = measurePb.version;
-      if (measurePb.hasName())
-        map[Measure.nameField] = measurePb.name;
-      if (measurePb.hasDescription())
-        map[Measure.descriptionField] = measurePb.description;
-      if (measurePb.hasMetric())
-        map[Measure.metricField] = measurePb.metric;
-      if (measurePb.hasDecimalsNumber())
-        map[Measure.decimalsNumberField] = measurePb.decimalsNumber;
-      if (measurePb.hasStartValue())
-        map[Measure.startValueField] = measurePb.startValue;
-      if (measurePb.hasEndValue())
-        map[Measure.endValueField] = measurePb.endValue;
-      if (measurePb.hasCurrentValue())
-        map[Measure.currentValueField] = measurePb.currentValue;
-      if (measurePb.hasMeasureUnit())
-        map[Measure.measureUnitField] = MeasureUnitUtils.fromProtoBufToModelMap(
-            measurePb.measureUnit, onlyIdAndSpecificationForDepthFields, true);
-      if (measurePb.measureProgress.isNotEmpty)
-        map[Measure.measureProgressField] =
-            measurePb.measureProgress.map((mp) =>
-                MeasureProgressUtils.fromProtoBufToModelMap(mp, onlyIdAndSpecificationForDepthFields, true)).toList();
+                MeasureProgress.fromProtoBufToModelMap(mp, onlyIdAndSpecificationForDepthFields, true)).toList();
     }
 
     return map;
@@ -196,6 +156,8 @@ abstract class MeasureUtils {
 }
 
 class MeasureProgress {
+  static final String className = 'MeasureProgress';
+
   // Base - implements
   static final String idField = 'id';
   String id;
@@ -255,9 +217,6 @@ class MeasureProgress {
     if (measureProgressPb.hasComment())
       this.comment = measureProgressPb.comment;
   }
-}
-
-abstract class MeasureProgressUtils {
 
   static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureProgress measureProgressPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
@@ -281,10 +240,10 @@ abstract class MeasureProgressUtils {
     }
     return map;
   }
-
 }
 
 class MeasureUnit {
+  static final String className = 'MeasureUnit';
 
   static const idField = 'id';
   String id;
@@ -308,9 +267,7 @@ class MeasureUnit {
     if (measureUnitPb.hasSymbol()) this.symbol = measureUnitPb.symbol;
     if (measureUnitPb.hasName()) this.name = measureUnitPb.name;
   }
-}
 
-abstract class MeasureUnitUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureUnit measureUnitPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
@@ -328,4 +285,3 @@ abstract class MeasureUnitUtils {
     return map;
   }
 }
-

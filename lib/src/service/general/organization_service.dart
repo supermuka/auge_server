@@ -14,8 +14,8 @@ import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
-import 'package:auge_server/model/general/organization.dart' show OrganizationUtils;
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/general/organization.dart' as organization_m;
 
 import 'package:uuid/uuid.dart';
 
@@ -137,7 +137,7 @@ class OrganizationService extends OrganizationServiceBase {
         // ..dateTime
           ..description = request.organization.name
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, OrganizationUtils.fromProtoBufToModelMap(request.organization, true));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, organization_m.Organization.fromProtoBufToModelMap(request.organization, true));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -179,7 +179,7 @@ class OrganizationService extends OrganizationServiceBase {
           ..systemFunctionIndex = SystemFunction.update.index
         // ..dateTime
         //  ..description = request.user.name
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(OrganizationUtils.fromProtoBufToModelMap(previousOrganization, true), OrganizationUtils.fromProtoBufToModelMap(request.organization, true));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(organization_m.Organization.fromProtoBufToModelMap(previousOrganization, true), organization_m.Organization.fromProtoBufToModelMap(request.organization, true));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -215,7 +215,7 @@ class OrganizationService extends OrganizationServiceBase {
           ..systemFunctionIndex = SystemFunction.delete.index
         // ..dateTime
         //  ..description = request.user.name
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(OrganizationUtils.fromProtoBufToModelMap(request.organization, true), {});
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(organization_m.Organization.fromProtoBufToModelMap(request.organization, true), {});
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,

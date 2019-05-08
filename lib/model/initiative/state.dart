@@ -14,6 +14,8 @@ const _colorLightness = 'lightness';
 
 /// Domain model class to represent an initiative  phase (backlog, workflow, archive)
 class State {
+  static final String className = 'State';
+
   // Base
   static final String idField = 'id';
   String id;
@@ -58,9 +60,7 @@ class State {
     if (statePb.color.isNotEmpty) this.color = statePb.color;
 
   }
-}
 
-abstract class StateUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(state_pb.State statePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 

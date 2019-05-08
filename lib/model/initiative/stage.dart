@@ -10,6 +10,8 @@ import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart' as st
 
 /// Domain model class to represent an initiative stage (activies, bucket or swimlanes)
 class Stage {
+  static final String className = 'Stage';
+
   // Base
   static final String idField = 'id';
   String id;
@@ -48,9 +50,7 @@ class Stage {
     if (stagePb.hasState()) this.state = State()..readFromProtoBuf(stagePb.state);
 
   }
-}
 
-abstract class StageUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(stage_pb.Stage stagePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
@@ -63,7 +63,7 @@ abstract class StageUtils {
       if (stagePb.hasName()) map[Stage.nameField] = stagePb.name;
       if (stagePb.hasIndex()) map[Stage.indexField] = stagePb.index;
       if (stagePb.hasState()) map[Stage.stateField] =
-          StateUtils.fromProtoBufToModelMap(stagePb.state, onlyIdAndSpecificationForDepthFields, true);
+          State.fromProtoBufToModelMap(stagePb.state, onlyIdAndSpecificationForDepthFields, true);
     }
     return map;
   }

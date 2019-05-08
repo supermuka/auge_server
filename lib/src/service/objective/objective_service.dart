@@ -18,8 +18,8 @@ import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dar
 
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
-import 'package:auge_server/model/objective/objective.dart' show ObjectiveUtils;
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/objective/objective.dart' as objective_m;
 import 'package:auge_server/shared/rpc_error_message.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
@@ -289,7 +289,7 @@ class ObjectiveService extends ObjectiveServiceBase {
         // ..dateTime
           ..description = ''
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, ObjectiveUtils.fromProtoBufToModelMap(request.objective, true));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, objective_m.Objective.fromProtoBufToModelMap(request.objective, true));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -359,7 +359,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             ..systemFunctionIndex = SystemFunction.update.index
           // ..dateTime
             ..description = ''
-            ..changedValuesJson = HistoryItemUtils.changedValuesJson(ObjectiveUtils.fromProtoBufToModelMap(previousObjective, true), ObjectiveUtils.fromProtoBufToModelMap(request.objective, true));
+            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), objective_m.Objective.fromProtoBufToModelMap(request.objective, true));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

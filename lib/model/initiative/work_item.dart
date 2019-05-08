@@ -17,6 +17,8 @@ import 'package:auge_server/src/protos/generated/initiative/work_item.pb.dart' a
 
 /// Domain model class to represent an initiative item work (task, issue, feature, etc.)
 class WorkItem {
+  static final String className = 'WorkItem';
+
   // Base
   static final String idField = 'id';
   String id;
@@ -96,9 +98,7 @@ class WorkItem {
     if (workItemPb.assignedTo.isNotEmpty) this.assignedTo = workItemPb.assignedTo.map((u) => User()..readFromProtoBuf(u)).toList();
 
   }
-}
 
-abstract class WorkItemUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItem workItemPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
@@ -120,10 +120,10 @@ abstract class WorkItemUtils {
 
       if (workItemPb.checkItems.isNotEmpty) map[WorkItem.checkItemsField] =
           workItemPb.checkItems.map((ci) =>
-              WorkItemCheckItemUtils.fromProtoBufToModelMap(ci, onlyIdAndSpecificationForDepthFields, true)).toList();
+              WorkItemCheckItem.fromProtoBufToModelMap(ci, onlyIdAndSpecificationForDepthFields, true)).toList();
       if (workItemPb.assignedTo.isNotEmpty) map[WorkItem.assignedToField] =
           workItemPb.assignedTo.map((at) =>
-              UserUtils.fromProtoBufToModelMap(at, onlyIdAndSpecificationForDepthFields, true)).toList();
+              User.fromProtoBufToModelMap(at, onlyIdAndSpecificationForDepthFields, true)).toList();
     }
     return map;
   }
@@ -161,9 +161,7 @@ class WorkItemCheckItem {
     if (workItemCheckItemPb.hasFinished()) this.finished = workItemCheckItemPb.finished;
     if (workItemCheckItemPb.hasIndex()) this.index = workItemCheckItemPb.index;
   }
-}
 
-abstract class WorkItemCheckItemUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItemCheckItem workItemCheckItemPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 

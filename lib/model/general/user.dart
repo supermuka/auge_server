@@ -8,6 +8,7 @@ import 'package:auge_server/src/protos/generated/general/user.pb.dart' as user_p
 
 /// Domain model class to represent an user account
 class User {
+  static final String className = 'User';
 
   User() {
     userProfile = UserProfile();
@@ -54,9 +55,7 @@ class User {
     if (userPb.hasPassword()) this.password = userPb.password;
     if (userPb.hasUserProfile()) this.userProfile = UserProfile()..readFromProtoBuf(userPb.userProfile);
   }
-}
 
-abstract class UserUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(user_pb.User userPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
@@ -72,7 +71,7 @@ abstract class UserUtils {
       if (userPb.hasPassword()) map[User.passwordField] = userPb.password;
       if (userPb.hasUserProfile()) {
         map[User.userProfileField] =
-            UserProfileUtils.fromProtoBufToModelMap(
+            UserProfile.fromProtoBufToModelMap(
                 userPb.userProfile, onlyIdAndSpecificationForDepthFields,
                 false); // here isDeep is false, because UserProfile is like an extention
 
@@ -84,6 +83,7 @@ abstract class UserUtils {
 
 /// Domain model class to represent an user account profile
 class UserProfile {
+  static final String className = 'UserProfile';
 
   // Super Admin does not need authorization. It is SAAS administration and has access to full data and functions
   // bool isSuperAdmin = false;
@@ -113,9 +113,7 @@ class UserProfile {
     if (userProfilePb.hasImage()) this.image = userProfilePb.image;
     if (userProfilePb.hasIdiomLocale()) this.idiomLocale = userProfilePb.idiomLocale;
   }
-}
 
-abstract class UserProfileUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(user_pb.UserProfile userProfilePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
@@ -132,4 +130,3 @@ abstract class UserProfileUtils {
     return map;
   }
 }
-

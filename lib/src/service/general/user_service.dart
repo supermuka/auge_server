@@ -11,8 +11,8 @@ import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
-import 'package:auge_server/model/general/user.dart' show UserUtils;
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/general/user.dart' as user_m;
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 
@@ -191,8 +191,8 @@ class UserService extends UserServiceBase {
         // ..dateTime
           ..description = request.user.name
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(
-              {}, UserUtils.fromProtoBufToModelMap(request.user, true));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(
+              {}, user_m.User.fromProtoBufToModelMap(request.user, true));
 
         // Create a history item
 
@@ -260,7 +260,7 @@ class UserService extends UserServiceBase {
           ..systemFunctionIndex = SystemFunction.update.index
         // ..dateTime
           ..description = request.user.name
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserUtils.fromProtoBufToModelMap(previousUser, true), UserUtils.fromProtoBufToModelMap(request.user, true));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(user_m.User.fromProtoBufToModelMap(previousUser, true), user_m.User.fromProtoBufToModelMap(request.user, true));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -313,7 +313,7 @@ class UserService extends UserServiceBase {
           ..systemFunctionIndex = SystemFunction.delete.index
         // ..dateTime
           ..description = request.user.name
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserUtils.fromProtoBufToModelMap(request.user, true), {});
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(user_m.User.fromProtoBufToModelMap(request.user, true), {});
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));

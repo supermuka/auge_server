@@ -16,6 +16,8 @@ import 'package:auge_server/src/protos/generated/initiative/initiative.pb.dart' 
 
 /// Domain model class to represent an initiative (action plan, projects)
 class Initiative  {
+  static final String className = 'Initiative';
+
   // Base
   static final String idField = 'id';
   String id;
@@ -116,9 +118,7 @@ class Initiative  {
     if (initiativePb.workItems.isNotEmpty) this.workItems = initiativePb.workItems.map((u) => WorkItem()..readFromProtoBuf(u)).toList();
     if (initiativePb.stages.isNotEmpty) this.stages = initiativePb.stages.map((u) => Stage()..readFromProtoBuf(u)).toList();
   }
-}
 
-abstract class InitiativeUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(initiative_pb.Initiative initiativePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
@@ -133,18 +133,18 @@ abstract class InitiativeUtils {
       if (initiativePb.hasDescription())
         map[Initiative.descriptionField] = initiativePb.description;
       if (initiativePb.hasObjective()) map[Initiative.objectiveField] =
-          ObjectiveUtils.fromProtoBufToModelMap(initiativePb.objective, onlyIdAndSpecificationForDepthFields, true);
+          Objective.fromProtoBufToModelMap(initiativePb.objective, onlyIdAndSpecificationForDepthFields, true);
       if (initiativePb.hasGroup()) map[Initiative.groupField] =
-          GroupUtils.fromProtoBufToModelMap(initiativePb.group, onlyIdAndSpecificationForDepthFields, true);
+          Group.fromProtoBufToModelMap(initiativePb.group, onlyIdAndSpecificationForDepthFields, true);
       if (initiativePb.hasOrganization()) map[Initiative.organizationField] =
-          OrganizationUtils.fromProtoBufToModelMap(initiativePb.organization, onlyIdAndSpecificationForDepthFields, true);
+          Organization.fromProtoBufToModelMap(initiativePb.organization, onlyIdAndSpecificationForDepthFields, true);
       if (initiativePb.hasLeader()) map[Initiative.leaderField] =
-          UserUtils.fromProtoBufToModelMap(initiativePb.leader, onlyIdAndSpecificationForDepthFields, true);
+          User.fromProtoBufToModelMap(initiativePb.leader, onlyIdAndSpecificationForDepthFields, true);
       if (initiativePb.workItems.isNotEmpty) map[Initiative.workItemsField] =
           initiativePb.workItems.map((wi) =>
-              WorkItemUtils.fromProtoBufToModelMap(wi, onlyIdAndSpecificationForDepthFields, true)).toList();
+              WorkItem.fromProtoBufToModelMap(wi, onlyIdAndSpecificationForDepthFields, true)).toList();
       if (initiativePb.stages.isNotEmpty) map[Initiative.stagesField] =
-          initiativePb.stages.map((s) => StageUtils.fromProtoBufToModelMap(s, onlyIdAndSpecificationForDepthFields, true))
+          initiativePb.stages.map((s) => Stage.fromProtoBufToModelMap(s, onlyIdAndSpecificationForDepthFields, true))
               .toList();
     }
     return map;

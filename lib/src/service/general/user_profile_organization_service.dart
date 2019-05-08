@@ -19,8 +19,8 @@ import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
-import 'package:auge_server/model/general/user_profile_organization.dart' show UserProfileOrganizationUtils;
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/general/user_profile_organization.dart' as user_profile_organization_m;
 
 import 'package:uuid/uuid.dart';
 
@@ -164,15 +164,58 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
   static Future<IdResponse> queryInsertUserProfileOrganization(UserProfileOrganizationRequest request) async {
 
-    if (!request.userProfileOrganization.hasId()) {
-      request.userProfileOrganization.id = new Uuid().v4();
-    }
-
-    request.userProfileOrganization.version = 0;
-
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
 
+        if (request.hasWithUserProfile() && request.withUserProfile)  {
+
+          if (!request.userProfileOrganization.user.hasId()) {
+            request.userProfileOrganization.user.id = new Uuid().v4();
+          }
+
+          request.userProfileOrganization.user.version = 0;
+
+          print('DEBUG A ${request.userProfileOrganization.user.id}');
+
+          await ctx.query(
+              "INSERT INTO general.users(id, version,name, email, password) VALUES("
+                  "@id,"
+                  "@version,"
+                  "@name,"
+                  "@email,"
+                  "@password)"
+              , substitutionValues: {
+            "id": request.userProfileOrganization.user.id,
+            "version": request.userProfileOrganization.user.version,
+            "name": request.userProfileOrganization.user.name,
+            "email": request.userProfileOrganization.user.eMail,
+            "password": request.userProfileOrganization.user.password});
+
+
+          if (request.userProfileOrganization.user.userProfile != null) {
+            await ctx.query(
+                "INSERT INTO general.users_profile(user_id, image, is_super_admin, idiom_locale) VALUES("
+                    "@id,"
+                    "@image,"
+                    "@is_super_admin,"
+                    "@idiom_locale)", substitutionValues: {
+              "id": request.userProfileOrganization.user.id,
+              "image": request.userProfileOrganization.user.userProfile.image,
+              "is_super_admin": request.userProfileOrganization.user.userProfile.isSuperAdmin,
+              "idiom_locale": request.userProfileOrganization.user.userProfile.idiomLocale});
+          }
+        }
+
+
+        if (!request.userProfileOrganization.hasId()) {
+          request.userProfileOrganization.id = new Uuid().v4();
+        }
+
+        request.userProfileOrganization.version = 0;
+
+        print('DEBUG B ${request.userProfileOrganization.id}');
+        print('DEBUG C ${request.userProfileOrganization.user.id}');
+        print('DEBUG D ${request.userProfileOrganization.organization.id}');
         await ctx.query(
             "INSERT INTO general.users_profile_organizations(id, version, user_id, organization_id, authorization_role) VALUES("
                 "@id,"
@@ -196,7 +239,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           ..objectClassName = request.userProfileOrganization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
           ..systemModuleIndex = SystemModule.users.index
           ..systemFunctionIndex = SystemFunction.create.index
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, UserProfileOrganizationUtils.fromProtoBufToModelMap(request.userProfileOrganization));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(request.userProfileOrganization));
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
 
@@ -213,11 +256,42 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
     UserProfileOrganization previousUserProfileOrganization = await querySelectUserProfileOrganization(UserProfileOrganizationGetRequest()..id = request.userProfileOrganization.id);
 
-    // increment version
-    ++request.userProfileOrganization.version;
-
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
+
+        if (request.hasWithUserProfile() && request.withUserProfile)  {
+          List<List<dynamic>> result = await ctx.query(
+              "UPDATE general.users "
+                  "SET version = @version,"
+                  "name = @name,"
+                  "email = @email,"
+                  "password = @password "
+                  " WHERE id = @id AND version = @version - 1"
+                  " RETURNING true", substitutionValues: {
+            "id": request.userProfileOrganization.user.id,
+            "version": ++request.userProfileOrganization.user.version,
+            "name": request.userProfileOrganization.user.name,
+            "email": request.userProfileOrganization.user.eMail,
+            "password": request.userProfileOrganization.user.password});
+
+          await ctx.query(
+              "UPDATE general.users_profile "
+                  "SET image = @image, "
+                  "is_super_admin = @is_super_admin, "
+                  "idiom_locale = @idiom_locale "
+                  "WHERE user_id = @user_id"
+              , substitutionValues: {
+            "user_id": request.userProfileOrganization.user.id,
+            "image": request.userProfileOrganization.user.userProfile.image,
+            "is_super_admin": request.userProfileOrganization.user.userProfile.isSuperAdmin,
+            "idiom_locale": request.userProfileOrganization.user.userProfile.idiomLocale});
+
+          // Optimistic concurrency control
+          if (result.length == 0) {
+            throw new GrpcError.failedPrecondition('Precondition Failed');
+          }
+        }
+
         List<List<dynamic>> result = await ctx.query(
               "UPDATE general.users_profile_organizations "
                   "SET version = @version, "
@@ -227,7 +301,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
                   "WHERE id = @id AND version = @version - 1 "
                   "RETURNING true", substitutionValues: {
             "id": request.userProfileOrganization.id,
-            "version": request.userProfileOrganization.version,
+            "version": ++request.userProfileOrganization.version,
             "user_id": request.userProfileOrganization.user.id,
             "organization_id": request.userProfileOrganization.organization.id,
             "authorization_role": request.userProfileOrganization.authorizationRole});
@@ -238,7 +312,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           }
 
         // HistoryItem
-        /*
         HistoryItem  historyItem = HistoryItem()
           ..id = Uuid().v4()
           ..user = request.authenticatedUser
@@ -249,11 +322,10 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           ..systemFunctionIndex = SystemFunction.update.index
         // ..dateTime
         //  ..description = request.user.name
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserProfileOrganizationUtils.fromProtoBufToModelMap(previousUserProfileOrganization), UserProfileOrganizationUtils.fromProtoBufToModelMap(request.userProfileOrganization));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(previousUserProfileOrganization), user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(request.userProfileOrganization));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
-*/
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -266,6 +338,24 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
   static Future<Empty> queryDeleteUserProfileOrganization(UserProfileOrganizationRequest request) async {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
+        if (request.hasWithUserProfile() && request.withUserProfile) {
+          await ctx.query(
+              "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id "
+              , substitutionValues: {
+            "user_id": request.userProfileOrganization.user.id});
+
+          List<List<dynamic>> result = await ctx.query(
+              "DELETE FROM general.users u WHERE u.id = @id AND u.version = @version RETURNING true"
+              , substitutionValues: {
+            "id": request.userProfileOrganization.user.id,
+            "version": request.userProfileOrganization.user.version});
+
+          // Optimistic concurrency control
+          if (result.length == 0) {
+            throw new GrpcError.failedPrecondition('Precondition Failed');
+          }
+        }
+
         await ctx.query(
             "DELETE FROM general.users_profile_organizations user_profile_organization "
             "WHERE user_profile_organization.id = @id AND user_profile_organization.version = @version "
@@ -274,7 +364,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           "version": request.userProfileOrganization.version});
 
         // HistoryItem
-        /*
         HistoryItem  historyItem = HistoryItem()
           ..id = Uuid().v4()
           ..user = request.authenticatedUser
@@ -283,11 +372,10 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           ..objectClassName = request.userProfileOrganization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
           ..systemModuleIndex = SystemModule.users.index
           ..systemFunctionIndex = SystemFunction.delete.index
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(UserProfileOrganizationUtils.fromProtoBufToModelMap(request.userProfileOrganization), {});
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(request.userProfileOrganization), {});
 
       // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
-*/
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

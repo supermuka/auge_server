@@ -62,7 +62,7 @@ void main() {
       });
 
       test('Call fromProtoBufToModelMap.', () async {
-        Map<String, dynamic> m = objective_m.ObjectiveUtils.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = objective_m.Objective.fromProtoBufToModelMap(proto);
 
         expect(m[objective_m.Objective.idField], equals(proto.id));
         expect(m[objective_m.Objective.versionField], equals(proto.version));

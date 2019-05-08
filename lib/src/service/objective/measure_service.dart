@@ -17,8 +17,8 @@ import 'package:auge_server/model/general/authorization.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
-import 'package:auge_server/model/objective/measure.dart' show MeasureUtils, MeasureProgressUtils, MeasureUnitUtils;
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/objective/measure.dart' as measure_m;
 
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
@@ -272,7 +272,7 @@ class MeasureService extends MeasureServiceBase {
         // ..dateTime
           ..description = ''
          // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, MeasureUtils.fromProtoBufToModelMap(request.measure, true));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, measure_m.Measure.fromProtoBufToModelMap(request.measure, true));
        //   ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
 
         // Create a history item
@@ -344,7 +344,7 @@ class MeasureService extends MeasureServiceBase {
             ..description = request.measure.name
           // ..dateTime
             ..description = ''
-            ..changedValuesJson = HistoryItemUtils.changedValuesJson(MeasureUtils.fromProtoBufToModelMap(previousMeasure, true), MeasureUtils.fromProtoBufToModelMap(request.measure, true));
+            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(measure_m.Measure.fromProtoBufToModelMap(previousMeasure, true), measure_m.Measure.fromProtoBufToModelMap(request.measure, true));
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: HistoryItemService
@@ -485,7 +485,7 @@ class MeasureService extends MeasureServiceBase {
         // ..dateTime
           ..description = ''
          // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, MeasureProgressUtils.fromProtoBufToModelMap(request.measureProgress, true));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress, true));
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: HistoryItemService
@@ -559,7 +559,7 @@ class MeasureService extends MeasureServiceBase {
             ..systemFunctionIndex = SystemFunction.update.index
           // ..dateTime
             ..description = ''
-            ..changedValuesJson = HistoryItemUtils.changedValuesJson(MeasureProgressUtils.fromProtoBufToModelMap(previousMeasureProgress), MeasureProgressUtils.fromProtoBufToModelMap(request.measureProgress));
+            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(measure_m.MeasureProgress.fromProtoBufToModelMap(previousMeasureProgress), measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress));
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,

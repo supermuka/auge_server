@@ -3,6 +3,7 @@
 
 import 'dart:async';
 
+import 'package:auge_server/model/general/group.dart' as prefix0;
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
@@ -19,8 +20,8 @@ import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' show HistoryItemUtils;
-import 'package:auge_server/model/general/group.dart' show GroupUtils;
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/general/group.dart' as group_m;
 
 
 import 'package:uuid/uuid.dart';
@@ -238,13 +239,13 @@ class GroupService extends GroupServiceBase {
           ..user = request.authenticatedUser
           ..objectId = request.group.id
           ..objectVersion = request.group.version
-          ..objectClassName = request.group.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
+          ..objectClassName = prefix0.Group.className // 'User' // objectiveRequest.runtimeType.toString(),
           ..systemModuleIndex = SystemModule.groups.index
           ..systemFunctionIndex = SystemFunction.create.index
         // ..dateTime
           ..description = request.group.name
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson({}, GroupUtils.fromProtoBufToModelMap(request.group, true));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, group_m.Group.fromProtoBufToModelMap(request.group, true));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -338,7 +339,7 @@ class GroupService extends GroupServiceBase {
         //  ..description = request.user.name
         //  ..changedValuesJson = json.encode(group_m.Group.fromProtoBufToModelMap(previousGroup, request.group) )
         //  ..changedValuesCurrentJson = json.encode(group_m.Group.fromProtoBufToModelMap(request.group, previousGroup) );
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(GroupUtils.fromProtoBufToModelMap(previousGroup, true), GroupUtils.fromProtoBufToModelMap(request.group, true));
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(group_m.Group.fromProtoBufToModelMap(previousGroup, true), group_m.Group.fromProtoBufToModelMap(request.group, true));
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -387,7 +388,7 @@ class GroupService extends GroupServiceBase {
           ..systemFunctionIndex = SystemFunction.delete.index
         // ..dateTime
         //  ..description = request.user.name
-          ..changedValuesJson = HistoryItemUtils.changedValuesJson(GroupUtils.fromProtoBufToModelMap(request.group, true), {});
+          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(group_m.Group.fromProtoBufToModelMap(request.group, true), {});
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,

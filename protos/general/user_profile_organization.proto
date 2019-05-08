@@ -36,6 +36,7 @@ message UserProfileOrganization {
 message UserProfileOrganizationRequest {
     UserProfileOrganization user_profile_organization = 1;
     User authenticated_user = 2;
+    bool with_user_profile = 3;
 }
 
 message UserProfileOrganizationGetRequest {
@@ -44,6 +45,7 @@ message UserProfileOrganizationGetRequest {
     string organization_id = 3;
     string e_mail = 4;
     string password = 5;
+    bool with_user_profile = 6;
 }
 
 // Response list of the organization

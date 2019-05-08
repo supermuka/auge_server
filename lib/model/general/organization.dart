@@ -6,6 +6,7 @@ import 'package:auge_server/src/protos/generated/general/organization.pb.dart' a
 
 /// Domain model class to represent an organiozation (corporate, team, etc.)
 class Organization {
+  static final String className = 'Organization';
 
   // Base fields
   static final String idField = 'id';
@@ -39,9 +40,7 @@ class Organization {
     if (organizationPb.hasCode()) this.code = organizationPb.code;
 
   }
-}
 
-abstract class OrganizationUtils {
   static Map<String, dynamic> fromProtoBufToModelMap(organization_pb.Organization organizationPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
