@@ -146,6 +146,8 @@ class UserService extends UserServiceBase {
       request.user.id = new Uuid().v4();
     }
 
+    request.user.version = 0;
+
     await (await AugeConnection.getConnection()).transaction((ctx) async {
 
       try {
@@ -159,7 +161,7 @@ class UserService extends UserServiceBase {
                 "@password)"
             , substitutionValues: {
           "id": request.user.id,
-          "version": 0,
+          "version": request.user.version,
           "name": request.user.name,
           "email": request.user.eMail,
           "password": request.user.password});

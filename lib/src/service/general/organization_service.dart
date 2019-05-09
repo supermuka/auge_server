@@ -164,7 +164,7 @@ class OrganizationService extends OrganizationServiceBase {
                 " WHERE id = @id AND version = @version - 1"
             , substitutionValues: {
           "id": request.organization.id,
-          "version": request.organization.version,
+          "version": ++request.organization.version,
           "name": request.organization.name,
           "code": request.organization.code});
 

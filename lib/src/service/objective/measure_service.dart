@@ -230,6 +230,8 @@ class MeasureService extends MeasureServiceBase {
       request.measure.id = new Uuid().v4();
     }
 
+    request.measure.version = 0;
+
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
@@ -247,7 +249,7 @@ class MeasureService extends MeasureServiceBase {
                 "@objective_id)"
             , substitutionValues: {
           "id": request.measure.id,
-          "version": 0,
+          "version": request.measure.version,
           "name": request.measure.name,
           "description": request.measure.hasDescription() ? request.measure.description : null,
           "metric": request.measure.hasMetric() ? request.measure.metric : null,
@@ -300,7 +302,7 @@ class MeasureService extends MeasureServiceBase {
         List<List<dynamic>> result;
 
           result = await ctx.query("UPDATE objective.measures "
-              " SET version = @version + 1,"
+              " SET version = @version,"
               " name = @name,"
               " description = @description,"
               " metric = @metric,"
@@ -310,11 +312,11 @@ class MeasureService extends MeasureServiceBase {
              // " current_value = @current_value,"
               " objective_id = @objective_id,"
               " measure_unit_id = @measure_unit_id,"
-              " WHERE id = @id AND version = @version"
+              " WHERE id = @id AND version = @version - 1"
               " RETURNING true"
               , substitutionValues: {
                 "id": request.measure.id,
-                "version": request.measure.version,
+                "version": ++request.measure.version,
                 "name": request.measure.name,
                 "description": request.measure.hasDescription() ? request.measure.description : null,
                 "metric": request.measure.hasMetric() ? request.measure.metric : null,
@@ -527,12 +529,12 @@ class MeasureService extends MeasureServiceBase {
                 "current_value = @current_value, "
                 "comment = @comment, "
                 "measure_id = @measure_id, "
-                "version = @version + 1"
-                "WHERE id = @id AND version = @version "
+                "version = @version"
+                "WHERE id = @id AND version = @version - 1"
                 "RETURNING true"
             , substitutionValues: {
           "id": request.measureProgress.id,
-          "version": request.measureProgress.version,
+          "version": ++request.measureProgress.version,
           "date": request.measureProgress.date == null
               ? dateTimeNow
               : request.measureProgress.date,

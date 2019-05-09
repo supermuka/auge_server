@@ -197,6 +197,8 @@ class GroupService extends GroupServiceBase {
       request.group.id = Uuid().v4();
     }
 
+    request.group.version = 0;
+
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query(
@@ -212,7 +214,7 @@ class GroupService extends GroupServiceBase {
                 "@leader_user_id)"
             , substitutionValues: {
           "id": request.group.id,
-          "version": 0,
+          "version": request.group.version,
           "name": request.group.name,
           "active": request.group.active,
           "organization_id": request.group.hasOrganization() ? request.group.organization.id : null,
@@ -270,17 +272,17 @@ class GroupService extends GroupServiceBase {
       try {
         result = await ctx.query(
             "UPDATE general.groups"
-                " SET version = @version + 1,"
+                " SET version = @version,"
                 " name = @name,"
                 " active = @active,"
                 " organization_id = @organization_id,"
                 " group_type_id = @group_type_id,"
                 " super_group_id = @super_group_id,"
                 " leader_user_id = @leader_user_id"
-                " WHERE id = @id AND version = @version"
+                " WHERE id = @id AND version = @version - 1"
                 " RETURNING true", substitutionValues: {
           "id": request.group.id,
-          "version": request.group.version,
+          "version": ++request.group.version,
           "name": request.group.name,
           "active": request.group.active,
           "organization_id": request.group.hasOrganization() ? request.group.organization.id : null,

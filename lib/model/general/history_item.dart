@@ -153,19 +153,11 @@ class HistoryItem {
       return diff;
     }
 
-    print('previous ${previous}');
     Map<dynamic, dynamic> withP = processPrevious(previous);
-    print('withP ${withP}');
-    print('current ${current}');
     Map<dynamic, dynamic> withC = processCurrent(current);
-    print('withC ${withC}');
-
     Map<dynamic, dynamic> merge = processMerge(withP, withC);
-    print('merge ${merge}');
-
     if (onlyDiff) {
-      print('processOnlyDiffPreviousCurrent ${processOnlyDiffPreviousCurrent(
-          merge)}');
+
       return processOnlyDiffPreviousCurrent(merge);
     }
     else

@@ -209,6 +209,8 @@ class WorkItemService extends WorkItemServiceBase {
       request.workItem.id = new Uuid().v4();
     }
 
+    request.workItem.version = 0;
+
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
         await ctx.query("INSERT INTO initiative.work_items"
@@ -231,7 +233,7 @@ class WorkItemService extends WorkItemServiceBase {
             "@stage_id)"
             , substitutionValues: {
               "id": request.workItem.id,
-              "version": 0,
+              "version": request.workItem.version,
               "name": request.workItem.name,
               "description": request.workItem.hasDescription() ? request.workItem.description : null,
               "due_date": request.workItem.hasDueDate() ? request.workItem.dueDate : null,
@@ -255,6 +257,7 @@ class WorkItemService extends WorkItemServiceBase {
         // Check item list
         for (WorkItemCheckItem checkItem in request.workItem.checkItems) {
           checkItem.id = new Uuid().v4();
+          checkItem.version = 0;
 
           await ctx.query("INSERT INTO initiative.work_item_check_items"
               " (id,"
@@ -270,7 +273,7 @@ class WorkItemService extends WorkItemServiceBase {
               " @work_item_id)"
               , substitutionValues: {
                 "id": checkItem.id,
-                "version": 0,
+                "version": checkItem.version,
                 "name": checkItem.name,
                 "finished": checkItem.hasFinished() ? checkItem.finished : false,
                 "work_item_id": request.workItem.id});
@@ -296,18 +299,18 @@ class WorkItemService extends WorkItemServiceBase {
         List<List<dynamic>> result;
 
         result = await ctx.query("UPDATE initiative.work_items"
-            " SET version = @version + 1, "
+            " SET version = @version, "
             " name = @name,"
             " description = @description,"
             " due_date = @due_date,"
             " completed = @completed,"
             " initiative_id = @initiative_id,"
             " stage_id = @stage_id"
-            " WHERE id = @id AND version = @version"
+            " WHERE id = @id AND version = @version - 1"
             " RETURNING true"
             , substitutionValues: {
               "id": request.workItem.id,
-              "version": request.workItem.version,
+              "version": ++request.workItem.version,
               "name": request.workItem.name,
               "description": request.workItem.hasDescription()
                   ? request.workItem.description

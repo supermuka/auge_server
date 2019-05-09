@@ -206,6 +206,8 @@ class InitiativeService extends InitiativeServiceBase {
       request.initiative.id = new Uuid().v4();
     }
 
+    request.initiative.version = 0;
+
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query(
@@ -220,7 +222,7 @@ class InitiativeService extends InitiativeServiceBase {
                 "@group_id)"
             , substitutionValues: {
           "id": request.initiative.id,
-          "version": 0,
+          "version": request.initiative.version,
           "name": request.initiative.name,
           "description": request.initiative.description,
           "organization_id": request.initiative.organization.id,
@@ -266,18 +268,18 @@ class InitiativeService extends InitiativeServiceBase {
         List<List<dynamic>> result;
 
         result = await ctx.query("UPDATE initiative.initiatives "
-          " SET version = @version + 1,"
+          " SET version = @version,"
           " name = @name,"
           " description = @description,"
           " organization_id = @organization_id,"
           " leader_user_id = @leader_user_id,"
           " objective_id = @objective_id,"
           " group_id = @group_id"
-          " WHERE id = @id AND version = @version"
+          " WHERE id = @id AND version = @version - 1"
           " RETURNING true "
           , substitutionValues: {
             "id": request.initiative.id,
-            "version": request.initiative.version,
+            "version": ++request.initiative.version,
             "name": request.initiative.name,
             "description": request.initiative.description,
             "organization_id": request.initiative.hasOrganization() ? request.initiative.organization.id : null,
@@ -374,11 +376,19 @@ class InitiativeService extends InitiativeServiceBase {
             , substitutionValues: {
           "id": request.initiative.id});
 
-        await ctx.query(
+        List<List<dynamic>> result = await ctx.query(
             "DELETE FROM initiative.initiatives initiative"
-                " WHERE initiative.id = @id"
+                " WHERE initiative.id = @id AND initiative.version = @version"
+                " RETURNING true "
             , substitutionValues: {
-          "id": request.initiative.id});
+          "id": request.initiative.id,
+          "version": request.initiative.version});
+
+        // Optimistic concurrency control
+        if (result.isEmpty) {
+          throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
+        }
+
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');

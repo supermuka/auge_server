@@ -247,6 +247,8 @@ class ObjectiveService extends ObjectiveServiceBase {
       request.objective.id = new Uuid().v4();
     }
 
+    request.objective.version = 0;
+
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query("INSERT INTO objective.objectives(id, version, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
@@ -263,7 +265,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             "@group_id)"
             , substitutionValues: {
               "id": request.objective.id,
-              "version": 0,
+              "version": request.objective.version,
               "name": request.objective.name,
               "description": request.objective.hasDescription() ?  request.objective.description : null,
               "start_date": request.objective.hasStartDate() ? request.objective.startDate : null,
@@ -315,7 +317,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
         result = await ctx.query(
             "UPDATE objective.objectives "
-                " SET version = @version + 1, "
+                " SET version = @version, "
                 " name = @name,"
                 " description = @description,"
                 " start_date = @start_date,"
@@ -325,11 +327,11 @@ class ObjectiveService extends ObjectiveServiceBase {
                 " organization_id = @organization_id,"
                 " leader_user_id = @leader_user_id,"
                 " group_id = @group_id,"
-                " WHERE id = @id and version = @version"
+                " WHERE id = @id and version = @version - 1"
                 " RETURNING true"
             , substitutionValues: {
           "id": request.objective.id,
-          "version": request.objective.version,
+          "version": ++request.objective.version,
           "name": request.objective.name,
           "description": request.objective.hasDescription() ? request.objective.description : null,
           "start_date": request.objective.hasStartDate() ? request.objective.startDate : null,
