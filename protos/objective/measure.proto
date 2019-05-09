@@ -19,7 +19,6 @@ service MeasureService {
     rpc CreateMeasure (MeasureRequest) returns (IdResponse) {}
     rpc UpdateMeasure (MeasureRequest) returns (google.protobuf.Empty) {}
     rpc DeleteMeasure (MeasureRequest) returns (google.protobuf.Empty) {}
-   // rpc SoftDeleteMeasure (Measure) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 
     rpc GetMeasureUnits (google.protobuf.Empty) returns (MeasureUnitsResponse) {}
 
@@ -29,7 +28,6 @@ service MeasureService {
     rpc CreateMeasureProgress (MeasureProgressRequest) returns (IdResponse) {}
     rpc UpdateMeasureProgress (MeasureProgressRequest) returns (google.protobuf.Empty) {}
     rpc DeleteMeasureProgress (MeasureProgressRequest) returns (google.protobuf.Empty) {}
-   // rpc SoftDeleteMeasureProgress (MeasureProgress) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 }
 
 // Message to respective domain object.
@@ -51,7 +49,7 @@ message Measure {
     // Transient
     double current_value = 10; // field calculeted on measureProgress
 
-    repeated MeasureProgress measure_progress = 13;
+    repeated MeasureProgress measure_progress = 11;
 }
 
 // Message to request param related to domain object.

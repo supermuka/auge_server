@@ -11,7 +11,6 @@ import "general/common.proto";
 import "general/organization.proto";
 import "general/group.proto";
 import "general/user.proto";
-import "general/history_item.proto";
 import "objective/measure.proto";
 
 // The service definition.
@@ -22,7 +21,6 @@ service ObjectiveService {
 
   rpc CreateObjective (ObjectiveRequest) returns (IdResponse) {}
   rpc UpdateObjective (ObjectiveRequest) returns (google.protobuf.Empty) {}
-  // rpc SoftDeleteObjective (Objective) returns (google.protobuf.Empty) {}
   rpc DeleteObjective (ObjectiveRequest) returns (google.protobuf.Empty) {}
 }
 
@@ -45,9 +43,8 @@ message Objective {
   bool archived = 11;
 
   // Transients fields.
-  repeated Objective aligned_with_children = 13;
-  repeated Measure measures = 14;
-  repeated HistoryItem history = 15;
+  repeated Objective aligned_with_children = 12;
+  repeated Measure measures = 13;
 }
 // Message to request param related to domain object.
 message ObjectiveRequest {

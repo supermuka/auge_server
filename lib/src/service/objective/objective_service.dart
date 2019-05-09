@@ -20,6 +20,8 @@ import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dar
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 import 'package:auge_server/model/objective/objective.dart' as objective_m;
+
+import 'package:auge_server/shared/common_utils.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
@@ -69,7 +71,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
   // QUERY
   // *** OBJECTIVES ***
-  // alignedToRecursiveDeep: 0 not call; 1 call once; 2 call tow, etc...
+  // alignedToRecursiveDeep: 0 not call; 1 call once; 2 call two, etc...
   static Future<List<Objective>> querySelectObjectives(ObjectiveGetRequest objectiveSelectRequest) async {
     List<List> results;
     // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
@@ -87,7 +89,6 @@ class ObjectiveService extends ObjectiveServiceBase {
 
     String queryStatementWhere = "";
     Map<String, dynamic> substitutionValues;
-
     if (objectiveSelectRequest.id != null && objectiveSelectRequest.id.isNotEmpty) {
       queryStatementWhere = " objective.id = @id";
       substitutionValues = {"id": objectiveSelectRequest.id};
@@ -99,11 +100,9 @@ class ObjectiveService extends ObjectiveServiceBase {
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.objectiveInvalidArgument );
     }
-
     if (!objectiveSelectRequest.withArchived) {
       queryStatementWhere = queryStatementWhere + " AND objective.archived <> true";
     }
-
     String queryStatement;
     if (objectiveSelectRequest.treeAlignedWithChildren) {
       queryStatement =
@@ -124,110 +123,103 @@ class ObjectiveService extends ObjectiveServiceBase {
               " WHERE " + queryStatementWhere;
     }
 
+    try {
+      results = await (await AugeConnection.getConnection()).query(
+          queryStatement, substitutionValues: substitutionValues);
 
-    results = await (await AugeConnection.getConnection()).query(
-        queryStatement, substitutionValues: substitutionValues);
+      List<Objective> objectives = new List();
+      List<Objective> objectivesTree = new List();
 
-    List<Objective> objectives = new List();
-    List<Objective> objectivesTree = new List();
+      if (results != null && results.isNotEmpty) {
+        Organization organization; // = await _augeApi.getOrganizationById(organizationId);
 
-    if (results != null && results.isNotEmpty) {
+        List<Measure> measures;
+        User leaderUser;
+        Objective alignedToObjective;
 
-      Organization organization; // = await _augeApi.getOrganizationById(organizationId);
+        Objective objective;
+        Group group;
 
-      List<Measure> measures;
-      List<HistoryItem> history;
-      User leaderUser;
-      Objective alignedToObjective;
+        for (var row in results) {
+          // Measures
 
-      Objective objective;
-      Group group;
-
-      for (var row in results) {
-        // Measures
-
-        if (row[10] != null) {
-          organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[10]);
-        }
-
-        if (row[0] != null) {
-          measures =
-          (objectiveSelectRequest.withMeasures) ? await MeasureService
-              .querySelectMeasures(MeasureGetRequest()
-            ..objectiveId = row[0]) : [];
-          history =
-          (objectiveSelectRequest.withHistory) ? await HistoryItemService
-              .querySelectHistory(HistoryItemGetRequest()..id = row[0]) : [];
-        }
-        if (row[8] != null) {
-          leaderUser = await UserService.querySelectUser(UserGetRequest()..id = row[8]..withProfile = objectiveSelectRequest.withProfile);
-        }
-
-        if (row[9] != null && objectiveSelectRequest.alignedToRecursive > 0) {
-          --objectiveSelectRequest.alignedToRecursive;
-          alignedToObjective = await ObjectiveService.querySelectObjective(objectiveSelectRequest);
-        }
-
-        if (row[11] != null) {
-          group = await GroupService.querySelectGroup(GroupGetRequest()..id = row[11]);
-        }
-
-        objective = new Objective()
-          ..id = row[0]
-          ..version = row[1]
-           ..name = row[2];
-
-        if (row[3] != null) objective.description = row[3];
-        //if (row[4] != null) objective.startDate = row[4];
-
-        if (row[4] != null) {
-          Timestamp t = Timestamp();
-          int microsecondsSinceEpoch = row[4].toUtc().microsecondsSinceEpoch;
-          t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
-          t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
-          objective.startDate = t;
-        }
-
-        //  if (row[5] != null) objective.endDate = row[5];
-        if (row[5] != null) {
-          Timestamp t = Timestamp();
-          int microsecondsSinceEpoch = row[5].toUtc().microsecondsSinceEpoch;
-          t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
-          t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
-          objective.endDate = t;
-        }
-
-
-        if (row[6] != null) objective.archived =  row[6];
-        if (organization != null) objective.organization = organization;
-        if (leaderUser != null) objective.leader = leaderUser;
-        if (measures.isNotEmpty) objective.measures.addAll(measures);
-        if (alignedToObjective != null) objective.alignedTo = alignedToObjective;
-        if (group != null) objective.group = group;
-        if (history.isNotEmpty) objective.history.addAll(history);
-
-        objectives.add(objective);
-
-        if (!objectiveSelectRequest.treeAlignedWithChildren) {
-          // Parent must be present in the list (objectives);
-          if (row[8] == null)
-            objectivesTree.add(objective);
-          else {
-            objectives
-                .singleWhere((o) => o.id == row[8])
-                ?.alignedWithChildren
-                ?.add(objective);
+          if (row[0] != null) {
+            organization = await OrganizationService.querySelectOrganization(
+                OrganizationGetRequest()
+                  ..id = row[0]);
           }
-          // objectives.singleWhere((o) => o.id == objective.alignedTo, orElse: )?.alignedWithChildren?.add(objective);
+
+          if (row[0] != null) {
+            measures =
+            (objectiveSelectRequest.withMeasures) ? await MeasureService
+                .querySelectMeasures(MeasureGetRequest()
+              ..objectiveId = row[0]) : [];
+          }
+
+          if (row[7] != null) {
+            leaderUser = await UserService.querySelectUser(UserGetRequest()
+              ..id = row[7]
+              ..withProfile = objectiveSelectRequest.withProfile);
+          }
+
+          if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0) {
+            --objectiveSelectRequest.alignedToRecursive;
+            alignedToObjective =
+            await ObjectiveService.querySelectObjective(objectiveSelectRequest.id = row[8]);
+          }
+
+          if (row[10] != null) {
+            group = await GroupService.querySelectGroup(GroupGetRequest()
+              ..id = row[10]);
+          }
+
+          objective = new Objective()
+            ..id = row[0]
+            ..version = row[1]
+            ..name = row[2];
+
+          if (row[3] != null) objective.description = row[3];
+
+          if (row[4] != null)
+            objective.startDate = CommonUtils.timestampFromDateTime(row[4].toUtc());
+
+          if (row[5] != null)
+            objective.endDate = CommonUtils.timestampFromDateTime(row[5].toUtc());
+
+          if (row[6] != null) objective.archived = row[6];
+          if (organization != null) objective.organization = organization;
+          if (leaderUser != null) objective.leader = leaderUser;
+          if (measures.isNotEmpty) objective.measures.addAll(measures);
+          if (alignedToObjective != null)
+            objective.alignedTo = alignedToObjective;
+          if (group != null) objective.group = group;
+
+          objectives.add(objective);
+
+          if (!objectiveSelectRequest.treeAlignedWithChildren) {
+            // Parent must be present in the list (objectives);
+            if (row[8] == null)
+              objectivesTree.add(objective);
+            else {
+              objectives
+                  .singleWhere((o) => o.id == row[8])
+                  ?.alignedWithChildren
+                  ?.add(objective);
+            }
+
+            // objectives.singleWhere((o) => o.id == objective.alignedTo, orElse: )?.alignedWithChildren?.add(objective);
+          }
         }
       }
+
+      return (objectiveSelectRequest.treeAlignedWithChildren)
+          ? objectivesTree ?? []
+          : objectives ?? [];
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
-    //print('DEBUG 1 ${(objectiveSelectRequest.treeAlignedWithChildren) ? objectivesTree ?? [] : objectives ?? []}');
-
-   // ObjectivesResponse o = ObjectivesResponse()..objectives.addAll((objectiveSelectRequest.treeAlignedWithChildren) ? objectivesTree ?? [] : objectives ?? []);
-    //print('DEBUG 2 ${o.objectives.length}');
-
-    return (objectiveSelectRequest.treeAlignedWithChildren) ? objectivesTree ?? [] : objectives ?? [];
   }
 
   static Future<Objective> querySelectObjective(ObjectiveGetRequest request) async {
@@ -268,8 +260,8 @@ class ObjectiveService extends ObjectiveServiceBase {
               "version": request.objective.version,
               "name": request.objective.name,
               "description": request.objective.hasDescription() ?  request.objective.description : null,
-              "start_date": request.objective.hasStartDate() ? request.objective.startDate : null,
-              "end_date": request.objective.hasEndDate() ? request.objective.endDate : null,
+              "start_date": request.objective.hasStartDate() ? CommonUtils.dateTimeFromTimestamp(request.objective.startDate) : null,
+              "end_date": request.objective.hasEndDate() ? CommonUtils.dateTimeFromTimestamp(request.objective.endDate) : null,
               "archived": request.objective.hasArchived() ? request.objective.archived : false,
               "aligned_to_objective_id": request.objective.hasAlignedTo() ? request.objective.alignedTo.id : null,
               "organization_id": request.objective.hasOrganization() ? request.objective.organization.id : null,
@@ -278,20 +270,20 @@ class ObjectiveService extends ObjectiveServiceBase {
 
             });
 
-
         // HistoryItem
-        HistoryItem historyItem;
-
-        historyItem
+        HistoryItem historyItem = HistoryItem()
           ..id = new Uuid().v4()
+          ..user = request.authenticatedUser
           ..objectId = request.objective.id
           ..objectVersion = request.objective.version
-          ..objectClassName = 'Objective' // objectiveRequest.runtimeType.toString(),
+          ..objectClassName = request.objective.runtimeType.toString()
           ..systemFunctionIndex = SystemFunction.create.index
+          ..systemModuleIndex = SystemModule.objectives.index
         // ..dateTime
-          ..description = ''
+          ..description = request.objective.name
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
           ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, objective_m.Objective.fromProtoBufToModelMap(request.objective, true));
+
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
@@ -334,8 +326,8 @@ class ObjectiveService extends ObjectiveServiceBase {
           "version": ++request.objective.version,
           "name": request.objective.name,
           "description": request.objective.hasDescription() ? request.objective.description : null,
-          "start_date": request.objective.hasStartDate() ? request.objective.startDate : null,
-          "end_date": request.objective.hasEndDate() ? request.objective.endDate : null,
+          "start_date": request.objective.hasStartDate() ? CommonUtils.dateTimeFromTimestamp(request.objective.startDate) : null,
+          "end_date": request.objective.hasEndDate() ? CommonUtils.dateTimeFromTimestamp(request.objective.endDate) : null,
           "archived": request.objective.hasArchived() ? request.objective.archived : null,
           "aligned_to_objective_id": request.objective.hasAlignedTo() ? request.objective.alignedTo.id : null,
           "organization_id": request.objective.hasOrganization() ? request.objective.organization.id : null,
@@ -350,17 +342,18 @@ class ObjectiveService extends ObjectiveServiceBase {
           throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.objectivePreconditionFailed );
         }
         else {
-          // HistoryItem
-          HistoryItem historyItem;
 
-          historyItem
+          HistoryItem historyItem = HistoryItem()
             ..id = new Uuid().v4()
+            ..user = request.authenticatedUser
             ..objectId = request.objective.id
             ..objectVersion = request.objective.version
-            ..objectClassName = 'Objective' // objectiveRequest.runtimeType.toString(),
+            ..objectClassName = request.objective.runtimeType.toString()
             ..systemFunctionIndex = SystemFunction.update.index
+            ..systemModuleIndex = SystemModule.objectives.index
           // ..dateTime
-            ..description = ''
+            ..description = request.objective.name
+          //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
             ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), objective_m.Objective.fromProtoBufToModelMap(request.objective, true));
 
           // Create a history item
@@ -377,15 +370,40 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   /// Delete an objective by [id]
-  static Future<Empty> queryDeleteObjective(ObjectiveRequest objectiveRequest) async {
+  static Future<Empty> queryDeleteObjective(ObjectiveRequest request) async {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
-        await ctx.query(
+        List<List<dynamic>> result = await ctx.query(
             "DELETE FROM objective.objectives objective"
                 " WHERE objective.id = @id"
+                " RETURING true"
             , substitutionValues: {
-          "id": objectiveRequest.objective.id});
+          "id": request.objective.id,
+          "version": request.objective.version});
+
+        // Optimistic concurrency control
+        if (result.isEmpty) {
+          throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.objectivePreconditionFailed );
+        }
+        else {
+          HistoryItem historyItem = HistoryItem()
+            ..id = new Uuid().v4()
+            ..user = request.authenticatedUser
+            ..objectId = request.objective.id
+            ..objectVersion = request.objective.version
+            ..objectClassName = request.objective.runtimeType.toString()
+            ..systemFunctionIndex = SystemFunction.delete.index
+            ..systemModuleIndex = SystemModule.objectives.index
+          // ..dateTime
+            ..description = request.objective.name
+          //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
+            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(request.objective, true), {});
+
+          // Create a history item
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+
+        }
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

@@ -1,6 +1,7 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'package:auge_server/shared/common_utils.dart';
 import 'package:collection/collection.dart';
 import 'package:fixnum/fixnum.dart';
 
@@ -187,7 +188,8 @@ class MeasureProgress {
     if (this.id != null) measureProgressPb.id = this.id;
     if (this.version != null) measureProgressPb.version = this.version;
 
-    if (this.date != null) {
+    if (this.date != null)  measureProgressPb.date =  CommonUtils.timestampFromDateTime(this.date.toUtc());
+    /*{
       Timestamp t = Timestamp();
       int microsecondsSinceEpoch = this.date
           .toUtc()
@@ -195,7 +197,7 @@ class MeasureProgress {
       t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
       t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
       measureProgressPb.date = t;
-    }
+    }*/
 
     if (this.currentValue != null)
       measureProgressPb.currentValue = this.currentValue;
@@ -208,10 +210,13 @@ class MeasureProgress {
     if (measureProgressPb.hasId()) this.id = measureProgressPb.id;
     if (measureProgressPb.hasVersion())
       this.version = measureProgressPb.version;
-    if (measureProgressPb.hasDate()) this.date =
+    if (measureProgressPb.hasDate()) this.date = CommonUtils.dateTimeFromTimestamp(measureProgressPb.date);
+    /*
         DateTime.fromMicrosecondsSinceEpoch(
             measureProgressPb.date.seconds.toInt() * 1000000 +
                 measureProgressPb.date.nanos ~/ 1000);
+
+     */
     if (measureProgressPb.hasCurrentValue())
       this.currentValue = measureProgressPb.currentValue;
     if (measureProgressPb.hasComment())

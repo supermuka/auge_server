@@ -1,6 +1,7 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'package:auge_server/shared/common_utils.dart';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:auge_server/model/initiative/stage.dart';
@@ -66,13 +67,14 @@ class WorkItem {
     if (this.description != null) workItemPb.description = this.description;
     if (this.completed != null) workItemPb.completed = this.completed;
 
-    if (this.dueDate != null) {
+    if (this.dueDate != null) workItemPb.dueDate = CommonUtils.timestampFromDateTime(this.dueDate.toUtc()); /*{
       Timestamp t = Timestamp();
       int microsecondsSinceEpoch = this.dueDate.toUtc().microsecondsSinceEpoch;
       t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
       t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
       workItemPb.dueDate = t;
     }
+    */
 
     if (this.stage != null) workItemPb.stage = this.stage.writeToProtoBuf();
 
@@ -90,9 +92,9 @@ class WorkItem {
     if (workItemPb.hasCompleted()) this.completed = workItemPb.completed;
     if (workItemPb.hasStage()) this.stage = Stage()..readFromProtoBuf(workItemPb.stage);
 
-    if (workItemPb.hasDueDate()) {
+    if (workItemPb.hasDueDate())  this.dueDate = CommonUtils.dateTimeFromTimestamp(workItemPb.dueDate); /*{
       this.dueDate = DateTime.fromMicrosecondsSinceEpoch(workItemPb.dueDate.seconds.toInt() * 1000000 + workItemPb.dueDate.nanos ~/ 1000 );
-    }
+    }*/
 
     if (workItemPb.checkItems.isNotEmpty) this.checkItems = workItemPb.checkItems.map((u) => WorkItemCheckItem()..readFromProtoBuf(u)).toList();
     if (workItemPb.assignedTo.isNotEmpty) this.assignedTo = workItemPb.assignedTo.map((u) => User()..readFromProtoBuf(u)).toList();

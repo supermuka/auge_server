@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
+import 'package:auge_server/shared/common_utils.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
 
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
@@ -18,8 +19,9 @@ class CommonService extends CommonServiceBase {
       DateTimeGetRequest dateTimeGetRequest) async {
     try {
 
-      Timestamp t = Timestamp();
+    //  Timestamp t = Timestamp();
 
+      /*
       if (dateTimeGetRequest.isUtc) {
         int microsecondsSinceEpoch = DateTime
             .now()
@@ -34,16 +36,18 @@ class CommonService extends CommonServiceBase {
         t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
         t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
       }
-      return new DateTimeResponse()..dateTime = t;
+      */
+
+      return new DateTimeResponse()..dateTime = CommonUtils.timestampFromDateTime(dateTimeGetRequest.isUtc ? DateTime
+          .now()
+          .toUtc() : DateTime
+          .now() );
+
+//      return new DateTimeResponse()..dateTime = t;
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
   }
-
-  static MapDiff(Map<dynamic, dynamic> mapA, Map<dynamic, dynamic> mapB) {
-
-
-
-  }
 }
+

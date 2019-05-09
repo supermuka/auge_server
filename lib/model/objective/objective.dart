@@ -1,13 +1,13 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-import 'package:fixnum/fixnum.dart';
-
 import 'package:auge_server/model/general/history_item.dart';
 import 'package:auge_server/model/general/organization.dart';
 import 'package:auge_server/model/general/user.dart';
 import 'package:auge_server/model/objective/measure.dart';
 import 'package:auge_server/model/general/group.dart';
+
+import 'package:auge_server/shared/common_utils.dart';
 
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -53,7 +53,6 @@ class Objective {
   // Transients fields
   List<Objective> alignedWithChildren;
   List<Measure> measures;
-  List<HistoryItem> history;
 
   Objective() {
     initializeDateFormatting(Intl.defaultLocale);
@@ -61,7 +60,6 @@ class Objective {
    // lastHistoryItem = HistoryItem();
     alignedWithChildren = List<Objective>();
     measures = List<Measure>();
-    history = List<HistoryItem>();
   }
 
   int get progress {
@@ -89,21 +87,26 @@ class Objective {
     if (this.name != null) objectivePb.name = this.name;
     if (this.description != null) objectivePb.description = this.description;
 
-    if (this.startDate != null) {
+    if (this.startDate != null)  objectivePb.startDate = CommonUtils.timestampFromDateTime(this.startDate);
+    /*{
       Timestamp t = Timestamp();
       int microsecondsSinceEpoch = this.startDate.toUtc().microsecondsSinceEpoch;
       t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
       t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
       objectivePb.startDate = t;
     }
+     */
 
-    if (this.endDate != null) {
+    if (this.endDate != null) objectivePb.endDate = CommonUtils.timestampFromDateTime(this.endDate);
+
+    /*{
       Timestamp t = Timestamp();
       int microsecondsSinceEpoch = this.endDate.toUtc().microsecondsSinceEpoch;
       t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
       t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
       objectivePb.endDate = t;
     }
+     */
 
     if (this.archived != null) objectivePb.archived = this.archived;
     if (this.organization != null) objectivePb.organization = this.organization.writeToProtoBuf();
@@ -120,11 +123,11 @@ class Objective {
     if (objectivePb.hasArchived()) this.archived = objectivePb.archived;
 
     if (objectivePb.hasStartDate()) {
-      this.startDate = DateTime.fromMicrosecondsSinceEpoch(objectivePb.startDate.seconds.toInt() * 1000000 + objectivePb.startDate.nanos ~/ 1000 );
+      this.startDate = CommonUtils.dateTimeFromTimestamp(objectivePb.startDate);
     }
 
     if (objectivePb.hasEndDate()) {
-      this.endDate = DateTime.fromMicrosecondsSinceEpoch(objectivePb.endDate.seconds.toInt() * 1000000 + objectivePb.endDate.nanos ~/ 1000 );
+      this.endDate = CommonUtils.dateTimeFromTimestamp(objectivePb.endDate);
     }
 
     if (objectivePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(objectivePb.organization);
@@ -148,9 +151,9 @@ class Objective {
       if (objectivePb.hasArchived())
         map[Objective.archivedField] = objectivePb.archived;
       if (objectivePb.hasStartDate())
-        map[Objective.startDateField] = objectivePb.startDate;
+        map[Objective.startDateField] = CommonUtils.dateTimeFromTimestamp(objectivePb.startDate);
       if (objectivePb.hasEndDate())
-        map[Objective.endDateField] = objectivePb.endDate;
+        map[Objective.endDateField] = CommonUtils.dateTimeFromTimestamp(objectivePb.endDate);
       if (objectivePb.hasOrganization()) Organization
           .fromProtoBufToModelMap(objectivePb.organization, onlyIdAndSpecificationForDepthFields, true);
       if (objectivePb.hasLeader()) map[Objective.leaderField] =

@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'package:auge_server/shared/common_utils.dart';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
@@ -416,13 +417,13 @@ class MeasureService extends MeasureServiceBase {
           ..version = row[1];
 
         //  measureProgress.date = row[3]
-          if (row[2] != null) {
+          if (row[2] != null) measureProgress.date = CommonUtils.timestampFromDateTime(row[2]); /*{
             Timestamp t = Timestamp();
             int microsecondsSinceEpoch = row[2].toUtc().microsecondsSinceEpoch;
             t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
             t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
             measureProgress.date = t;
-          }
+          }*/
 
           if (row[3] != null) {
             measureProgress.currentValue = row[3];

@@ -2,6 +2,7 @@
 /// It does not have version field, necessary to concurrency control
 
 import 'dart:convert';
+import 'package:auge_server/shared/common_utils.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:collection/collection.dart';
 
@@ -50,13 +51,13 @@ class HistoryItem {
     if (this.systemModuleIndex != null) historyItemPb.systemModuleIndex = this.systemModuleIndex;
     if (this.systemFunctionIndex != null) historyItemPb.systemFunctionIndex = this.systemFunctionIndex;
 
-    if (this.dateTime != null) {
+    if (this.dateTime != null) historyItemPb.dateTime = CommonUtils.timestampFromDateTime(this.dateTime);/*{
       Timestamp t = Timestamp();
       int microsecondsSinceEpoch = this.dateTime.toUtc().microsecondsSinceEpoch;
       t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
       t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
       historyItemPb.dateTime = t;
-    }
+    }*/
 
     if (this.user != null) historyItemPb.user = this.user.writeToProtoBuf();
     if (this.description != null) historyItemPb.description = this.description;
@@ -78,7 +79,7 @@ class HistoryItem {
     if (historyItemPb.hasSystemFunctionIndex()) this.systemFunctionIndex = historyItemPb.systemFunctionIndex;
 
     if (historyItemPb.hasDateTime()) {
-      this.dateTime = DateTime.fromMicrosecondsSinceEpoch(historyItemPb.dateTime.seconds.toInt() * 1000000 + historyItemPb.dateTime.nanos ~/ 1000 );
+      this.dateTime = CommonUtils.dateTimeFromTimestamp(historyItemPb.dateTime);
     }
 
     if (historyItemPb.hasUser()) this.user = User()..readFromProtoBuf(historyItemPb.user);
@@ -165,6 +166,13 @@ class HistoryItem {
   }
 
   static changedValuesJson(Map<dynamic, dynamic> previous, Map<dynamic, dynamic> current, [bool onlyDiff = true]) {
-    return json.encode(changedValuesMap(previous, current, onlyDiff));
+    return json.encode(changedValuesMap(previous, current, onlyDiff), toEncodable: changedValuesEncode);
+  }
+
+  static dynamic changedValuesEncode(dynamic item) {
+    if(item is DateTime) {
+      return item.toIso8601String();
+    }
+    return item;
   }
 }

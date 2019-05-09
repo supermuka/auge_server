@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'package:auge_server/shared/common_utils.dart';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
@@ -106,7 +107,9 @@ class HistoryItemService extends HistoryItemServiceBase {
             ..systemFunctionIndex = row[6];
 
 
-          if (row[7] != null) {
+          if (row[7] != null) historyItem.dateTime = CommonUtils.timestampFromDateTime(row[7]);
+
+          /*{
             Timestamp timestamp = Timestamp();
             int microsecondsSinceEpoch = row[7]
                 .toUtc()
@@ -114,7 +117,7 @@ class HistoryItemService extends HistoryItemServiceBase {
             timestamp.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
             timestamp.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
             historyItem.dateTime = timestamp;
-          }
+          } */
 
           if (row[8] != null) historyItem.description = row[8];
           if (row[9] != null) historyItem.changedValuesJson = row[9];
