@@ -94,6 +94,7 @@ class Group {
 
 /// Domain model class to represent a group type
 class GroupType {
+  static final String className = 'GroupType';
 
   static const String idField = 'id';
   String id;

@@ -237,7 +237,7 @@ class MeasureProgress {
       if (measureProgressPb.hasVersion())
         map[MeasureProgress.versionField] = measureProgressPb.version;
       if (measureProgressPb.hasDate())
-        map[MeasureProgress.dateField] = measureProgressPb.date;
+        map[MeasureProgress.dateField] = CommonUtils.dateTimeFromTimestamp(measureProgressPb.date);
       if (measureProgressPb.hasCurrentValue())
         map[MeasureProgress.currentValueField] = measureProgressPb.currentValue;
       if (measureProgressPb.hasComment())

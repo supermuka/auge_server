@@ -3,11 +3,9 @@
 
 import 'dart:async';
 import 'package:auge_server/shared/common_utils.dart';
-import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
 
-import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/measure.pbgrpc.dart';
@@ -185,9 +183,9 @@ class MeasureService extends MeasureServiceBase {
       MeasureUnit measureUnit;
 
       for (var row in results) {
-        if (row[10] != null)
+        if (row[9] != null)
           //  measureUnit = await getMeasureUnitById(row[8]);
-          measureUnits = await querySelectMeasureUnits(id: row[10]);
+          measureUnits = await querySelectMeasureUnits(id: row[9]);
         if (measureUnits != null && measureUnits.length != 0) {
           measureUnit = measureUnits.first;
         }
@@ -261,19 +259,17 @@ class MeasureService extends MeasureServiceBase {
           "objective_id": request.hasObjectiveId() ? request.objectiveId : null,
         });
 
-
         // HistoryItem
-        HistoryItem historyItem;
-
-        historyItem
+        HistoryItem historyItem = HistoryItem()
           ..id = new Uuid().v4()
+          ..user = request.authenticatedUser
           ..objectId = request.measure.id
           ..objectVersion = request.measure.version
-          ..objectClassName = 'Measure' // objectiveRequest.runtimeType.toString(),
+          ..objectClassName = request.measure.runtimeType.toString()
           ..systemFunctionIndex = SystemFunction.create.index
+          ..systemModuleIndex = SystemModule.objectives.index
           ..description = request.measure.name
-        // ..dateTime
-          ..description = ''
+        // ..dateTime -
          // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
           ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, measure_m.Measure.fromProtoBufToModelMap(request.measure, true));
        //   ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
@@ -334,19 +330,16 @@ class MeasureService extends MeasureServiceBase {
           throw new GrpcError.failedPrecondition(
               RpcErrorDetailMessage.measurePreconditionFailed);
         } else {
-
-          // HistoryItem
-          HistoryItem historyItem;
-
-          historyItem
+          HistoryItem historyItem = HistoryItem()
             ..id = new Uuid().v4()
+            ..user = request.authenticatedUser
             ..objectId = request.measure.id
             ..objectVersion = request.measure.version
             ..objectClassName = 'Measure' // objectiveRequest.runtimeType.toString(),
             ..systemFunctionIndex = SystemFunction.update.index
+            ..systemModuleIndex = SystemModule.objectives.index
             ..description = request.measure.name
           // ..dateTime
-            ..description = ''
             ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(measure_m.Measure.fromProtoBufToModelMap(previousMeasure, true), measure_m.Measure.fromProtoBufToModelMap(request.measure, true));
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -395,14 +388,16 @@ class MeasureService extends MeasureServiceBase {
         " measure_id" //5
         " FROM objective.measure_progress ";
 
-    Map<String, dynamic> substitutionValues;
+    Map<String, dynamic> substitutionValues = {};
 
     if (request.hasId()) {
       queryStatement +=
       " WHERE id = @id";
+      substitutionValues['id'] = request.id;
     } else if (request.hasMeasureId()) {
       queryStatement +=
       " WHERE measure_id = @measure_id";
+      substitutionValues['measure_id'] = request.measureId;
     }
 
     results = await (await AugeConnection.getConnection()).query(
@@ -470,31 +465,28 @@ class MeasureService extends MeasureServiceBase {
             , substitutionValues: {
           "id": request.measureProgress.id,
           "version": request.measureProgress.version,
-          "date": request.measureProgress.hasDate() ?  DateTime.fromMicrosecondsSinceEpoch(request.measureProgress.date.seconds.toInt() * 1000000 + request.measureProgress.date.nanos ~/ 1000 )  : DateTime.now().toUtc(),
+          "date": request.measureProgress.hasDate() ? CommonUtils.dateTimeFromTimestamp(request.measureProgress.date) : DateTime.now().toUtc(),
           "current_value": request.measureProgress.hasCurrentValue() ? request.measureProgress.currentValue : null,
           "comment": request.measureProgress.hasComment() ? request.measureProgress.comment : null,
           "measure_id": request.hasMeasureId() ? request.measureId : null,
         });
 
-        // HistoryItem
-        HistoryItem historyItem;
 
-        historyItem
-          ..id = new Uuid().v4()
+        // HistoryItem
+        HistoryItem historyItem = HistoryItem()
+           ..id = new Uuid().v4()
+           ..user = request.authenticatedUser
           ..objectId = request.measureProgress.id
           ..objectVersion = request.measureProgress.version
-          ..objectClassName = 'MeasureProgress' // objectiveRequest.runtimeType.toString(),
+          ..objectClassName = request.measureProgress.runtimeType.toString()
           ..systemFunctionIndex = SystemFunction.create.index
+          ..systemModuleIndex = SystemModule.objectives.index
         // ..dateTime
-          ..description = ''
+        //  ..description = ''
          // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
           ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress, true));
-        // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-            substitutionValues: HistoryItemService
-                .querySubstitutionValuesCreateHistoryItem(
-                historyItem));
 
+        // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: HistoryItemService
                 .querySubstitutionValuesCreateHistoryItem(
@@ -552,16 +544,16 @@ class MeasureService extends MeasureServiceBase {
         } else {
 
           // HistoryItem
-          HistoryItem historyItem;
-
-          historyItem
+          HistoryItem historyItem = HistoryItem()
             ..id = new Uuid().v4()
+            ..user = request.authenticatedUser
             ..objectId = request.measureProgress.id
             ..objectVersion = request.measureProgress.version
-            ..objectClassName = 'MeasureProgress' // objectiveRequest.runtimeType.toString(),
+            ..objectClassName = request.measureProgress.runtimeType.toString()
             ..systemFunctionIndex = SystemFunction.update.index
+            ..systemModuleIndex = SystemModule.objectives.index
           // ..dateTime
-            ..description = ''
+          //  ..description = ''
             ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(measure_m.MeasureProgress.fromProtoBufToModelMap(previousMeasureProgress), measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress));
 
           // Create a history item
@@ -583,11 +575,41 @@ class MeasureService extends MeasureServiceBase {
   Future<Empty> queryDeleteMeasureProgress(MeasureProgressRequest request) async {
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
-        await ctx.query(
+        List<List<dynamic>> result = await ctx.query(
             "DELETE FROM objective.measure_progress measure_progress"
-                " WHERE measure_progress.id = @id"
+                " WHERE measure_progress.id = @id AND measure_progress.version = @version"
+                " RETURNING true"
             , substitutionValues: {
-          "id": request.measureProgress.id});
+          "id": request.measureProgress.id,
+          "version": request.measureProgress.version});
+
+        // Optimistic concurrency control
+        if (result.length == 0) {
+          throw new GrpcError.failedPrecondition(
+              RpcErrorDetailMessage.measurePreconditionFailed);
+        } else {
+          // HistoryItem
+          HistoryItem historyItem = HistoryItem()
+            ..id = new Uuid().v4()
+            ..user = request.authenticatedUser
+            ..objectId = request.measureProgress.id
+            ..objectVersion = request.measureProgress.version
+            ..objectClassName = request.measureProgress.runtimeType.toString()
+            ..systemFunctionIndex = SystemFunction.delete.index
+            ..systemModuleIndex = SystemModule.objectives.index
+          // ..dateTime
+          //  ..description = ''
+            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(
+                measure_m.MeasureProgress.fromProtoBufToModelMap(
+                    request.measureProgress), {});
+
+          // Create a history item
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: HistoryItemService
+                  .querySubstitutionValuesCreateHistoryItem(
+                  historyItem));
+        }
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

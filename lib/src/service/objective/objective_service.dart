@@ -139,12 +139,11 @@ class ObjectiveService extends ObjectiveServiceBase {
         Group group;
 
         for (var row in results) {
-          if (row[0] != null) {
+
             measures =
             (objectiveSelectRequest.withMeasures) ? await MeasureService
                 .querySelectMeasures(MeasureGetRequest()
               ..objectiveId = row[0]) : [];
-          }
 
           if (row[7] != null) {
             leaderUser = await UserService.querySelectUser(UserGetRequest()
@@ -158,7 +157,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             await ObjectiveService.querySelectObjective(objectiveSelectRequest.id = row[8]);
           }
 
-          // Measures
+          // Organization
           if (row[9] != null) {
             organization = await OrganizationService.querySelectOrganization(
                 OrganizationGetRequest()
