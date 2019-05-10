@@ -2,12 +2,10 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
@@ -141,14 +139,6 @@ class ObjectiveService extends ObjectiveServiceBase {
         Group group;
 
         for (var row in results) {
-          // Measures
-
-          if (row[0] != null) {
-            organization = await OrganizationService.querySelectOrganization(
-                OrganizationGetRequest()
-                  ..id = row[0]);
-          }
-
           if (row[0] != null) {
             measures =
             (objectiveSelectRequest.withMeasures) ? await MeasureService
@@ -166,6 +156,13 @@ class ObjectiveService extends ObjectiveServiceBase {
             --objectiveSelectRequest.alignedToRecursive;
             alignedToObjective =
             await ObjectiveService.querySelectObjective(objectiveSelectRequest.id = row[8]);
+          }
+
+          // Measures
+          if (row[9] != null) {
+            organization = await OrganizationService.querySelectOrganization(
+                OrganizationGetRequest()
+                  ..id = row[9]);
           }
 
           if (row[10] != null) {
@@ -318,8 +315,8 @@ class ObjectiveService extends ObjectiveServiceBase {
                 " aligned_to_objective_id = @aligned_to_objective_id,"
                 " organization_id = @organization_id,"
                 " leader_user_id = @leader_user_id,"
-                " group_id = @group_id,"
-                " WHERE id = @id and version = @version - 1"
+                " group_id = @group_id"
+                " WHERE id = @id AND version = @version - 1"
                 " RETURNING true"
             , substitutionValues: {
           "id": request.objective.id,
@@ -333,9 +330,7 @@ class ObjectiveService extends ObjectiveServiceBase {
           "organization_id": request.objective.hasOrganization() ? request.objective.organization.id : null,
           "leader_user_id": request.objective.hasLeader() ? request.objective.leader.id : null,
           "group_id": request.objective.hasGroup() ? request.objective.group.id : null,
-
         });
-
 
         // Optimistic concurrency control
         if (result.isEmpty) {
@@ -374,10 +369,12 @@ class ObjectiveService extends ObjectiveServiceBase {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
+
         List<List<dynamic>> result = await ctx.query(
             "DELETE FROM objective.objectives objective"
                 " WHERE objective.id = @id"
-                " RETURING true"
+                " AND objective.version = @version"
+                " RETURNING true"
             , substitutionValues: {
           "id": request.objective.id,
           "version": request.objective.version});

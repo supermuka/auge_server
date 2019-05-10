@@ -88,28 +88,11 @@ class Objective {
     if (this.description != null) objectivePb.description = this.description;
 
     if (this.startDate != null)  objectivePb.startDate = CommonUtils.timestampFromDateTime(this.startDate);
-    /*{
-      Timestamp t = Timestamp();
-      int microsecondsSinceEpoch = this.startDate.toUtc().microsecondsSinceEpoch;
-      t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
-      t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
-      objectivePb.startDate = t;
-    }
-     */
-
     if (this.endDate != null) objectivePb.endDate = CommonUtils.timestampFromDateTime(this.endDate);
-
-    /*{
-      Timestamp t = Timestamp();
-      int microsecondsSinceEpoch = this.endDate.toUtc().microsecondsSinceEpoch;
-      t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
-      t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
-      objectivePb.endDate = t;
-    }
-     */
 
     if (this.archived != null) objectivePb.archived = this.archived;
     if (this.organization != null) objectivePb.organization = this.organization.writeToProtoBuf();
+    if (this.group != null) objectivePb.group = this.group.writeToProtoBuf();
     if (this.leader != null) objectivePb.leader = this.leader.writeToProtoBuf();
 
     return objectivePb;
@@ -131,8 +114,8 @@ class Objective {
     }
 
     if (objectivePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(objectivePb.organization);
+    if (objectivePb.hasGroup()) this.group = Group()..readFromProtoBuf(objectivePb.group);
     if (objectivePb.hasLeader()) this.leader = User()..readFromProtoBuf(objectivePb.leader);
-
   }
 
   static Map<String, dynamic> fromProtoBufToModelMap(objective_pb.Objective objectivePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {

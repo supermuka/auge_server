@@ -175,8 +175,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
           request.userProfileOrganization.user.version = 0;
 
-          print('DEBUG A ${request.userProfileOrganization.user.id}');
-
           await ctx.query(
               "INSERT INTO general.users(id, version,name, email, password) VALUES("
                   "@id,"
@@ -213,9 +211,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
         request.userProfileOrganization.version = 0;
 
-        print('DEBUG B ${request.userProfileOrganization.id}');
-        print('DEBUG C ${request.userProfileOrganization.user.id}');
-        print('DEBUG D ${request.userProfileOrganization.organization.id}');
         await ctx.query(
             "INSERT INTO general.users_profile_organizations(id, version, user_id, organization_id, authorization_role) VALUES("
                 "@id,"
