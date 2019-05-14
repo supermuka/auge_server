@@ -5,7 +5,6 @@ syntax = "proto3";
 
 package auge.protobuf;
 
-import "general/user.proto";
 import "initiative/state.proto";
 
 // The service definition.
@@ -31,7 +30,8 @@ message Stage {
 // Request for query select
 message StageRequest {
     Stage stage = 1;
-    User authenticated_user = 2;
+    string authenticated_user_id = 2;
+    string authenticated_organization_id = 3;
 }
 
 // Response list of the stages

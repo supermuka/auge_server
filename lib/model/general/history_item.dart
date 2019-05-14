@@ -6,17 +6,18 @@ import 'package:auge_server/shared/common_utils.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:collection/collection.dart';
 
+import 'package:auge_server/model/general/organization.dart';
 import 'package:auge_server/model/general/user.dart';
-
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
-import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
 import 'package:auge_server/src/protos/generated/general/history_item.pb.dart' as history_item_pb;
 
 class HistoryItem {
   static final String idField = 'id';
   String id;
+  static final String organizationField = 'organization';
+  Organization organization;
   static final String userField = 'user';
   User user;
   static final String objectClassNameField = 'objectClassName';
@@ -58,7 +59,7 @@ class HistoryItem {
       t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
       historyItemPb.dateTime = t;
     }*/
-
+    if (this.organization != null) historyItemPb.organization = this.organization.writeToProtoBuf();
     if (this.user != null) historyItemPb.user = this.user.writeToProtoBuf();
     if (this.description != null) historyItemPb.description = this.description;
 
@@ -81,13 +82,12 @@ class HistoryItem {
     if (historyItemPb.hasDateTime()) {
       this.dateTime = CommonUtils.dateTimeFromTimestamp(historyItemPb.dateTime);
     }
-
+    if (historyItemPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(historyItemPb.organization);
     if (historyItemPb.hasUser()) this.user = User()..readFromProtoBuf(historyItemPb.user);
     if (historyItemPb.hasDescription()) this.description = historyItemPb.description;
     //if (historyItemPb.changedValues.isNotEmpty) this.changedValues = historyItemPb.changedValues;
     // Convert value from protobuf string to dart json
     if (historyItemPb.hasChangedValuesJson()) this.changedValues = json.decode(historyItemPb.changedValuesJson);
-
   }
 
   static const previousKey = 'p', currentKey = 'c';

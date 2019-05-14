@@ -20,7 +20,7 @@ service WorkItemService {
 
     rpc CreateWorkItem (WorkItemRequest) returns (IdResponse) {}
     rpc UpdateWorkItem (WorkItemRequest) returns (google.protobuf.Empty) {}
-    rpc DeleteWorkItem (WorkItemRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteWorkItem (WorkItemDeleteRequest) returns (google.protobuf.Empty) {}
    // rpc SoftDeleteWorkItem (WorkItem) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 
     rpc GetWorkItemCheckItems (WorkItemCheckItemGetRequest) returns (WorkItemCheckItemsResponse) {}
@@ -47,9 +47,17 @@ message WorkItem {
 // Request for query select
 message WorkItemRequest {
     WorkItem work_item = 1;
-    User authenticated_user = 2;
-    string initiative_id = 3; // used just to identify parent on request
+    string initiative_id = 2; // used just to identify parent on request
+    string authenticated_user_id = 3;
+    string authenticated_organization_id = 4;
+}
 
+// Request message for delete related to domain model
+message WorkItemDeleteRequest {
+    string work_item_id = 1;
+    int32 work_item_version = 2;
+    string authenticated_user_id = 3;
+    string authenticated_organization_id = 4;
 }
 
 // Response list of the WorkItems

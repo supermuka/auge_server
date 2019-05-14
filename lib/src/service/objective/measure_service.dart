@@ -69,7 +69,7 @@ class MeasureService extends MeasureServiceBase {
 
   @override
   Future<Empty> deleteMeasure(ServiceCall call,
-      MeasureRequest request) async {
+      MeasureDeleteRequest request) async {
     return queryDeleteMeasure(request);
   }
 
@@ -105,7 +105,7 @@ class MeasureService extends MeasureServiceBase {
 
   @override
   Future<Empty> deleteMeasureProgress(ServiceCall call,
-      MeasureProgressRequest request) async {
+      MeasureProgressDeleteRequest request) async {
     return queryDeleteMeasureProgress(request);
   }
 
@@ -259,26 +259,25 @@ class MeasureService extends MeasureServiceBase {
           "objective_id": request.hasObjectiveId() ? request.objectiveId : null,
         });
 
-        // HistoryItem
-        HistoryItem historyItem = HistoryItem()
-          ..id = new Uuid().v4()
-          ..user = request.authenticatedUser
-          ..objectId = request.measure.id
-          ..objectVersion = request.measure.version
-          ..objectClassName = request.measure.runtimeType.toString()
-          ..systemFunctionIndex = SystemFunction.create.index
-          ..systemModuleIndex = SystemModule.objectives.index
-          ..description = request.measure.name
-        // ..dateTime -
-         // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, measure_m.Measure.fromProtoBufToModelMap(request.measure, true));
-       //   ..changedValuesCurrentJson = json.encode(history_item_m.HistoryItem.changedValues(valuesCurrent, {}));
-
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-            substitutionValues: HistoryItemService
-                .querySubstitutionValuesCreateHistoryItem(
-                historyItem));
+            substitutionValues: {"id": Uuid().v4(),
+              "user_id": request.authenticatedUserId,
+              "organization_id": request.authenticatedOrganizationId,
+              "object_id": request.measure.id,
+              "object_version": request.measure.version,
+              "object_class_name": measure_m
+                  .Measure.className,
+              "system_module_index": SystemModule.objectives.index,
+              "system_function_index": SystemFunction.create.index,
+              "date_time": DateTime.now().toUtc(),
+              "description": request.measure.name,
+              "changed_values": history_item_m.HistoryItem
+                  .changedValuesJson({},
+                  measure_m.Measure
+                      .fromProtoBufToModelMap(
+                      request.measure))});
+
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -330,23 +329,21 @@ class MeasureService extends MeasureServiceBase {
           throw new GrpcError.failedPrecondition(
               RpcErrorDetailMessage.measurePreconditionFailed);
         } else {
-          HistoryItem historyItem = HistoryItem()
-            ..id = new Uuid().v4()
-            ..user = request.authenticatedUser
-            ..objectId = request.measure.id
-            ..objectVersion = request.measure.version
-            ..objectClassName = 'Measure' // objectiveRequest.runtimeType.toString(),
-            ..systemFunctionIndex = SystemFunction.update.index
-            ..systemModuleIndex = SystemModule.objectives.index
-            ..description = request.measure.name
-          // ..dateTime
-            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(measure_m.Measure.fromProtoBufToModelMap(previousMeasure, true), measure_m.Measure.fromProtoBufToModelMap(request.measure, true));
+
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-              substitutionValues: HistoryItemService
-                  .querySubstitutionValuesCreateHistoryItem(
-                  historyItem));
-
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.measure.id,
+                "object_version": request.measure.version,
+                "object_class_name": measure_m
+                    .Measure.className,
+                "system_module_index": SystemModule.objectives.index,
+                "system_function_index": SystemFunction.update.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": request.measure.name,
+                "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.Measure.fromProtoBufToModelMap(previousMeasure, true), measure_m.Measure.fromProtoBufToModelMap(request.measure, true))});
         }
       });
     } catch (e) {
@@ -357,14 +354,40 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Delete a [Measure] by id
-  Future<Empty> queryDeleteMeasure(MeasureRequest request) async {
+  Future<Empty> queryDeleteMeasure(MeasureDeleteRequest request) async {
+
+    Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId);
+
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
-        await ctx.query(
+        List<List<dynamic>> result =  await ctx.query(
             "DELETE FROM objective.measures measure"
-                " WHERE measure.id = @id"
+                " WHERE measure.id = @id and measure.version = @version"
+            "RETURNING true"
             , substitutionValues: {
-          "id": request.measure.id});
+          "id": request.measureId,
+          "version": request.measureVersion});
+
+        // Optimistic concurrency control
+        if (result.isEmpty) {
+          throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
+        } else {
+          // Create a history item
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.measureId,
+                "object_version": request.measureVersion,
+                "object_class_name": measure_m. Measure.className,
+                "system_module_index": SystemModule.initiatives.index,
+                "system_function_index": SystemFunction.delete.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": previousMeasure.name,
+                "changed_values": history_item_m.HistoryItem.changedValuesJson(
+                    measure_m.Measure.fromProtoBufToModelMap(
+                        previousMeasure, true), {})});
+        }
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -471,26 +494,21 @@ class MeasureService extends MeasureServiceBase {
           "measure_id": request.hasMeasureId() ? request.measureId : null,
         });
 
-
-        // HistoryItem
-        HistoryItem historyItem = HistoryItem()
-           ..id = new Uuid().v4()
-           ..user = request.authenticatedUser
-          ..objectId = request.measureProgress.id
-          ..objectVersion = request.measureProgress.version
-          ..objectClassName = request.measureProgress.runtimeType.toString()
-          ..systemFunctionIndex = SystemFunction.create.index
-          ..systemModuleIndex = SystemModule.objectives.index
-        // ..dateTime
-        //  ..description = ''
-         // ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress, true));
-
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-            substitutionValues: HistoryItemService
-                .querySubstitutionValuesCreateHistoryItem(
-                historyItem));
+            substitutionValues: {"id": Uuid().v4(),
+              "user_id": request.authenticatedUserId,
+              "organization_id": request.authenticatedOrganizationId,
+              "object_id": request.measureProgress.id,
+              "object_version": request.measureProgress.version,
+              "object_class_name": measure_m
+                  .MeasureProgress.className,
+              "system_module_index": SystemModule.objectives.index,
+              "system_function_index": SystemFunction.create.index,
+              "date_time": DateTime.now().toUtc(),
+              "description": request.measureProgress.currentValue,
+              "changed_values": history_item_m.HistoryItem.changedValuesJson({}, measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress, true))});
+
 
       });
     } catch (e) {
@@ -542,25 +560,21 @@ class MeasureService extends MeasureServiceBase {
           throw new GrpcError.failedPrecondition(
               RpcErrorDetailMessage.measurePreconditionFailed);
         } else {
-
-          // HistoryItem
-          HistoryItem historyItem = HistoryItem()
-            ..id = new Uuid().v4()
-            ..user = request.authenticatedUser
-            ..objectId = request.measureProgress.id
-            ..objectVersion = request.measureProgress.version
-            ..objectClassName = request.measureProgress.runtimeType.toString()
-            ..systemFunctionIndex = SystemFunction.update.index
-            ..systemModuleIndex = SystemModule.objectives.index
-          // ..dateTime
-          //  ..description = ''
-            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(measure_m.MeasureProgress.fromProtoBufToModelMap(previousMeasureProgress), measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress));
-
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-              substitutionValues: HistoryItemService
-                  .querySubstitutionValuesCreateHistoryItem(
-                  historyItem));
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.measureProgress.id,
+                "object_version": request.measureProgress.version,
+                "object_class_name": measure_m
+                    .MeasureProgress.className,
+                "system_module_index": SystemModule.objectives.index,
+                "system_function_index": SystemFunction.update.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": request.measureProgress.currentValue,
+                "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.MeasureProgress.fromProtoBufToModelMap(previousMeasureProgress), measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress))});
+
         }
 
       });
@@ -572,49 +586,49 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Delete a [MeasureProgress] by id
-  Future<Empty> queryDeleteMeasureProgress(MeasureProgressRequest request) async {
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
-        List<List<dynamic>> result = await ctx.query(
-            "DELETE FROM objective.measure_progress measure_progress"
-                " WHERE measure_progress.id = @id AND measure_progress.version = @version"
-                " RETURNING true"
-            , substitutionValues: {
-          "id": request.measureProgress.id,
-          "version": request.measureProgress.version});
+  Future<Empty> queryDeleteMeasureProgress(MeasureProgressDeleteRequest request) async {
 
-        // Optimistic concurrency control
-        if (result.length == 0) {
-          throw new GrpcError.failedPrecondition(
-              RpcErrorDetailMessage.measurePreconditionFailed);
-        } else {
-          // HistoryItem
-          HistoryItem historyItem = HistoryItem()
-            ..id = new Uuid().v4()
-            ..user = request.authenticatedUser
-            ..objectId = request.measureProgress.id
-            ..objectVersion = request.measureProgress.version
-            ..objectClassName = request.measureProgress.runtimeType.toString()
-            ..systemFunctionIndex = SystemFunction.delete.index
-            ..systemModuleIndex = SystemModule.objectives.index
-          // ..dateTime
-          //  ..description = ''
-            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(
-                measure_m.MeasureProgress.fromProtoBufToModelMap(
-                    request.measureProgress), {});
+    MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgressId);
 
-          // Create a history item
-          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-              substitutionValues: HistoryItemService
-                  .querySubstitutionValuesCreateHistoryItem(
-                  historyItem));
-        }
+    try {
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
+
+          List<List<dynamic>> result = await ctx.query(
+              "DELETE FROM objective.measure_progress measure_progress"
+                  " WHERE measure_progress.id = @id AND measure_progress.version = @version"
+                  " RETURNING true"
+              , substitutionValues: {
+            "id": request.measureProgressId,
+            "version": request.measureProgressVersion});
+
+          // Optimistic concurrency control
+          if (result.length == 0) {
+            throw new GrpcError.failedPrecondition(
+                RpcErrorDetailMessage.measurePreconditionFailed);
+          } else {
+            // Create a history item
+            await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+                substitutionValues: {"id": Uuid().v4(),
+                  "user_id": request.authenticatedUserId,
+                  "organization_id": request.authenticatedOrganizationId,
+                  "object_id": request.measureProgressId,
+                  "object_version": request.measureProgressVersion,
+                  "object_class_name": measure_m.MeasureProgress.className,
+                  "system_module_index": SystemModule.initiatives.index,
+                  "system_function_index": SystemFunction.delete.index,
+                  "date_time": DateTime.now().toUtc(),
+                  "description": previousMeasureProgress.currentValue,
+                  "changed_values": history_item_m.HistoryItem
+                      .changedValuesJson(
+                      measure_m.MeasureProgress.fromProtoBufToModelMap(
+                          previousMeasureProgress, true), {})});
+          }
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
   }
 }

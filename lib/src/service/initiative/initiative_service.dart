@@ -68,7 +68,7 @@ class InitiativeService extends InitiativeServiceBase {
 
   @override
   Future<Empty> deleteInitiative(ServiceCall call,
-      InitiativeRequest request) async {
+      InitiativeDeleteRequest request) async {
     return queryDeleteInitiative(request);
   }
 
@@ -247,7 +247,21 @@ class InitiativeService extends InitiativeServiceBase {
             "state_id": stage.hasState() ? stage.state.id : null,
             "initiative_id": request.initiative.id});
         }
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
+          "user_id": request.authenticatedUserId,
+          "organization_id": request.authenticatedOrganizationId,
+          "object_id": request.initiative.id,
+          "object_version": request.initiative.version,
+          "object_class_name": initiative_m.Initiative.className,
+          "system_module_index": SystemModule.initiatives.index,
+          "system_function_index": SystemFunction.create.index,
+          "date_time": DateTime.now().toUtc(),
+          "description": request.initiative.name,
+          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, initiative_m.Initiative.fromProtoBufToModelMap(request.initiative))});
       });
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -341,21 +355,27 @@ class InitiativeService extends InitiativeServiceBase {
           throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
         }
         else {
-          // HistoryItem
-          HistoryItem historyItem;
-
-          historyItem
-            ..id = new Uuid().v4()
-            ..objectId = request.initiative.id
-            ..objectVersion = request.initiative.version
-            ..objectClassName = 'Initiative' // objectiveRequest.runtimeType.toString(),
-            ..systemFunctionIndex = SystemFunction.create.index
-            // ..dateTime
-            ..description = request.initiative.name
-            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(initiative_m.Initiative.fromProtoBufToModelMap(previousInitiative, true), initiative_m.Initiative.fromProtoBufToModelMap(request.initiative, true));
-
           // Create a history item
-          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.initiative.id,
+                "object_version": request.initiative.version,
+                "object_class_name": initiative_m
+                    .Initiative.className,
+                "system_module_index": SystemModule.initiatives.index,
+                "system_function_index": SystemFunction.update.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": request.initiative.name,
+                "changed_values": history_item_m.HistoryItem
+                    .changedValuesJson(
+                    initiative_m.Initiative
+                        .fromProtoBufToModelMap(
+                        previousInitiative),
+                    initiative_m.Initiative
+                        .fromProtoBufToModelMap(
+                        request.initiative))});
         }
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -366,29 +386,48 @@ class InitiativeService extends InitiativeServiceBase {
   }
 
   /// Delete an initiative by [id]
-  static Future<Empty> queryDeleteInitiative(InitiativeRequest request) async {
+  static Future<Empty> queryDeleteInitiative(InitiativeDeleteRequest request) async {
+
+    Initiative previousInitiative = await querySelectInitiative(InitiativeGetRequest()..id = request.initiativeId);
+
     try {
+
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
             "DELETE FROM initiative.stages stage"
                 " WHERE stage.initiative_id = @id"
             , substitutionValues: {
-          "id": request.initiative.id});
+          "id": request.initiativeId});
 
         List<List<dynamic>> result = await ctx.query(
             "DELETE FROM initiative.initiatives initiative"
                 " WHERE initiative.id = @id AND initiative.version = @version"
                 " RETURNING true "
             , substitutionValues: {
-          "id": request.initiative.id,
-          "version": request.initiative.version});
+          "id": request.initiativeId,
+          "version": request.initiativeVersion});
 
         // Optimistic concurrency control
         if (result.isEmpty) {
           throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
+        } else {
+          // Create a history item
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.initiativeId,
+                "object_version": request.initiativeVersion,
+                "object_class_name": initiative_m.Initiative.className,
+                "system_module_index": SystemModule.initiatives.index,
+                "system_function_index": SystemFunction.delete.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": previousInitiative.name,
+                "changed_values": history_item_m.HistoryItem.changedValuesJson(
+                    initiative_m.Initiative.fromProtoBufToModelMap(
+                        previousInitiative, true), {})});
         }
-
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');

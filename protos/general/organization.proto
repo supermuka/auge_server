@@ -7,7 +7,6 @@ package auge.protobuf;
 
 import "google/protobuf/empty.proto";
 import "general/common.proto";
-import "general/user.proto";
 
 // The organization service definition.
 service OrganizationService {
@@ -17,8 +16,8 @@ service OrganizationService {
 
     rpc CreateOrganization (OrganizationRequest) returns (IdResponse) {}
     rpc UpdateOrganization (OrganizationRequest) returns (google.protobuf.Empty) {}
-    rpc DeleteOrganization (OrganizationRequest) returns (google.protobuf.Empty) {}
-   // rpc SoftDeleteOrganization(Organization) returns (google.protobuf.Empty) {}
+    rpc DeleteOrganization (OrganizationDeleteRequest) returns (google.protobuf.Empty) {}
+
 }
 
 // Message to respective domain object.
@@ -32,7 +31,16 @@ message Organization {
 // Message request related to domain object.
 message OrganizationRequest {
     Organization organization = 1;
-    User authenticated_user = 2;
+    string authenticated_user_id = 2;
+    string authenticated_organization_id = 3;
+}
+
+// Message request for delete related to domain object.
+message OrganizationDeleteRequest {
+    string organization_id = 1;
+    int32 organization_version = 2;
+    string authenticated_user_id = 3;
+    string authenticated_organization_id = 4;
 }
 
 // Request for query select

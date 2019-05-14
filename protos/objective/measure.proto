@@ -8,7 +8,6 @@ package auge.protobuf;
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "general/common.proto";
-import "general/user.proto";
 
 // The service definition.
 service MeasureService {
@@ -18,7 +17,7 @@ service MeasureService {
 
     rpc CreateMeasure (MeasureRequest) returns (IdResponse) {}
     rpc UpdateMeasure (MeasureRequest) returns (google.protobuf.Empty) {}
-    rpc DeleteMeasure (MeasureRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteMeasure (MeasureDeleteRequest) returns (google.protobuf.Empty) {}
 
     rpc GetMeasureUnits (google.protobuf.Empty) returns (MeasureUnitsResponse) {}
 
@@ -27,7 +26,7 @@ service MeasureService {
 
     rpc CreateMeasureProgress (MeasureProgressRequest) returns (IdResponse) {}
     rpc UpdateMeasureProgress (MeasureProgressRequest) returns (google.protobuf.Empty) {}
-    rpc DeleteMeasureProgress (MeasureProgressRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteMeasureProgress (MeasureProgressDeleteRequest) returns (google.protobuf.Empty) {}
 }
 
 // Message to respective domain object.
@@ -56,7 +55,16 @@ message Measure {
 message MeasureRequest {
     Measure measure = 1;
     string objective_id = 2; // used just to identify parent on request
-    User authenticated_user = 3;
+    string authenticated_user_id = 3;
+    string authenticated_organization_id = 4;
+}
+
+// Message request for delete related to domain object.
+message MeasureDeleteRequest {
+    string measure_id = 1;
+    int32 measure_version = 2;
+    string authenticated_user_id = 3;
+    string authenticated_organization_id = 4;
 }
 
 // Response list of the measures
@@ -102,8 +110,16 @@ message MeasureProgress {
 message MeasureProgressRequest {
     MeasureProgress measure_progress = 1;
     string measure_id = 2; // used just to identify parent on request
-    User authenticated_user = 3;
+    string authenticated_user_id = 3;
+    string authenticated_organization_id = 4;
+}
 
+// Message request for delete to related domain model .
+message MeasureProgressDeleteRequest {
+    string measure_progress_id = 1;
+    int32 measure_progress_version = 2;
+    string authenticated_user_id = 3;
+    string authenticated_organization_id = 4;
 }
 
 // Response list of the MeasureProgress

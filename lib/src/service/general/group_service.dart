@@ -3,7 +3,6 @@
 
 import 'dart:async';
 
-import 'package:auge_server/model/general/group.dart' as prefix0;
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
@@ -76,7 +75,7 @@ class GroupService extends GroupServiceBase {
 
   @override
   Future<Empty> deleteGroup(ServiceCall call,
-      GroupRequest request) async {
+      GroupDeleteRequest request) async {
     return queryDeleteGroup(request);
   }
 
@@ -236,21 +235,32 @@ class GroupService extends GroupServiceBase {
         }
 
         // HistoryItem
+        /*
         HistoryItem  historyItem = HistoryItem()
           ..id = Uuid().v4()
-          ..user = request.authenticatedUser
+          ..user = request.authenticatedUserId
           ..objectId = request.group.id
           ..objectVersion = request.group.version
-          ..objectClassName = prefix0.Group.className // 'User' // objectiveRequest.runtimeType.toString(),
+          ..objectClassName = group_m.Group.className // 'User' // objectiveRequest.runtimeType.toString(),
           ..systemModuleIndex = SystemModule.groups.index
           ..systemFunctionIndex = SystemFunction.create.index
         // ..dateTime
           ..description = request.group.name
         //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
           ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, group_m.Group.fromProtoBufToModelMap(request.group, true));
-
+*/
         // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
+          "user_id": request.authenticatedUserId,
+          "organization_id": request.authenticatedOrganizationId,
+          "object_id":  request.group.id,
+          "object_version": request.group.version,
+          "object_class_name": group_m.Group.className,
+          "system_module_index": SystemModule.groups.index,
+          "system_function_index": SystemFunction.create.index,
+          "date_time": DateTime.now().toUtc(),
+          "description": request.group.name,
+          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, group_m.Group.fromProtoBufToModelMap(request.group, true))});
 
 
       } catch (e) {
@@ -328,23 +338,18 @@ class GroupService extends GroupServiceBase {
           throw new GrpcError.failedPrecondition('Precondition Failed');
         }
 
-        // HistoryItem
-        HistoryItem  historyItem = HistoryItem()
-          ..id = Uuid().v4()
-          ..user = request.authenticatedUser
-          ..objectId = request.group.id
-          ..objectVersion = request.group.version
-          ..objectClassName = request.group.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
-          ..systemModuleIndex = SystemModule.groups.index
-          ..systemFunctionIndex = SystemFunction.update.index
-        // ..dateTime
-        //  ..description = request.user.name
-        //  ..changedValuesJson = json.encode(group_m.Group.fromProtoBufToModelMap(previousGroup, request.group) )
-        //  ..changedValuesCurrentJson = json.encode(group_m.Group.fromProtoBufToModelMap(request.group, previousGroup) );
-          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(group_m.Group.fromProtoBufToModelMap(previousGroup, true), group_m.Group.fromProtoBufToModelMap(request.group, true));
-
         // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
+          "user_id": request.authenticatedUserId,
+          "organization_id": request.authenticatedOrganizationId,
+          "object_id":  request.group.id,
+          "object_version": request.group.version,
+          "object_class_name": group_m.Group.className,
+          "system_module_index": SystemModule.groups.index,
+          "system_function_index": SystemFunction.update.index,
+          "date_time": DateTime.now().toUtc(),
+          "description": request.group.name,
+          "changed_values": history_item_m.HistoryItem.changedValuesJson(group_m.Group.fromProtoBufToModelMap(previousGroup, true), group_m.Group.fromProtoBufToModelMap(request.group, true))});
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -354,49 +359,47 @@ class GroupService extends GroupServiceBase {
     return Empty()..webWorkAround = true;
   }
 
-  static Future<Empty> queryDeleteGroup(GroupRequest request) async {
+  static Future<Empty> queryDeleteGroup(GroupDeleteRequest request) async {
+
+    Group previousGroup = await querySelectGroup(GroupGetRequest()..id = request.groupId);
+
     List<List<dynamic>> result;
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
-
         // It hasn´t version concurrent control, because just it is included or deleted.
         await ctx.query(
             "DELETE FROM general.groups_users gu WHERE gu.group_id = @group_id  "
                 "RETURNING true"
             , substitutionValues: {
-          "group_id": request.group.id});
+          "group_id": request.groupId});
 
         result = await ctx.query(
             "DELETE FROM general.groups g WHERE g.id = @id AND g.version = @version "
-            "RETURNING true"
+                "RETURNING true"
             , substitutionValues: {
-          "id": request.group.id,
-           "version": request.group.version});
+          "id": request.groupId,
+          "version": request.groupVersion});
 
         // Optimistic concurrency control
         if (result.length == 0) {
-           throw new GrpcError.failedPrecondition('Precondition Failed');
+          throw new GrpcError.failedPrecondition('Precondition Failed');
+        } else {
+          // Create a history item
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.groupId,
+                "object_version": request.groupVersion,
+                "object_class_name": group_m.Group.className,
+                "system_module_index": SystemModule.groups.index,
+                "system_function_index": SystemFunction.update.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": previousGroup.name,
+                "changed_values": history_item_m.HistoryItem.changedValuesJson(
+                    group_m.Group.fromProtoBufToModelMap(previousGroup, true),
+                    {})});
         }
-
-        // HistoryItem
-        HistoryItem historyItem = HistoryItem()
-          ..id = Uuid().v4()
-          ..user = request.authenticatedUser
-          ..objectId = request.group.id
-          ..objectVersion = request.group.version
-          ..objectClassName = request.group.runtimeType
-              .toString() // 'User' // objectiveRequest.runtimeType.toString(),
-          ..systemModuleIndex = SystemModule.groups.index
-          ..systemFunctionIndex = SystemFunction.delete.index
-        // ..dateTime
-        //  ..description = request.user.name
-          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(group_m.Group.fromProtoBufToModelMap(request.group, true), {});
-
-        // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-            substitutionValues: HistoryItemService
-                .querySubstitutionValuesCreateHistoryItem(historyItem));
-
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

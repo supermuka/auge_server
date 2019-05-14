@@ -38,6 +38,8 @@ class UserService extends UserServiceBase {
     return user;
   }
 
+
+/* The User and UserProfile C?UD is realized on UserProfileOrganization services. It was decided to put all data on one transaction.
   @override
   Future<IdResponse> createUser(ServiceCall call,
       UserRequest request) async {
@@ -56,6 +58,7 @@ class UserService extends UserServiceBase {
     
     return await queryDeleteUser(request);
   }
+*/
 
   // Query
   static Future<List<User>> querySelectUsers([UserGetRequest request] /* {String id, String eMail, String password, String organizationId, bool withProfile = false} */) async {
@@ -140,7 +143,7 @@ class UserService extends UserServiceBase {
       }
     }
   }
-
+/*
   static Future<IdResponse> queryInsertUser(UserRequest request) async {
     if (!request.user.hasId()) {
       request.user.id = new Uuid().v4();
@@ -327,4 +330,5 @@ class UserService extends UserServiceBase {
     });
     return Empty()..webWorkAround = true;
   }
+  */
 }

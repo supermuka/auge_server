@@ -24,7 +24,7 @@ service InitiativeService {
 
     rpc CreateInitiative (InitiativeRequest) returns (IdResponse) {}
     rpc UpdateInitiative (InitiativeRequest) returns (google.protobuf.Empty) {}
-    rpc DeleteInitiative (InitiativeRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteInitiative (InitiativeDeleteRequest) returns (google.protobuf.Empty) {}
    // rpc SoftDeleteInitiative (Initiative) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 
 }
@@ -48,10 +48,19 @@ message Initiative {
 
 }
 
-// Request for query select
+// Request related for model domain
 message InitiativeRequest {
     Initiative initiative = 1;
-    User authenticated_user = 2;
+    string authenticated_user_id = 2;
+    string authenticated_organization_id = 3;
+}
+
+// Request message for delete related for model domain
+message InitiativeDeleteRequest {
+    string initiative_id = 1;
+    int32 initiative_version = 2;
+    string authenticated_user_id = 3;
+    string authenticated_organization_id = 4;
 }
 
 // Response list of the stages

@@ -60,7 +60,7 @@ class WorkItemService extends WorkItemServiceBase {
 
   @override
   Future<Empty> deleteWorkItem(ServiceCall call,
-      WorkItemRequest request) async {
+      WorkItemDeleteRequest request) async {
     return queryDeleteWorkItem(request);
   }
 
@@ -279,6 +279,25 @@ class WorkItemService extends WorkItemServiceBase {
                 "work_item_id": request.workItem.id});
         }
 
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+            substitutionValues: {"id": Uuid().v4(),
+              "user_id": request.authenticatedUserId,
+              "organization_id": request.authenticatedOrganizationId,
+              "object_id": request.workItem.id,
+              "object_version": request.workItem.version,
+              "object_class_name": work_item_m
+                  .WorkItem.className,
+              "system_module_index": SystemModule.initiatives.index,
+              "system_function_index": SystemFunction.create.index,
+              "date_time": DateTime.now().toUtc(),
+              "description": request.workItem.name,
+              "changed_values": history_item_m.HistoryItem
+                  .changedValuesJson({},
+                  work_item_m.WorkItem
+                      .fromProtoBufToModelMap(
+                      request.workItem))});
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -411,21 +430,27 @@ class WorkItemService extends WorkItemServiceBase {
         }
         else {
 
-          // HistoryItem
-          HistoryItem historyItem;
-
-          historyItem
-            ..id = new Uuid().v4()
-            ..objectId = request.workItem.id
-            ..objectVersion = request.workItem.version
-            ..objectClassName = 'WorkItem' // objectiveRequest.runtimeType.toString(),
-            ..systemFunctionIndex = SystemFunction.create.index
-          // ..dateTime
-            ..description = request.workItem.name
-            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(work_item_m.WorkItem.fromProtoBufToModelMap(previousWorkItem, true), work_item_m.WorkItem.fromProtoBufToModelMap(request.workItem, true));
-
           // Create a history item
-          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.workItem.id,
+                "object_version": request.workItem.version,
+                "object_class_name": work_item_m
+                    .WorkItem.className,
+                "system_module_index": SystemModule.initiatives.index,
+                "system_function_index": SystemFunction.update.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": request.workItem.name,
+                "changed_values": history_item_m.HistoryItem
+                    .changedValuesJson(
+                    work_item_m.WorkItem
+                        .fromProtoBufToModelMap(
+                        previousWorkItem),
+                    work_item_m.WorkItem
+                        .fromProtoBufToModelMap(
+                        request.workItem))});
         }
 
       } catch (e) {
@@ -437,20 +462,46 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Delete a WorkItem by [id]
-  static Future<Empty> queryDeleteWorkItem(WorkItemRequest request) async {
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
-        await ctx.query(
-            "DELETE FROM initiative.work_items work_item"
-                " WHERE work_item.id = @id"
-            , substitutionValues: {
-          "id": request.workItem.id});
+  static Future<Empty> queryDeleteWorkItem(WorkItemDeleteRequest request) async {
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId);
+
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
+
+          List<List<dynamic>> result = await ctx.query(
+              "DELETE FROM initiative.work_items work_item"
+                  " WHERE work_item.id = @id and work_item.version = @version"
+                  " RETURNING true"
+              , substitutionValues: {
+            "id": request.workItemId,
+            "version": request.workItemVersion});
+
+          // Optimistic concurrency control
+          if (result.isEmpty) {
+            throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
+          } else {
+            // Create a history item
+            await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+                substitutionValues: {"id": Uuid().v4(),
+                  "user_id": request.authenticatedUserId,
+                  "organization_id": request.authenticatedOrganizationId,
+                  "object_id": request.workItemId,
+                  "object_version": request.workItemVersion,
+                  "object_class_name": work_item_m.WorkItem.className,
+                  "system_module_index": SystemModule.initiatives.index,
+                  "system_function_index": SystemFunction.delete.index,
+                  "date_time": DateTime.now().toUtc(),
+                  "description": previousWorkItem.name,
+                  "changed_values": history_item_m.HistoryItem.changedValuesJson(
+                      work_item_m.WorkItem.fromProtoBufToModelMap(
+                          previousWorkItem, true), {})});
+          }
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
   }
 }

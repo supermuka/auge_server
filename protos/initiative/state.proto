@@ -34,8 +34,6 @@ message StatesResponse {
     bool web_work_around = 2;
 }
 
-// Message similar to message to respective domain object, but just with values that are save (relational database).
-// For [Delete] inform just relevant data as a [id]
 message StateGetRequest {
     // Base
     string id = 1;

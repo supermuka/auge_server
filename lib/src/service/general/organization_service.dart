@@ -51,8 +51,8 @@ class OrganizationService extends OrganizationServiceBase {
 
   @override
   Future<Empty> deleteOrganization(ServiceCall call,
-      OrganizationRequest organization) async {
-    return queryDeleteOrganization(organization);
+      OrganizationDeleteRequest request) async {
+    return queryDeleteOrganization(request);
   }
 
   // Query
@@ -125,22 +125,18 @@ class OrganizationService extends OrganizationServiceBase {
           "name": request.organization.name,
           "code": request.organization.code});
 
-        // HistoryItem
-        HistoryItem  historyItem = HistoryItem()
-          ..id = Uuid().v4()
-          ..user = request.authenticatedUser
-          ..objectId = request.organization.id
-          ..objectVersion = request.organization.version
-          ..objectClassName = request.organization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
-          ..systemModuleIndex = SystemModule.users.index
-          ..systemFunctionIndex = SystemFunction.create.index
-        // ..dateTime
-          ..description = request.organization.name
-        //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, organization_m.Organization.fromProtoBufToModelMap(request.organization, true));
-
         // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
+          "user_id": request.authenticatedUserId,
+          "organization_id": request.authenticatedOrganizationId,
+          "object_id": request.organization.id,
+          "object_version": request.organization.version,
+          "object_class_name": organization_m.Organization.className,
+          "system_module_index": SystemModule.groups.index,
+          "system_function_index": SystemFunction.create.index,
+          "date_time": DateTime.now().toUtc(),
+          "description": request.organization.name,
+          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, organization_m.Organization.fromProtoBufToModelMap(request.organization, true))});
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -168,21 +164,18 @@ class OrganizationService extends OrganizationServiceBase {
           "name": request.organization.name,
           "code": request.organization.code});
 
-        // HistoryItem
-        HistoryItem  historyItem = HistoryItem()
-          ..id = Uuid().v4()
-          ..user = request.authenticatedUser
-          ..objectId = request.organization.id
-          ..objectVersion = request.organization.version
-          ..objectClassName = request.organization.runtimeType.toString() // 'User' // objectiveRequest.runtimeType.toString(),
-          ..systemModuleIndex = SystemModule.users.index
-          ..systemFunctionIndex = SystemFunction.update.index
-        // ..dateTime
-        //  ..description = request.user.name
-          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(organization_m.Organization.fromProtoBufToModelMap(previousOrganization, true), organization_m.Organization.fromProtoBufToModelMap(request.organization, true));
-
         // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
+          "user_id": request.authenticatedUserId,
+          "organization_id": request.authenticatedOrganizationId,
+          "object_id": request.organization.id,
+          "object_version": request.organization.version,
+          "object_class_name": organization_m.Organization.className,
+          "system_module_index": SystemModule.groups.index,
+          "system_function_index": SystemFunction.update.index,
+          "date_time": DateTime.now().toUtc(),
+          "description": request.organization.name,
+          "changed_values": history_item_m.HistoryItem.changedValuesJson(organization_m.Organization.fromProtoBufToModelMap(previousOrganization, true), organization_m.Organization.fromProtoBufToModelMap(request.organization, true))});
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -194,33 +187,39 @@ class OrganizationService extends OrganizationServiceBase {
   }
 
   // Delete
-  static Future<Empty> queryDeleteOrganization(OrganizationRequest request) async {
+  static Future<Empty> queryDeleteOrganization(OrganizationDeleteRequest request) async {
+
+    Organization previousOrganization = await querySelectOrganization(OrganizationGetRequest()..id = request.organizationId);
+
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
-        await ctx.query(
+        List<List<dynamic>> result = await ctx.query(
             "DELETE FROM general.organizations organization WHERE organization.id = @id AND organization.version = @version"
+            "RETURNING true"
             , substitutionValues: {
-          "id": request.organization.id,
-          "version": request.organization.version});
+          "id": request.organizationId,
+          "version": request.organizationVersion});
 
-        // HistoryItem
-        HistoryItem historyItem = HistoryItem()
-          ..id = Uuid().v4()
-          ..user = request.authenticatedUser
-          ..objectId = request.organization.id
-          ..objectVersion = request.organization.version
-          ..objectClassName = request.organization.runtimeType
-              .toString() // 'User' // objectiveRequest.runtimeType.toString(),
-          ..systemModuleIndex = SystemModule.users.index
-          ..systemFunctionIndex = SystemFunction.delete.index
-        // ..dateTime
-        //  ..description = request.user.name
-          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(organization_m.Organization.fromProtoBufToModelMap(request.organization, true), {});
-
-        // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-            substitutionValues: HistoryItemService
-                .querySubstitutionValuesCreateHistoryItem(historyItem));
+        // Optimistic concurrency control
+        if (result.length == 0) {
+          throw new GrpcError.failedPrecondition('Precondition Failed');
+        } else {
+          // Create a history item
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.organizationId,
+                "object_version": request.organizationVersion,
+                "object_class_name": organization_m.Organization.className,
+                "system_module_index": SystemModule.groups.index,
+                "system_function_index": SystemFunction.delete.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": previousOrganization.name,
+                "changed_values": history_item_m.HistoryItem.changedValuesJson(
+              organization_m.Organization.fromProtoBufToModelMap(
+              previousOrganization, true), {})});
+        }
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;

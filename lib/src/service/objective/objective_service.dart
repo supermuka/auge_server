@@ -12,8 +12,6 @@ import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/objective.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/objective/measure.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pb.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
-
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
@@ -63,7 +61,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
   @override
   Future<Empty> deleteObjective(ServiceCall call,
-      ObjectiveRequest request) async {
+      ObjectiveDeleteRequest request) async {
     return queryDeleteObjective(request);
   }
 
@@ -266,23 +264,20 @@ class ObjectiveService extends ObjectiveServiceBase {
 
             });
 
-        // HistoryItem
-        HistoryItem historyItem = HistoryItem()
-          ..id = new Uuid().v4()
-          ..user = request.authenticatedUser
-          ..objectId = request.objective.id
-          ..objectVersion = request.objective.version
-          ..objectClassName = request.objective.runtimeType.toString()
-          ..systemFunctionIndex = SystemFunction.create.index
-          ..systemModuleIndex = SystemModule.objectives.index
-        // ..dateTime
-          ..description = request.objective.name
-        //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, objective_m.Objective.fromProtoBufToModelMap(request.objective, true));
-
-
         // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+            substitutionValues: {"id": Uuid().v4(),
+              "user_id": request.authenticatedUserId,
+              "organization_id": request.authenticatedOrganizationId,
+              "object_id": request.objective.id,
+              "object_version": request.objective.version,
+              "object_class_name": objective_m
+                  .Objective.className,
+              "system_module_index": SystemModule.objectives.index,
+              "system_function_index": SystemFunction.create.index,
+              "date_time": DateTime.now().toUtc(),
+              "description": request.objective.name,
+              "changed_values": history_item_m.HistoryItem.changedValuesJson({}, objective_m.Objective.fromProtoBufToModelMap(request.objective, true))});
 
       });
     } catch (e) {
@@ -337,21 +332,21 @@ class ObjectiveService extends ObjectiveServiceBase {
         }
         else {
 
-          HistoryItem historyItem = HistoryItem()
-            ..id = new Uuid().v4()
-            ..user = request.authenticatedUser
-            ..objectId = request.objective.id
-            ..objectVersion = request.objective.version
-            ..objectClassName = request.objective.runtimeType.toString()
-            ..systemFunctionIndex = SystemFunction.update.index
-            ..systemModuleIndex = SystemModule.objectives.index
-          // ..dateTime
-            ..description = request.objective.name
-          //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), objective_m.Objective.fromProtoBufToModelMap(request.objective, true));
-
           // Create a history item
-          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.objective.id,
+                "object_version": request.objective.version,
+                "object_class_name": objective_m
+                    .Objective.className,
+                "system_module_index": SystemModule.objectives.index,
+                "system_function_index": SystemFunction.update.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": request.objective.name,
+                "changed_values": history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), objective_m.Objective.fromProtoBufToModelMap(request.objective, true))});
+
         }
 
       });
@@ -364,7 +359,11 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   /// Delete an objective by [id]
-  static Future<Empty> queryDeleteObjective(ObjectiveRequest request) async {
+  static Future<Empty> queryDeleteObjective(ObjectiveDeleteRequest request) async {
+
+    // Recovery to log to history
+    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId);
+
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
       try {
@@ -375,29 +374,28 @@ class ObjectiveService extends ObjectiveServiceBase {
                 " AND objective.version = @version"
                 " RETURNING true"
             , substitutionValues: {
-          "id": request.objective.id,
-          "version": request.objective.version});
+          "id": request.objectiveId,
+          "version": request.objectiveVersion});
 
         // Optimistic concurrency control
         if (result.isEmpty) {
           throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.objectivePreconditionFailed );
         }
         else {
-          HistoryItem historyItem = HistoryItem()
-            ..id = new Uuid().v4()
-            ..user = request.authenticatedUser
-            ..objectId = request.objective.id
-            ..objectVersion = request.objective.version
-            ..objectClassName = request.objective.runtimeType.toString()
-            ..systemFunctionIndex = SystemFunction.delete.index
-            ..systemModuleIndex = SystemModule.objectives.index
-          // ..dateTime
-            ..description = request.objective.name
-          //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-            ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(request.objective, true), {});
 
           // Create a history item
-          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: HistoryItemService.querySubstitutionValuesCreateHistoryItem(historyItem));
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.objectiveId,
+                "object_version": request.objectiveVersion,
+                "object_class_name": objective_m.Objective.className,
+                "system_module_index": SystemModule.objectives.index,
+                "system_function_index": SystemFunction.delete.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": previousObjective.name,
+                "changed_values":  history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), {})});
 
         }
       } catch (e) {

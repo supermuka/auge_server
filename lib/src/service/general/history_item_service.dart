@@ -3,10 +3,8 @@
 
 import 'dart:async';
 import 'package:auge_server/shared/common_utils.dart';
-import 'package:fixnum/fixnum.dart';
 
 import 'package:grpc/grpc.dart';
-import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
@@ -26,8 +24,9 @@ class HistoryItemService extends HistoryItemServiceBase {
 
   // QUERY
   // History to auge_objective schema
-  static String queryStatementCreateHistoryItem = "INSERT INTO general.history(id, user_id, object_id, object_version, object_class_name, system_module_index, system_function_index, date_time, description, changed_values) VALUES"
+  static String queryStatementCreateHistoryItem = "INSERT INTO general.history(id, organization_id, user_id, object_id, object_version, object_class_name, system_module_index, system_function_index, date_time, description, changed_values) VALUES"
       "(@id,"
+      "@organization_id,"
       "@user_id,"
       "@object_id,"
       "@object_version,"
@@ -38,6 +37,7 @@ class HistoryItemService extends HistoryItemServiceBase {
       "@description,"
       "@changed_values)";
 
+  /*
   static Map<String, dynamic> querySubstitutionValuesCreateHistoryItem(HistoryItem request) {
 
     return {"id": request.id,
@@ -51,6 +51,7 @@ class HistoryItemService extends HistoryItemServiceBase {
       "description": request.hasDescription() ? request.description : null,
       "changed_values": request.hasChangedValuesJson() ? request.changedValuesJson : null};
   }
+   */
 
   // *** HISTORY TO OBJECTIVE SCHEMA ***
   static Future<List<HistoryItem>> querySelectHistory(HistoryItemGetRequest historyItemGetRequest  /* {String id, int systemModuleIndex} */) async {
@@ -69,12 +70,13 @@ class HistoryItemService extends HistoryItemServiceBase {
         "history_item.description, " //8
         "history_item.changed_values " //9
         "FROM general.history history_item "
-        "WHERE history_item.system_module_index = @system_module_index "
+        "WHERE history_item.organization_id = @organization_id "
+        "AND history_item.system_module_index = @system_module_index "
         "ORDER BY 6 DESC ";
 
     Map<String, dynamic> substitutionValues;
 
-    substitutionValues = {"system_module_index": historyItemGetRequest.systemModuleIndex};
+    substitutionValues = {"organization_id": historyItemGetRequest.organizationId, "system_module_index": historyItemGetRequest.systemModuleIndex};
 
     try {
       results = await (await AugeConnection.getConnection()).query(
