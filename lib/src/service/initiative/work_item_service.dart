@@ -9,9 +9,9 @@ import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/work_item.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/shared/rpc_error_message.dart';
+import 'package:auge_server/shared/common_utils.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/initiative/stage_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
@@ -236,7 +236,7 @@ class WorkItemService extends WorkItemServiceBase {
               "version": request.workItem.version,
               "name": request.workItem.name,
               "description": request.workItem.hasDescription() ? request.workItem.description : null,
-              "due_date": request.workItem.hasDueDate() ? request.workItem.dueDate : null,
+              "due_date": request.workItem.hasDueDate() ? CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) : null,
               "completed": request.workItem.hasCompleted() ? request.workItem.completed : null,
               "initiative_id": request.hasInitiativeId() ? request.initiativeId : null,
               "stage_id": request.workItem.hasStage() ? request.workItem.stage.id : null});
