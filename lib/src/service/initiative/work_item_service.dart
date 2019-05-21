@@ -105,6 +105,7 @@ class WorkItemService extends WorkItemServiceBase {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workItemInvalidArgument );
     }
 
+
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
     List<WorkItem> workItems = new List();
@@ -122,7 +123,7 @@ class WorkItemService extends WorkItemServiceBase {
 
       workItem = WorkItem()..id = row[0]..version = row[1]..name = row[2];
       if (row[3] != null) workItem.description = row[3];
-      if (row[4] != null) workItem.dueDate = row[4];
+      if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4]);
       if (row[5] != null) workItem.completed = row[5];
       if ( stages.isNotEmpty) workItem.stage = stages?.first;
       if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
@@ -194,7 +195,7 @@ class WorkItemService extends WorkItemServiceBase {
 
     for (var row in results) {
 
-      user = await UserService.querySelectUser(row[0]);
+      user = await UserService.querySelectUser(UserGetRequest()..id = row[0]);
 
       assignedToUsers.add(user);
     }
@@ -208,11 +209,10 @@ class WorkItemService extends WorkItemServiceBase {
     if (!request.workItem.hasId()) {
       request.workItem.id = new Uuid().v4();
     }
-
     request.workItem.version = 0;
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
         await ctx.query("INSERT INTO initiative.work_items"
             "(id,"
             "version,"
@@ -298,11 +298,14 @@ class WorkItemService extends WorkItemServiceBase {
                       .fromProtoBufToModelMap(
                       request.workItem))});
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+
+      });
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+
     return IdResponse()..id = request.workItem.id;
   }
 
@@ -312,8 +315,8 @@ class WorkItemService extends WorkItemServiceBase {
     // Recovery to log to history
     WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id);
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         List<List<dynamic>> result;
 
@@ -334,7 +337,7 @@ class WorkItemService extends WorkItemServiceBase {
               "description": request.workItem.hasDescription()
                   ? request.workItem.description
                   : null,
-              "due_date": request.workItem.hasDueDate() ? request.workItem.dueDate : null,
+              "due_date": request.workItem.hasDueDate() ? CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) : null,
               "completed": request.workItem.hasCompleted()
                   ? request.workItem.completed
                   : null,
@@ -376,7 +379,7 @@ class WorkItemService extends WorkItemServiceBase {
         // Check item list
         StringBuffer checkItemsId = new StringBuffer();
         for (WorkItemCheckItem checkItem in request.workItem.checkItems) {
-          if (checkItem.id == null) {
+          if (!checkItem.hasId()) {
             checkItem.id = new Uuid().v4();
 
             await ctx.query(
@@ -416,13 +419,13 @@ class WorkItemService extends WorkItemServiceBase {
         }
 
         String queryDelete;
-        queryDelete = "DELETE FROM initiative.work_item_check_items";
+        queryDelete = "DELETE FROM initiative.work_item_check_items work_item_check_item WHERE work_item_check_item.work_item_id = @work_item_id";
         if (checkItemsId.isNotEmpty) {
           queryDelete =
-              queryDelete + " WHERE id NOT IN (${checkItemsId.toString()})";
+              queryDelete + " AND work_item_check_item.id NOT IN (${checkItemsId.toString()})";
         }
 
-        await ctx.query(queryDelete);
+        await ctx.query(queryDelete, substitutionValues: {"work_item_id": request.workItem.id});
 
         // Optimistic concurrency control
         if (result.isEmpty) {
@@ -453,11 +456,11 @@ class WorkItemService extends WorkItemServiceBase {
                         request.workItem))});
         }
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
   }
 
@@ -467,9 +470,20 @@ class WorkItemService extends WorkItemServiceBase {
     WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId);
 
     try {
+
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
-          List<List<dynamic>> result = await ctx.query(
+        await ctx.query("DELETE FROM initiative.work_item_check_items work_item_check_item WHERE work_item_check_item.work_item_id = @work_item_id",
+            substitutionValues: {"work_item_id": request.workItemId});
+
+        await ctx.query(
+            "DELETE FROM initiative.work_item_assigned_users"
+                " WHERE work_item_id = @work_item_id"
+            , substitutionValues: {
+          "work_item_id": request.workItemId});
+
+
+        List<List<dynamic>> result = await ctx.query(
               "DELETE FROM initiative.work_items work_item"
                   " WHERE work_item.id = @id and work_item.version = @version"
                   " RETURNING true"

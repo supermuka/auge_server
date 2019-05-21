@@ -9,7 +9,6 @@ import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/measure.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/model/general/authorization.dart';
@@ -358,8 +357,9 @@ class MeasureService extends MeasureServiceBase {
 
     Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId);
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
+
         List<List<dynamic>> result =  await ctx.query(
             "DELETE FROM objective.measures measure"
                 " WHERE measure.id = @id and measure.version = @version"
@@ -388,11 +388,12 @@ class MeasureService extends MeasureServiceBase {
                     measure_m.Measure.fromProtoBufToModelMap(
                         previousMeasure, true), {})});
         }
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
   }
 
@@ -530,7 +531,7 @@ class MeasureService extends MeasureServiceBase {
 
         List<List<dynamic>> result;
 
-        if (request.measureProgress.id == null) {
+        if (!request.measureProgress.hasId()) {
           request.measureProgress.id = new Uuid().v4();
         }
 

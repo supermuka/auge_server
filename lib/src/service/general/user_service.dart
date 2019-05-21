@@ -5,20 +5,11 @@ import 'dart:async';
 
 import 'package:grpc/grpc.dart';
 
-import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
-import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
-import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
-import 'package:auge_server/model/general/user.dart' as user_m;
+import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 
-import 'package:auge_server/src/service/general/history_item_service.dart';
-
-import 'package:uuid/uuid.dart';
 
 class UserService extends UserServiceBase {
 

@@ -8,7 +8,6 @@ import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
@@ -111,8 +110,9 @@ class OrganizationService extends OrganizationServiceBase {
       request.organization.id = new Uuid().v4();
     }
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
+
         await ctx.query(
             "INSERT INTO general.organizations(id, version, name, code) VALUES"
                 "(@id,"
@@ -138,11 +138,12 @@ class OrganizationService extends OrganizationServiceBase {
           "description": request.organization.name,
           "changed_values": history_item_m.HistoryItem.changedValuesJson({}, organization_m.Organization.fromProtoBufToModelMap(request.organization, true))});
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return IdResponse()
       ..id = request.organization.id;
   }
@@ -150,9 +151,8 @@ class OrganizationService extends OrganizationServiceBase {
   static Future<Empty> queryUpdateOrganization(OrganizationRequest request) async {
 
     Organization previousOrganization = await querySelectOrganization(OrganizationGetRequest()..id = request.organization.id);
-
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query(
             "UPDATE general.organizations SET name = @name,"
                 " version = @version,"
@@ -177,11 +177,11 @@ class OrganizationService extends OrganizationServiceBase {
           "description": request.organization.name,
           "changed_values": history_item_m.HistoryItem.changedValuesJson(organization_m.Organization.fromProtoBufToModelMap(previousOrganization, true), organization_m.Organization.fromProtoBufToModelMap(request.organization, true))});
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
 
   }
@@ -190,9 +190,9 @@ class OrganizationService extends OrganizationServiceBase {
   static Future<Empty> queryDeleteOrganization(OrganizationDeleteRequest request) async {
 
     Organization previousOrganization = await querySelectOrganization(OrganizationGetRequest()..id = request.organizationId);
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
         List<List<dynamic>> result = await ctx.query(
             "DELETE FROM general.organizations organization WHERE organization.id = @id AND organization.version = @version"
             "RETURNING true"
@@ -220,11 +220,11 @@ class OrganizationService extends OrganizationServiceBase {
               organization_m.Organization.fromProtoBufToModelMap(
               previousOrganization, true), {})});
         }
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()
       ..webWorkAround = true;
   }

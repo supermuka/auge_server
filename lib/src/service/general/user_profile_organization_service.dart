@@ -10,7 +10,6 @@ import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user_profile_organization.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
@@ -164,8 +163,10 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
   static Future<IdResponse> queryInsertUserProfileOrganization(UserProfileOrganizationRequest request) async {
 
+    try {
+
     await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+
 
         if (request.hasWithUserProfile() && request.withUserProfile)  {
 
@@ -238,11 +239,11 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           "description": request.userProfileOrganization.user.name,
           "changed_values": history_item_m.HistoryItem.changedValuesJson({}, user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(request.userProfileOrganization))});
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
 
     return IdResponse()..id = request.userProfileOrganization.id;
   }
@@ -251,8 +252,8 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
     UserProfileOrganization previousUserProfileOrganization = await querySelectUserProfileOrganization(UserProfileOrganizationGetRequest()..id = request.userProfileOrganization.id);
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         if (request.hasWithUserProfile() && request.withUserProfile)  {
           List<List<dynamic>> result = await ctx.query(
@@ -327,11 +328,12 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
                           .fromProtoBufToModelMap(
                           request.userProfileOrganization))});
           }
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
   }
 
@@ -339,8 +341,8 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
     UserProfileOrganization previousUserProfileOrganization = await querySelectUserProfileOrganization(UserProfileOrganizationGetRequest()..id = request.userProfileOrganizationId);
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
             "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id "
@@ -387,11 +389,11 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
                         previousUserProfileOrganization, true), {})});
         }
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
   }
 }

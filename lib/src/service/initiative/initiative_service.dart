@@ -13,7 +13,6 @@ import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/work_item.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/initiative.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/objective/objective.pb.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/shared/rpc_error_message.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
@@ -276,85 +275,103 @@ class InitiativeService extends InitiativeServiceBase {
     // Recovery to log to history
     Initiative previousInitiative = await querySelectInitiative(InitiativeGetRequest()..id = request.initiative.id);
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+    try {
 
-        List<List<dynamic>> result;
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
-        result = await ctx.query("UPDATE initiative.initiatives "
-          " SET version = @version,"
-          " name = @name,"
-          " description = @description,"
-          " organization_id = @organization_id,"
-          " leader_user_id = @leader_user_id,"
-          " objective_id = @objective_id,"
-          " group_id = @group_id"
-          " WHERE id = @id AND version = @version - 1"
-          " RETURNING true "
-          , substitutionValues: {
-            "id": request.initiative.id,
-            "version": ++request.initiative.version,
-            "name": request.initiative.name,
-            "description": request.initiative.description,
-            "organization_id": request.initiative.hasOrganization() ? request.initiative.organization.id : null,
-            "leader_user_id": request.initiative.hasLeader() ? request.initiative.leader.id : null,
-            "objective_id": request.initiative.hasObjective() ? request.initiative.objective.id : null,
-            "group_id": request.initiative.hasGroup() ? request.initiative.group.id : null });
+          List<List<dynamic>> result;
 
-        // Stages
-        StringBuffer stagesId = new StringBuffer();
-        for (Stage stage in request.initiative.stages) {
-          if (stage.id == null) {
-            stage.id = new Uuid().v4();
+          result = await ctx.query("UPDATE initiative.initiatives "
+            " SET version = @version,"
+            " name = @name,"
+            " description = @description,"
+            " organization_id = @organization_id,"
+            " leader_user_id = @leader_user_id,"
+            " objective_id = @objective_id,"
+            " group_id = @group_id"
+            " WHERE id = @id AND version = @version - 1"
+            " RETURNING true "
+            , substitutionValues: {
+              "id": request.initiative.id,
+              "version": ++request.initiative.version,
+              "name": request.initiative.name,
+              "description": request.initiative.description,
+              "organization_id": request.initiative.hasOrganization() ? request.initiative.organization.id : null,
+              "leader_user_id": request.initiative.hasLeader() ? request.initiative.leader.id : null,
+              "objective_id": request.initiative.hasObjective() ? request.initiative.objective.id : null,
+              "group_id": request.initiative.hasGroup() ? request.initiative.group.id : null });
 
-            await ctx.query(
-                "INSERT INTO initiative.stages(id, name, index, state_id, initiative_id) VALUES"
-                    "(@id,"
-                    "@name,"
-                    "@index,"
-                    "@state_id,"
-                    "@initiative_id)"
-                , substitutionValues: {
-              "id": stage.id,
-              "name": stage.name,
-              "index": stage.index,
-              "state_id": stage.state.id,
-              "initiative_id": request.initiative.id});
-          } else {
-            await ctx.query("UPDATE initiative.stages SET"
-                " name = @name,"
-                " index = @index,"
-                " state_id = @state_id,"
-                " initiative_id = @initiative_id"
-                " WHERE id = @id"
-                , substitutionValues: {
-                  "id": stage.id,
-                  "name": stage.name,
-                  "index": stage.index,
-                  "state_id": stage.state.id,
-                  "initiative_id": request.initiative.id});
+          // Optimistic concurrency control
+          if (result.isEmpty) {
+            throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
           }
 
-          if (stagesId.isNotEmpty)
-            stagesId.write(',');
-          stagesId.write("'");
-          stagesId.write(stage.id);
-          stagesId.write("'");
-        }
+          // Stages
+          StringBuffer stagesId = new StringBuffer();
+          for (Stage stage in request.initiative.stages) {
+            if (!stage.hasId()) {
+              stage.id = Uuid().v4();
 
-        if (stagesId.isNotEmpty) {
-          await ctx.query("DELETE FROM initiative.stages "
-              " WHERE id NOT IN (${stagesId.toString()}) "
-              " AND initiative_id  = @initiative_id "
-              , substitutionValues: {
+              await ctx.query(
+                  "INSERT INTO initiative.stages(id, version, name, index, state_id, initiative_id) VALUES"
+                      "(@id,"
+                      "@version,"
+                      "@name,"
+                      "@index,"
+                      "@state_id,"
+                      "@initiative_id)"
+                  , substitutionValues: {
+                "id": stage.id,
+                "version": stage.version,
+                "name": stage.name,
+                "index": stage.index,
+                "state_id": stage.state.id,
                 "initiative_id": request.initiative.id});
-        }
+            } else {
 
-        // Optimistic concurrency control
-        if (result.isEmpty) {
-          throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
-        }
-        else {
+              result =  await ctx.query("UPDATE initiative.stages SET"
+                  " version = @version,"
+                  " name = @name,"
+                  " index = @index,"
+                  " state_id = @state_id,"
+                  " initiative_id = @initiative_id"
+                  " WHERE id = @id AND version = @version - 1"
+                  " RETURNING true "
+                  , substitutionValues: {
+                    "id": stage.id,
+                    "version": ++stage.version,
+                    "name": stage.name,
+                    "index": stage.index,
+                    "state_id": stage.state.id,
+                    "initiative_id": request.initiative.id});
+
+              // Optimistic concurrency control
+              if (result.isEmpty) {
+                throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
+              }
+            }
+
+            if (stagesId.isNotEmpty)
+              stagesId.write(',');
+            stagesId.write("'");
+            stagesId.write(stage.id);
+            stagesId.write("'");
+          }
+
+          // TODO, encontrar uma maneira de tratar a versão.
+          if (stagesId.isNotEmpty) {
+            await ctx.query("DELETE FROM initiative.stages "
+                " WHERE id NOT IN (${stagesId.toString()}) "
+                " AND initiative_id  = @initiative_id "
+                , substitutionValues: {
+                  "initiative_id": request.initiative.id});
+
+            // Optimistic concurrency control
+            if (result.isEmpty) {
+              throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
+            }
+          }
+
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
@@ -375,13 +392,15 @@ class InitiativeService extends InitiativeServiceBase {
                         previousInitiative),
                     initiative_m.Initiative
                         .fromProtoBufToModelMap(
-                        request.initiative))});
-        }
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+                        request.initiative)
+                )
+          });
+
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
   }
 
@@ -399,6 +418,7 @@ class InitiativeService extends InitiativeServiceBase {
                 " WHERE stage.initiative_id = @id"
             , substitutionValues: {
           "id": request.initiativeId});
+
 
         List<List<dynamic>> result = await ctx.query(
             "DELETE FROM initiative.initiatives initiative"
@@ -433,6 +453,6 @@ class InitiativeService extends InitiativeServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return null;
+    return Empty()..webWorkAround = true;
   }
 }

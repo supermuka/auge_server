@@ -10,7 +10,6 @@ import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
@@ -198,8 +197,10 @@ class GroupService extends GroupServiceBase {
 
     request.group.version = 0;
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+    try {
+
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
+
         await ctx.query(
             //"INSERT INTO auge.groups(id, version, is_deleted, name, active, organization_id, group_type_id) VALUES("
             "INSERT INTO general.groups(id, version, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
@@ -234,21 +235,6 @@ class GroupService extends GroupServiceBase {
                 "user_id": user.id});
         }
 
-        // HistoryItem
-        /*
-        HistoryItem  historyItem = HistoryItem()
-          ..id = Uuid().v4()
-          ..user = request.authenticatedUserId
-          ..objectId = request.group.id
-          ..objectVersion = request.group.version
-          ..objectClassName = group_m.Group.className // 'User' // objectiveRequest.runtimeType.toString(),
-          ..systemModuleIndex = SystemModule.groups.index
-          ..systemFunctionIndex = SystemFunction.create.index
-        // ..dateTime
-          ..description = request.group.name
-        //  ..changedValuesPrevious.addAll(history_item_m.HistoryItem.changedValues(valuesPrevious, valuesCurrent))
-          ..changedValuesJson = history_item_m.HistoryItem.changedValuesJson({}, group_m.Group.fromProtoBufToModelMap(request.group, true));
-*/
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
           "user_id": request.authenticatedUserId,
@@ -262,12 +248,12 @@ class GroupService extends GroupServiceBase {
           "description": request.group.name,
           "changed_values": history_item_m.HistoryItem.changedValuesJson({}, group_m.Group.fromProtoBufToModelMap(request.group, true))});
 
+      });
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
 
     return IdResponse()..id = request.group.id;
   }
@@ -278,8 +264,9 @@ class GroupService extends GroupServiceBase {
 
     List<List<dynamic>> result;
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
+
         result = await ctx.query(
             "UPDATE general.groups"
                 " SET version = @version,"
@@ -351,11 +338,11 @@ class GroupService extends GroupServiceBase {
           "description": request.group.name,
           "changed_values": history_item_m.HistoryItem.changedValuesJson(group_m.Group.fromProtoBufToModelMap(previousGroup, true), group_m.Group.fromProtoBufToModelMap(request.group, true))});
 
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
   }
 
@@ -364,8 +351,9 @@ class GroupService extends GroupServiceBase {
     Group previousGroup = await querySelectGroup(GroupGetRequest()..id = request.groupId);
 
     List<List<dynamic>> result;
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
+
         // It hasn´t version concurrent control, because just it is included or deleted.
         await ctx.query(
             "DELETE FROM general.groups_users gu WHERE gu.group_id = @group_id  "
@@ -400,11 +388,12 @@ class GroupService extends GroupServiceBase {
                     group_m.Group.fromProtoBufToModelMap(previousGroup, true),
                     {})});
         }
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
   }
 

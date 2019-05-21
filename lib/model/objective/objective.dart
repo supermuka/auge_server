@@ -1,7 +1,6 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-import 'package:auge_server/model/general/history_item.dart';
 import 'package:auge_server/model/general/organization.dart';
 import 'package:auge_server/model/general/user.dart';
 import 'package:auge_server/model/objective/measure.dart';
@@ -14,7 +13,6 @@ import 'package:intl/date_symbol_data_local.dart';
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
-import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/objective.pb.dart' as objective_pb;
 
 /// Domain model class to represent an objective

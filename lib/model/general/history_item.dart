@@ -3,7 +3,6 @@
 
 import 'dart:convert';
 import 'package:auge_server/shared/common_utils.dart';
-import 'package:fixnum/fixnum.dart';
 import 'package:collection/collection.dart';
 
 import 'package:auge_server/model/general/organization.dart';

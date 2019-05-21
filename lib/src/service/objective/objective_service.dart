@@ -364,9 +364,9 @@ class ObjectiveService extends ObjectiveServiceBase {
     // Recovery to log to history
     Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId);
 
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
 
-    await (await AugeConnection.getConnection()).transaction((ctx) async {
-      try {
 
         List<List<dynamic>> result = await ctx.query(
             "DELETE FROM objective.objectives objective"
@@ -398,11 +398,11 @@ class ObjectiveService extends ObjectiveServiceBase {
                 "changed_values":  history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), {})});
 
         }
-      } catch (e) {
-        print('${e.runtimeType}, ${e}');
-        rethrow;
-      }
-    });
+      });
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
     return Empty()..webWorkAround = true;
   }
 }

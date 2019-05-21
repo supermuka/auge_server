@@ -66,15 +66,21 @@ class StageService extends StageServiceBase {
         queryStatement, substitutionValues: substitutionValues);
 
     List<Stage> stages = new List();
+    Stage stage;
     for (var row in results) {
-      List<State> states = await StateService.querySelectStates((StateGetRequest()..id = row[5]));
+      List<State> states = await StateService.querySelectStates(StateGetRequest()..id = row[5]);
 
-      stages.add(new Stage()
+      stage = Stage()
         ..id = row[0]
         ..version = row[1]
         ..name = row[2]
-        ..index = row[3]
-        ..state = states?.first);
+        ..index = row[3];
+
+      if (states.isNotEmpty) {
+        stage.state = states?.first;
+      }
+
+    stages.add(stage);
     }
     return stages;
   }

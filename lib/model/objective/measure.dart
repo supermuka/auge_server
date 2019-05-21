@@ -2,12 +2,9 @@
 // Author: Samuel C. Schwebel
 
 import 'package:auge_server/shared/common_utils.dart';
-import 'package:collection/collection.dart';
-import 'package:fixnum/fixnum.dart';
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
-import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/measure.pb.dart' as measure_pb;
 
 /// Domain model class to represent an measure

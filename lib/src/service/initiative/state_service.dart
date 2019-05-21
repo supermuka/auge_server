@@ -50,12 +50,18 @@ class StateService extends StateServiceBase {
       substitutionValues = {"id": stateGetRequest.id};
     }
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
-    List<State> states = new List();
-    for (var row in results) {
-      states.add(new State()..id = row[0]..version = row[1]..name = row[2]..color.addAll((json.decode(row[3]) as Map).cast<String, int>())..index = row[4]);
+    try {
+      results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+      List<State> states = new List();
+      for (var row in results) {
+        states.add(new State()..id = row[0]..version = row[1]..name = row[2]..color.addAll((json.decode(row[3]) as Map).cast<String, int>())..index = row[4]);
+      }
+      return states;
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
-    return states;
   }
 
   static Future<State> querySelectState(StateGetRequest stateGetRequest) async {

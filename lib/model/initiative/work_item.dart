@@ -2,7 +2,6 @@
 // Author: Samuel C. Schwebel
 
 import 'package:auge_server/shared/common_utils.dart';
-import 'package:fixnum/fixnum.dart';
 
 import 'package:auge_server/model/initiative/stage.dart';
 import 'package:auge_server/model/general/user.dart';
@@ -13,7 +12,6 @@ import 'package:intl/date_symbol_data_local.dart';
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
-import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/work_item.pb.dart' as work_item_pb;
 
 /// Domain model class to represent an initiative item work (task, issue, feature, etc.)
@@ -116,9 +114,9 @@ class WorkItem {
         map[WorkItem.descriptionField] = workItemPb.description;
       if (workItemPb.hasCompleted())
         map[WorkItem.completedField] = workItemPb.completed;
-      if (workItemPb.hasStage()) map[WorkItem.stageField] = workItemPb.stage;
+      if (workItemPb.hasStage()) map[WorkItem.stageField] = Stage.fromProtoBufToModelMap(workItemPb.stage);
       if (workItemPb.hasDueDate())
-        map[WorkItem.dueDateField] = workItemPb.dueDate;
+        map[WorkItem.dueDateField] = CommonUtils.dateTimeFromTimestamp(workItemPb.dueDate);
 
       if (workItemPb.checkItems.isNotEmpty) map[WorkItem.checkItemsField] =
           workItemPb.checkItems.map((ci) =>
