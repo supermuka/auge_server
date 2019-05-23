@@ -18,7 +18,6 @@ dart --snapshot=auge-server.dart.snapshot server.dart
 
 https://cloud.google.com/apis/design/standard_methods
 
-
 SERVER INSTALLATION
 
 Debian 9.0

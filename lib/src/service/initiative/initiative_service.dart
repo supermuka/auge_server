@@ -228,24 +228,28 @@ class InitiativeService extends InitiativeServiceBase {
           "leader_user_id": request.initiative.hasLeader() ? request.initiative.leader.id : null,
           "objective_id": request.initiative.hasObjective() ? request.initiative.objective.id : null,
           "group_id": request.initiative.hasGroup() ? request.initiative.group.id : null });
-
+/*
         for (Stage stage in request.initiative.stages) {
           stage.id = new Uuid().v4();
+          stage.version = 0;
 
           await ctx.query(
-              "INSERT INTO initiative.stages(id, name, index, state_id, initiative_id) VALUES"
+              "INSERT INTO initiative.stages(id, version, name, index, state_id, initiative_id) VALUES"
                   "(@id,"
+                  "@version,"
                   "@name,"
                   "@index,"
                   "@state_id,"
                   "@initiative_id)"
               , substitutionValues: {
             "id": stage.id,
+            "version": stage.version,
             "name": stage.name,
             "index": stage.index,
             "state_id": stage.hasState() ? stage.state.id : null,
             "initiative_id": request.initiative.id});
         }
+*/
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
@@ -273,7 +277,10 @@ class InitiativeService extends InitiativeServiceBase {
   Future<Empty> queryUpdateInitiative(InitiativeRequest request) async {
 
     // Recovery to log to history
-    Initiative previousInitiative = await querySelectInitiative(InitiativeGetRequest()..id = request.initiative.id);
+    Initiative previousInitiative = await querySelectInitiative(InitiativeGetRequest()
+      ..id = request.initiative.id
+      ..withProfile = true
+    );
 
     try {
 
@@ -305,7 +312,7 @@ class InitiativeService extends InitiativeServiceBase {
           if (result.isEmpty) {
             throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
           }
-
+/*
           // Stages
           StringBuffer stagesId = new StringBuffer();
           for (Stage stage in request.initiative.stages) {
@@ -371,6 +378,7 @@ class InitiativeService extends InitiativeServiceBase {
               throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
             }
           }
+*/
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -412,14 +420,14 @@ class InitiativeService extends InitiativeServiceBase {
     try {
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
-
+/*
         await ctx.query(
             "DELETE FROM initiative.stages stage"
                 " WHERE stage.initiative_id = @id"
             , substitutionValues: {
           "id": request.initiativeId});
 
-
+*/
         List<List<dynamic>> result = await ctx.query(
             "DELETE FROM initiative.initiatives initiative"
                 " WHERE initiative.id = @id AND initiative.version = @version"

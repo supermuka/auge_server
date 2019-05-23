@@ -136,21 +136,34 @@ class HistoryItem {
 
       Map<dynamic, dynamic> diff = Map.from(merge);
 
+      Map<dynamic, dynamic> diffSub;
       merge.forEach((k,v) {
         if (v is Map) {
-          if (v.containsKey(previousKey) || v.containsKey(currentKey)) {
-            if (v[previousKey] is List && v[currentKey] is List &&
-                DeepCollectionEquality().equals(v[previousKey], v[currentKey]))
-              diff.remove(k);
-            else if (v[previousKey] == v[currentKey]) {
+          if (v.isEmpty) {
+            diff.remove(k);
+          } else if (v.containsKey(previousKey) || v.containsKey(currentKey)) {
+            if (v[previousKey] is List && v[currentKey] is List) {
+              if (DeepCollectionEquality().equals(
+                  v[previousKey], v[currentKey]))
+                diff.remove(k);
+            } else if (v[previousKey] == v[currentKey]) {
               diff.remove(k);
             }
           } else {
-            diff[k] = processOnlyDiffPreviousCurrent(v);
+            diffSub = processOnlyDiffPreviousCurrent(v);
+
+            if (diffSub.isEmpty) {
+              diff.remove(k);
+            } else {
+              diff[k] = diffSub;
+            }
+            //diff[k] = processOnlyDiffPreviousCurrent(v);
           }
         }
       });
+
       return diff;
+
     }
 
     Map<dynamic, dynamic> withP = processPrevious(previous);

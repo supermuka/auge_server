@@ -28,6 +28,10 @@ class Stage {
   static final String indexField = 'index';
   int index;
 
+  Stage() {
+    state = State();
+  }
+
   stage_pb.Stage writeToProtoBuf() {
     stage_pb.Stage stagePb = stage_pb.Stage();
 
