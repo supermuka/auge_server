@@ -94,6 +94,7 @@ class Objective {
     if (this.organization != null) objectivePb.organization = this.organization.writeToProtoBuf();
     if (this.group != null) objectivePb.group = this.group.writeToProtoBuf();
     if (this.leader != null) objectivePb.leader = this.leader.writeToProtoBuf();
+    if (this.alignedTo != null) objectivePb.alignedTo = this.alignedTo.writeToProtoBuf();
 
     if (this.alignedWithChildren != null && this.alignedWithChildren.isNotEmpty) objectivePb.alignedWithChildren.addAll(this.alignedWithChildren.map((a) => a.writeToProtoBuf()));
     if (this.measures != null && this.measures.isNotEmpty) objectivePb.measures.addAll(this.measures.map((m) => m.writeToProtoBuf()));
@@ -119,6 +120,7 @@ class Objective {
     if (objectivePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(objectivePb.organization);
     if (objectivePb.hasGroup()) this.group = Group()..readFromProtoBuf(objectivePb.group);
     if (objectivePb.hasLeader()) this.leader = User()..readFromProtoBuf(objectivePb.leader);
+    if (objectivePb.hasAlignedTo()) this.alignedTo = Objective()..readFromProtoBuf(objectivePb.alignedTo);
     if (objectivePb.alignedWithChildren.isNotEmpty) this.alignedWithChildren = objectivePb.alignedWithChildren.map((o) => Objective()..readFromProtoBuf(o)).toList();
     if (objectivePb.measures.isNotEmpty) this.measures = objectivePb.measures.map((u) => Measure()..readFromProtoBuf(u)).toList();
   }
@@ -146,7 +148,8 @@ class Objective {
           .fromProtoBufToModelMap(objectivePb.organization, onlyIdAndSpecificationForDepthFields, true);
       if (objectivePb.hasLeader()) map[Objective.leaderField] =
           User.fromProtoBufToModelMap(objectivePb.leader, onlyIdAndSpecificationForDepthFields, true);
-
+      if (objectivePb.hasAlignedTo()) map[Objective.alignedToField] =
+          Objective.fromProtoBufToModelMap(objectivePb.alignedTo, onlyIdAndSpecificationForDepthFields, true);
       if (objectivePb.alignedWithChildren.isNotEmpty) map[Objective.alignedWithChildrenField] =
           objectivePb.alignedWithChildren.map((a) => Objective.fromProtoBufToModelMap(a, onlyIdAndSpecificationForDepthFields, true))
               .toList();

@@ -69,6 +69,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   // *** OBJECTIVES ***
   // alignedToRecursiveDeep: 0 not call; 1 call once; 2 call two, etc...
   static Future<List<Objective>> querySelectObjectives(ObjectiveGetRequest objectiveSelectRequest) async {
+
     List<List> results;
     // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
     String queryStatementColumns = "objective.id," //0
@@ -136,6 +137,9 @@ class ObjectiveService extends ObjectiveServiceBase {
         Objective objective;
         Group group;
 
+        if (!objectiveSelectRequest.hasAlignedToRecursive()) {
+          objectiveSelectRequest.alignedToRecursive = 1;
+        }
         for (var row in results) {
 
             measures =
@@ -149,10 +153,16 @@ class ObjectiveService extends ObjectiveServiceBase {
               ..withProfile = objectiveSelectRequest.withProfile);
           }
 
+
           if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0) {
             --objectiveSelectRequest.alignedToRecursive;
             alignedToObjective =
-            await ObjectiveService.querySelectObjective(objectiveSelectRequest.id = row[8]);
+            await ObjectiveService.querySelectObjective(ObjectiveGetRequest()
+              ..id = row[8]
+              ..alignedToRecursive = --objectiveSelectRequest.alignedToRecursive
+              ..withArchived = objectiveSelectRequest.withArchived
+              ..withMeasures = objectiveSelectRequest.withMeasures
+              ..withProfile = objectiveSelectRequest.withProfile);
           }
 
           // Organization
@@ -188,8 +198,23 @@ class ObjectiveService extends ObjectiveServiceBase {
             objective.alignedTo = alignedToObjective;
           if (group != null) objective.group = group;
 
-          objectives.add(objective);
 
+          if (objectiveSelectRequest.treeAlignedWithChildren) {
+            if (row[8] == null)
+              // Parent must be present in the list (objectives);
+              objectivesTree.add(objective);
+            else {
+              objectivesTree
+                  .singleWhere((o) => o.id == row[8])
+                  ?.alignedWithChildren
+                  ?.add(objective);
+            }
+          } else {
+            objectives.add(objective);
+          }
+
+
+          /*
           if (!objectiveSelectRequest.treeAlignedWithChildren) {
             // Parent must be present in the list (objectives);
             if (row[8] == null)
@@ -203,6 +228,8 @@ class ObjectiveService extends ObjectiveServiceBase {
 
             // objectives.singleWhere((o) => o.id == objective.alignedTo, orElse: )?.alignedWithChildren?.add(objective);
           }
+
+           */
         }
       }
 

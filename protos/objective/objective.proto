@@ -73,11 +73,10 @@ message ObjectiveGetRequest {
   string id = 1;
   string organization_id = 2;
   int32 aligned_to_recursive = 3;
-  bool with_measures = 4;
-  bool tree_aligned_with_children = 5;
+  bool tree_aligned_with_children = 4;
+  bool with_measures = 5;
   bool with_profile = 6;
-  bool with_history = 7;
-  bool with_archived = 8;
+  bool with_archived = 7;
 }
 
 // Response list of the objectives
