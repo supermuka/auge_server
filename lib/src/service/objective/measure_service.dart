@@ -172,6 +172,7 @@ class MeasureService extends MeasureServiceBase {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.measureInvalidArgument );
     }
 
+
     results = await (await AugeConnection.getConnection()).query(
         queryStatement, substitutionValues: substitutionValues);
 
@@ -306,7 +307,7 @@ class MeasureService extends MeasureServiceBase {
               " end_value = @end_value,"
              // " current_value = @current_value,"
               " objective_id = @objective_id,"
-              " measure_unit_id = @measure_unit_id,"
+              " measure_unit_id = @measure_unit_id"
               " WHERE id = @id AND version = @version - 1"
               " RETURNING true"
               , substitutionValues: {
@@ -362,7 +363,7 @@ class MeasureService extends MeasureServiceBase {
 
         List<List<dynamic>> result =  await ctx.query(
             "DELETE FROM objective.measures measure"
-                " WHERE measure.id = @id and measure.version = @version"
+                " WHERE measure.id = @id and measure.version = @version "
             "RETURNING true"
             , substitutionValues: {
           "id": request.measureId,
@@ -423,6 +424,8 @@ class MeasureService extends MeasureServiceBase {
       " WHERE measure_id = @measure_id";
       substitutionValues['measure_id'] = request.measureId;
     }
+
+    queryStatement += " ORDER BY date DESC";
 
     results = await (await AugeConnection.getConnection()).query(
         queryStatement, substitutionValues: substitutionValues);
@@ -541,8 +544,8 @@ class MeasureService extends MeasureServiceBase {
                 "current_value = @current_value, "
                 "comment = @comment, "
                 "measure_id = @measure_id, "
-                "version = @version"
-                "WHERE id = @id AND version = @version - 1"
+                "version = @version "
+                "WHERE id = @id AND version = @version - 1 "
                 "RETURNING true"
             , substitutionValues: {
           "id": request.measureProgress.id,
