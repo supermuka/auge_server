@@ -58,6 +58,10 @@ class UserProfileOrganization {
         map[UserProfileOrganization.userField] =
             User.fromProtoBufToModelMap(userProfileOrganizationPb.user, onlyIdAndSpecificationForDepthFields, true);
       }
+      if (userProfileOrganizationPb.hasOrganization())
+        map[UserProfileOrganization.organizationField] =
+            Organization.fromProtoBufToModelMap(
+                userProfileOrganizationPb.organization, onlyIdAndSpecificationForDepthFields, true);
     } else {
       if (userProfileOrganizationPb.hasId())
         map[UserProfileOrganization.idField] = userProfileOrganizationPb.id;

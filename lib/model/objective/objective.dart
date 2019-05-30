@@ -146,6 +146,8 @@ class Objective {
         map[Objective.endDateField] = CommonUtils.dateTimeFromTimestamp(objectivePb.endDate);
       if (objectivePb.hasOrganization()) Organization
           .fromProtoBufToModelMap(objectivePb.organization, onlyIdAndSpecificationForDepthFields, true);
+      if (objectivePb.hasGroup()) map[Objective.groupField] =
+          Group.fromProtoBufToModelMap(objectivePb.group, onlyIdAndSpecificationForDepthFields, true);
       if (objectivePb.hasLeader()) map[Objective.leaderField] =
           User.fromProtoBufToModelMap(objectivePb.leader, onlyIdAndSpecificationForDepthFields, true);
       if (objectivePb.hasAlignedTo()) map[Objective.alignedToField] =

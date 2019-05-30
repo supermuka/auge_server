@@ -344,29 +344,29 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
-        await ctx.query(
-            "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id "
-            , substitutionValues: {
-          "user_id": previousUserProfileOrganization.user.id});
-
         List<List<dynamic>> result = await ctx.query(
-            "DELETE FROM general.users u WHERE u.id = @id AND u.version = @version RETURNING true"
+            "DELETE FROM general.users_profile_organizations user_profile_organization "
+                "WHERE user_profile_organization.id = @id AND user_profile_organization.version = @version "
+                "RETURNING true"
             , substitutionValues: {
-          "id": previousUserProfileOrganization.user.id,
-          "version": previousUserProfileOrganization.user.version});
+          "id": request.userProfileOrganizationId,
+          "version": request.userProfileOrganizationVersion});
 
         // Optimistic concurrency control
         if (result.length == 0) {
           throw new GrpcError.failedPrecondition('Precondition Failed');
         }
 
-        result = await ctx.query(
-            "DELETE FROM general.users_profile_organizations user_profile_organization "
-            "WHERE user_profile_organization.id = @id AND user_profile_organization.version = @version "
-            "RETURNING true"
+        await ctx.query(
+            "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id "
             , substitutionValues: {
-          "id": request.userProfileOrganizationId,
-          "version": request.userProfileOrganizationVersion});
+          "user_id": previousUserProfileOrganization.user.id});
+
+        result = await ctx.query(
+            "DELETE FROM general.users u WHERE u.id = @id AND u.version = @version RETURNING true"
+            , substitutionValues: {
+          "id": previousUserProfileOrganization.user.id,
+          "version": previousUserProfileOrganization.user.version});
 
         // Optimistic concurrency control
         if (result.length == 0) {
@@ -388,7 +388,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
                     user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(
                         previousUserProfileOrganization, true), {})});
         }
-
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');

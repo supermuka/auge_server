@@ -72,7 +72,7 @@ class HistoryItemService extends HistoryItemServiceBase {
         "FROM general.history history_item "
         "WHERE history_item.organization_id = @organization_id "
         "AND history_item.system_module_index = @system_module_index "
-        "ORDER BY 6 DESC ";
+        "ORDER BY history_item.date_time DESC ";
 
     Map<String, dynamic> substitutionValues;
 
@@ -81,8 +81,6 @@ class HistoryItemService extends HistoryItemServiceBase {
     try {
       results = await (await AugeConnection.getConnection()).query(
           queryStatement, substitutionValues: substitutionValues);
-
-
 
       User user;
 
@@ -108,7 +106,6 @@ class HistoryItemService extends HistoryItemServiceBase {
             ..systemModuleIndex = row[5]
             ..systemFunctionIndex = row[6];
 
-
           if (row[7] != null) historyItem.dateTime = CommonUtils.timestampFromDateTime(row[7]);
 
           /*{
@@ -131,11 +128,8 @@ class HistoryItemService extends HistoryItemServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-
     return history;
-
   }
-
 
   static Future<HistoryItem> querySelectHistoryItem(HistoryItemGetRequest request, {Map<String, HistoryItem> cache}) async {
     if (cache != null && cache.containsKey(request.id)) {
@@ -151,6 +145,4 @@ class HistoryItemService extends HistoryItemServiceBase {
       }
     }
   }
-
-
 }
