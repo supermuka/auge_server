@@ -44,7 +44,7 @@ class Measure {
 
   Measure() {
     // lastHistoryItem = HistoryItem();
-    measureUnit = MeasureUnit();
+    // measureUnit = MeasureUnit();
     measureProgress = <MeasureProgress>[];
   }
 

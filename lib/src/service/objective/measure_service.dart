@@ -381,7 +381,7 @@ class MeasureService extends MeasureServiceBase {
                 "object_id": request.measureId,
                 "object_version": request.measureVersion,
                 "object_class_name": measure_m. Measure.className,
-                "system_module_index": SystemModule.initiatives.index,
+                "system_module_index": SystemModule.objectives.index,
                 "system_function_index": SystemFunction.delete.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": previousMeasure.name,
