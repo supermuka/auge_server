@@ -109,13 +109,13 @@ class WorkItemService extends WorkItemServiceBase {
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
     List<WorkItem> workItems = new List();
-    List<Stage> stages;
+    Stage stage;
     List<User> assignedToUsers;
     List<WorkItemCheckItem> checkItems;
     WorkItem workItem;
     for (var row in results) {
 
-      stages = await StageService.querySelectStages(StageGetRequest()..initiativeId = row[0]..id = row[6]);
+      stage = await StageService.querySelectStage(StageGetRequest()..id = row[6]);
 
       assignedToUsers = await querySelectWorkItemAssignedToUsers(row[0]);
 
@@ -125,7 +125,7 @@ class WorkItemService extends WorkItemServiceBase {
       if (row[3] != null) workItem.description = row[3];
       if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4]);
       if (row[5] != null) workItem.completed = row[5];
-      if ( stages.isNotEmpty) workItem.stage = stages?.first;
+      if (stage != null) workItem.stage = stage;
       if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
       if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
 
@@ -189,13 +189,13 @@ class WorkItemService extends WorkItemServiceBase {
 
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
-    List<User> assignedToUsers = new List();
+    List<User> assignedToUsers = List();
 
     User user;
 
     for (var row in results) {
 
-      user = await UserService.querySelectUser(UserGetRequest()..id = row[0]);
+      user = await UserService.querySelectUser(UserGetRequest()..id = row[0]..withProfile = true);
 
       assignedToUsers.add(user);
     }
@@ -207,7 +207,7 @@ class WorkItemService extends WorkItemServiceBase {
   static Future<IdResponse> queryInsertWorkItem(WorkItemRequest request) async {
 
     if (!request.workItem.hasId()) {
-      request.workItem.id = new Uuid().v4();
+      request.workItem.id = Uuid().v4();
     }
     request.workItem.version = 0;
     try {

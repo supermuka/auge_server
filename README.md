@@ -16,6 +16,8 @@ protoc --dart_out=grpc:lib/src/protos/generated -Iprotos protos/general/group.pr
 cd bin
 dart --snapshot=auge-server.dart.snapshot server.dart
 
+dart --snapshot=..\auge_server_grpc_web\bin\auge_server.dart.snapshot server.dart
+
 https://cloud.google.com/apis/design/standard_methods
 
 SERVER INSTALLATION

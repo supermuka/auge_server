@@ -473,6 +473,7 @@ class MeasureService extends MeasureServiceBase {
   /// Create current value of the [MeasureProgress]
   static Future<IdResponse> queryInsertMeasureProgress(
       MeasureProgressRequest request) async {
+
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         if (!request.measureProgress.hasId()) {
@@ -510,7 +511,7 @@ class MeasureService extends MeasureServiceBase {
               "system_module_index": SystemModule.objectives.index,
               "system_function_index": SystemFunction.create.index,
               "date_time": DateTime.now().toUtc(),
-              "description": request.measureProgress.currentValue,
+              ///"description": request.measureProgress.currentValue,
               "changed_values": history_item_m.HistoryItem.changedValuesJson({}, measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress, true))});
 
 
@@ -552,7 +553,7 @@ class MeasureService extends MeasureServiceBase {
           "version": ++request.measureProgress.version,
           "date": request.measureProgress.date == null
               ? dateTimeNow
-              : request.measureProgress.date,
+              : CommonUtils.dateTimeFromTimestamp(request.measureProgress.date),
           "current_value": request.measureProgress.hasCurrentValue() ? request.measureProgress.currentValue : null,
           "comment": request.measureProgress.hasComment() ? request.measureProgress.comment : null,
           "measure_id": request.hasMeasureId() ? request.measureId : null,
@@ -619,7 +620,7 @@ class MeasureService extends MeasureServiceBase {
                   "object_id": request.measureProgressId,
                   "object_version": request.measureProgressVersion,
                   "object_class_name": measure_m.MeasureProgress.className,
-                  "system_module_index": SystemModule.initiatives.index,
+                  "system_module_index": SystemModule.objectives.index,
                   "system_function_index": SystemFunction.delete.index,
                   "date_time": DateTime.now().toUtc(),
                   "description": previousMeasureProgress.currentValue,

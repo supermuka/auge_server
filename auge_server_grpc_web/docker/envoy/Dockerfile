@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/dart:2.3.1
+FROM envoyproxy/envoy:latest
 
-EXPOSE 9091
-CMD /usr/bin/dart /auge_server/bin/auge-server.dart.snapshot
+COPY envoy/envoy.yaml /etc/envoy/envoy.yaml
+
+CMD /usr/local/bin/envoy -c /etc/envoy/envoy.yaml -l trace --log-path /tmp/envoy_info.log

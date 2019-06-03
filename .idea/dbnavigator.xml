@@ -88,8 +88,7 @@ select * from objective.measures]]></console>
           <host value="localhost" />
           <port value="5432" />
           <database value="auge" />
-          <os-authentication value="false" />
-          <empty-authentication value="false" />
+          <type value="USER_PASSWORD" />
           <user value="postgres" />
           <deprecated-pwd value="c2Nod2ViZWw=" />
         </database>
@@ -127,7 +126,7 @@ select * from objective.measures]]></console>
           <max-connection-pool-size value="7" />
           <alternative-statement-delimiter value="" />
         </details>
-        <object-filters hide-empty-schemas="false">
+        <object-filters hide-empty-schemas="false" hide-pseudo-columns="false">
           <object-type-filter use-master-settings="true">
             <object-type name="SCHEMA" enabled="true" />
             <object-type name="USER" enabled="true" />
