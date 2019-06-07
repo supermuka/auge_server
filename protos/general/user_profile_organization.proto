@@ -61,5 +61,4 @@ message UserProfileOrganizationGetRequest {
 // Response list of the organization
 message UsersProfileOrganizationsResponse {
     repeated UserProfileOrganization users_profile_organizations = 1;
-    bool web_work_around = 2;
 }

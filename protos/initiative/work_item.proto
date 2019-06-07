@@ -63,7 +63,7 @@ message WorkItemDeleteRequest {
 // Response list of the WorkItems
 message WorkItemsResponse {
     repeated WorkItem workItems = 1;
-    bool webWorkAround = 2;
+    //bool webWorkAround = 2;
 }
 
 // Request for Work Item
@@ -93,7 +93,6 @@ message WorkItemCheckItem {
 // Response list of the WorkItemCheckItems
 message WorkItemCheckItemsResponse {
     repeated WorkItemCheckItem work_item_check_items = 1;
-    bool web_work_around = 2;
 }
 
 // Request for query param

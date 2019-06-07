@@ -17,7 +17,7 @@ class StateService extends StateServiceBase {
   Future<StatesResponse> getStates(ServiceCall call,
       Empty) async {
     StatesResponse statesResponse;
-    statesResponse = StatesResponse()..webWorkAround = true
+    statesResponse = StatesResponse()/*..webWorkAround = true*/
       ..states.addAll(
           await querySelectStates());
     return statesResponse;

@@ -36,15 +36,20 @@ class ObjectiveService extends ObjectiveServiceBase {
   Future<ObjectivesResponse> getObjectives(ServiceCall call,
       ObjectiveGetRequest request) async {
 
-    return ObjectivesResponse()..webWorkAround = true..objectives.addAll(await querySelectObjectives(request));
+    //return ObjectivesResponse();
+    return ObjectivesResponse()..objectives.addAll(await querySelectObjectives(request));
+
+    /*return ObjectivesResponse()/*..webWorkAround = true*/..objectives.addAll(await querySelectObjectives(request));*/
   }
 
   @override
   Future<Objective> getObjective(ServiceCall call,
       ObjectiveGetRequest request) async {
+
     Objective objective = await querySelectObjective(request);
     if (objective == null) throw new GrpcError.notFound("Objective not found.");
     return objective;
+
   }
 
   @override
@@ -64,6 +69,7 @@ class ObjectiveService extends ObjectiveServiceBase {
       ObjectiveDeleteRequest request) async {
     return queryDeleteObjective(request);
   }
+
 
   // QUERY
   // *** OBJECTIVES ***
@@ -86,11 +92,11 @@ class ObjectiveService extends ObjectiveServiceBase {
 
     String queryStatementWhere = "";
     Map<String, dynamic> substitutionValues;
-    if (objectiveSelectRequest.id != null && objectiveSelectRequest.id.isNotEmpty) {
+    if (objectiveSelectRequest.hasId() && objectiveSelectRequest.id.isNotEmpty) {
       queryStatementWhere = " objective.id = @id";
       substitutionValues = {"id": objectiveSelectRequest.id};
 
-    } else if (objectiveSelectRequest.organizationId != null && objectiveSelectRequest.organizationId.isNotEmpty) {
+    } else if (objectiveSelectRequest.hasOrganizationId() && objectiveSelectRequest.organizationId.isNotEmpty) {
       queryStatementWhere = " objective.organization_id = @organization_id";
       substitutionValues = {"organization_id": objectiveSelectRequest.organizationId};
 
@@ -123,9 +129,9 @@ class ObjectiveService extends ObjectiveServiceBase {
     try {
       results = await (await AugeConnection.getConnection()).query(
           queryStatement, substitutionValues: substitutionValues);
-
       List<Objective> objectives = new List();
       List<Objective> objectivesTree = new List();
+      Map<String, Objective> objectivesTreeMapAux = {};
 
       if (results != null && results.isNotEmpty) {
         Organization organization; // = await _augeApi.getOrganizationById(organizationId);
@@ -140,6 +146,7 @@ class ObjectiveService extends ObjectiveServiceBase {
         if (!objectiveSelectRequest.hasAlignedToRecursive()) {
           objectiveSelectRequest.alignedToRecursive = 1;
         }
+
         for (var row in results) {
 
             measures =
@@ -152,7 +159,6 @@ class ObjectiveService extends ObjectiveServiceBase {
               ..id = row[7]
               ..withProfile = objectiveSelectRequest.withProfile);
           }
-
 
           if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0) {
             --objectiveSelectRequest.alignedToRecursive;
@@ -200,14 +206,13 @@ class ObjectiveService extends ObjectiveServiceBase {
 
 
           if (objectiveSelectRequest.treeAlignedWithChildren) {
+            objectivesTreeMapAux[objective.id] = objective;
             if (row[8] == null)
               // Parent must be present in the list (objectives);
               objectivesTree.add(objective);
             else {
-              objectivesTree
-                  .singleWhere((o) => o.id == row[8])
-                  ?.alignedWithChildren
-                  ?.add(objective);
+              objectivesTreeMapAux[row[8]].alignedWithChildren
+                  .add(objective);
             }
           } else {
             objectives.add(objective);
@@ -242,6 +247,7 @@ class ObjectiveService extends ObjectiveServiceBase {
       rethrow;
     }
   }
+
 
   static Future<Objective> querySelectObjective(ObjectiveGetRequest request) async {
 
@@ -382,7 +388,7 @@ class ObjectiveService extends ObjectiveServiceBase {
       rethrow;
     }
 
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 
   /// Delete an objective by [id]
@@ -430,6 +436,6 @@ class ObjectiveService extends ObjectiveServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 }

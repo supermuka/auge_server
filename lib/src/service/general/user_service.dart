@@ -17,7 +17,7 @@ class UserService extends UserServiceBase {
   @override
   Future<UsersResponse> getUsers(ServiceCall call,
       UserGetRequest request) async {
-    return UsersResponse()..webWorkAround = true..users.addAll(await querySelectUsers(request));
+    return UsersResponse()/*..webWorkAround = true*/..users.addAll(await querySelectUsers(request));
   }
 
   @override

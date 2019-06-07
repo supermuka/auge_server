@@ -29,7 +29,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
   @override
   Future<UsersProfileOrganizationsResponse> getUsersProfileOrganizations(ServiceCall call,
       UserProfileOrganizationGetRequest userProfileOrganizationGetRequest) async {
-    return UsersProfileOrganizationsResponse()..webWorkAround = true..usersProfileOrganizations.addAll(await querySelectUsersProfileOrganizations(userProfileOrganizationGetRequest));
+    return UsersProfileOrganizationsResponse()/*..webWorkAround = true*/..usersProfileOrganizations.addAll(await querySelectUsersProfileOrganizations(userProfileOrganizationGetRequest));
   }
 
   @override
@@ -334,7 +334,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 
   static Future<Empty> queryDeleteUserProfileOrganization(UserProfileOrganizationDeleteRequest request) async {
@@ -393,6 +393,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 }

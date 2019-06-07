@@ -28,7 +28,7 @@ class StageService extends StageServiceBase {
   Future<StagesResponse> getStages(ServiceCall call,
       StageGetRequest stageRequest) async {
     StagesResponse statesResponse;
-    statesResponse = StagesResponse()..webWorkAround = true
+    statesResponse = StagesResponse()/*..webWorkAround = true*/
       ..stages.addAll(
           await querySelectStages(stageRequest));
     return statesResponse;
@@ -241,7 +241,7 @@ class StageService extends StageServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 
   /// Delete a stage by [id]
@@ -287,6 +287,6 @@ class StageService extends StageServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 }

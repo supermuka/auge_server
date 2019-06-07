@@ -67,5 +67,4 @@ message UserGetRequest {
 // Response list of the organization
 message UsersResponse {
     repeated User users = 1;
-    bool web_work_around = 2;
 }

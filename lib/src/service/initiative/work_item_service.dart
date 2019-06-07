@@ -31,7 +31,7 @@ class WorkItemService extends WorkItemServiceBase {
   Future<WorkItemsResponse> getWorkItems(ServiceCall call,
       WorkItemGetRequest workItemGetRequest) async {
     WorkItemsResponse workItemsResponse;
-    workItemsResponse = WorkItemsResponse()..webWorkAround = true
+    workItemsResponse = WorkItemsResponse()/*..webWorkAround = true*/
       ..workItems.addAll(
           await querySelectWorkItems(workItemGetRequest));
     return workItemsResponse;
@@ -461,7 +461,7 @@ class WorkItemService extends WorkItemServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 
   /// Delete a WorkItem by [id]
@@ -516,6 +516,6 @@ class WorkItemService extends WorkItemServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 }

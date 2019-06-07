@@ -29,7 +29,7 @@ class MeasureService extends MeasureServiceBase {
   Future<MeasureUnitsResponse> getMeasureUnits(ServiceCall call,
       Empty) async {
     MeasureUnitsResponse measureUnitsResponse;
-    measureUnitsResponse = MeasureUnitsResponse()..webWorkAround = true
+    measureUnitsResponse = MeasureUnitsResponse()/*..webWorkAround = true*/
       ..measureUnits.addAll(
           await querySelectMeasureUnits());
     return measureUnitsResponse;
@@ -39,7 +39,7 @@ class MeasureService extends MeasureServiceBase {
   Future<MeasuresResponse> getMeasures(ServiceCall call,
       MeasureGetRequest request) async {
     MeasuresResponse measuresResponse;
-    measuresResponse = MeasuresResponse()..webWorkAround = true
+    measuresResponse = MeasuresResponse()/*..webWorkAround = true*/
       ..measures.addAll(
           await querySelectMeasures(request));
     return measuresResponse;
@@ -77,7 +77,7 @@ class MeasureService extends MeasureServiceBase {
   Future<MeasureProgressesResponse> getMeasureProgresses(ServiceCall call,
       MeasureProgressGetRequest request) async {
     return
-    MeasureProgressesResponse()..webWorkAround = true..measureProgresses.addAll(await querySelectMeasureProgresses(request));
+    MeasureProgressesResponse()/*..webWorkAround = true*/..measureProgresses.addAll(await querySelectMeasureProgresses(request));
   }
 
   @override
@@ -350,7 +350,7 @@ class MeasureService extends MeasureServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 
   /// Delete a [Measure] by id
@@ -395,7 +395,7 @@ class MeasureService extends MeasureServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 
   // *** MEASURES PROGRESS ***
@@ -587,7 +587,7 @@ class MeasureService extends MeasureServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 
   /// Delete a [MeasureProgress] by id
@@ -634,6 +634,6 @@ class MeasureService extends MeasureServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 }

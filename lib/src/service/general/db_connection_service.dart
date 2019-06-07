@@ -9,6 +9,7 @@ class AugeConnection {
 
   static PostgreSQLConnection _connection;
 
+  /*
   static void createConnection() {
    // _connection = new PostgreSQLConnection(
    //     "35.231.201.73", 5432, "levius", username: "postgres", password: "admin@levius#2018");
@@ -16,19 +17,23 @@ class AugeConnection {
       _connection = new PostgreSQLConnection(
          /* "localhost", 5432, "levius", username: "postgres", */
          /* "localhost", 5432, "auge", username: "postgres", */
-          "host.docker.internal", 5432, "auge", username: "postgres",
-          password: "schwebel");
+        /* "host.docker.internal", 5432, "auge", username: "postgres", */
+         "localhost", 5432, "auge", username: "postgres",
+          password: "admin@levius#2018");
       _connection.open();
     }
   }
+  */
 
   static Future<PostgreSQLConnection> getConnection() async {
     if (_connection == null || _connection.isClosed) {
       _connection = new PostgreSQLConnection(
          /* "localhost", 5432, "levius", username: "postgres", */
-         /* "localhost", 5432, "auge", username: "postgres", */
-          "host.docker.internal", 5432, "auge", username: "postgres",
-          password: "schwebel");
+          /* "172.18.83.17", 5432, "auge", username: "postgres", */
+
+           //"10.128.0.2", 5432, "auge", username: "postgres",
+           "host.docker.internal", 5432, "auge", username: "postgres",
+          password: "admin@levius#2018");
       await _connection.open();
     }
     return _connection;

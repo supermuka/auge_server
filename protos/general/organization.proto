@@ -51,5 +51,4 @@ message OrganizationGetRequest {
 // Response list of the organization
 message OrganizationsResponse {
     repeated Organization organizations = 1;
-    bool web_work_around = 2;
 }

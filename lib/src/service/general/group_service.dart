@@ -45,7 +45,7 @@ class GroupService extends GroupServiceBase {
   Future<GroupsResponse> getGroups(ServiceCall call,
       GroupGetRequest request) async {
     try {
-      return GroupsResponse()..webWorkAround = true..groups.addAll(await querySelectGroups(request));
+      return GroupsResponse()/*..webWorkAround = true*/..groups.addAll(await querySelectGroups(request));
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -343,7 +343,7 @@ class GroupService extends GroupServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 
   static Future<Empty> queryDeleteGroup(GroupDeleteRequest request) async {
@@ -394,7 +394,7 @@ class GroupService extends GroupServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 
   // *** GROUP TYPES ***

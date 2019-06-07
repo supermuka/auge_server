@@ -70,7 +70,6 @@ message MeasureDeleteRequest {
 // Response list of the measures
 message MeasuresResponse {
     repeated Measure measures = 1;
-    bool web_work_around = 2;
 }
 
 // Request for query select
@@ -90,7 +89,6 @@ message MeasureUnit {
 // Response list of the measureUnits
 message MeasureUnitsResponse {
     repeated MeasureUnit measureUnits = 1;
-    bool web_work_around = 2;
 }
 
 // Message to respective domain object.
@@ -125,7 +123,6 @@ message MeasureProgressDeleteRequest {
 // Response list of the MeasureProgress
 message MeasureProgressesResponse {
     repeated MeasureProgress measure_progresses = 1;
-    bool web_work_around = 2;
 }
 
 // Request for query select

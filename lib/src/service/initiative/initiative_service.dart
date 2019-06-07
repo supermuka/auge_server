@@ -38,7 +38,7 @@ class InitiativeService extends InitiativeServiceBase {
   Future<InitiativesResponse> getInitiatives(ServiceCall call,
       InitiativeGetRequest initiativeGetRequest) async {
     InitiativesResponse initiativesResponse;
-    initiativesResponse = InitiativesResponse()..webWorkAround = true
+    initiativesResponse = InitiativesResponse()/*..webWorkAround = true*/
       ..initiatives.addAll(
           await querySelectInitiatives(initiativeGetRequest));
     return initiativesResponse;
@@ -409,7 +409,7 @@ class InitiativeService extends InitiativeServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 
   /// Delete an initiative by [id]
@@ -461,6 +461,6 @@ class InitiativeService extends InitiativeServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()..webWorkAround = true;
+    return Empty()/*..webWorkAround = true*/;
   }
 }

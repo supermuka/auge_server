@@ -52,7 +52,6 @@ message StageDeleteRequest {
 // Response list of the stages
 message StagesResponse {
     repeated Stage stages = 1;
-    bool web_work_around = 2;
 }
 
 // Request for query param

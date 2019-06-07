@@ -39,5 +39,5 @@ message HistoryItemGetRequest {
 // Response list of the history item
 message HistoryResponse {
    repeated HistoryItem history = 1;
-   bool webListWorkAround = 2;
+   //bool webListWorkAround = 2;
 }

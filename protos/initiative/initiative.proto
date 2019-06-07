@@ -66,7 +66,6 @@ message InitiativeDeleteRequest {
 // Response list of the stages
 message InitiativesResponse {
     repeated Initiative initiatives = 1;
-    bool web_work_around = 2;
 }
 
 // Request for query param

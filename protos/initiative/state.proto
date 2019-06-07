@@ -31,7 +31,6 @@ message State {
 // Response list of the states
 message StatesResponse {
     repeated State states = 1;
-    bool web_work_around = 2;
 }
 
 message StateGetRequest {

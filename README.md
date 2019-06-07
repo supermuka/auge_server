@@ -24,6 +24,10 @@ SERVER INSTALLATION
 
 Debian 9.0
 
+DOCKER
+
+https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-debian-9
+
 
 DATABASE
 
@@ -32,6 +36,8 @@ Postgresql 9.6 on gcloud.
 https://cloud.google.com/community/tutorials/setting-up-postgres
 
 user/pass: postgres/admin@levius#2018
+
+https://stackoverflow.com/questions/31249112/allow-docker-container-to-connect-to-a-local-host-postgres-database
 
 
 APACHE
