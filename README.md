@@ -84,11 +84,36 @@ https://www.digitalocean.com/community/tutorials/how-to-create-a-ssl-certificate
 https://certbot.eff.org/lets-encrypt/debianstretch-apache
 https://dart-lang.github.io/server/tls-ssl.html
 
-
-
-
 API RETURN
 
 Collection always return a list instance that maybe empty, not a error.
 Object/Message if not found, return a error because it is considerated a resource.
 PUT and POST return a new resource. See https://medium.com/studioarmix/learn-restful-api-design-ideals-c5ec915a430f (best practice), https://stackoverflow.com/questions/797834/should-a-restful-put-operation-return-something
+
+
+LDAP
+
+https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-openldap-and-phpldapadmin-on-ubuntu-16-04
+
+Example:
+https://www.dynatrace.com/support/help/setup-and-configuration/dynatrace-managed/users-and-groups-setup/manage-users-and-groups-with-ldap/
+https://support.sugarcrm.com/Documentation/Sugar_Versions/9.0/Ent/Administration_Guide/Password_Management/index.html
+https://avinetworks.com/docs/18.2/ldap-configuration-examples/
+https://avinetworks.com/docs/18.2/ldap-authentication/
+https://docs.microsoft.com/en-us/windows/desktop/adschema/a-useraccountcontrol
+https://community.atlassian.com/t5/Jira-questions/Ignoring-disabled-users-in-LDAP-Active-Directory/qaq-p/451709
+https://stackoverflow.com/questions/18177486/login-to-ldap-with-uid-instead-of-cn-in-dn-input
+
+ldap vs ad - groups
+https://www.perforce.com/manuals/p4sag/Content/P4SAG/security.ldap.groups.html
+
+
+
+https://serverfault.com/questions/567776/which-field-to-use-when-authenticating-against-active-directory
+https://blogs.msdn.microsoft.com/openspecification/2009/07/10/understanding-unique-attributes-in-active-directory/
+https://msdn.microsoft.com/en-us/windows/desktop/aa366101
+https://docs.microsoft.com/pt-br/windows/desktop/AD/naming-properties
+
+bug:
+
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=599585

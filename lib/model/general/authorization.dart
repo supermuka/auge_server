@@ -9,6 +9,7 @@ enum SystemModule { users,
                     groups,
                     organizations,
                     organization_profile,
+                    configuration,
                     objectives,
                     initiatives }
 

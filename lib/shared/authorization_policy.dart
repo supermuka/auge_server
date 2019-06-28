@@ -104,6 +104,16 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
         SystemFunction.update: []
       });
 
+    // Object: Configuration
+    authorizations.add(new Authorization()
+      ..authorizationRole = SystemRole.superAdmin
+      ..authorizationModule = SystemModule.configuration
+      ..authorizationFunctionContraints =
+      {
+        SystemFunction.read: [],
+        SystemFunction.update: []
+      });
+
     // Role: Admin
     // Object:  User
     authorizations.add(new Authorization()
