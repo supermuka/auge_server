@@ -6,6 +6,23 @@ import 'package:auge_server/model/general/organization.dart';
 // ignore_for_file: uri_has_not_been_generated
 import 'package:auge_server/src/protos/generated/general/configuration.pb.dart' as configuration_pb;
 
+enum DirectoryServiceStatus {
+  success,
+  errorException,
+  errorNotConnected,
+  errorNotBindedInvalidCredentials,
+  errorGroupFilterInvalid,
+  errorGroupNotFound,
+  errorManyGroupsFound,
+  errorGroupMemberAttributeNotFound,
+  errorUserNotFound,
+  errorLoginAttribute,
+  errorEmailAttribute,
+  errorFirstNameAttribute,
+  errorLastNameAttribute
+}
+
+
 /// Domain model class to represent a relationship between users and organizations
 class Configuration {
   static final String className = 'Configuration';
