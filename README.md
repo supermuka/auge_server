@@ -39,6 +39,9 @@ user/pass: postgres/admin@levius#2018
 
 https://stackoverflow.com/questions/31249112/allow-docker-container-to-connect-to-a-local-host-postgres-database
 
+table naming
+https://medium.com/@fbnlsr/the-table-naming-dilemma-singular-vs-plural-dc260d90aaff
+
 
 APACHE
 
@@ -103,6 +106,7 @@ https://avinetworks.com/docs/18.2/ldap-authentication/
 https://docs.microsoft.com/en-us/windows/desktop/adschema/a-useraccountcontrol
 https://community.atlassian.com/t5/Jira-questions/Ignoring-disabled-users-in-LDAP-Active-Directory/qaq-p/451709
 https://stackoverflow.com/questions/18177486/login-to-ldap-with-uid-instead-of-cn-in-dn-input
+https://docs.moodle.org/37/en/LDAP_authentication
 
 ldap vs ad - groups
 https://www.perforce.com/manuals/p4sag/Content/P4SAG/security.ldap.groups.html

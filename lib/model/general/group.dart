@@ -50,7 +50,7 @@ class Group {
     return groupPb;
   }
 
-  readFromProtoBuf(group_pb.Group groupPb) {
+  void readFromProtoBuf(group_pb.Group groupPb) {
     if (groupPb.hasId()) this.id = groupPb.id;
     if (groupPb.hasVersion()) this.version = groupPb.version;
     if (groupPb.hasName()) this.name = groupPb.name;

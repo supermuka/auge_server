@@ -24,7 +24,7 @@ import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/user_profile_organization_service.dart';
 import 'package:auge_server/src/service/general/group_service.dart';
-import 'package:auge_server/src/service/general/configuration_service.dart';
+import 'package:auge_server/src/service/general/organization_configuration_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
 import 'package:auge_server/src/service/objective/measure_service.dart';
 import 'package:auge_server/src/service/initiative/initiative_service.dart';
@@ -35,9 +35,9 @@ import 'package:auge_server/src/service/initiative/work_item_service.dart';
 Future<void> main(List<String> args) async {
   final server = new Server([
     CommonService(),
-    ConfigurationService(),
-    HistoryItemService(),
     OrganizationService(),
+    OrganizationConfigurationService(),
+    HistoryItemService(),
     UserService(),
     UserProfileOrganizationService(),
     GroupService(),

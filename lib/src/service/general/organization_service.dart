@@ -153,31 +153,42 @@ class OrganizationService extends OrganizationServiceBase {
     Organization previousOrganization = await querySelectOrganization(OrganizationGetRequest()..id = request.organization.id);
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
-        await ctx.query(
+        List<List<dynamic>> result = await ctx.query(
             "UPDATE general.organizations SET name = @name,"
                 " version = @version,"
                 " code = @code"
                 " WHERE id = @id AND version = @version - 1"
+                " RETURNING true"
             , substitutionValues: {
           "id": request.organization.id,
           "version": ++request.organization.version,
           "name": request.organization.name,
           "code": request.organization.code});
 
-        // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
-          "user_id": request.authenticatedUserId,
-          "organization_id": request.authenticatedOrganizationId,
-          "object_id": request.organization.id,
-          "object_version": request.organization.version,
-          "object_class_name": organization_m.Organization.className,
-          "system_module_index": SystemModule.groups.index,
-          "system_function_index": SystemFunction.update.index,
-          "date_time": DateTime.now().toUtc(),
-          "description": request.organization.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson(organization_m.Organization.fromProtoBufToModelMap(previousOrganization, true), organization_m.Organization.fromProtoBufToModelMap(request.organization, true))});
-
+        // Optimistic concurrency control
+        if (result.length == 0) {
+          throw new GrpcError.failedPrecondition('Precondition Failed');
+        } else {
+          // Create a history item
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authenticatedUserId,
+                "organization_id": request.authenticatedOrganizationId,
+                "object_id": request.organization.id,
+                "object_version": request.organization.version,
+                "object_class_name": organization_m.Organization.className,
+                "system_module_index": SystemModule.groups.index,
+                "system_function_index": SystemFunction.update.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": request.organization.name,
+                "changed_values": history_item_m.HistoryItem.changedValuesJson(
+                    organization_m.Organization.fromProtoBufToModelMap(
+                        previousOrganization, true),
+                    organization_m.Organization.fromProtoBufToModelMap(
+                        request.organization, true))});
+        }
       });
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;

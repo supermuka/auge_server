@@ -25,7 +25,7 @@ dependencies:
   #    ref: master
       #url: git://github.com/dart-archive/rpc.git
       #ref: experimental-mirrors-refactor
-  protoc_plugin: 17.0.2
+  #protoc_plugin: 17.0.2
   postgres: ^1.0.2
   uuid: ^2.0.2
   #http: ^0.12.0
@@ -47,6 +47,7 @@ dev_dependencies:
   test: ^1.6.3
 
 dependency_overrides:
+  #googleapis: 0.53.0
   #protobuf: ^0.13.11
   #grpc:
   #  git:

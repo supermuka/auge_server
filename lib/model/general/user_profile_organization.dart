@@ -51,7 +51,7 @@ class UserProfileOrganization {
   static Map<String, dynamic> fromProtoBufToModelMap(user_profile_organization_pb.UserProfileOrganization userProfileOrganizationPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
-    if (onlyIdAndSpecificationForDepthFields && !isDeep) {
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
       if (userProfileOrganizationPb.hasId())
         map[UserProfileOrganization.idField] = userProfileOrganizationPb.id;
       if (userProfileOrganizationPb.hasUser()) {
