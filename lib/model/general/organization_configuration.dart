@@ -18,12 +18,11 @@ enum DirectoryServiceStatus {
   errorManyGroupsFound,
   errorGroupMemberAttributeNotFound,
   errorUserNotFound,
-  errorLoginAttribute,
+  errorAdditionalIdAttribute,
   errorEmailAttribute,
   errorFirstNameAttribute,
   errorLastNameAttribute
 }
-
 
 /// Domain model class to represent a relationship between users and organizations
 class OrganizationConfiguration {
@@ -34,6 +33,9 @@ class OrganizationConfiguration {
   String organizationId;
   static final String versionField = 'version';
   int version;
+
+  static final String domainField = 'domain';
+  String domain;
 
   static final String directoryServiceEnabledField = 'directoryServiceEnabled';
   bool directoryServiceEnabled;
@@ -54,6 +56,7 @@ class OrganizationConfiguration {
 
     if (this.organizationId != null) organizationConfigurationPb.organizationId = this.organizationId;
     if (this.version != null) organizationConfigurationPb.version = this.version;
+    if (this.domain != null) organizationConfigurationPb.domain = this.domain;
     if (this.directoryServiceEnabled != null) organizationConfigurationPb.directoryServiceEnabled = this.directoryServiceEnabled;
     if (this.directoryService != null) organizationConfigurationPb.directoryService = this.directoryService.writeToProtoBuf();
   //  if (this.organization != null) configurationPb.organization = this.organization.writeToProtoBuf();
@@ -64,6 +67,7 @@ class OrganizationConfiguration {
   void readFromProtoBuf(organization_configuration_pb.OrganizationConfiguration organizationConfigurationPb) {
     if (organizationConfigurationPb.hasOrganizationId()) this.organizationId = organizationConfigurationPb.organizationId;
     if (organizationConfigurationPb.hasVersion()) this.version = organizationConfigurationPb.version;
+    if (organizationConfigurationPb.hasDomain()) this.domain = organizationConfigurationPb.domain;
     if (organizationConfigurationPb.hasDirectoryServiceEnabled()) this.directoryServiceEnabled = organizationConfigurationPb.directoryServiceEnabled;
     if (organizationConfigurationPb.hasDirectoryService()) this.directoryService = DirectoryService()..readFromProtoBuf(organizationConfigurationPb.directoryService);
  //   if (organizationConfigurationPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(organizationConfigurationPb.organization);
@@ -82,6 +86,9 @@ class OrganizationConfiguration {
                 configurationPb.organization, onlyIdAndSpecificationForDepthFields, true);
 
        */
+
+      if (organizationConfigurationPb.hasDomain())
+        map[OrganizationConfiguration.domainField] = organizationConfigurationPb.domain;
     } else {
 
       if (organizationConfigurationPb.hasOrganizationId())
@@ -114,16 +121,17 @@ class DirectoryService {
   static final String className = 'DirectoryServiceConfiguration';
 
   // CONNECTION
-  static final String syncIntervalField = 'syncInterval';
-  int syncInterval;
-  static final String lastSyncField = 'lastSync';
-  DateTime lastSync;
   static final String hostAddressField = 'hostAddress';
   String hostAddress;
   static final String portField = 'port';
   int port;
   static final String sslTlsField = 'sslTls';
   bool sslTls;
+  static final String syncIntervalField = 'syncInterval';
+  int syncInterval;
+  static final String lastSyncField = 'lastSync';
+  DateTime lastSync;
+
 
   // ADMIN
   static final String adminBindDNField = 'adminBindDN';
@@ -148,23 +156,28 @@ class DirectoryService {
   int userSearchScope;
   static final String userSearchFilterField = 'userSearchFilter';
   String userSearchFilter;
-  static final String userLoginAttributeField = 'userLoginAttribute';
-  String userLoginAttribute;
+  // AD objectGUID or OpenLDAP entryUUID
+  static final String userIdAttributeField = 'userIdAttribute';
+  String userIdAttribute;
+  // AD samAccountName / UserPrincipalName or OpenLDAP uid
+  static final String userAdditionalIdAttributeField = 'userAdditionalIdAttribute';
+  String userAdditionalIdAttribute;
+  static final String userEmailAttributeField = 'userEmailAttribute';
+  String userEmailAttribute;
   static final String userFirstNameAttributeField = 'userFirstNameAttribute';
   String userFirstNameAttribute;
   static final String userLastNameAttributeField = 'userLastNameAttribute';
   String userLastNameAttribute;
-  static final String userEmailAttributeField = 'userEmailAttribute';
-  String userEmailAttribute;
 
   organization_configuration_pb.DirectoryService writeToProtoBuf() {
     organization_configuration_pb.DirectoryService directoryServicePb = organization_configuration_pb.DirectoryService();
 
-    if (this.syncInterval != null) directoryServicePb.syncInterval = this.syncInterval;
-    if (this.lastSync != null) directoryServicePb.lastSync = CommonUtils.timestampFromDateTime(this.lastSync);
+
     if (this.hostAddress != null) directoryServicePb.hostAddress = this.hostAddress;
     if (this.port != null) directoryServicePb.port = this.port;
     if (this.sslTls != null) directoryServicePb.sslTls = this.sslTls;
+    if (this.syncInterval != null) directoryServicePb.syncInterval = this.syncInterval;
+    if (this.lastSync != null) directoryServicePb.lastSync = CommonUtils.timestampFromDateTime(this.lastSync);
     if (this.adminBindDN != null) directoryServicePb.adminBindDN = this.adminBindDN;
     if (this.adminPassword != null) directoryServicePb.adminPassword = this.adminPassword;
     if (this.groupSearchDN != null) directoryServicePb.groupSearchDN = this.groupSearchDN;
@@ -174,7 +187,8 @@ class DirectoryService {
     if (this.userSearchDN != null) directoryServicePb.userSearchDN = this.userSearchDN;
     if (this.userSearchScope != null) directoryServicePb.userSearchScope = this.userSearchScope;
     if (this.userSearchFilter != null) directoryServicePb.userSearchFilter = this.userSearchFilter;
-    if (this.userLoginAttribute != null) directoryServicePb.userLoginAttribute = this.userLoginAttribute;
+    if (this.userIdAttribute != null) directoryServicePb.userIdAttribute = this.userIdAttribute;
+    if (this.userAdditionalIdAttribute != null) directoryServicePb.userAdditionalIdAttribute = this.userAdditionalIdAttribute;
     if (this.userFirstNameAttribute != null) directoryServicePb.userFirstNameAttribute = this.userFirstNameAttribute;
     if (this.userLastNameAttribute != null) directoryServicePb.userLastNameAttribute = this.userLastNameAttribute;
     if (this.userEmailAttribute != null) directoryServicePb.userEmailAttribute = this.userEmailAttribute;
@@ -184,11 +198,11 @@ class DirectoryService {
 
   void readFromProtoBuf(organization_configuration_pb.DirectoryService directoryServicePb) {
 
-    if (directoryServicePb.hasSyncInterval()) this.syncInterval = directoryServicePb.syncInterval;
-    if (directoryServicePb.hasLastSync()) this.lastSync = CommonUtils.dateTimeFromTimestamp(directoryServicePb.lastSync);
     if (directoryServicePb.hasHostAddress()) this.hostAddress = directoryServicePb.hostAddress;
     if (directoryServicePb.hasPort()) this.port = directoryServicePb.port;
     if (directoryServicePb.hasSslTls()) this.sslTls = directoryServicePb.sslTls;
+    if (directoryServicePb.hasSyncInterval()) this.syncInterval = directoryServicePb.syncInterval;
+    if (directoryServicePb.hasLastSync()) this.lastSync = CommonUtils.dateTimeFromTimestamp(directoryServicePb.lastSync);
     if (directoryServicePb.hasAdminBindDN()) this.adminBindDN = directoryServicePb.adminBindDN;
     if (directoryServicePb.hasAdminPassword()) this.adminPassword = directoryServicePb.adminPassword;
     if (directoryServicePb.hasGroupSearchDN()) this.groupSearchDN = directoryServicePb.groupSearchDN;
@@ -198,7 +212,8 @@ class DirectoryService {
     if (directoryServicePb.hasUserSearchDN()) this.userSearchDN = directoryServicePb.userSearchDN;
     if (directoryServicePb.hasUserSearchScope()) this.userSearchScope = directoryServicePb.userSearchScope;
     if (directoryServicePb.hasUserSearchFilter()) this.userSearchFilter = directoryServicePb.userSearchFilter;
-    if (directoryServicePb.hasUserLoginAttribute()) this.userLoginAttribute = directoryServicePb.userLoginAttribute;
+    if (directoryServicePb.hasUserIdAttribute()) this.userIdAttribute = directoryServicePb.userIdAttribute;
+    if (directoryServicePb.hasUserAdditionalIdAttribute()) this.userAdditionalIdAttribute = directoryServicePb.userAdditionalIdAttribute;
     if (directoryServicePb.hasUserFirstNameAttribute()) this.userFirstNameAttribute = directoryServicePb.userFirstNameAttribute;
     if (directoryServicePb.hasUserLastNameAttribute()) this.userLastNameAttribute = directoryServicePb.userLastNameAttribute;
     if (directoryServicePb.hasUserEmailAttribute()) this.userEmailAttribute = directoryServicePb.userEmailAttribute;
@@ -218,6 +233,7 @@ class DirectoryService {
                 configurationPb.organization, onlyIdAndSpecificationForDepthFields, true);
 
        */
+
     } else {
 
       if (directoryServicePb.hasHostAddress())
@@ -264,9 +280,14 @@ class DirectoryService {
         map[DirectoryService.userSearchFilterField] =
             directoryServicePb.userSearchFilter;
 
-      if (directoryServicePb.hasUserLoginAttribute())
-        map[DirectoryService.userLoginAttributeField] =
-            directoryServicePb.userLoginAttribute;
+      if (directoryServicePb.hasUserIdAttribute())
+        map[DirectoryService.userIdAttributeField] =
+            directoryServicePb.userIdAttribute;
+
+      if (directoryServicePb.hasUserAdditionalIdAttribute())
+        map[DirectoryService.userAdditionalIdAttributeField] =
+            directoryServicePb.userAdditionalIdAttribute;
+
 
       if (directoryServicePb.hasUserFirstNameAttribute())
         map[DirectoryService.userFirstNameAttributeField] =

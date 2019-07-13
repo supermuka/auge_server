@@ -5,11 +5,12 @@ import 'dart:async';
 
 import 'package:grpc/grpc.dart';
 
-
+import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 
+import 'package:auge_server/src/service/general/organization_service.dart';
 
 class UserService extends UserServiceBase {
 
@@ -62,10 +63,13 @@ class UserService extends UserServiceBase {
           "FROM general.users u ";
     }
     else {
-      queryStatement = "SELECT u.id, u.version, u.name, u.email, u.password, "
+      queryStatement = "SELECT u.id, u.version, u.name, "
+          " user_profile.email, "
+          " user_profile.password, "
           " user_profile.image, "
-          " user_profile.is_super_admin, "
-          " user_profile.idiom_locale "
+          " user_profile.idiom_locale, "
+          " user_profile.organization_id, "
+          " user_profile.directory_service_user_id "
           " FROM general.users u "
           " LEFT OUTER JOIN general.users_profile user_profile on user_profile.user_id = u.id";
     }
@@ -104,15 +108,16 @@ class UserService extends UserServiceBase {
       User user = new User()
         ..id = row[0]
         ..version = row[1]
-        ..name = row[2]
-        ..eMail = row[3]
-        ..password = row[4];
+        ..name = row[2];
 
       if (request != null && request.withProfile) {
         user.userProfile = UserProfile();
+        if (row[3] != null) user.userProfile.eMail = row[3];
+        if (row[4] != null) user.userProfile.password = row[4];
         if (row[5] != null) user.userProfile.image = row[5];
-        if (row[6] != null) user.userProfile.isSuperAdmin = row[6];
-        if (row[7] != null) user.userProfile.idiomLocale = row[7];
+        if (row[6] != null) user.userProfile.idiomLocale = row[6];
+        if (row[7] != null) user.userProfile.organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[7]);
+        if (row[8] != null) user.userProfile.directoryServiceId = row[8];
       }
       users.add(user);
     }

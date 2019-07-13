@@ -181,30 +181,34 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
                   "@id,"
                   "@version,"
                   "@name,"
-                  "@email,"
-                  "@password)"
+                  "@inactive)"
               , substitutionValues: {
             "id": request.userProfileOrganization.user.id,
             "version": request.userProfileOrganization.user.version,
             "name": request.userProfileOrganization.user.name,
-            "email": request.userProfileOrganization.user.eMail,
-            "password": request.userProfileOrganization.user.password});
+            "inactive": request.userProfileOrganization.user.inactive});
 
 
           if (request.userProfileOrganization.user.userProfile != null) {
             await ctx.query(
-                "INSERT INTO general.users_profile(user_id, image, is_super_admin, idiom_locale) VALUES("
+                "INSERT INTO general.users_profile(user_id, email, password, image, idiom_locale, organization_id, directory_service_id) VALUES("
                     "@id,"
+                    "@email,"
+                    "@password,"
                     "@image,"
-                    "@is_super_admin,"
-                    "@idiom_locale)", substitutionValues: {
+                    "@idiom_locale,"
+                    "@organization_id,"
+                    "@directory_service_user_id)", substitutionValues: {
               "id": request.userProfileOrganization.user.id,
+              "email": request.userProfileOrganization.user.userProfile.eMail,
+              "password": request.userProfileOrganization.user.userProfile.password,
               "image": request.userProfileOrganization.user.userProfile.image,
-              "is_super_admin": request.userProfileOrganization.user.userProfile.isSuperAdmin,
-              "idiom_locale": request.userProfileOrganization.user.userProfile.idiomLocale});
+              "idiom_locale": request.userProfileOrganization.user.userProfile.idiomLocale,
+              "organization_id": request.userProfileOrganization.user.userProfile.organization.id,
+              "directory_service_user_id": request.userProfileOrganization.user.userProfile.directoryServiceId,
+              });
           }
         }
-
 
         if (!request.userProfileOrganization.hasId()) {
           request.userProfileOrganization.id = new Uuid().v4();
@@ -259,28 +263,32 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           List<List<dynamic>> result = await ctx.query(
               "UPDATE general.users "
                   "SET version = @version,"
-                  "name = @name,"
-                  "email = @email,"
-                  "password = @password "
+                  "name = @name, "
+                  "inactive = @inactive "
                   " WHERE id = @id AND version = @version - 1"
                   " RETURNING true", substitutionValues: {
             "id": request.userProfileOrganization.user.id,
             "version": ++request.userProfileOrganization.user.version,
             "name": request.userProfileOrganization.user.name,
-            "email": request.userProfileOrganization.user.eMail,
-            "password": request.userProfileOrganization.user.password});
+            "inactive": request.userProfileOrganization.user.inactive});
 
           await ctx.query(
               "UPDATE general.users_profile "
-                  "SET image = @image, "
-                  "is_super_admin = @is_super_admin, "
-                  "idiom_locale = @idiom_locale "
+                  "SET email = @email, "
+                  "password = @password, "
+                  "image = @image, "
+                  "idiom_locale = @idiom_locale, "
+                  "organization_id = @organization_id, "
+                  "directory_service_user_id = @directory_service_user_id "
                   "WHERE user_id = @user_id"
               , substitutionValues: {
             "user_id": request.userProfileOrganization.user.id,
+            "email": request.userProfileOrganization.user.userProfile.eMail,
+            "password": request.userProfileOrganization.user.userProfile.password,
             "image": request.userProfileOrganization.user.userProfile.image,
-            "is_super_admin": request.userProfileOrganization.user.userProfile.isSuperAdmin,
-            "idiom_locale": request.userProfileOrganization.user.userProfile.idiomLocale});
+            "idiom_locale": request.userProfileOrganization.user.userProfile.idiomLocale,
+            "organization_id": request.userProfileOrganization.user.userProfile.organization.id,
+            "directory_service_user_id": request.userProfileOrganization.user.userProfile.directoryServiceId,});
 
           // Optimistic concurrency control
           if (result.length == 0) {

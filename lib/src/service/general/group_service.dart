@@ -21,7 +21,6 @@ import 'package:auge_server/model/general/authorization.dart' show SystemModule,
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 import 'package:auge_server/model/general/group.dart' as group_m;
 
-
 import 'package:uuid/uuid.dart';
 
 class GroupService extends GroupServiceBase {

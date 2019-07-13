@@ -3,6 +3,9 @@
 
 import 'dart:async';
 
+import 'package:auge_server/model/general/user_profile_organization.dart';
+import 'package:auge_server/src/protos/generated/general/user.pb.dart';
+import 'package:auge_server/src/protos/generated/general/user_profile_organization.pb.dart';
 import 'package:grpc/grpc.dart';
 import 'package:dartdap/dartdap.dart' as dartdap;
 
@@ -17,6 +20,9 @@ import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 import 'package:auge_server/shared/common_utils.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
+
+import 'package:auge_server/src/service/general/user_service.dart';
+import 'package:auge_server/src/service/general/user_profile_organization_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:uuid/uuid.dart';
@@ -61,25 +67,27 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
     queryStatement = "SELECT organization_configuration.organization_id," //0
         " organization_configuration.version," //1
-        " organization_configuration.directory_service_enabled," //2
-        " organization_directory_service.sync_interval," //3
-        " organization_directory_service.last_sync," //4
-        " organization_directory_service.host_address," //5
-        " organization_directory_service.port," //6
-        " organization_directory_service.ssl_tls," //7
-        " organization_directory_service.admin_bind_dn," //8
-        " organization_directory_service.admin_password," //9
-        " organization_directory_service.group_search_dn," //10
-        " organization_directory_service.group_search_scope," //11
-        " organization_directory_service.group_search_filter," //12
-        " organization_directory_service.group_member_attribute," //13
-        " organization_directory_service.user_search_dn," //14
-        " organization_directory_service.user_search_scope," //15
-        " organization_directory_service.user_search_filter," //16
-        " organization_directory_service.user_login_attribute," //17
-        " organization_directory_service.user_first_name_attribute," //18
-        " organization_directory_service.user_last_name_attribute," //19
-        " organization_directory_service.user_email_attribute" //20
+        " organization_configuration.domain," //2
+        " organization_configuration.directory_service_enabled," //3
+        " organization_directory_service.sync_interval," //4
+        " organization_directory_service.last_sync," //5
+        " organization_directory_service.host_address," //6
+        " organization_directory_service.port," //7
+        " organization_directory_service.ssl_tls," //8
+        " organization_directory_service.admin_bind_dn," //9
+        " organization_directory_service.admin_password," //10
+        " organization_directory_service.group_search_dn," //11
+        " organization_directory_service.group_search_scope," //12
+        " organization_directory_service.group_search_filter," //13
+        " organization_directory_service.group_member_attribute," //14
+        " organization_directory_service.user_search_dn," //15
+        " organization_directory_service.user_search_scope," //16
+        " organization_directory_service.user_search_filter," //17
+        " organization_directory_service.user_id_attribute," //18
+        " organization_directory_service.user_additional_id_attribute," //19
+        " organization_directory_service.user_first_name_attribute," //20
+        " organization_directory_service.user_last_name_attribute," //21
+        " organization_directory_service.user_email_attribute" //22
         " FROM general.organization_configurations organization_configuration"
         " LEFT OUTER JOIN general.organization_directory_service on organization_directory_service.organization_id = organization_configuration.organization_id";
 
@@ -101,45 +109,48 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       OrganizationConfiguration configuration = OrganizationConfiguration()
         ..organizationId = row[0]
         ..version = row[1]
-        ..directoryServiceEnabled = row[2];
+        ..domain = row[2]
+        ..directoryServiceEnabled = row[3];
 
 
-      if (row[3] != null)
-        configuration.directoryService.syncInterval = row[3];
       if (row[4] != null)
-        configuration.directoryService.lastSync = row[4];
+        configuration.directoryService.syncInterval = row[4];
       if (row[5] != null)
-        configuration.directoryService.hostAddress = row[5];
+        configuration.directoryService.lastSync = row[5];
       if (row[6] != null)
-        configuration.directoryService.port = row[6];
+        configuration.directoryService.hostAddress = row[6];
       if (row[7] != null)
-        configuration.directoryService.sslTls = row[7];
+        configuration.directoryService.port = row[7];
       if (row[8] != null)
-        configuration.directoryService.adminBindDN = row[8];
+        configuration.directoryService.sslTls = row[8];
       if (row[9] != null)
-        configuration.directoryService.adminPassword = row[9];
+        configuration.directoryService.adminBindDN = row[9];
       if (row[10] != null)
-        configuration.directoryService.groupSearchDN = row[10];
+        configuration.directoryService.adminPassword = row[10];
       if (row[11] != null)
-        configuration.directoryService.groupSearchScope = row[11];
+        configuration.directoryService.groupSearchDN = row[11];
       if (row[12] != null)
-        configuration.directoryService.groupSearchFilter = row[12];
+        configuration.directoryService.groupSearchScope = row[12];
       if (row[13] != null)
-        configuration.directoryService.groupMemberAttribute = row[13];
+        configuration.directoryService.groupSearchFilter = row[13];
       if (row[14] != null)
-        configuration.directoryService.userSearchDN = row[14];
+        configuration.directoryService.groupMemberAttribute = row[14];
       if (row[15] != null)
-        configuration.directoryService.userSearchScope = row[15];
+        configuration.directoryService.userSearchDN = row[15];
       if (row[16] != null)
-        configuration.directoryService.userSearchFilter = row[16];
+        configuration.directoryService.userSearchScope = row[16];
       if (row[17] != null)
-        configuration.directoryService.userLoginAttribute = row[17];
+        configuration.directoryService.userSearchFilter = row[17];
       if (row[18] != null)
-        configuration.directoryService.userFirstNameAttribute = row[18];
+        configuration.directoryService.userIdAttribute = row[18];
       if (row[19] != null)
-        configuration.directoryService.userLastNameAttribute = row[19];
+        configuration.directoryService.userAdditionalIdAttribute = row[19];
       if (row[20] != null)
-        configuration.directoryService.userEmailAttribute = row[20];
+        configuration.directoryService.userFirstNameAttribute = row[20];
+      if (row[21] != null)
+        configuration.directoryService.userLastNameAttribute = row[21];
+      if (row[22] != null)
+        configuration.directoryService.userEmailAttribute = row[22];
 
       configurations.add(configuration);
     }
@@ -230,7 +241,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             "user_search_dn": request.organizationConfiguration.directoryService.hasUserSearchDN() ? request.organizationConfiguration.directoryService.userSearchDN: null,
             "user_search_scope": request.organizationConfiguration.directoryService.hasUserSearchScope() ? request.organizationConfiguration.directoryService.userSearchScope: null,
             "user_search_filter": request.organizationConfiguration.directoryService.hasUserSearchFilter() ? request.organizationConfiguration.directoryService.userSearchFilter: null,
-            "user_login_attribute": request.organizationConfiguration.directoryService.hasUserLoginAttribute() ? request.organizationConfiguration.directoryService.userLoginAttribute: null,
+            "user_id_attribute": request.organizationConfiguration.directoryService.hasUserIdAttribute() ? request.organizationConfiguration.directoryService.userIdAttribute: null,
+            "user_additional_id_attribute": request.organizationConfiguration.directoryService.hasUserAdditionalIdAttribute() ? request.organizationConfiguration.directoryService.userAdditionalIdAttribute: null,
             "user_first_name_attribute": request.organizationConfiguration.directoryService.hasUserFirstNameAttribute() ? request.organizationConfiguration.directoryService.userFirstNameAttribute: null,
             "user_last_name_attribute": request.organizationConfiguration.directoryService.hasUserLastNameAttribute() ? request.organizationConfiguration.directoryService.userLastNameAttribute: null,
             "user_email_attribute": request.organizationConfiguration.directoryService.hasUserEmailAttribute() ? request.organizationConfiguration.directoryService.userEmailAttribute: null,
@@ -315,7 +327,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             "user_search_dn": request.organizationConfiguration.directoryService.hasUserSearchDN() ? request.organizationConfiguration.directoryService.userSearchDN: null,
             "user_search_scope": request.organizationConfiguration.directoryService.hasUserSearchScope() ? request.organizationConfiguration.directoryService.userSearchScope: null,
             "user_search_filter": request.organizationConfiguration.directoryService.hasUserSearchFilter() ? request.organizationConfiguration.directoryService.userSearchFilter: null,
-            "user_login_attribute": request.organizationConfiguration.directoryService.hasUserLoginAttribute() ? request.organizationConfiguration.directoryService.userLoginAttribute: null,
+            "user_id_attribute": request.organizationConfiguration.directoryService.hasUserIdAttribute() ? request.organizationConfiguration.directoryService.userIdAttribute: null,
+            "user__additional_id_attribute": request.organizationConfiguration.directoryService.hasUserAdditionalIdAttribute() ? request.organizationConfiguration.directoryService.userAdditionalIdAttribute: null,
             "user_first_name_attribute": request.organizationConfiguration.directoryService.hasUserFirstNameAttribute() ? request.organizationConfiguration.directoryService.userFirstNameAttribute: null,
             "user_last_name_attribute": request.organizationConfiguration.directoryService.hasUserLastNameAttribute() ? request.organizationConfiguration.directoryService.userLastNameAttribute: null,
             "user_email_attribute": request.organizationConfiguration.directoryService.hasUserEmailAttribute() ? request.organizationConfiguration.directoryService.userEmailAttribute: null,});
@@ -382,7 +395,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
     String userSearchDN = request.organizationConfiguration.directoryService.userSearchDN;
     int userSearchScopeDN = request.organizationConfiguration.directoryService.userSearchScope;
     String userSearchFilter = request.organizationConfiguration.directoryService.userSearchFilter;
-    String userLoginAttribute  = request.organizationConfiguration.directoryService.userLoginAttribute;
+    String userIdAttribute = request.organizationConfiguration.directoryService.userIdAttribute;
+    String userAdditionalIdAttribute  = request.organizationConfiguration.directoryService.userAdditionalIdAttribute;
     String userEmailAttribute = request.organizationConfiguration.directoryService.userEmailAttribute;
     String userFirstNameAttribute  = request.organizationConfiguration.directoryService.userFirstNameAttribute;
     String userLastNameAttribute = request.organizationConfiguration.directoryService.userLastNameAttribute;
@@ -463,7 +477,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         throw Exception('Account search filter must be in a simple format, i.e. (objectClass=posixAccount)');
       }
 
-      searchResult = await connection.search(userSearchDN, userSearchFilterDartdap, [userLoginAttribute, userEmailAttribute, userFirstNameAttribute, userLastNameAttribute], scope: userSearchScopeDN);
+      searchResult = await connection.search(userSearchDN, userSearchFilterDartdap, [userIdAttribute, userAdditionalIdAttribute, userEmailAttribute, userFirstNameAttribute, userLastNameAttribute], scope: userSearchScopeDN);
 
 /*
       print('DEBUG');
@@ -473,38 +487,133 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       print([userLoginAttribute, userEmailAttribute, userFirstNameAttribute, userLastNameAttribute]);
       print(userSearchScopeDN);
 */
+
+      List<User> users = await UserService.querySelectUsers(UserGetRequest()..organizationId =  request.authenticatedOrganizationId);
+      User user;
+      int userIndex;
+
       countEntry = 0;
-      int countLoginAttribute = 0,
+      int countIdAttribute = 0,
+          countAdditionalIdAttribute = 0,
         countEmailAttribute = 0,
         countFirstNameAttribute = 0,
         countLastNameAttribute = 0;
+
+      List<String> directoryServiceIds = [];
+      List<UserProfileOrganizationRequest> insertUsersSync = [], updateUsersSync = [], updateInactiveUsersSync = [];
+
+      bool hasChanged;
+
+      String userDirectoryServiceIdAttributeValue, userAdditionalIdAttributeValue, userEmailAttributeValue, userFirstNameAttributeValue, userLastNameAttributeValue;
 
       await for (var entry in searchResult.stream) {
         // Processing stream of SearchEntry
         print(entry.dn);
         countEntry++;
         //print("dn: ${entry.dn}");
+
+        if (sync) {
+          userDirectoryServiceIdAttributeValue = null;
+          userAdditionalIdAttributeValue = null;
+          userEmailAttributeValue = null;
+          userFirstNameAttributeValue = null;
+          userLastNameAttributeValue = null;
+        }
+
         for (var attr in entry.attributes.values) {
-          if (attr.name == userLoginAttribute)
-             countLoginAttribute++;
-          if (attr.name == userEmailAttribute)
-             countEmailAttribute++;
-          if (attr.name == userFirstNameAttribute)
+          if (attr.name == userIdAttribute) {
+            countIdAttribute++;
+            if (sync) {
+              userDirectoryServiceIdAttributeValue = attr.values?.first;
+              directoryServiceIds.add(userDirectoryServiceIdAttributeValue);
+            }
+          }
+
+          // Login = samAccountName / UserPrincipalName / UID
+          if (attr.name == userAdditionalIdAttribute) {
+            countAdditionalIdAttribute++;
+            if (sync) userAdditionalIdAttributeValue = attr.values?.first;
+          }
+          if (attr.name == userEmailAttribute) {
+            countEmailAttribute++;
+            if (sync) userEmailAttributeValue = attr.values?.first;
+          }
+          if (attr.name == userFirstNameAttribute) {
             countFirstNameAttribute++;
-          if (attr.name == userLastNameAttribute)
+            if (sync) userFirstNameAttributeValue = attr.values?.first;
+          }
+          if (attr.name == userLastNameAttribute) {
             countLastNameAttribute++;
+            if (sync) userLastNameAttributeValue = attr.values?.first;
+          }
+
           //for (var value in attr.values) { // attr.values is a Set
           //  print("  ${attr.name}: $value");
           //}
         }
-        // Test just first entry to verify if there are attributes;
+
+        if (sync) {
+
+          userIndex = users.indexWhere((t) => t.userProfile.directoryServiceId == userDirectoryServiceIdAttributeValue);
+
+          // If not found, a new user will be inserted.
+          if (userIndex == -1) {
+
+            UserProfileOrganizationRequest userProfileOrganizationRequest = UserProfileOrganizationRequest();
+
+            userProfileOrganizationRequest.userProfileOrganization.user.name = userFirstNameAttributeValue + ' ' + userLastNameAttributeValue;
+            userProfileOrganizationRequest.userProfileOrganization.user.userProfile.eMail = userEmailAttributeValue;
+            userProfileOrganizationRequest.userProfileOrganization.user.userProfile.additionalId = userAdditionalIdAttributeValue;
+            userProfileOrganizationRequest.userProfileOrganization.user.userProfile.directoryServiceId = userDirectoryServiceIdAttributeValue;
+            userProfileOrganizationRequest.userProfileOrganization.user.userProfile.organization.id = request.authenticatedOrganizationId;
+
+            insertUsersSync.add(userProfileOrganizationRequest);
+
+          } else {
+
+            user = users[userIndex];
+
+            hasChanged = false;
+
+            if (user.name != userFirstNameAttribute + ' ' + userLastNameAttribute) {
+              user.name = userFirstNameAttribute + ' ' + userLastNameAttribute;
+              hasChanged = true;
+            }
+
+            if (user.userProfile.eMail != userEmailAttributeValue) {
+              user.userProfile.eMail = userEmailAttributeValue;
+              hasChanged = true;
+            }
+
+            if (user.userProfile.additionalId != userAdditionalIdAttributeValue) {
+              user.userProfile.additionalId = userAdditionalIdAttributeValue;
+              hasChanged = true;
+            }
+
+            if (user.userProfile.directoryServiceId != userDirectoryServiceIdAttributeValue) {
+              user.userProfile.directoryServiceId = userDirectoryServiceIdAttributeValue;
+              hasChanged = true;
+            }
+
+            // If some value changed
+            if (hasChanged) {
+
+              UserProfileOrganizationRequest userProfileOrganizationRequest = UserProfileOrganizationRequest();
+
+              userProfileOrganizationRequest.userProfileOrganization.user = user;
+
+              updateUsersSync.add(userProfileOrganizationRequest);
+            }
+
+          }
+        }
       }
 
       if (countEntry == 0)
         return organization_configuration_m.DirectoryServiceStatus.errorUserNotFound.index;
 
-      if (countLoginAttribute == 0)
-        return organization_configuration_m.DirectoryServiceStatus.errorLoginAttribute.index;
+      if (countAdditionalIdAttribute == 0)
+        return organization_configuration_m.DirectoryServiceStatus.errorAdditionalIdAttribute.index;
 
       if (countEmailAttribute == 0)
         return organization_configuration_m.DirectoryServiceStatus.errorEmailAttribute.index;
@@ -515,8 +624,37 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       if (countLastNameAttribute == 0)
         return organization_configuration_m.DirectoryServiceStatus.errorLastNameAttribute.index;
 
+      /// Inactivate
       if (sync) {
 
+        String directoryServiceId;
+        for (userIndex = 0;userIndex<users.length;userIndex++) {
+          directoryServiceId = users[userIndex].userProfile.directoryServiceId;
+          if (directoryServiceId != null) {
+            if (directoryServiceIds.indexOf(directoryServiceId) == -1) {
+              users[userIndex].inactive = true;
+              updateInactiveUsersSync.add((UserProfileOrganizationRequest()..userProfileOrganization.user = users[userIndex]));
+            }
+          }
+        }
+      }
+
+      // Insert, update or inactivate users on database
+      if (sync) {
+        // Insert
+        for (UserProfileOrganizationRequest userProfileOrganizationRequest in insertUsersSync) {
+          UserProfileOrganizationService.queryInsertUserProfileOrganization(userProfileOrganizationRequest);
+        }
+
+        // Update
+        for (UserProfileOrganizationRequest userProfileOrganizationRequest in updateUsersSync) {
+          UserProfileOrganizationService.queryUpdateUserProfileOrganization(userProfileOrganizationRequest);
+        }
+
+        // Update - Inactivate
+        for (UserProfileOrganizationRequest userProfileOrganizationRequest in updateUsersSync) {
+          UserProfileOrganizationService.queryUpdateUserProfileOrganization(userProfileOrganizationRequest);
+        }
       }
 
       connection.close();

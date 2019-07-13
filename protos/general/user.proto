@@ -8,6 +8,8 @@ package auge.protobuf;
 //import "general/common.proto";
 //import "google/protobuf/empty.proto";
 
+import "general/organization.proto";
+
 // The service definition.
 service UserService {
 
@@ -26,8 +28,7 @@ message User {
     string id = 1;
     int32 version = 2;
     string name = 3;
-    string e_mail = 4;
-    string password = 5;
+    bool inactive = 4;
     UserProfile user_profile = 6;
 }
 
@@ -49,10 +50,15 @@ message User {
 
 // Message to respective domain object.
 message UserProfile {
-    bool is_super_admin = 1;
+ //   bool is_super_admin = 1;
     // string image = 2;
-    string image = 2;
-    string idiom_locale = 3;
+    string additional_id = 1;
+    string e_mail = 2;
+    string password = 3;
+    string image = 4;
+    string idiom_locale = 5;
+    Organization organization = 6;
+    string directory_service_id = 7;
 }
 
 message UserGetRequest {
@@ -62,7 +68,6 @@ message UserGetRequest {
     string organization_id = 4;
     bool with_profile = 5;
 }
-
 
 // Response list of the organization
 message UsersResponse {
