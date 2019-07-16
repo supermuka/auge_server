@@ -73,7 +73,8 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         "uo.organization_id, " //3
         "uo.authorization_role " // 4
         "FROM general.users_profile_organizations uo "
-        "LEFT OUTER JOIN general.users u ON u.id = uo.user_id ";
+        "JOIN general.users u ON u.id = uo.user_id "
+        "LEFT OUTER JOIN general.users_profile user_profile on user_profile.user_id = u.id ";
 
     Map<String, dynamic> _substitutionValues = Map<String, dynamic>();
     String whereAnd = 'WHERE';
@@ -98,60 +99,68 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
     if (userProfileOrganizationGetRequest.hasEMail()) {
       queryStatement = queryStatement +
-          " ${whereAnd} u.email = @email";
+          " ${whereAnd} user_profile.email = @email";
 
       _substitutionValues.putIfAbsent("email", () => userProfileOrganizationGetRequest.eMail);
       whereAnd = 'AND';
     }
     if (userProfileOrganizationGetRequest.hasPassword()) {
       queryStatement = queryStatement +
-          " ${whereAnd} u.password = @password";
+          " ${whereAnd} user_profile.password = @password";
       _substitutionValues.putIfAbsent("password", () => userProfileOrganizationGetRequest.password);
       //The last, not need... whereAnd = 'AND';
     }
 
-    results = await (await AugeConnection.getConnection()).query(
-        queryStatement, substitutionValues: _substitutionValues);
+    List<UserProfileOrganization> usersOrganizations = [];
 
-    List<UserProfileOrganization> usersOrganizations = new List();
+    try {
+      results = await (await AugeConnection.getConnection()).query(
+          queryStatement, substitutionValues: _substitutionValues);
 
-    User user;
-    Organization organization;
+      User user;
+      Organization organization;
 
-    if (results.isNotEmpty) {
-      for (var row in results) {
-        if (row[2] != null) {
-          if (_userCache.containsKey(row[2])) {
-            user = _userCache[row[2]];
-          } else {
-            user =
-            await UserService.querySelectUser(UserGetRequest()..id = row[2]..withProfile = true);
-            if (user != null) _userCache[row[2]] = user;
+      if (results.isNotEmpty) {
+        for (var row in results) {
+
+          if (row[2] != null) {
+            if (_userCache.containsKey(row[2])) {
+              user = _userCache[row[2]];
+            } else {
+              user =
+              await UserService.querySelectUser(UserGetRequest()
+                ..id = row[2]
+                ..withProfile = true);
+              if (user != null) _userCache[row[2]] = user;
+            }
           }
-        }
-
-        if (row[3] != null) {
-          if (_organizationCache.containsKey(row[3])) {
-            organization = _organizationCache[row[3]];
-          } else {
-            organization =
-            await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[3]);
-            if (organization != null) _organizationCache[row[3]] = organization;
+          if (row[3] != null) {
+            if (_organizationCache.containsKey(row[3])) {
+              organization = _organizationCache[row[3]];
+            } else {
+              organization =
+              await OrganizationService.querySelectOrganization(
+                  OrganizationGetRequest()
+                    ..id = row[3]);
+              if (organization != null)
+                _organizationCache[row[3]] = organization;
+            }
           }
+
+          UserProfileOrganization userProfileOrganization = new UserProfileOrganization();
+
+          userProfileOrganization.id = row[0];
+          userProfileOrganization.version = row[1];
+          userProfileOrganization.user = user;
+          userProfileOrganization.organization = organization;
+          userProfileOrganization.authorizationRole = row[4];
+          usersOrganizations.add(userProfileOrganization);
         }
-
-        UserProfileOrganization userProfileOrganization = new UserProfileOrganization();
-
-        userProfileOrganization.id = row[0];
-        userProfileOrganization.version = row[1];
-        userProfileOrganization.user = user;
-        userProfileOrganization.organization = organization;
-        userProfileOrganization.authorizationRole = row[4];
-
-        usersOrganizations.add(userProfileOrganization);
       }
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
-
     return usersOrganizations;
   }
 
@@ -166,7 +175,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     try {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
-
 
         if (request.hasWithUserProfile() && request.withUserProfile)  {
 
@@ -191,21 +199,23 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
           if (request.userProfileOrganization.user.userProfile != null) {
             await ctx.query(
-                "INSERT INTO general.users_profile(user_id, email, password, image, idiom_locale, organization_id, directory_service_id) VALUES("
+                "INSERT INTO general.users_profile(user_id, additional_id, email, password, image, idiom_locale, organization_id, directory_service_id) VALUES("
                     "@id,"
+                    "@additional_id,"
                     "@email,"
                     "@password,"
                     "@image,"
                     "@idiom_locale,"
                     "@organization_id,"
-                    "@directory_service_user_id)", substitutionValues: {
+                    "@directory_service_id)", substitutionValues: {
               "id": request.userProfileOrganization.user.id,
+              "additional_id": request.userProfileOrganization.user.userProfile.additionalId,
               "email": request.userProfileOrganization.user.userProfile.eMail,
               "password": request.userProfileOrganization.user.userProfile.password,
               "image": request.userProfileOrganization.user.userProfile.image,
               "idiom_locale": request.userProfileOrganization.user.userProfile.idiomLocale,
               "organization_id": request.userProfileOrganization.user.userProfile.organization.id,
-              "directory_service_user_id": request.userProfileOrganization.user.userProfile.directoryServiceId,
+              "directory_service_id": request.userProfileOrganization.user.userProfile.directoryServiceId,
               });
           }
         }
@@ -279,7 +289,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
                   "image = @image, "
                   "idiom_locale = @idiom_locale, "
                   "organization_id = @organization_id, "
-                  "directory_service_user_id = @directory_service_user_id "
+                  "directory_service_id = @directory_service_id "
                   "WHERE user_id = @user_id"
               , substitutionValues: {
             "user_id": request.userProfileOrganization.user.id,
@@ -288,7 +298,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
             "image": request.userProfileOrganization.user.userProfile.image,
             "idiom_locale": request.userProfileOrganization.user.userProfile.idiomLocale,
             "organization_id": request.userProfileOrganization.user.userProfile.organization.id,
-            "directory_service_user_id": request.userProfileOrganization.user.userProfile.directoryServiceId,});
+            "directory_service_id": request.userProfileOrganization.user.userProfile.directoryServiceId,});
 
           // Optimistic concurrency control
           if (result.length == 0) {

@@ -59,17 +59,25 @@ class UserService extends UserServiceBase {
 
     String queryStatement = '';
     if (request != null && request.withProfile == false) {
-      queryStatement = "SELECT u.id, u.version, u.name, u.email, u.password "
-          "FROM general.users u ";
+      queryStatement = "SELECT "
+          " u.id, " //0
+          " u.version, " //1
+          " u.name " //2
+          " FROM general.users u";
+          " LEFT OUTER JOIN general.users_profile user_profile on user_profile.user_id = u.id";
+
     }
     else {
-      queryStatement = "SELECT u.id, u.version, u.name, "
-          " user_profile.email, "
-          " user_profile.password, "
-          " user_profile.image, "
-          " user_profile.idiom_locale, "
-          " user_profile.organization_id, "
-          " user_profile.directory_service_user_id "
+      queryStatement = "SELECT "
+          " u.id, " //0
+          " u.version, " //1
+          " u.name, " //2
+          " user_profile.email, " //3
+          " user_profile.password, " //4
+          " user_profile.image, " //5
+          " user_profile.idiom_locale, " //6
+          " user_profile.organization_id, " //7
+          " user_profile.directory_service_id " //8
           " FROM general.users u "
           " LEFT OUTER JOIN general.users_profile user_profile on user_profile.user_id = u.id";
     }
@@ -89,37 +97,46 @@ class UserService extends UserServiceBase {
     }
     if (request != null && request.eMail != null && request.eMail.isNotEmpty) {
       queryStatement = queryStatement +
-          " ${whereAnd} u.email = @email";
+          " ${whereAnd} user_profile.email = @email";
 
       _substitutionValues.putIfAbsent("email", () => request.eMail);
       whereAnd = "AND";
     }
     if (request != null && request.password != null && request.password.isNotEmpty) {
       queryStatement = queryStatement +
-          " ${whereAnd} u.password = @password";
+          " ${whereAnd} user_profile.password = @password";
       _substitutionValues.putIfAbsent("password", () => request.password);
       //The last whereAnd = "AND";
     }
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: _substitutionValues);
+    List<User> users = [];
+    try {
+      results = await (await AugeConnection.getConnection()).query(
+          queryStatement, substitutionValues: _substitutionValues);
 
-    List<User> users = new List();
-    for (var row in results) {
-      User user = new User()
-        ..id = row[0]
-        ..version = row[1]
-        ..name = row[2];
+      for (var row in results) {
+        User user = new User()
+          ..id = row[0]
+          ..version = row[1]
+          ..name = row[2];
 
-      if (request != null && request.withProfile) {
-        user.userProfile = UserProfile();
-        if (row[3] != null) user.userProfile.eMail = row[3];
-        if (row[4] != null) user.userProfile.password = row[4];
-        if (row[5] != null) user.userProfile.image = row[5];
-        if (row[6] != null) user.userProfile.idiomLocale = row[6];
-        if (row[7] != null) user.userProfile.organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[7]);
-        if (row[8] != null) user.userProfile.directoryServiceId = row[8];
+        if (request != null && request.withProfile) {
+          user.userProfile = UserProfile();
+          if (row[3] != null) user.userProfile.eMail = row[3];
+          if (row[4] != null) user.userProfile.password = row[4];
+          if (row[5] != null) user.userProfile.image = row[5];
+          if (row[6] != null) user.userProfile.idiomLocale = row[6];
+          if (row[7] != null) user.userProfile.organization =
+          await OrganizationService.querySelectOrganization(
+              OrganizationGetRequest()
+                ..id = row[7]);
+          if (row[8] != null) user.userProfile.directoryServiceId = row[8];
+        }
+        users.add(user);
       }
-      users.add(user);
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
 
     return users;

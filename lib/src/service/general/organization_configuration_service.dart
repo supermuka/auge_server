@@ -58,6 +58,13 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
     return Int32Value()..value = await _testDirectoryService(request);
   }
 
+  @override
+  Future<Int32Value> syncDirectoryService(ServiceCall call,
+      OrganizationConfigurationRequest request) async {
+
+    return Int32Value()..value = await _syncDirectoryService(request);
+  }
+
   // Query
   static Future<List<OrganizationConfiguration>> querySelectOrganizationConfigurations(OrganizationConfigurationGetRequest request) async {
 
@@ -102,60 +109,68 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       throw Exception('Organization id does not informed.');
     }
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
-
     List<OrganizationConfiguration> configurations = [];
-    for (var row in results) {
-      OrganizationConfiguration configuration = OrganizationConfiguration()
-        ..organizationId = row[0]
-        ..version = row[1]
-        ..domain = row[2]
-        ..directoryServiceEnabled = row[3];
+    try {
+      results = await (await AugeConnection.getConnection()).query(
+          queryStatement, substitutionValues: substitutionValues);
 
+      for (var row in results) {
+        OrganizationConfiguration configuration = OrganizationConfiguration()
+          ..organizationId = row[0]
+          ..version = row[1];
 
-      if (row[4] != null)
-        configuration.directoryService.syncInterval = row[4];
-      if (row[5] != null)
-        configuration.directoryService.lastSync = row[5];
-      if (row[6] != null)
-        configuration.directoryService.hostAddress = row[6];
-      if (row[7] != null)
-        configuration.directoryService.port = row[7];
-      if (row[8] != null)
-        configuration.directoryService.sslTls = row[8];
-      if (row[9] != null)
-        configuration.directoryService.adminBindDN = row[9];
-      if (row[10] != null)
-        configuration.directoryService.adminPassword = row[10];
-      if (row[11] != null)
-        configuration.directoryService.groupSearchDN = row[11];
-      if (row[12] != null)
-        configuration.directoryService.groupSearchScope = row[12];
-      if (row[13] != null)
-        configuration.directoryService.groupSearchFilter = row[13];
-      if (row[14] != null)
-        configuration.directoryService.groupMemberAttribute = row[14];
-      if (row[15] != null)
-        configuration.directoryService.userSearchDN = row[15];
-      if (row[16] != null)
-        configuration.directoryService.userSearchScope = row[16];
-      if (row[17] != null)
-        configuration.directoryService.userSearchFilter = row[17];
-      if (row[18] != null)
-        configuration.directoryService.userIdAttribute = row[18];
-      if (row[19] != null)
-        configuration.directoryService.userAdditionalIdAttribute = row[19];
-      if (row[20] != null)
-        configuration.directoryService.userFirstNameAttribute = row[20];
-      if (row[21] != null)
-        configuration.directoryService.userLastNameAttribute = row[21];
-      if (row[22] != null)
-        configuration.directoryService.userEmailAttribute = row[22];
+        configuration.directoryService = DirectoryService();
 
-      configurations.add(configuration);
+        if (row[2] != null)
+          configuration.domain = row[2];
+        if (row[3] != null)
+          configuration.directoryServiceEnabled = row[3];
+        if (row[4] != null)
+          configuration.directoryService.syncInterval = row[4];
+        if (row[5] != null)
+          configuration.directoryService.lastSync = row[5];
+        if (row[6] != null)
+          configuration.directoryService.hostAddress = row[6];
+        if (row[7] != null)
+          configuration.directoryService.port = row[7];
+        if (row[8] != null)
+          configuration.directoryService.sslTls = row[8];
+        if (row[9] != null)
+          configuration.directoryService.adminBindDN = row[9];
+        if (row[10] != null)
+          configuration.directoryService.adminPassword = row[10];
+        if (row[11] != null)
+          configuration.directoryService.groupSearchDN = row[11];
+        if (row[12] != null)
+          configuration.directoryService.groupSearchScope = row[12];
+        if (row[13] != null)
+          configuration.directoryService.groupSearchFilter = row[13];
+        if (row[14] != null)
+          configuration.directoryService.groupMemberAttribute = row[14];
+        if (row[15] != null)
+          configuration.directoryService.userSearchDN = row[15];
+        if (row[16] != null)
+          configuration.directoryService.userSearchScope = row[16];
+        if (row[17] != null)
+          configuration.directoryService.userSearchFilter = row[17];
+        if (row[18] != null)
+          configuration.directoryService.userIdAttribute = row[18];
+        if (row[19] != null)
+          configuration.directoryService.userAdditionalIdAttribute = row[19];
+        if (row[20] != null)
+          configuration.directoryService.userFirstNameAttribute = row[20];
+        if (row[21] != null)
+          configuration.directoryService.userLastNameAttribute = row[21];
+        if (row[22] != null)
+          configuration.directoryService.userEmailAttribute = row[22];
+
+        configurations.add(configuration);
+      }
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
-    print('DEBUG PASSOU DA LISTA');
-    print(configurations);
+
     return configurations;
   }
 
@@ -175,18 +190,18 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
-            "INSERT INTO general.organization_configurations(organization_id, version, directory_service_enabled, organization_id) VALUES"
+            "INSERT INTO general.organization_configurations(organization_id, version, directory_service_enabled) VALUES"
                 "(@organization_id,"
                 "@version,"
                 "@directory_service_enabled)"
             , substitutionValues: {
-          "organization_id": request.organizationConfiguration.organizationId,
+          "organization_id": request.authenticatedOrganizationId,
           "version": request.organizationConfiguration.version,
           "directory_service_enabled": request.organizationConfiguration.directoryServiceEnabled});
 
         await ctx.query(
             "INSERT INTO general.organization_directory_service("
-                "configuration_id, "
+                "organization_id, "
                 "sync_interval,"
                 "last_sync,"
                 "host_address,"
@@ -201,12 +216,13 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                 "user_search_dn,"
                 "user_search_scope,"
                 "user_search_filter,"
-                "user_login_attribute,"
+                "user_id_attribute,"
+                "user_additional_id_attribute,"
                 "user_first_name_attribute,"
                 "user_last_name_attribute,"
                 "user_email_attribute)"
                 " VALUES("
-                "@configuration_id, "
+                "@organization_id, "
                 "@sync_interval,"
                 "@last_sync,"
                 "@host_address,"
@@ -221,12 +237,13 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                 "@user_search_dn,"
                 "@user_search_scope,"
                 "@user_search_filter,"
-                "@user_login_attribute,"
+                "@user_id_attribute,"
+                "@user_additional_id_attribute,"
                 "@user_first_name_attribute,"
                 "@user_last_name_attribute,"
                 "@user_email_attribute)"
             , substitutionValues: {
-              "configuration_id": request.organizationConfiguration.organizationId,
+              "organization_id": request.authenticatedOrganizationId,
             "sync_interval": request.organizationConfiguration.directoryService.hasSyncInterval() ? request.organizationConfiguration.directoryService.syncInterval : null,
             "last_sync": request.organizationConfiguration.directoryService.hasLastSync() ? CommonUtils.dateTimeFromTimestamp(request.organizationConfiguration.directoryService.lastSync): null,
             "host_address": request.organizationConfiguration.directoryService.hasHostAddress() ? request.organizationConfiguration.directoryService.hostAddress: null,
@@ -252,7 +269,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
           "user_id": request.authenticatedUserId,
           "organization_id": request.authenticatedOrganizationId,
-          "object_id": request.organizationConfiguration.organizationId,
+          "object_id": request.authenticatedOrganizationId,
           "object_version": request.organizationConfiguration.version,
           "object_class_name": organization_configuration_m.OrganizationConfiguration.className,
           "system_module_index": SystemModule.configuration.index,
@@ -266,7 +283,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       rethrow;
     }
     return StringValue()
-      ..value = request.organizationConfiguration.organizationId;
+      ..value = request.authenticatedOrganizationId;
   }
 
   static Future<Empty> queryUpdateOrganizationConfiguration(OrganizationConfigurationRequest request) async {
@@ -306,13 +323,14 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               "user_search_dn = @user_search_dn, "
               "user_search_scope = @user_search_scope, "
               "user_search_filter = @user_search_filter, "
-              "user_login_attribute = @user_login_attribute, "
+              "user_id_attribute = @user_id_attribute, "
+              "user_additional_id_attribute = @user_additional_id_attribute, "
               "user_first_name_attribute = @user_first_name_attribute, "
               "user_last_name_attribute = @user_last_name_attribute, "
               "user_email_attribute = @user_email_attribute "
-              " WHERE organizaion_id = @organization_id "
+              " WHERE organization_id = @organization_id "
               , substitutionValues: {
-            "configuration_id": request.organizationConfiguration.organizationId,
+            "organization_id": request.organizationConfiguration.organizationId,
             "sync_interval": request.organizationConfiguration.directoryService.hasSyncInterval() ? request.organizationConfiguration.directoryService.syncInterval : null,
             "last_sync": request.organizationConfiguration.directoryService.hasLastSync() ? CommonUtils.dateTimeFromTimestamp(request.organizationConfiguration.directoryService.lastSync): null,
             "host_address": request.organizationConfiguration.directoryService.hasHostAddress() ? request.organizationConfiguration.directoryService.hostAddress: null,
@@ -328,7 +346,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             "user_search_scope": request.organizationConfiguration.directoryService.hasUserSearchScope() ? request.organizationConfiguration.directoryService.userSearchScope: null,
             "user_search_filter": request.organizationConfiguration.directoryService.hasUserSearchFilter() ? request.organizationConfiguration.directoryService.userSearchFilter: null,
             "user_id_attribute": request.organizationConfiguration.directoryService.hasUserIdAttribute() ? request.organizationConfiguration.directoryService.userIdAttribute: null,
-            "user__additional_id_attribute": request.organizationConfiguration.directoryService.hasUserAdditionalIdAttribute() ? request.organizationConfiguration.directoryService.userAdditionalIdAttribute: null,
+            "user_additional_id_attribute": request.organizationConfiguration.directoryService.hasUserAdditionalIdAttribute() ? request.organizationConfiguration.directoryService.userAdditionalIdAttribute: null,
             "user_first_name_attribute": request.organizationConfiguration.directoryService.hasUserFirstNameAttribute() ? request.organizationConfiguration.directoryService.userFirstNameAttribute: null,
             "user_last_name_attribute": request.organizationConfiguration.directoryService.hasUserLastNameAttribute() ? request.organizationConfiguration.directoryService.userLastNameAttribute: null,
             "user_email_attribute": request.organizationConfiguration.directoryService.hasUserEmailAttribute() ? request.organizationConfiguration.directoryService.userEmailAttribute: null,});
@@ -478,15 +496,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       }
 
       searchResult = await connection.search(userSearchDN, userSearchFilterDartdap, [userIdAttribute, userAdditionalIdAttribute, userEmailAttribute, userFirstNameAttribute, userLastNameAttribute], scope: userSearchScopeDN);
-
-/*
-      print('DEBUG');
-      print(connection.state);
-      print(userSearchDN);
-      print(userSearchFilterDartdap);
-      print([userLoginAttribute, userEmailAttribute, userFirstNameAttribute, userLastNameAttribute]);
-      print(userSearchScopeDN);
-*/
 
       List<User> users = await UserService.querySelectUsers(UserGetRequest()..organizationId =  request.authenticatedOrganizationId);
       User user;

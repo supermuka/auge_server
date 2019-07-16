@@ -28,6 +28,7 @@ class UserProfileOrganization {
 
   UserProfileOrganization() {
     user = User();
+    organization = Organization();
   }
 
   user_profile_organization_pb.UserProfileOrganization writeToProtoBuf() {

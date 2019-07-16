@@ -118,8 +118,11 @@ class UserProfile {
     user_pb.UserProfile userProfilePb = user_pb.UserProfile();
 
    // if (this.isSuperAdmin != null) userProfilePb.isSuperAdmin = this.isSuperAdmin;
+    if (this.additionalId != null) userProfilePb.additionalId = this.additionalId;
     if (this.image != null) userProfilePb.image = this.image;
     if (this.idiomLocale != null) userProfilePb.idiomLocale = this.idiomLocale;
+    if (this.organization != null) userProfilePb.organization = this.organization.writeToProtoBuf();
+    if (this.directoryServiceId != null) userProfilePb.directoryServiceId = this.directoryServiceId;
 
     return userProfilePb;
   }

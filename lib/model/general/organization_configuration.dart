@@ -18,6 +18,7 @@ enum DirectoryServiceStatus {
   errorManyGroupsFound,
   errorGroupMemberAttributeNotFound,
   errorUserNotFound,
+  errorIdAttribute,
   errorAdditionalIdAttribute,
   errorEmailAttribute,
   errorFirstNameAttribute,
@@ -41,9 +42,6 @@ class OrganizationConfiguration {
   bool directoryServiceEnabled;
 
   // Specific fields
-  static final String organizationField = 'organization';
-  Organization organization;
-
   static final String directoryServiceField = 'directoryService';
   DirectoryService directoryService;
 
