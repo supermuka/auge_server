@@ -3,7 +3,8 @@
 
 import 'dart:async';
 
-import 'package:auge_server/model/general/user_profile_organization.dart';
+import 'dart:convert' show base64, utf8;
+
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user_profile_organization.pb.dart';
 import 'package:grpc/grpc.dart';
@@ -81,20 +82,21 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         " organization_directory_service.host_address," //6
         " organization_directory_service.port," //7
         " organization_directory_service.ssl_tls," //8
-        " organization_directory_service.admin_bind_dn," //9
-        " organization_directory_service.admin_password," //10
-        " organization_directory_service.group_search_dn," //11
-        " organization_directory_service.group_search_scope," //12
-        " organization_directory_service.group_search_filter," //13
-        " organization_directory_service.group_member_attribute," //14
-        " organization_directory_service.user_search_dn," //15
-        " organization_directory_service.user_search_scope," //16
-        " organization_directory_service.user_search_filter," //17
-        " organization_directory_service.user_id_attribute," //18
-        " organization_directory_service.user_additional_id_attribute," //19
-        " organization_directory_service.user_first_name_attribute," //20
-        " organization_directory_service.user_last_name_attribute," //21
-        " organization_directory_service.user_email_attribute" //22
+        " organization_directory_service.password_format," //9
+        " organization_directory_service.admin_bind_dn," //10
+        " organization_directory_service.admin_password," //11
+        " organization_directory_service.group_search_dn," //12
+        " organization_directory_service.group_search_scope," //13
+        " organization_directory_service.group_search_filter," //14
+        " organization_directory_service.group_member_attribute," //15
+        " organization_directory_service.user_search_dn," //16
+        " organization_directory_service.user_search_scope," //17
+        " organization_directory_service.user_search_filter," //18
+        " organization_directory_service.user_id_attribute," //19
+        " organization_directory_service.user_additional_id_attribute," //20
+        " organization_directory_service.user_first_name_attribute," //21
+        " organization_directory_service.user_last_name_attribute," //22
+        " organization_directory_service.user_email_attribute" //23
         " FROM general.organization_configurations organization_configuration"
         " LEFT OUTER JOIN general.organization_directory_service on organization_directory_service.organization_id = organization_configuration.organization_id";
 
@@ -136,33 +138,35 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         if (row[8] != null)
           configuration.directoryService.sslTls = row[8];
         if (row[9] != null)
-          configuration.directoryService.adminBindDN = row[9];
+          configuration.directoryService.sslTls = row[9];
         if (row[10] != null)
-          configuration.directoryService.adminPassword = row[10];
+          configuration.directoryService.adminBindDN = row[10];
         if (row[11] != null)
-          configuration.directoryService.groupSearchDN = row[11];
+          configuration.directoryService.adminPassword = row[11];
         if (row[12] != null)
-          configuration.directoryService.groupSearchScope = row[12];
+          configuration.directoryService.groupSearchDN = row[12];
         if (row[13] != null)
-          configuration.directoryService.groupSearchFilter = row[13];
+          configuration.directoryService.groupSearchScope = row[13];
         if (row[14] != null)
-          configuration.directoryService.groupMemberAttribute = row[14];
+          configuration.directoryService.groupSearchFilter = row[14];
         if (row[15] != null)
-          configuration.directoryService.userSearchDN = row[15];
+          configuration.directoryService.groupMemberAttribute = row[15];
         if (row[16] != null)
-          configuration.directoryService.userSearchScope = row[16];
+          configuration.directoryService.userSearchDN = row[16];
         if (row[17] != null)
-          configuration.directoryService.userSearchFilter = row[17];
+          configuration.directoryService.userSearchScope = row[17];
         if (row[18] != null)
-          configuration.directoryService.userIdAttribute = row[18];
+          configuration.directoryService.userSearchFilter = row[18];
         if (row[19] != null)
-          configuration.directoryService.userAdditionalIdAttribute = row[19];
+          configuration.directoryService.userIdAttribute = row[19];
         if (row[20] != null)
-          configuration.directoryService.userFirstNameAttribute = row[20];
+          configuration.directoryService.userAdditionalIdAttribute = row[20];
         if (row[21] != null)
-          configuration.directoryService.userLastNameAttribute = row[21];
+          configuration.directoryService.userFirstNameAttribute = row[21];
         if (row[22] != null)
-          configuration.directoryService.userEmailAttribute = row[22];
+          configuration.directoryService.userLastNameAttribute = row[22];
+        if (row[23] != null)
+          configuration.directoryService.userEmailAttribute = row[23];
 
         configurations.add(configuration);
       }
@@ -207,6 +211,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                 "host_address,"
                 "port,"
                 "ssl_tls,"
+                "password_format,"
                 "admin_bind_dn,"
                 "admin_password,"
                 "group_search_dn,"
@@ -228,6 +233,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                 "@host_address,"
                 "@port,"
                 "@ssl_tls,"
+                "@password_format,"
                 "@admin_bind_dn,"
                 "@admin_password,"
                 "@group_search_dn,"
@@ -249,6 +255,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             "host_address": request.organizationConfiguration.directoryService.hasHostAddress() ? request.organizationConfiguration.directoryService.hostAddress: null,
             "port": request.organizationConfiguration.directoryService.hasPort() ? request.organizationConfiguration.directoryService.port: null,
             "ssl_tls": request.organizationConfiguration.directoryService.hasSslTls() ? request.organizationConfiguration.directoryService.sslTls: null,
+            "password_format": request.organizationConfiguration.directoryService.hasPasswordFormat() ? request.organizationConfiguration.directoryService.passwordFormat: null,
             "admin_bind_dn": request.organizationConfiguration.directoryService.hasAdminBindDN() ? request.organizationConfiguration.directoryService.adminBindDN: null,
             "admin_password": request.organizationConfiguration.directoryService.hasAdminPassword() ? request.organizationConfiguration.directoryService.adminPassword: null,
             "group_search_dn": request.organizationConfiguration.directoryService.hasGroupSearchDN() ? request.organizationConfiguration.directoryService.groupSearchDN: null,
@@ -294,13 +301,16 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         List<List<dynamic>> result =  await ctx.query(
-            "UPDATE general.organization_configurations"
+            "UPDATE general.organization_configurations "
             "SET version = @version, "
-            "directory_service_enabled = @directory_service_enabled"
-            "WHERE organization_id = @organization_id AND version = @version - 1"
+            "domain = @domain, "
+            "directory_service_enabled = @directory_service_enabled "
+            "WHERE organization_id = @organization_id AND version = @version - 1 "
+            "RETURNING true"
             , substitutionValues: {
           "organization_id": request.organizationConfiguration.organizationId,
-          "version": request.organizationConfiguration.version,
+          "version": ++request.organizationConfiguration.version,
+          "domain": request.organizationConfiguration.domain,
           "directory_service_enabled": request.organizationConfiguration.directoryServiceEnabled});
 
         // Optimistic concurrency control
@@ -314,6 +324,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               "host_address = @host_address, "
               "port = @port, "
               "ssl_tls = @ssl_tls, "
+              "password_format = @password_format, "
               "admin_bind_dn = @admin_bind_dn, "
               "admin_password = @admin_password, "
               "group_search_dn = @group_search_dn, "
@@ -328,7 +339,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               "user_first_name_attribute = @user_first_name_attribute, "
               "user_last_name_attribute = @user_last_name_attribute, "
               "user_email_attribute = @user_email_attribute "
-              " WHERE organization_id = @organization_id "
+              "WHERE organization_id = @organization_id "
               , substitutionValues: {
             "organization_id": request.organizationConfiguration.organizationId,
             "sync_interval": request.organizationConfiguration.directoryService.hasSyncInterval() ? request.organizationConfiguration.directoryService.syncInterval : null,
@@ -336,6 +347,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             "host_address": request.organizationConfiguration.directoryService.hasHostAddress() ? request.organizationConfiguration.directoryService.hostAddress: null,
             "port": request.organizationConfiguration.directoryService.hasPort() ? request.organizationConfiguration.directoryService.port: null,
             "ssl_tls": request.organizationConfiguration.directoryService.hasSslTls() ? request.organizationConfiguration.directoryService.sslTls: null,
+            "password_format":  request.organizationConfiguration.directoryService.hasPasswordFormat() ? request.organizationConfiguration.directoryService.passwordFormat: null,
             "admin_bind_dn": request.organizationConfiguration.directoryService.hasAdminBindDN() ? request.organizationConfiguration.directoryService.adminBindDN: null,
             "admin_password": request.organizationConfiguration.directoryService.hasAdminPassword() ? request.organizationConfiguration.directoryService.adminPassword: null,
             "group_search_dn": request.organizationConfiguration.directoryService.hasGroupSearchDN() ? request.organizationConfiguration.directoryService.groupSearchDN: null,
@@ -350,16 +362,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             "user_first_name_attribute": request.organizationConfiguration.directoryService.hasUserFirstNameAttribute() ? request.organizationConfiguration.directoryService.userFirstNameAttribute: null,
             "user_last_name_attribute": request.organizationConfiguration.directoryService.hasUserLastNameAttribute() ? request.organizationConfiguration.directoryService.userLastNameAttribute: null,
             "user_email_attribute": request.organizationConfiguration.directoryService.hasUserEmailAttribute() ? request.organizationConfiguration.directoryService.userEmailAttribute: null,});
-
-          await ctx.query(
-              "UPDATE general.organization_directory_service "
-                  " SET version = @version,"
-                  " WHERE configuration_id = @configuration_id"
-              , substitutionValues: {
-            "id": request.organizationConfiguration.organizationId,
-            "version": ++request.organizationConfiguration.version,
-            "directory_service_enabled": request.organizationConfiguration
-                .directoryServiceEnabled});
 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -389,11 +391,11 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
   // Operation
   Future<int> _testDirectoryService(OrganizationConfigurationRequest request) async {
-    _processDirectoryService(request);
+    return _processDirectoryService(request);
   }
 
   Future<int> _syncDirectoryService(OrganizationConfigurationRequest request) async {
-    _processDirectoryService(request, sync: true);
+    return _processDirectoryService(request, sync: true);
   }
 
 
@@ -401,6 +403,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
     String hostAddress = request.organizationConfiguration.directoryService.hostAddress;
     int port = request.organizationConfiguration.directoryService.port;
     bool sslTls = request.organizationConfiguration.directoryService.sslTls;
+    int passwordFormat = request.organizationConfiguration.directoryService.passwordFormat;
 
     String adminBindDN = request.organizationConfiguration.directoryService.adminBindDN;
     String adminPassword = request.organizationConfiguration.directoryService.adminPassword;
@@ -432,7 +435,20 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         return organization_configuration_m.DirectoryServiceStatus.errorNotConnected.index;
 
       // TEST BIND
-      await connection.setAuthentication(adminBindDN, adminPassword);
+      //TODO - future understand a way to cipher this password. LDAP normaly store in plan text, though isn't the wanted way.
+      String adminPasswordDecoded = utf8.decode(base64.decode(adminPassword));
+
+      String passwordFormatStr;
+      if ( passwordFormat == organization_configuration_m.DirectoryServicePasswordFormat.des.index) {
+        passwordFormatStr = '{DES}';
+      } else if ( passwordFormat == organization_configuration_m.DirectoryServicePasswordFormat.sha.index) {
+        passwordFormatStr = '{SHA}';
+      } else { // passwordFormat == null || passwordFormat == organization_configuration_m.DirectoryServicePasswordFormat.textPlan.index
+        passwordFormatStr = '';
+      }
+
+      await connection.setAuthentication(adminBindDN, passwordFormatStr + adminPasswordDecoded);
+      //await connection.setAuthentication(adminBindDN, adminPassword);
 
       if (!connection.isAuthenticated)
         return organization_configuration_m.DirectoryServiceStatus.errorNotBindedInvalidCredentials.index;
@@ -451,7 +467,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
         groupSearchFilterDartdap =  dartdap.Filter.equals(att, val);
       } else {
-        throw Exception('Group search filter must be in a simple format, i.e. (objectClass=posixGroup)');
+        return organization_configuration_m.DirectoryServiceStatus.errorGroupFilterInvalid.index;
+        //throw Exception('Group search filter must be in a simple format, i.e. (objectClass=posixGroup)');
       }
 
       var searchResult = await connection.search(groupSearchDN, groupSearchFilterDartdap, [groupMemberAttribute], scope: groupSearchScopeDN);
@@ -492,7 +509,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
         userSearchFilterDartdap =  dartdap.Filter.equals(att, val);
       } else {
-        throw Exception('Account search filter must be in a simple format, i.e. (objectClass=posixAccount)');
+        return organization_configuration_m.DirectoryServiceStatus.errorUserFilterInvalid.index;
+        //throw Exception('Account search filter must be in a simple format, i.e. (objectClass=posixAccount)');
       }
 
       searchResult = await connection.search(userSearchDN, userSearchFilterDartdap, [userIdAttribute, userAdditionalIdAttribute, userEmailAttribute, userFirstNameAttribute, userLastNameAttribute], scope: userSearchScopeDN);
@@ -613,7 +631,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
               updateUsersSync.add(userProfileOrganizationRequest);
             }
-
           }
         }
       }
@@ -668,7 +685,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
       connection.close();
     } catch (e) {
-      print(e);
+      print('${e.runtimeType}, ${e}');
       rethrow;
     }
     return organization_configuration_m.DirectoryServiceStatus.success.index;

@@ -18,11 +18,18 @@ enum DirectoryServiceStatus {
   errorManyGroupsFound,
   errorGroupMemberAttributeNotFound,
   errorUserNotFound,
+  errorUserFilterInvalid,
   errorIdAttribute,
   errorAdditionalIdAttribute,
   errorEmailAttribute,
   errorFirstNameAttribute,
   errorLastNameAttribute
+}
+
+enum DirectoryServicePasswordFormat {
+  textPlan,
+  des,
+  sha,
 }
 
 /// Domain model class to represent a relationship between users and organizations
@@ -125,11 +132,12 @@ class DirectoryService {
   int port;
   static final String sslTlsField = 'sslTls';
   bool sslTls;
+  static final String passwordFormatField = 'passwordFormat';
+  int passwordFormat;
   static final String syncIntervalField = 'syncInterval';
   int syncInterval;
   static final String lastSyncField = 'lastSync';
   DateTime lastSync;
-
 
   // ADMIN
   static final String adminBindDNField = 'adminBindDN';
@@ -174,6 +182,7 @@ class DirectoryService {
     if (this.hostAddress != null) directoryServicePb.hostAddress = this.hostAddress;
     if (this.port != null) directoryServicePb.port = this.port;
     if (this.sslTls != null) directoryServicePb.sslTls = this.sslTls;
+    if (this.passwordFormat != null) directoryServicePb.passwordFormat = this.passwordFormat;
     if (this.syncInterval != null) directoryServicePb.syncInterval = this.syncInterval;
     if (this.lastSync != null) directoryServicePb.lastSync = CommonUtils.timestampFromDateTime(this.lastSync);
     if (this.adminBindDN != null) directoryServicePb.adminBindDN = this.adminBindDN;
@@ -199,6 +208,7 @@ class DirectoryService {
     if (directoryServicePb.hasHostAddress()) this.hostAddress = directoryServicePb.hostAddress;
     if (directoryServicePb.hasPort()) this.port = directoryServicePb.port;
     if (directoryServicePb.hasSslTls()) this.sslTls = directoryServicePb.sslTls;
+    if (directoryServicePb.hasPasswordFormat()) this.passwordFormat= directoryServicePb.passwordFormat;
     if (directoryServicePb.hasSyncInterval()) this.syncInterval = directoryServicePb.syncInterval;
     if (directoryServicePb.hasLastSync()) this.lastSync = CommonUtils.dateTimeFromTimestamp(directoryServicePb.lastSync);
     if (directoryServicePb.hasAdminBindDN()) this.adminBindDN = directoryServicePb.adminBindDN;
@@ -246,6 +256,10 @@ class DirectoryService {
         map[DirectoryService.sslTlsField] =
             directoryServicePb.sslTls;
 
+      if (directoryServicePb.hasPasswordFormat())
+        map[DirectoryService.passwordFormatField] =
+            directoryServicePb.passwordFormat;
+
       if (directoryServicePb.hasSyncInterval())
         map[DirectoryService.syncIntervalField] =
             directoryServicePb.syncInterval;
@@ -286,7 +300,6 @@ class DirectoryService {
         map[DirectoryService.userAdditionalIdAttributeField] =
             directoryServicePb.userAdditionalIdAttribute;
 
-
       if (directoryServicePb.hasUserFirstNameAttribute())
         map[DirectoryService.userFirstNameAttributeField] =
             directoryServicePb.userFirstNameAttribute;
@@ -301,5 +314,4 @@ class DirectoryService {
     }
     return map;
   }
-
 }
