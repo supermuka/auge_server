@@ -138,7 +138,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         if (row[8] != null)
           configuration.directoryService.sslTls = row[8];
         if (row[9] != null)
-          configuration.directoryService.sslTls = row[9];
+          configuration.directoryService.passwordFormat = row[9];
         if (row[10] != null)
           configuration.directoryService.adminBindDN = row[10];
         if (row[11] != null)
