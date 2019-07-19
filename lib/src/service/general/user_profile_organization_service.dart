@@ -178,14 +178,18 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
 
         if (request.hasWithUserProfile() && request.withUserProfile)  {
 
+          print('DEBUG 00 ${request.userProfileOrganization.user.hasId()}');
+
           if (!request.userProfileOrganization.user.hasId()) {
             request.userProfileOrganization.user.id = new Uuid().v4();
           }
 
+          print('DEBUG 01 ${request.userProfileOrganization.user.id}');
+
           request.userProfileOrganization.user.version = 0;
 
           await ctx.query(
-              "INSERT INTO general.users(id, version,name, email, password) VALUES("
+              "INSERT INTO general.users(id, version, name, inactive) VALUES("
                   "@id,"
                   "@version,"
                   "@name,"
@@ -196,7 +200,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
             "name": request.userProfileOrganization.user.name,
             "inactive": request.userProfileOrganization.user.inactive});
 
-
+          print('DEBUG INSERT ZZ');
           if (request.userProfileOrganization.user.userProfile != null) {
             await ctx.query(
                 "INSERT INTO general.users_profile(user_id, additional_id, email, password, image, idiom_locale, organization_id, directory_service_id) VALUES("
@@ -209,15 +213,16 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
                     "@organization_id,"
                     "@directory_service_id)", substitutionValues: {
               "id": request.userProfileOrganization.user.id,
-              "additional_id": request.userProfileOrganization.user.userProfile.additionalId,
+              "additional_id": request.userProfileOrganization.user.userProfile.hasAdditionalId() ? request.userProfileOrganization.user.userProfile.additionalId : null,
               "email": request.userProfileOrganization.user.userProfile.eMail,
               "password": request.userProfileOrganization.user.userProfile.password,
               "image": request.userProfileOrganization.user.userProfile.image,
               "idiom_locale": request.userProfileOrganization.user.userProfile.idiomLocale,
               "organization_id": request.userProfileOrganization.user.userProfile.organization.id,
-              "directory_service_id": request.userProfileOrganization.user.userProfile.directoryServiceId,
+              "directory_service_id": request.userProfileOrganization.user.userProfile.hasDirectoryServiceId() ? request.userProfileOrganization.user.userProfile.directoryServiceId : null,
               });
           }
+          print('DEBUG INSERT ZZZZ');
         }
 
         if (!request.userProfileOrganization.hasId()) {
@@ -225,6 +230,10 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         }
 
         request.userProfileOrganization.version = 0;
+
+        print('DEBUG INSERT A ${request.userProfileOrganization.id}');
+        print('DEBUG INSERT B ${request.userProfileOrganization.user.id}');
+        print('DEBUG INSERT C ${request.userProfileOrganization.organization.id}');
 
         await ctx.query(
             "INSERT INTO general.users_profile_organizations(id, version, user_id, organization_id, authorization_role) VALUES("
@@ -240,6 +249,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           "organization_id": request.userProfileOrganization.hasOrganization() ? request.userProfileOrganization.organization.id : null,
           "authorization_role": request.userProfileOrganization.authorizationRole});
 
+        print('DEBUG XX');
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
           "user_id": request.authenticatedUserId,
@@ -252,7 +262,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           "date_time": DateTime.now().toUtc(),
           "description": request.userProfileOrganization.user.name,
           "changed_values": history_item_m.HistoryItem.changedValuesJson({}, user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(request.userProfileOrganization))});
-
+        print('DEBUG XXXX');
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');

@@ -5,8 +5,11 @@ import 'dart:async';
 
 import 'dart:convert' show base64, utf8;
 
+import 'package:auge_server/model/general/authorization.dart';
+import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user_profile_organization.pb.dart';
+import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:grpc/grpc.dart';
 import 'package:dartdap/dartdap.dart' as dartdap;
 
@@ -34,10 +37,12 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
   @override
   Future<OrganizationConfiguration> getOrganizationConfiguration(ServiceCall call,
       OrganizationConfigurationGetRequest request) async {
+
     OrganizationConfiguration organizationConfiguration = await querySelectOrganizationConfiguration(request);
     // if (user == null) call.sendTrailers(status: StatusCode.notFound, message: "User not found.");
     if (organizationConfiguration == null) throw new GrpcError.notFound("Configuration not found.");
     return organizationConfiguration;
+
   }
 
   @override
@@ -55,14 +60,14 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
   @override
   Future<Int32Value> testDirectoryService(ServiceCall call,
       OrganizationConfigurationRequest request) async {
-
+    print("entrou aqui1?");
     return Int32Value()..value = await _testDirectoryService(request);
   }
 
   @override
   Future<Int32Value> syncDirectoryService(ServiceCall call,
       OrganizationConfigurationRequest request) async {
-
+    print("entrou aqui2?");
     return Int32Value()..value = await _syncDirectoryService(request);
   }
 
@@ -400,6 +405,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
 
   Future<int> _processDirectoryService(OrganizationConfigurationRequest request, {bool sync = false}) async {
+
     String hostAddress = request.organizationConfiguration.directoryService.hostAddress;
     int port = request.organizationConfiguration.directoryService.port;
     bool sslTls = request.organizationConfiguration.directoryService.sslTls;
@@ -519,6 +525,9 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       User user;
       int userIndex;
 
+      Organization organization;
+      if (sync) organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = request.authenticatedOrganizationId);
+
       countEntry = 0;
       int countIdAttribute = 0,
           countAdditionalIdAttribute = 0,
@@ -535,7 +544,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
       await for (var entry in searchResult.stream) {
         // Processing stream of SearchEntry
-        print(entry.dn);
+       // print("DN >>>> " + entry.dn);
         countEntry++;
         //print("dn: ${entry.dn}");
 
@@ -578,7 +587,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           //  print("  ${attr.name}: $value");
           //}
         }
-
         if (sync) {
 
           userIndex = users.indexWhere((t) => t.userProfile.directoryServiceId == userDirectoryServiceIdAttributeValue);
@@ -588,14 +596,24 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
             UserProfileOrganizationRequest userProfileOrganizationRequest = UserProfileOrganizationRequest();
 
+            userProfileOrganizationRequest.authenticatedUserId = request.authenticatedUserId;
+            userProfileOrganizationRequest.authenticatedOrganizationId = request.authenticatedOrganizationId;
+            userProfileOrganizationRequest.withUserProfile = true;
+            userProfileOrganizationRequest.userProfileOrganization = UserProfileOrganization();
+            userProfileOrganizationRequest.userProfileOrganization.organization = organization;
+            userProfileOrganizationRequest.userProfileOrganization.authorizationRole = SystemRole.standard.index;
+
+            userProfileOrganizationRequest.userProfileOrganization.user = User();
+            userProfileOrganizationRequest.userProfileOrganization.user.userProfile = UserProfile();
+
+
             userProfileOrganizationRequest.userProfileOrganization.user.name = userFirstNameAttributeValue + ' ' + userLastNameAttributeValue;
             userProfileOrganizationRequest.userProfileOrganization.user.userProfile.eMail = userEmailAttributeValue;
             userProfileOrganizationRequest.userProfileOrganization.user.userProfile.additionalId = userAdditionalIdAttributeValue;
             userProfileOrganizationRequest.userProfileOrganization.user.userProfile.directoryServiceId = userDirectoryServiceIdAttributeValue;
-            userProfileOrganizationRequest.userProfileOrganization.user.userProfile.organization.id = request.authenticatedOrganizationId;
+            userProfileOrganizationRequest.userProfileOrganization.user.userProfile.organization = organization;
 
             insertUsersSync.add(userProfileOrganizationRequest);
-
           } else {
 
             user = users[userIndex];
@@ -626,6 +644,13 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             if (hasChanged) {
 
               UserProfileOrganizationRequest userProfileOrganizationRequest = UserProfileOrganizationRequest();
+
+              userProfileOrganizationRequest.authenticatedUserId = request.authenticatedUserId;
+              userProfileOrganizationRequest.authenticatedOrganizationId = request.authenticatedOrganizationId;
+              userProfileOrganizationRequest.withUserProfile = true;
+              userProfileOrganizationRequest.userProfileOrganization = UserProfileOrganization();
+              userProfileOrganizationRequest.userProfileOrganization.organization = organization;
+              userProfileOrganizationRequest.userProfileOrganization.authorizationRole = SystemRole.standard.index;
 
               userProfileOrganizationRequest.userProfileOrganization.user = user;
 
@@ -659,7 +684,20 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           if (directoryServiceId != null) {
             if (directoryServiceIds.indexOf(directoryServiceId) == -1) {
               users[userIndex].inactive = true;
-              updateInactiveUsersSync.add((UserProfileOrganizationRequest()..userProfileOrganization.user = users[userIndex]));
+
+              UserProfileOrganizationRequest userProfileOrganizationRequest = UserProfileOrganizationRequest();
+
+              userProfileOrganizationRequest.authenticatedUserId = request.authenticatedUserId;
+              userProfileOrganizationRequest.authenticatedOrganizationId = request.authenticatedOrganizationId;
+              userProfileOrganizationRequest.withUserProfile = true;
+
+              userProfileOrganizationRequest.userProfileOrganization = UserProfileOrganization();
+              userProfileOrganizationRequest.userProfileOrganization.organization = organization;
+              userProfileOrganizationRequest.userProfileOrganization.authorizationRole = SystemRole.standard.index;
+
+              userProfileOrganizationRequest.userProfileOrganization.user = users[userIndex];
+
+              updateInactiveUsersSync.add(userProfileOrganizationRequest);
             }
           }
         }
