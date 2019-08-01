@@ -5,7 +5,7 @@ import 'dart:async';
 
 import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/work_item.pbgrpc.dart';
@@ -47,7 +47,7 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   @override
-  Future<IdResponse> createWorkItem(ServiceCall call,
+  Future<StringValue> createWorkItem(ServiceCall call,
       WorkItemRequest request) async {
     return queryInsertWorkItem(request);
   }
@@ -195,7 +195,7 @@ class WorkItemService extends WorkItemServiceBase {
 
     for (var row in results) {
 
-      user = await UserService.querySelectUser(UserGetRequest()..id = row[0]..withProfile = true);
+      user = await UserService.querySelectUser(UserGetRequest()..id = row[0]..withUserProfile = true);
 
       assignedToUsers.add(user);
     }
@@ -204,7 +204,7 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Create (insert) a new instance of [WorkItem]
-  static Future<IdResponse> queryInsertWorkItem(WorkItemRequest request) async {
+  static Future<StringValue> queryInsertWorkItem(WorkItemRequest request) async {
 
     if (!request.workItem.hasId()) {
       request.workItem.id = Uuid().v4();
@@ -282,8 +282,8 @@ class WorkItemService extends WorkItemServiceBase {
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: {"id": Uuid().v4(),
-              "user_id": request.authenticatedUserId,
-              "organization_id": request.authenticatedOrganizationId,
+              "user_id": request.authUserId,
+              "organization_id": request.authOrganizationId,
               "object_id": request.workItem.id,
               "object_version": request.workItem.version,
               "object_class_name": work_item_m
@@ -306,7 +306,7 @@ class WorkItemService extends WorkItemServiceBase {
       rethrow;
     }
 
-    return IdResponse()..id = request.workItem.id;
+    return StringValue()..value = request.workItem.id;
   }
 
   /// Update an initiative passing an instance of [WorkItem]
@@ -436,8 +436,8 @@ class WorkItemService extends WorkItemServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.workItem.id,
                 "object_version": request.workItem.version,
                 "object_class_name": work_item_m
@@ -498,8 +498,8 @@ class WorkItemService extends WorkItemServiceBase {
             // Create a history item
             await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
                 substitutionValues: {"id": Uuid().v4(),
-                  "user_id": request.authenticatedUserId,
-                  "organization_id": request.authenticatedOrganizationId,
+                  "user_id": request.authUserId,
+                  "organization_id": request.authOrganizationId,
                   "object_id": request.workItemId,
                   "object_version": request.workItemVersion,
                   "object_class_name": work_item_m.WorkItem.className,

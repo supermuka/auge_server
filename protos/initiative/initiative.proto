@@ -6,8 +6,8 @@ syntax = "proto3";
 package auge.protobuf;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
-import "general/common.proto";
 import "general/organization.proto";
 import "general/group.proto";
 import "general/user.proto";
@@ -22,7 +22,7 @@ service InitiativeService {
     rpc GetInitiatives (InitiativeGetRequest) returns (InitiativesResponse) {}
     rpc GetInitiative (InitiativeGetRequest) returns (Initiative) {}
 
-    rpc CreateInitiative (InitiativeRequest) returns (IdResponse) {}
+    rpc CreateInitiative (InitiativeRequest) returns (google.protobuf.StringValue) {}
     rpc UpdateInitiative (InitiativeRequest) returns (google.protobuf.Empty) {}
     rpc DeleteInitiative (InitiativeDeleteRequest) returns (google.protobuf.Empty) {}
    // rpc SoftDeleteInitiative (Initiative) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
@@ -51,16 +51,16 @@ message Initiative {
 // Request related for model domain
 message InitiativeRequest {
     Initiative initiative = 1;
-    string authenticated_user_id = 2;
-    string authenticated_organization_id = 3;
+    string auth_user_id = 2;
+    string auth_organization_id = 3;
 }
 
 // Request message for delete related for model domain
 message InitiativeDeleteRequest {
     string initiative_id = 1;
     int32 initiative_version = 2;
-    string authenticated_user_id = 3;
-    string authenticated_organization_id = 4;
+    string auth_user_id = 3;
+    string auth_organization_id = 4;
 }
 
 // Response list of the stages
@@ -74,5 +74,5 @@ message InitiativeGetRequest {
     string organization_id = 2;
     string objective_id = 3;
     bool with_work_items = 4;
-    bool with_profile = 5;
+    bool with_user_profile = 5;
 }

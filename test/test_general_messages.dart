@@ -2,12 +2,12 @@ import 'package:test/test.dart';
 
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart' as organization_pb;
 import 'package:auge_server/src/protos/generated/general/user.pb.dart' as user_pb;
-import 'package:auge_server/src/protos/generated/general/user_profile_organization.pb.dart' as user_profile_organization_pb;
+import 'package:auge_server/src/protos/generated/general/user_access.pb.dart' as user_access_pb;
 import 'package:auge_server/src/protos/generated/general/group.pb.dart' as group_pb;
 
 import 'package:auge_server/model/general/organization.dart' as organization_m;
 import 'package:auge_server/model/general/user.dart' as user_m;
-import 'package:auge_server/model/general/user_profile_organization.dart' as user_profile_organization_m;
+import 'package:auge_server/model/general/user_access.dart' as user_access_m;
 import 'package:auge_server/model/general/group.dart' as group_m;
 
 void main() {
@@ -73,12 +73,11 @@ void main() {
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.version = 0;
         model.name = 'Name test';
-        model.password = '123456789';
-        model.eMail = 'test@levius.com.br';
+
         model.userProfile = user_m.UserProfile();
         model.userProfile.idiomLocale = 'pt_BR';
         model.userProfile.image = 'BASE64IMAGE';
-        model.userProfile.isSuperAdmin = true;
+
 
       });
 
@@ -86,11 +85,10 @@ void main() {
         expect(model.id, equals(proto.id));
         expect(model.version, equals(proto.version));
         expect(model.name, equals(proto.name));
-        expect(model.password, equals(proto.password));
-        expect(model.eMail, equals(proto.eMail));
+
         expect(model.userProfile.idiomLocale, equals(proto.userProfile.idiomLocale));
         expect(model.userProfile.image, equals(proto.userProfile.image));
-        expect(model.userProfile.isSuperAdmin, equals(proto.userProfile.isSuperAdmin));
+
       }
 
       test('User entity. Call writeToProtoBuf', () async {
@@ -106,23 +104,22 @@ void main() {
         expect(m[user_m.User.idField], equals(proto.id));
         expect(m[user_m.User.versionField], equals(proto.version));
         expect(m[user_m.User.nameField], equals(proto.name));
-        expect(m[user_m.User.passwordField], equals(proto.password));
-        expect(m[user_m.User.eMailField], equals(proto.eMail));
+
         expect(m[user_m.User.userProfileField][user_m.UserProfile.idiomLocaleField], equals(proto.userProfile.idiomLocale));
         expect(m[user_m.User.userProfileField][user_m.UserProfile.imageField], equals(proto.userProfile.image));
-        expect(m[user_m.User.userProfileField][user_m.UserProfile.isSuperAdminField], equals(proto.userProfile.isSuperAdmin));
+
       });
     });
 
     group('User Profile Organization.', () {
 
-      user_profile_organization_m.UserProfileOrganization model = user_profile_organization_m.UserProfileOrganization();
-      user_profile_organization_pb.UserProfileOrganization proto;
+      user_access_m.UserAccess model = user_access_m.UserAccess();
+      user_access_pb.UserAccess proto;
 
       void callExcept() {
         expect(model.id, equals(proto.id));
         expect(model.version, equals(proto.version));
-        expect(model.authorizationRole, equals(proto.authorizationRole));
+        expect(model.accessRole, equals(proto.accessRole));
         expect(model.organization.id, equals(proto.organization.id));
         expect(model.user.id, equals(proto.user.id));
       }
@@ -130,7 +127,7 @@ void main() {
       setUp(() {
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.version = 0;
-        model.authorizationRole = 0;
+        model.accessRole = 0;
         model.organization = organization_m.Organization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.user = user_m.User()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
       });
@@ -141,17 +138,17 @@ void main() {
       });
 
       test('UserProfileOrganization entity. Call readToProtoBuf.', () async {
-        model = user_profile_organization_m.UserProfileOrganization();
+        model = user_access_m.UserAccess();
         model.readFromProtoBuf(proto);
         callExcept();
       });
 
       test('UserProfileOrganization entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(proto);
-        expect(m[user_profile_organization_m.UserProfileOrganization.idField], equals(proto.id));
-        expect(m[user_profile_organization_m.UserProfileOrganization.versionField], equals(proto.version));
-        expect(m[user_profile_organization_m.UserProfileOrganization.userField][user_m.User.idField], equals(proto.user.id));
-        expect(m[user_profile_organization_m.UserProfileOrganization.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
+        Map<String, dynamic> m = user_access_m.UserAccess.fromProtoBufToModelMap(proto);
+        expect(m[user_access_m.UserAccess.idField], equals(proto.id));
+        expect(m[user_access_m.UserAccess.versionField], equals(proto.version));
+        expect(m[user_access_m.UserAccess.userField][user_m.User.idField], equals(proto.user.id));
+        expect(m[user_access_m.UserAccess.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
       });
     });
 

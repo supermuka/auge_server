@@ -14,14 +14,6 @@ service CommonService {
 
 }
 
-message IdRequest {
-    string id = 1;
-}
-
-message IdResponse {
-    string id = 1;
-}
-
 message DateTimeGetRequest {
     bool is_utc = 1;
 }

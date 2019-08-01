@@ -33,7 +33,7 @@ dependencies:
   #_discoveryapis_commons: ^0.1.8+1
   protobuf: ^0.13.12
   grpc: ^2.0.0+1
-  dartdap: ^0.3.5
+  dartdap: ^0.4.2
   #grpc:
   #  git:
   #    url: git://github.com/grpc/grpc-dart.git

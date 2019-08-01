@@ -3,13 +3,13 @@
 
 import 'dart:async';
 
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
-import 'package:auge_server/src/protos/generated/general/user_profile_organization.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/general/user_access.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
@@ -19,48 +19,48 @@ import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
-import 'package:auge_server/model/general/user_profile_organization.dart' as user_profile_organization_m;
+import 'package:auge_server/model/general/user_access.dart' as user_access_m;
 
 import 'package:uuid/uuid.dart';
 
-class UserProfileOrganizationService extends UserProfileOrganizationServiceBase {
+class UserAccessService extends UserAccessServiceBase {
 
   // API
   @override
-  Future<UsersProfileOrganizationsResponse> getUsersProfileOrganizations(ServiceCall call,
-      UserProfileOrganizationGetRequest userProfileOrganizationGetRequest) async {
-    return UsersProfileOrganizationsResponse()/*..webWorkAround = true*/..usersProfileOrganizations.addAll(await querySelectUsersProfileOrganizations(userProfileOrganizationGetRequest));
+  Future<UserAccessesResponse> getUserAccesses(ServiceCall call,
+      UserAccessGetRequest UserAccessGetRequest) async {
+    return UserAccessesResponse()..userAccesses.addAll(await querySelectUserAccesses(UserAccessGetRequest));
   }
 
   @override
-  Future<UserProfileOrganization> getUserProfileOrganization(ServiceCall call,
-      UserProfileOrganizationGetRequest request) async {
+  Future<UserAccess> getUserAccess(ServiceCall call,
+      UserAccessGetRequest request) async {
     //return UserProfileOrganization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
-    return querySelectUserProfileOrganization(request);
+    return querySelectUserAccess(request);
   }
 
   @override
-  Future<IdResponse> createUserProfileOrganization(ServiceCall call,
-      UserProfileOrganizationRequest request) async {
-    IdResponse idResponse = await queryInsertUserProfileOrganization(request);
-    if (idResponse == null ) throw new GrpcError.notFound("User Profile Organization not found.");
-    return idResponse;
+  Future<StringValue> createUserAccess(ServiceCall call,
+      UserAccessRequest request) async {
+    StringValue id = await queryInsertUserAccess(request);
+    if (id == null ) throw new GrpcError.notFound("User Organization Access not found.");
+    return id;
   }
 
   @override
-  Future<Empty> updateUserProfileOrganization(ServiceCall call,
-      UserProfileOrganizationRequest request) async {
-    return queryUpdateUserProfileOrganization(request);
+  Future<Empty> updateUserAccess(ServiceCall call,
+      UserAccessRequest request) async {
+    return queryUpdateUserAccess(request);
   }
 
   @override
-  Future<Empty> deleteUserProfileOrganization(ServiceCall call,
-      UserProfileOrganizationDeleteRequest request) async {
-    return queryDeleteUserProfileOrganization(request);
+  Future<Empty> deleteUserAccess(ServiceCall call,
+      UserAccessDeleteRequest request) async {
+    return queryDeleteUserAccess(request);
   }
 
   // Query
-  static Future<List<UserProfileOrganization>> querySelectUsersProfileOrganizations([UserProfileOrganizationGetRequest userProfileOrganizationGetRequest] /* {String id, String userId, String organizationId} */) async {
+  static Future<List<UserAccess>> querySelectUserAccesses([UserAccessGetRequest UserAccessGetRequest] /* {String id, String userId, String organizationId} */) async {
     Map<String, User> _userCache = {};
     Map<String, Organization> _organizationCache = {};
 
@@ -71,47 +71,48 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         "uo.version, " // 1
         "uo.user_id, " // 2
         "uo.organization_id, " //3
-        "uo.authorization_role " // 4
-        "FROM general.users_profile_organizations uo "
+        "uo.access_role " // 4
+        "FROM general.user_accesses uo ";
+/*
         "JOIN general.users u ON u.id = uo.user_id "
         "LEFT OUTER JOIN general.users_profile user_profile on user_profile.user_id = u.id ";
-
+*/
     Map<String, dynamic> _substitutionValues = Map<String, dynamic>();
     String whereAnd = 'WHERE';
 
-    if (userProfileOrganizationGetRequest.hasId()) {
+    if (UserAccessGetRequest.hasId()) {
       queryStatement += " ${whereAnd} uo.id = @id";
-      _substitutionValues.putIfAbsent("id", () => userProfileOrganizationGetRequest.id);
+      _substitutionValues.putIfAbsent("id", () => UserAccessGetRequest.id);
       whereAnd = 'AND';
     }
 
-    if (userProfileOrganizationGetRequest.hasUserId()) {
+    if (UserAccessGetRequest.hasUserId()) {
       queryStatement += " ${whereAnd} uo.user_id = @user_id";
-      _substitutionValues.putIfAbsent("user_id", () => userProfileOrganizationGetRequest.userId);
+      _substitutionValues.putIfAbsent("user_id", () => UserAccessGetRequest.userId);
       whereAnd = 'AND';
     }
 
-    if (userProfileOrganizationGetRequest.hasOrganizationId()) {
+    if (UserAccessGetRequest.hasOrganizationId()) {
       queryStatement += " ${whereAnd} uo.organization_id = @organization_id";
-      _substitutionValues.putIfAbsent("organization_id", () => userProfileOrganizationGetRequest.organizationId);
+      _substitutionValues.putIfAbsent("organization_id", () => UserAccessGetRequest.organizationId);
       whereAnd = 'AND';
     }
-
-    if (userProfileOrganizationGetRequest.hasEMail()) {
+/*
+    if (UserAccessGetRequest.hasEMail()) {
       queryStatement = queryStatement +
           " ${whereAnd} user_profile.email = @email";
 
-      _substitutionValues.putIfAbsent("email", () => userProfileOrganizationGetRequest.eMail);
+      _substitutionValues.putIfAbsent("email", () => UserAccessGetRequest.eMail);
       whereAnd = 'AND';
     }
-    if (userProfileOrganizationGetRequest.hasPassword()) {
+    if (UserAccessGetRequest.hasPassword()) {
       queryStatement = queryStatement +
           " ${whereAnd} user_profile.password = @password";
-      _substitutionValues.putIfAbsent("password", () => userProfileOrganizationGetRequest.password);
+      _substitutionValues.putIfAbsent("password", () => UserAccessGetRequest.password);
       //The last, not need... whereAnd = 'AND';
     }
-
-    List<UserProfileOrganization> usersOrganizations = [];
+*/
+    List<UserAccess> userAccesses = [];
 
     try {
       results = await (await AugeConnection.getConnection()).query(
@@ -130,7 +131,7 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
               user =
               await UserService.querySelectUser(UserGetRequest()
                 ..id = row[2]
-                ..withProfile = true);
+                ..withUserProfile = true);
               if (user != null) _userCache[row[2]] = user;
             }
           }
@@ -147,44 +148,42 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
             }
           }
 
-          UserProfileOrganization userProfileOrganization = new UserProfileOrganization();
+          UserAccess userAccess = new UserAccess();
 
-          userProfileOrganization.id = row[0];
-          userProfileOrganization.version = row[1];
-          userProfileOrganization.user = user;
-          userProfileOrganization.organization = organization;
-          userProfileOrganization.authorizationRole = row[4];
-          usersOrganizations.add(userProfileOrganization);
+          userAccess.id = row[0];
+          userAccess.version = row[1];
+          userAccess.user = user;
+          userAccess.organization = organization;
+          userAccess.accessRole = row[4];
+          userAccesses.add(userAccess);
         }
       }
     } catch (e) {
-      print('${e.runtimeType}, ${e}');
+      print('${e.runtimeType}, ${e}, ${e}');
       rethrow;
     }
-    return usersOrganizations;
+    return userAccesses;
   }
 
-  static Future<UserProfileOrganization> querySelectUserProfileOrganization(UserProfileOrganizationGetRequest request) async {
-    List<UserProfileOrganization> usersProfileOrganizations = await querySelectUsersProfileOrganizations(request);
-    if (usersProfileOrganizations == null || usersProfileOrganizations.isEmpty) throw new GrpcError.notFound("User Profile Organization not found.");
-    return usersProfileOrganizations.first;
+  static Future<UserAccess> querySelectUserAccess(UserAccessGetRequest request) async {
+    List<UserAccess> UserAccesses = await querySelectUserAccesses(request);
+    if (UserAccesses == null || UserAccesses.isEmpty) throw new GrpcError.notFound("User Organization Access not found.");
+    return UserAccesses.first;
   }
 
-  static Future<IdResponse> queryInsertUserProfileOrganization(UserProfileOrganizationRequest request) async {
+  static Future<StringValue> queryInsertUserAccess(UserAccessRequest request) async {
 
     try {
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
 
+      /*
         if (request.hasWithUserProfile() && request.withUserProfile)  {
 
-          print('DEBUG 00 ${request.userProfileOrganization.user.hasId()}');
 
           if (!request.userProfileOrganization.user.hasId()) {
             request.userProfileOrganization.user.id = new Uuid().v4();
           }
-
-          print('DEBUG 01 ${request.userProfileOrganization.user.id}');
 
           request.userProfileOrganization.user.version = 0;
 
@@ -200,7 +199,6 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
             "name": request.userProfileOrganization.user.name,
             "inactive": request.userProfileOrganization.user.inactive});
 
-          print('DEBUG INSERT ZZ');
           if (request.userProfileOrganization.user.userProfile != null) {
             await ctx.query(
                 "INSERT INTO general.users_profile(user_id, additional_id, email, password, image, idiom_locale, organization_id, directory_service_id) VALUES("
@@ -222,63 +220,56 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
               "directory_service_id": request.userProfileOrganization.user.userProfile.hasDirectoryServiceId() ? request.userProfileOrganization.user.userProfile.directoryServiceId : null,
               });
           }
-          print('DEBUG INSERT ZZZZ');
+        }
+*/
+        if (!request.userAccess.hasId()) {
+          request.userAccess.id = new Uuid().v4();
         }
 
-        if (!request.userProfileOrganization.hasId()) {
-          request.userProfileOrganization.id = new Uuid().v4();
-        }
-
-        request.userProfileOrganization.version = 0;
-
-        print('DEBUG INSERT A ${request.userProfileOrganization.id}');
-        print('DEBUG INSERT B ${request.userProfileOrganization.user.id}');
-        print('DEBUG INSERT C ${request.userProfileOrganization.organization.id}');
+        request.userAccess.version = 0;
 
         await ctx.query(
-            "INSERT INTO general.users_profile_organizations(id, version, user_id, organization_id, authorization_role) VALUES("
+            "INSERT INTO general.user_profiles_organizations(id, version, user_id, organization_id, access_role) VALUES("
                 "@id,"
                 "@version,"
                 "@user_id,"
                 "@organization_id,"
-                "@authorization_role)"
+                "@access_role)"
             , substitutionValues: {
-          "id": request.userProfileOrganization.id,
-          "version": request.userProfileOrganization.version,
-          "user_id": request.userProfileOrganization.hasUser() ? request.userProfileOrganization.user.id : null,
-          "organization_id": request.userProfileOrganization.hasOrganization() ? request.userProfileOrganization.organization.id : null,
-          "authorization_role": request.userProfileOrganization.authorizationRole});
+          "id": request.userAccess.id,
+          "version": request.userAccess.version,
+          "user_id": request.userAccess.hasUser() ? request.userAccess.user.id : null,
+          "organization_id": request.userAccess.hasOrganization() ? request.userAccess.organization.id : null,
+          "access_role": request.userAccess.accessRole});
 
-        print('DEBUG XX');
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
-          "user_id": request.authenticatedUserId,
-          "organization_id": request.authenticatedOrganizationId,
-          "object_id": request.userProfileOrganization.id,
-          "object_version": request.userProfileOrganization.version,
-          "object_class_name": user_profile_organization_m.UserProfileOrganization.className,
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
+          "object_id": request.userAccess.id,
+          "object_version": request.userAccess.version,
+          "object_class_name": user_access_m.UserAccess.className,
           "system_module_index": SystemModule.users.index,
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
-          "description": request.userProfileOrganization.user.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(request.userProfileOrganization))});
-        print('DEBUG XXXX');
+          "description": request.userAccess.user.name,
+          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, user_access_m.UserAccess.fromProtoBufToModelMap(request.userAccess))});
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
 
-    return IdResponse()..id = request.userProfileOrganization.id;
+    return StringValue()..value = request.userAccess.id;
   }
 
-  static Future<Empty> queryUpdateUserProfileOrganization(UserProfileOrganizationRequest request) async {
+  static Future<Empty> queryUpdateUserAccess(UserAccessRequest request) async {
 
-    UserProfileOrganization previousUserProfileOrganization = await querySelectUserProfileOrganization(UserProfileOrganizationGetRequest()..id = request.userProfileOrganization.id);
+    UserAccess previousUserAccess = await querySelectUserAccess(UserAccessGetRequest()..id = request.userAccess.id);
 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
-
+/*
         if (request.hasWithUserProfile() && request.withUserProfile)  {
           List<List<dynamic>> result = await ctx.query(
               "UPDATE general.users "
@@ -315,20 +306,20 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
             throw new GrpcError.failedPrecondition('Precondition Failed');
           }
         }
-
+*/
         List<List<dynamic>> result = await ctx.query(
-              "UPDATE general.users_profile_organizations "
+              "UPDATE general.user_accesses "
                   "SET version = @version, "
-                  "authorization_role = @authorization_role, "
+                  "access_role = @access_role, "
                   "user_id = @user_id, "
                   "organization_id = @organization_id "
                   "WHERE id = @id AND version = @version - 1 "
                   "RETURNING true", substitutionValues: {
-            "id": request.userProfileOrganization.id,
-            "version": ++request.userProfileOrganization.version,
-            "user_id": request.userProfileOrganization.user.id,
-            "organization_id": request.userProfileOrganization.organization.id,
-            "authorization_role": request.userProfileOrganization.authorizationRole});
+            "id": request.userAccess.id,
+            "version": ++request.userAccess.version,
+            "user_id": request.userAccess.user.id,
+            "organization_id": request.userAccess.organization.id,
+            "access_role": request.userAccess.accessRole});
 
           // Optimistic concurrency control
           if (result.length == 0) {
@@ -337,24 +328,24 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
             // Create a history item
             await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
                 substitutionValues: {"id": Uuid().v4(),
-                  "user_id": request.authenticatedUserId,
-                  "organization_id": request.authenticatedOrganizationId,
-                  "object_id": request.userProfileOrganization.id,
-                  "object_version": request.userProfileOrganization.version,
-                  "object_class_name": user_profile_organization_m
-                      .UserProfileOrganization.className,
+                  "user_id": request.authUserId,
+                  "organization_id": request.authOrganizationId,
+                  "object_id": request.userAccess.id,
+                  "object_version": request.userAccess.version,
+                  "object_class_name": user_access_m
+                      .UserAccess.className,
                   "system_module_index": SystemModule.users.index,
                   "system_function_index": SystemFunction.update.index,
                   "date_time": DateTime.now().toUtc(),
-                  "description": request.userProfileOrganization.user.name,
+                  "description": request.userAccess.user.name,
                   "changed_values": history_item_m.HistoryItem
                       .changedValuesJson(
-                      user_profile_organization_m.UserProfileOrganization
+                      user_access_m.UserAccess
                           .fromProtoBufToModelMap(
-                          previousUserProfileOrganization),
-                      user_profile_organization_m.UserProfileOrganization
+                          previousUserAccess),
+                      user_access_m.UserAccess
                           .fromProtoBufToModelMap(
-                          request.userProfileOrganization))});
+                          request.userAccess))});
           }
 
       });
@@ -365,20 +356,20 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
     return Empty()/*..webWorkAround = true*/;
   }
 
-  static Future<Empty> queryDeleteUserProfileOrganization(UserProfileOrganizationDeleteRequest request) async {
+  static Future<Empty> queryDeleteUserAccess(UserAccessDeleteRequest request) async {
 
-    UserProfileOrganization previousUserProfileOrganization = await querySelectUserProfileOrganization(UserProfileOrganizationGetRequest()..id = request.userProfileOrganizationId);
+    UserAccess previousUserAccess = await querySelectUserAccess(UserAccessGetRequest()..id = request.userAccessId);
 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         List<List<dynamic>> result = await ctx.query(
-            "DELETE FROM general.users_profile_organizations user_profile_organization "
+            "DELETE FROM general.user_accesses user_profile_organization "
                 "WHERE user_profile_organization.id = @id AND user_profile_organization.version = @version "
                 "RETURNING true"
             , substitutionValues: {
-          "id": request.userProfileOrganizationId,
-          "version": request.userProfileOrganizationVersion});
+          "id": request.userAccessId,
+          "version": request.userAccessVersion});
 
         // Optimistic concurrency control
         if (result.length == 0) {
@@ -386,15 +377,15 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
         }
 
         await ctx.query(
-            "DELETE FROM general.users_profile user_profile WHERE user_profile.user_id = @user_id "
+            "DELETE FROM general.user_profiles user_profile WHERE user_profile.user_id = @user_id "
             , substitutionValues: {
-          "user_id": previousUserProfileOrganization.user.id});
+          "user_id": previousUserAccess.user.id});
 
         result = await ctx.query(
             "DELETE FROM general.users u WHERE u.id = @id AND u.version = @version RETURNING true"
             , substitutionValues: {
-          "id": previousUserProfileOrganization.user.id,
-          "version": previousUserProfileOrganization.user.version});
+          "id": previousUserAccess.user.id,
+          "version": previousUserAccess.user.version});
 
         // Optimistic concurrency control
         if (result.length == 0) {
@@ -403,24 +394,24 @@ class UserProfileOrganizationService extends UserProfileOrganizationServiceBase 
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
-                "object_id": request.userProfileOrganizationId,
-                "object_version": request.userProfileOrganizationVersion,
-                "object_class_name": user_profile_organization_m.UserProfileOrganization.className,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
+                "object_id": request.userAccessId,
+                "object_version": request.userAccessVersion,
+                "object_class_name": user_access_m.UserAccess.className,
                 "system_module_index": SystemModule.users.index,
                 "system_function_index": SystemFunction.delete.index,
                 "date_time": DateTime.now().toUtc(),
-                "description": previousUserProfileOrganization.user.name,
+                "description": previousUserAccess.user.name,
                 "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                    user_profile_organization_m.UserProfileOrganization.fromProtoBufToModelMap(
-                        previousUserProfileOrganization, true), {})});
+                    user_access_m.UserAccess.fromProtoBufToModelMap(
+                        previousUserAccess, true), {})});
         }
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return Empty()/*..webWorkAround = true*/;
+    return Empty();
   }
 }

@@ -6,7 +6,7 @@ import 'dart:async';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
@@ -37,7 +37,7 @@ class OrganizationService extends OrganizationServiceBase {
   }
 
   @override
-  Future<IdResponse> createOrganization(ServiceCall call,
+  Future<StringValue> createOrganization(ServiceCall call,
       OrganizationRequest organization) {
     return queryInsertOrganization(organization);
   }
@@ -104,7 +104,7 @@ class OrganizationService extends OrganizationServiceBase {
     }
   }
 
-  static Future<IdResponse> queryInsertOrganization(OrganizationRequest request) async {
+  static Future<StringValue> queryInsertOrganization(OrganizationRequest request) async {
 
     if (!request.organization.hasId()) {
       request.organization.id = new Uuid().v4();
@@ -127,8 +127,8 @@ class OrganizationService extends OrganizationServiceBase {
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
-          "user_id": request.authenticatedUserId,
-          "organization_id": request.authenticatedOrganizationId,
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
           "object_id": request.organization.id,
           "object_version": request.organization.version,
           "object_class_name": organization_m.Organization.className,
@@ -144,8 +144,7 @@ class OrganizationService extends OrganizationServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return IdResponse()
-      ..id = request.organization.id;
+    return StringValue()..value = request.organization.id;
   }
 
   static Future<Empty> queryUpdateOrganization(OrganizationRequest request) async {
@@ -172,8 +171,8 @@ class OrganizationService extends OrganizationServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.organization.id,
                 "object_version": request.organization.version,
                 "object_class_name": organization_m.Organization.className,
@@ -218,8 +217,8 @@ class OrganizationService extends OrganizationServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.organizationId,
                 "object_version": request.organizationVersion,
                 "object_class_name": organization_m.Organization.className,

@@ -5,7 +5,7 @@ import 'dart:async';
 
 import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pb.dart';
@@ -54,7 +54,7 @@ class InitiativeService extends InitiativeServiceBase {
   }
 
   @override
-  Future<IdResponse> createInitiative(ServiceCall call,
+  Future<StringValue> createInitiative(ServiceCall call,
       InitiativeRequest request) async {
     return queryInsertInitiative(request);
   }
@@ -133,7 +133,7 @@ class InitiativeService extends InitiativeServiceBase {
 
       // user = (await _augeApi.getUsers(id: row[4])).first;
       if (row[5] != null) {
-        user = await UserService.querySelectUser(UserGetRequest()..id = row[5]..withProfile = initiativeGetRequest.withProfile);
+        user = await UserService.querySelectUser(UserGetRequest()..id = row[5]..withUserProfile = initiativeGetRequest.withProfile);
       } else {
         user = null;
       }
@@ -199,7 +199,7 @@ class InitiativeService extends InitiativeServiceBase {
   }
 
   /// Create (insert) a new initiative
-  static Future<IdResponse> queryInsertInitiative(InitiativeRequest request) async {
+  static Future<StringValue> queryInsertInitiative(InitiativeRequest request) async {
 
     if (!request.initiative.hasId()) {
       request.initiative.id = new Uuid().v4();
@@ -253,8 +253,8 @@ class InitiativeService extends InitiativeServiceBase {
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
-          "user_id": request.authenticatedUserId,
-          "organization_id": request.authenticatedOrganizationId,
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
           "object_id": request.initiative.id,
           "object_version": request.initiative.version,
           "object_class_name": initiative_m.Initiative.className,
@@ -270,7 +270,7 @@ class InitiativeService extends InitiativeServiceBase {
       rethrow;
     }
 
-    return IdResponse()..id = request.initiative.id;
+    return StringValue()..value = request.initiative.id;
   }
 
   /// Update an initiative passing an instance of [Initiative]
@@ -383,8 +383,8 @@ class InitiativeService extends InitiativeServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.initiative.id,
                 "object_version": request.initiative.version,
                 "object_class_name": initiative_m
@@ -443,8 +443,8 @@ class InitiativeService extends InitiativeServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.initiativeId,
                 "object_version": request.initiativeVersion,
                 "object_class_name": initiative_m.Initiative.className,

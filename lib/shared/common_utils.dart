@@ -1,6 +1,7 @@
 // Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
+import 'dart:math';
 import 'package:fixnum/fixnum.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
 
@@ -25,4 +26,16 @@ class CommonUtils {
         timestamp.seconds.toInt() * 1000000 +
             timestamp.nanos ~/ 1000);
   }
+
+  static String createCryptoRandomString([int length = 32]) {
+
+    Random random = Random.secure();
+
+    // Used 256 based to examples about to
+    List<int> values = List<int>.generate(length, (i) => random.nextInt(256));
+
+    return String.fromCharCodes(values);
+
+  }
+
 }

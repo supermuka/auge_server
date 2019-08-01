@@ -4,10 +4,10 @@ import 'package:test/test.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/user_profile_organization.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/general/user_access.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/group.pbgrpc.dart';
 
 import 'package:auge_server/model/general/authorization.dart';
@@ -60,12 +60,12 @@ void main() {
       });
 
       test('Call operation createOrganization', () async {
-        IdResponse idResponsePb = await stub
+        StringValue idResponsePb = await stub
             .createOrganization(OrganizationRequest()..organization = (Organization()
           ..name = name
           ..code = code));
-        expect(idResponsePb.hasId(), isTrue);
-        id = idResponsePb.id;
+        expect(idResponsePb.hasValue(), isTrue);
+        id = idResponsePb.value;
 
       });
 
@@ -167,66 +167,66 @@ void main() {
  */
     });
 
-    group('User Profile Organization Service.', ()
+    group('User Organization Access Service.', ()
     {
-      UserProfileOrganizationServiceClient stub;
+      UserAccessServiceClient stub;
 
       setUp(() {
-        stub = new UserProfileOrganizationServiceClient(channel);
+        stub = new UserAccessServiceClient(channel);
       });
 
-      UsersProfileOrganizationsResponse usersProfileOrganizationsResponse;
-      test('Call operation getUsersProfileOrganizations', () async {
-         usersProfileOrganizationsResponse = await stub
-            .getUsersProfileOrganizations(UserProfileOrganizationGetRequest()..organizationId = organizationId);
+      UserAccessesResponse UserAccessesResponse;
+      test('Call operation getUserAccesses', () async {
+         UserAccessesResponse = await stub
+            .getUserAccesses(UserAccessGetRequest()..organizationId = organizationId);
 
-        expect(usersProfileOrganizationsResponse.usersProfileOrganizations, isNotNull);
+        expect(UserAccessesResponse.UserAccesses, isNotNull);
       });
 
-      test('Call operation deleteUserProfileOrganization - all items', () async {
+      test('Call operation deleteUserAccesses - all items', () async {
 
-        for (final i in usersProfileOrganizationsResponse.usersProfileOrganizations) {
-          await stub.deleteUserProfileOrganization(UserProfileOrganizationDeleteRequest()..userProfileOrganizationId = i.id);
+        for (final i in UserAccessesResponse.UserAccesses) {
+          await stub.deleteUserAccess(UserAccessDeleteRequest()..UserAccessId = i.id);
         }
       });
 
-      test('Call operation createUserProfileOrganization', () async {
+      test('Call operation createUserAccess', () async {
 
-        IdResponse idResponse = await stub
-            .createUserProfileOrganization(UserProfileOrganizationRequest()..userProfileOrganization = (UserProfileOrganization()
+        StringValue idResponse = await stub
+            .createUserAccess(UserAccessRequest()..UserAccess = (UserAccess()
           ..organization = (Organization()..id = organizationId)
           ..user = (User()..id = userId)
-          ..authorizationRole = SystemRole.admin.index));
+          ..accessRole = SystemRole.admin.index));
 
-        expect(idResponse.hasId(), isTrue);
+        expect(idResponse.hasValue(), isTrue);
 
-        id = idResponse.id;
+        id = idResponse.value;
       });
 
       test('Call operation updateUserProfileOrganization', () async {
 
         await stub
-            .updateUserProfileOrganization(UserProfileOrganizationRequest()..userProfileOrganization = (UserProfileOrganization()
+            .updateUserAccess(UserAccessRequest()..UserAccess = (UserAccess()
           ..id = id
           ..organization = (Organization()..id = organizationId)
           ..user = (User()..id = userId)
-          ..authorizationRole = SystemRole.standard.index ));
+          ..accessRole = SystemRole.standard.index ));
 
       });
 
       test('Call operation deleteUserProfileOrganization', () async {
 
         Empty emptyPb = await stub
-            .deleteUserProfileOrganization(UserProfileOrganizationDeleteRequest()..userProfileOrganizationId = id);
+            .deleteUserAccess(UserAccessDeleteRequest()..UserAccessId = id);
 
         expect(emptyPb, isNotNull);
 
         try {
-          UserProfileOrganization userProfileOrganization = await stub
-              .getUserProfileOrganization(UserProfileOrganizationGetRequest()
+          UserAccess UserAccess = await stub
+              .getUserAccess(UserAccessGetRequest()
             ..id = id);
 
-          expect(userProfileOrganization, isNotEmpty);
+          expect(UserAccess, isNotEmpty);
 
         } on GrpcError catch (e) {
           expect(e.code, StatusCode.notFound);
@@ -260,14 +260,14 @@ void main() {
       });
 
       test('Call operation createGroup', () async {
-          IdResponse idResponsePb = await stub
+          StringValue idResponsePb = await stub
             .createGroup(GroupRequest()..group = (Group()
           ..name = 'Unit Test'
           ..active = true
           ..organization = (Organization()..id = organizationId)
           ..groupType = (GroupType()..id = groupTypeId)));
 
-        id = idResponsePb.id;
+        id = idResponsePb.value;
 
         Group groupPb = await stub.getGroup(GroupGetRequest()..id = id);
 

@@ -6,7 +6,7 @@ import 'dart:async';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/objective.pbgrpc.dart';
@@ -53,7 +53,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   @override
-  Future<IdResponse> createObjective(ServiceCall call,
+  Future<StringValue> createObjective(ServiceCall call,
       ObjectiveRequest request) async {
     return queryInsertObjective(request);
   }
@@ -157,7 +157,7 @@ class ObjectiveService extends ObjectiveServiceBase {
           if (row[7] != null) {
             leaderUser = await UserService.querySelectUser(UserGetRequest()
               ..id = row[7]
-              ..withProfile = objectiveSelectRequest.withProfile);
+              ..withUserProfile = objectiveSelectRequest.withProfile);
           }
 
           if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0) {
@@ -261,7 +261,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   /// Create (insert) a new objective
-  static Future<IdResponse> queryInsertObjective(ObjectiveRequest request) async {
+  static Future<StringValue> queryInsertObjective(ObjectiveRequest request) async {
     if (!request.objective.hasId()) {
       request.objective.id = new Uuid().v4();
     }
@@ -300,8 +300,8 @@ class ObjectiveService extends ObjectiveServiceBase {
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: {"id": Uuid().v4(),
-              "user_id": request.authenticatedUserId,
-              "organization_id": request.authenticatedOrganizationId,
+              "user_id": request.authUserId,
+              "organization_id": request.authOrganizationId,
               "object_id": request.objective.id,
               "object_version": request.objective.version,
               "object_class_name": objective_m
@@ -317,7 +317,7 @@ class ObjectiveService extends ObjectiveServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return (IdResponse()..id = request.objective.id);
+    return (StringValue()..value = request.objective.id);
   }
 
   /// Update an initiative passing an instance of [Objective]
@@ -368,8 +368,8 @@ class ObjectiveService extends ObjectiveServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.objective.id,
                 "object_version": request.objective.version,
                 "object_class_name": objective_m
@@ -419,8 +419,8 @@ class ObjectiveService extends ObjectiveServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.objectiveId,
                 "object_version": request.objectiveVersion,
                 "object_class_name": objective_m.Objective.className,

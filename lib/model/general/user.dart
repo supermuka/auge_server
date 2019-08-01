@@ -4,8 +4,6 @@
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
 
-import 'package:auge_server/model/general/organization.dart';
-
 import 'package:auge_server/src/protos/generated/general/user.pb.dart' as user_pb;
 
 /// Domain model class to represent an user account
@@ -81,20 +79,8 @@ class User {
 class UserProfile {
   static final String className = 'UserProfile';
 
-  // Super Admin does not need authorization. It is SAAS administration and has access to full data and functions
-  // bool isSuperAdmin = false;
- // static final String isSuperAdminField = 'isSuperAdmin';
- // bool isSuperAdmin;
-
-  static final String additionalIdField = 'additionalId';
-  String additionalId;
-
   static final String eMailField = 'eMail';
   String eMail;
-
-  // sha-256
-  static final String passwordField = 'password';
-  String password;
 
   // Base64
   static final String imageField = 'image';
@@ -104,63 +90,37 @@ class UserProfile {
   static final String idiomLocaleField = 'idiomLocale';
   String idiomLocale;
 
-  // Organization, owner this user.
-  // Authorization this user for organization here informed or another organizations should be informed in [UserProfileOrganization]
-  static final String organizationField = 'organization';
-  Organization organization;
-
-  // If DirectoryService is enabled then this user can be updated on behalf of
-  // Normally OpenLDAP entryUUID, AD objectGUID
-  static final String directoryServiceIdField = 'directoryServiceId';
-  String directoryServiceId;
-
   user_pb.UserProfile writeToProtoBuf() {
     user_pb.UserProfile userProfilePb = user_pb.UserProfile();
 
-   // if (this.isSuperAdmin != null) userProfilePb.isSuperAdmin = this.isSuperAdmin;
-    if (this.additionalId != null) userProfilePb.additionalId = this.additionalId;
+    if (this.eMail != null) userProfilePb.eMail = this.eMail;
     if (this.image != null) userProfilePb.image = this.image;
     if (this.idiomLocale != null) userProfilePb.idiomLocale = this.idiomLocale;
-    if (this.organization != null) userProfilePb.organization = this.organization.writeToProtoBuf();
-    if (this.directoryServiceId != null) userProfilePb.directoryServiceId = this.directoryServiceId;
 
     return userProfilePb;
   }
 
   readFromProtoBuf(user_pb.UserProfile userProfilePb) {
-  //  if (userProfilePb.hasIsSuperAdmin()) this.isSuperAdmin = userProfilePb.isSuperAdmin;
-    if (userProfilePb.hasAdditionalId()) this.additionalId = userProfilePb.additionalId;
+    if (userProfilePb.hasEMail()) this.eMail = userProfilePb.eMail;
     if (userProfilePb.hasImage()) this.image = userProfilePb.image;
     if (userProfilePb.hasIdiomLocale()) this.idiomLocale = userProfilePb.idiomLocale;
-    if (userProfilePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(userProfilePb.organization);
-    if (userProfilePb.hasDirectoryServiceId()) this.directoryServiceId = userProfilePb.directoryServiceId;
   }
 
   static Map<String, dynamic> fromProtoBufToModelMap(user_pb.UserProfile userProfilePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
     if (onlyIdAndSpecificationForDepthFields && isDeep) {
-      if (userProfilePb.hasAdditionalId())
-        map[UserProfile.additionalIdField] = userProfilePb.additionalId;
+    //  if (userProfilePb.hasAdditionalId())
+    //    map[UserProfile.additionalIdField] = userProfilePb.additionalId;
     } else {
  //     if (userProfilePb.hasIsSuperAdmin())
  //       map[UserProfile.isSuperAdminField] = userProfilePb.isSuperAdmin;
-      if (userProfilePb.hasAdditionalId())
-        map[UserProfile.additionalIdField] = userProfilePb.additionalId;
       if (userProfilePb.hasEMail())
         map[UserProfile.eMailField] = userProfilePb.eMail;
-      if (userProfilePb.hasPassword())
-        map[UserProfile.passwordField] = userProfilePb.password;
       if (userProfilePb.hasImage())
         map[UserProfile.imageField] = userProfilePb.image;
       if (userProfilePb.hasIdiomLocale())
         map[UserProfile.idiomLocaleField] = userProfilePb.idiomLocale;
-      if (userProfilePb.hasOrganization())
-        map[UserProfile.organizationField] =
-            Organization.fromProtoBufToModelMap(
-                userProfilePb.organization, onlyIdAndSpecificationForDepthFields, true);
-      if (userProfilePb.hasDirectoryServiceId())
-        map[UserProfile.directoryServiceIdField] = userProfilePb.directoryServiceId;
     }
     return map;
   }

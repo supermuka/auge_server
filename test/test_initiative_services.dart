@@ -4,7 +4,7 @@ import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
@@ -119,7 +119,7 @@ void main() {
 
       test('Call operation createInitiative', () async {
 
-        IdResponse idResponsePb = await initiativeStub
+        StringValue idResponsePb = await initiativeStub
             .createInitiative(InitiativeRequest()..initiative = (Initiative()
           ..name = name
           ..description = description
@@ -135,9 +135,9 @@ void main() {
             ..state = (State()
               ..id = stateId))));
 
-        expect(idResponsePb.hasId(), isTrue);
+        expect(idResponsePb.hasValue(), isTrue);
 
-        id = idResponsePb.id;
+        id = idResponsePb.value;
         initiativeId = id;
       });
 
@@ -209,7 +209,7 @@ void main() {
         name = 'Unit test';
         description = 'Description test';
 
-        IdResponse idResponsePb = await workItemStub
+        StringValue idResponsePb = await workItemStub
             .createWorkItem(WorkItemRequest()..workItem = (WorkItem()
           ..name = name
           ..description = description
@@ -218,9 +218,9 @@ void main() {
             ..name = 'Check Item Test')
           ..stage = stage)..initiativeId = initiativeId);
 
-        expect(idResponsePb.hasId(), isTrue);
+        expect(idResponsePb.hasValue(), isTrue);
 
-        workItemId = idResponsePb.id;
+        workItemId = idResponsePb.value;
 
       });
 

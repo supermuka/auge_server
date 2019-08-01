@@ -5,10 +5,8 @@ syntax = "proto3";
 
 package auge.protobuf;
 
-//import "general/common.proto";
-//import "google/protobuf/empty.proto";
-
-import "general/organization.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
 // The service definition.
 service UserService {
@@ -16,10 +14,9 @@ service UserService {
     rpc GetUsers (UserGetRequest) returns (UsersResponse) {}
     rpc GetUser (UserGetRequest) returns (User) {}
 
-//    rpc CreateUser (UserRequest) returns (IdResponse) {}
-//    rpc UpdateUser (UserRequest) returns (google.protobuf.Empty) {}
-//    rpc DeleteUser (UserDeleteRequest) returns (google.protobuf.Empty) {}
-//    rpc SoftDeleteUser (User) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
+    rpc CreateUser (UserRequest) returns (google.protobuf.StringValue) {}
+    rpc UpdateUser (UserRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteUser (UserDeleteRequest) returns (google.protobuf.Empty) {}
 
 }
 
@@ -33,40 +30,33 @@ message User {
 }
 
 // Message request related to domain object.
-
-//message UserRequest {
-//    User user = 1;
-//    string authenticated_user_id = 2;
-//    string authenticated_organization_id = 3;
-//}
+message UserRequest {
+    User user = 1;
+    string auth_user_id = 2;
+    string auth_organization_id = 3;
+}
 
 // Message request for delete related to domain object.
-//message UserDeleteRequest {
-//    string user_id = 1;
-//    string user_version  = 2;
-//    string authenticated_user_id = 3;
-//    string authenticated_organization_id = 4;
-//}
+message UserDeleteRequest {
+    string user_id = 1;
+    int32 user_version  = 2;
+    string auth_user_id = 3;
+    string auth_organization_id = 4;
+}
 
 // Message to respective domain object.
 message UserProfile {
  //   bool is_super_admin = 1;
     // string image = 2;
-    string additional_id = 1;
-    string e_mail = 2;
-    string password = 3;
-    string image = 4;
-    string idiom_locale = 5;
-    Organization organization = 6;
-    string directory_service_id = 7;
+    string e_mail = 1;
+    string image = 2;
+    string idiom_locale = 3;
 }
 
 message UserGetRequest {
     string id = 1;
-    string e_mail = 2;
-    string password = 3;
-    string organization_id = 4;
-    bool with_profile = 5;
+    string organization_id = 2;
+    bool with_user_profile = 3;
 }
 
 // Response list of the organization

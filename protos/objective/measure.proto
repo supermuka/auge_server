@@ -6,8 +6,8 @@ syntax = "proto3";
 package auge.protobuf;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
-import "general/common.proto";
 
 // The service definition.
 service MeasureService {
@@ -15,7 +15,7 @@ service MeasureService {
     rpc GetMeasures (MeasureGetRequest) returns (MeasuresResponse) {}
     rpc GetMeasure (MeasureGetRequest) returns (Measure) {}
 
-    rpc CreateMeasure (MeasureRequest) returns (IdResponse) {}
+    rpc CreateMeasure (MeasureRequest) returns (google.protobuf.StringValue) {}
     rpc UpdateMeasure (MeasureRequest) returns (google.protobuf.Empty) {}
     rpc DeleteMeasure (MeasureDeleteRequest) returns (google.protobuf.Empty) {}
 
@@ -24,7 +24,7 @@ service MeasureService {
     rpc GetMeasureProgresses (MeasureProgressGetRequest) returns (MeasureProgressesResponse) {}
     rpc GetMeasureProgress (MeasureProgressGetRequest) returns (MeasureProgress) {}
 
-    rpc CreateMeasureProgress (MeasureProgressRequest) returns (IdResponse) {}
+    rpc CreateMeasureProgress (MeasureProgressRequest) returns (google.protobuf.StringValue) {}
     rpc UpdateMeasureProgress (MeasureProgressRequest) returns (google.protobuf.Empty) {}
     rpc DeleteMeasureProgress (MeasureProgressDeleteRequest) returns (google.protobuf.Empty) {}
 }
@@ -55,16 +55,16 @@ message Measure {
 message MeasureRequest {
     Measure measure = 1;
     string objective_id = 2; // used just to identify parent on request
-    string authenticated_user_id = 3;
-    string authenticated_organization_id = 4;
+    string auth_user_id = 3;
+    string auth_organization_id = 4;
 }
 
 // Message request for delete related to domain object.
 message MeasureDeleteRequest {
     string measure_id = 1;
     int32 measure_version = 2;
-    string authenticated_user_id = 3;
-    string authenticated_organization_id = 4;
+    string auth_user_id = 3;
+    string auth_organization_id = 4;
 }
 
 // Response list of the measures
@@ -108,16 +108,16 @@ message MeasureProgress {
 message MeasureProgressRequest {
     MeasureProgress measure_progress = 1;
     string measure_id = 2; // used just to identify parent on request
-    string authenticated_user_id = 3;
-    string authenticated_organization_id = 4;
+    string auth_user_id = 3;
+    string auth_organization_id = 4;
 }
 
 // Message request for delete to related domain model .
 message MeasureProgressDeleteRequest {
     string measure_progress_id = 1;
     int32 measure_progress_version = 2;
-    string authenticated_user_id = 3;
-    string authenticated_organization_id = 4;
+    string auth_user_id = 3;
+    string auth_organization_id = 4;
 }
 
 // Response list of the MeasureProgress

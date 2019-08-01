@@ -6,7 +6,7 @@ import 'dart:async';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/state.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/stage.pbgrpc.dart';
 
@@ -44,7 +44,7 @@ class StageService extends StageServiceBase {
   }
 
   @override
-  Future<IdResponse> createStage(ServiceCall call,
+  Future<StringValue> createStage(ServiceCall call,
       StageRequest request) async {
     return queryInsertStage(request);
   }
@@ -128,7 +128,7 @@ class StageService extends StageServiceBase {
   }
 
   /// Create (insert) a new stage
-  static Future<IdResponse> queryInsertStage(StageRequest request) async {
+  static Future<StringValue> queryInsertStage(StageRequest request) async {
 
     if (!request.stage.hasId()) {
       request.stage.id = Uuid().v4();
@@ -158,8 +158,8 @@ class StageService extends StageServiceBase {
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
-          "user_id": request.authenticatedUserId,
-          "organization_id": request.authenticatedOrganizationId,
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
           "object_id": request.stage.id,
           "object_version": request.stage.version,
           "object_class_name": stage_m.Stage.className,
@@ -175,7 +175,7 @@ class StageService extends StageServiceBase {
       rethrow;
     }
 
-    return IdResponse()..id = request.stage.id;
+    return StringValue()..value = request.stage.id;
   }
 
   /// Update a Stage
@@ -215,8 +215,8 @@ class StageService extends StageServiceBase {
           await ctx.query(
               HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.stage.id,
                 "object_version": request.stage.version,
                 "object_class_name": stage_m
@@ -269,8 +269,8 @@ class StageService extends StageServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.stageId,
                 "object_version": request.stageVersion,
                 "object_class_name": stage_m.Stage.className,

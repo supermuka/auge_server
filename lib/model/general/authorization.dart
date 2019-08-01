@@ -21,7 +21,8 @@ enum SystemFunction {
   delete,
 }
 
-// In-memory class. It is't persistent
+// TODO perhaps it is better to rename this class to 'ACCESS' to align to IAM (Identity and Access Management)
+/// In-memory class. It is't persistent
 class Authorization {
 
   static final String authorizationRoleField = 'authorizationRole';

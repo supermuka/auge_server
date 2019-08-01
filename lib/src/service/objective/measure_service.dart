@@ -7,7 +7,7 @@ import 'package:auge_server/shared/common_utils.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/measure.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
@@ -55,7 +55,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   @override
-  Future<IdResponse> createMeasure(ServiceCall call,
+  Future<StringValue> createMeasure(ServiceCall call,
       MeasureRequest request) async {
     return queryInsertMeasure(request);
   }
@@ -91,7 +91,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   @override
-  Future<IdResponse> createMeasureProgress(ServiceCall call,
+  Future<StringValue> createMeasureProgress(ServiceCall call,
       MeasureProgressRequest request) async {
     return queryInsertMeasureProgress(request);
   }
@@ -223,7 +223,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Create (insert) a new measures
-  static Future<IdResponse> queryInsertMeasure(
+  static Future<StringValue> queryInsertMeasure(
       MeasureRequest request) async {
     if (!request.measure.hasId()) {
       request.measure.id = new Uuid().v4();
@@ -262,8 +262,8 @@ class MeasureService extends MeasureServiceBase {
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: {"id": Uuid().v4(),
-              "user_id": request.authenticatedUserId,
-              "organization_id": request.authenticatedOrganizationId,
+              "user_id": request.authUserId,
+              "organization_id": request.authOrganizationId,
               "object_id": request.measure.id,
               "object_version": request.measure.version,
               "object_class_name": measure_m
@@ -284,7 +284,7 @@ class MeasureService extends MeasureServiceBase {
       rethrow;
     }
 
-    return IdResponse()..id = request.measure.id;
+    return StringValue()..value = request.measure.id;
   }
 
   /// Update [Measure]
@@ -333,8 +333,8 @@ class MeasureService extends MeasureServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.measure.id,
                 "object_version": request.measure.version,
                 "object_class_name": measure_m
@@ -376,8 +376,8 @@ class MeasureService extends MeasureServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.measureId,
                 "object_version": request.measureVersion,
                 "object_class_name": measure_m. Measure.className,
@@ -471,7 +471,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Create current value of the [MeasureProgress]
-  static Future<IdResponse> queryInsertMeasureProgress(
+  static Future<StringValue> queryInsertMeasureProgress(
       MeasureProgressRequest request) async {
 
     try {
@@ -502,8 +502,8 @@ class MeasureService extends MeasureServiceBase {
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: {"id": Uuid().v4(),
-              "user_id": request.authenticatedUserId,
-              "organization_id": request.authenticatedOrganizationId,
+              "user_id": request.authUserId,
+              "organization_id": request.authOrganizationId,
               "object_id": request.measureProgress.id,
               "object_version": request.measureProgress.version,
               "object_class_name": measure_m
@@ -520,7 +520,7 @@ class MeasureService extends MeasureServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-    return IdResponse()..id = request.measureProgress.id;
+    return StringValue()..value = request.measureProgress.id;
   }
 
   /// Create current value of the [MeasureProgress]
@@ -568,8 +568,8 @@ class MeasureService extends MeasureServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.measureProgress.id,
                 "object_version": request.measureProgress.version,
                 "object_class_name": measure_m
@@ -615,8 +615,8 @@ class MeasureService extends MeasureServiceBase {
             // Create a history item
             await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
                 substitutionValues: {"id": Uuid().v4(),
-                  "user_id": request.authenticatedUserId,
-                  "organization_id": request.authenticatedOrganizationId,
+                  "user_id": request.authUserId,
+                  "organization_id": request.authOrganizationId,
                   "object_id": request.measureProgressId,
                   "object_version": request.measureProgressVersion,
                   "object_class_name": measure_m.MeasureProgress.className,

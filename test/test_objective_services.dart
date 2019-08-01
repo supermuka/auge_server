@@ -2,7 +2,7 @@ import 'package:test/test.dart';
 
 import 'package:grpc/grpc.dart';
 
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
@@ -84,14 +84,14 @@ void main() {
       String description = 'Description test';
 
       test('Call operation createObjective', () async {
-        IdResponse idResponsePb = await objectiveStub
+        StringValue idResponsePb = await objectiveStub
             .createObjective(ObjectiveRequest()..objective = (Objective()
           ..name = name
           ..description = description
           ..organization = (Organization()..id = organizationId)));
-        expect(idResponsePb.hasId(), isTrue);
+        expect(idResponsePb.hasValue(), isTrue);
 
-        id = idResponsePb.id;
+        id = idResponsePb.value;
 
         Objective objective = await objectiveStub
             .getObjective(ObjectiveGetRequest()
@@ -134,14 +134,14 @@ void main() {
       String description = 'Description test';
 
       test('Call operation createObjective to measure', () async {
-        IdResponse idResponsePb = await objectiveStub
+        StringValue idResponsePb = await objectiveStub
             .createObjective(ObjectiveRequest()..objective = (Objective()
           ..name = name
           ..description = description
           ..organization = (Organization()..id = organizationId)));
-        expect(idResponsePb.hasId(), isTrue);
+        expect(idResponsePb.hasValue(), isTrue);
 
-        objectiveId = idResponsePb.id;
+        objectiveId = idResponsePb.value;
       });
 
       name = 'Unit test';
@@ -149,13 +149,13 @@ void main() {
 
       test('Call operation createMeasure', () async {
 
-        IdResponse idResponsePb = await measureStub
+        StringValue idResponsePb = await measureStub
             .createMeasure(MeasureRequest()..measure = (Measure()
           ..name = name
           ..description = description)..objectiveId = objectiveId);
-        expect(idResponsePb.hasId(), isTrue);
+        expect(idResponsePb.hasValue(), isTrue);
 
-        id = idResponsePb.id;
+        id = idResponsePb.value;
 
         Measure measure = await measureStub
             .getMeasure(MeasureGetRequest()
@@ -188,14 +188,14 @@ void main() {
       description = 'Description test';
 
       test('Call operation createMeasure', () async {
-        IdResponse idResponsePb = await measureStub
+        StringValue idResponsePb = await measureStub
             .createMeasure(MeasureRequest()..measure = (Measure()
           ..name = name
           ..description = description
           )..objectiveId = objectiveId);
-        expect(idResponsePb.hasId(), isTrue);
+        expect(idResponsePb.hasValue(), isTrue);
 
-        id = idResponsePb.id;
+        id = idResponsePb.value;
 
         measureId = id;
 
@@ -233,12 +233,12 @@ void main() {
       String comment = 'Unit test';
 
       test('Call operation createMeasureProgress', () async {
-        IdResponse idResponsePb = await measureStub
+        StringValue idResponsePb = await measureStub
             .createMeasureProgress(MeasureProgressRequest()..measureProgress = (MeasureProgress()
           ..comment = comment)..measureId = measureId);
-        expect(idResponsePb.hasId(), isTrue);
+        expect(idResponsePb.hasValue(), isTrue);
 
-        id = idResponsePb.id;
+        id = idResponsePb.value;
 
         MeasureProgress measureProgress = await measureStub
             .getMeasureProgress(MeasureProgressGetRequest()

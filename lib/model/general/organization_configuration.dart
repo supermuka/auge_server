@@ -17,8 +17,8 @@ enum DirectoryServiceStatus {
   errorGroupMemberAttributeNotFound,
   errorUserNotFound,
   errorUserFilterInvalid,
-  errorIdAttribute,
-  errorAdditionalIdAttribute,
+  errorProviderObjectIdAttribute,
+  errorIdentificationAttribute,
   errorEmailAttribute,
   errorFirstNameAttribute,
   errorLastNameAttribute
@@ -161,11 +161,11 @@ class DirectoryService {
   static final String userSearchFilterField = 'userSearchFilter';
   String userSearchFilter;
   // AD objectGUID or OpenLDAP entryUUID
-  static final String userIdAttributeField = 'userIdAttribute';
-  String userIdAttribute;
+  static final String userProviderObjectIdAttributeField = 'userProviderObjectIdAttribute';
+  String userProviderObjectIdAttribute;
   // AD samAccountName / UserPrincipalName or OpenLDAP uid
-  static final String userAdditionalIdAttributeField = 'userAdditionalIdAttribute';
-  String userAdditionalIdAttribute;
+  static final String userIdentificationAttributeField = 'userIdentificationAttribute';
+  String userIdentificationAttribute;
   static final String userEmailAttributeField = 'userEmailAttribute';
   String userEmailAttribute;
   static final String userFirstNameAttributeField = 'userFirstNameAttribute';
@@ -192,8 +192,8 @@ class DirectoryService {
     if (this.userSearchDN != null) directoryServicePb.userSearchDN = this.userSearchDN;
     if (this.userSearchScope != null) directoryServicePb.userSearchScope = this.userSearchScope;
     if (this.userSearchFilter != null) directoryServicePb.userSearchFilter = this.userSearchFilter;
-    if (this.userIdAttribute != null) directoryServicePb.userIdAttribute = this.userIdAttribute;
-    if (this.userAdditionalIdAttribute != null) directoryServicePb.userAdditionalIdAttribute = this.userAdditionalIdAttribute;
+    if (this.userProviderObjectIdAttribute != null) directoryServicePb.userProviderObjectIdAttribute = this.userProviderObjectIdAttribute;
+    if (this.userIdentificationAttribute != null) directoryServicePb.userIdentificationAttribute = this.userIdentificationAttribute;
     if (this.userFirstNameAttribute != null) directoryServicePb.userFirstNameAttribute = this.userFirstNameAttribute;
     if (this.userLastNameAttribute != null) directoryServicePb.userLastNameAttribute = this.userLastNameAttribute;
     if (this.userEmailAttribute != null) directoryServicePb.userEmailAttribute = this.userEmailAttribute;
@@ -218,8 +218,8 @@ class DirectoryService {
     if (directoryServicePb.hasUserSearchDN()) this.userSearchDN = directoryServicePb.userSearchDN;
     if (directoryServicePb.hasUserSearchScope()) this.userSearchScope = directoryServicePb.userSearchScope;
     if (directoryServicePb.hasUserSearchFilter()) this.userSearchFilter = directoryServicePb.userSearchFilter;
-    if (directoryServicePb.hasUserIdAttribute()) this.userIdAttribute = directoryServicePb.userIdAttribute;
-    if (directoryServicePb.hasUserAdditionalIdAttribute()) this.userAdditionalIdAttribute = directoryServicePb.userAdditionalIdAttribute;
+    if (directoryServicePb.hasUserProviderObjectIdAttribute()) this.userProviderObjectIdAttribute = directoryServicePb.userProviderObjectIdAttribute;
+    if (directoryServicePb.hasUserIdentificationAttribute()) this.userIdentificationAttribute = directoryServicePb.userIdentificationAttribute;
     if (directoryServicePb.hasUserFirstNameAttribute()) this.userFirstNameAttribute = directoryServicePb.userFirstNameAttribute;
     if (directoryServicePb.hasUserLastNameAttribute()) this.userLastNameAttribute = directoryServicePb.userLastNameAttribute;
     if (directoryServicePb.hasUserEmailAttribute()) this.userEmailAttribute = directoryServicePb.userEmailAttribute;
@@ -290,13 +290,13 @@ class DirectoryService {
         map[DirectoryService.userSearchFilterField] =
             directoryServicePb.userSearchFilter;
 
-      if (directoryServicePb.hasUserIdAttribute())
-        map[DirectoryService.userIdAttributeField] =
-            directoryServicePb.userIdAttribute;
+      if (directoryServicePb.hasUserProviderObjectIdAttribute())
+        map[DirectoryService.userProviderObjectIdAttributeField] =
+            directoryServicePb.userProviderObjectIdAttribute;
 
-      if (directoryServicePb.hasUserAdditionalIdAttribute())
-        map[DirectoryService.userAdditionalIdAttributeField] =
-            directoryServicePb.userAdditionalIdAttribute;
+      if (directoryServicePb.hasUserIdentificationAttribute())
+        map[DirectoryService.userIdentificationAttributeField] =
+            directoryServicePb.userIdentificationAttribute;
 
       if (directoryServicePb.hasUserFirstNameAttribute())
         map[DirectoryService.userFirstNameAttributeField] =

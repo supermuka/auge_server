@@ -161,7 +161,7 @@ CREATE TABLE general.users_profile_organizations (
     version integer NOT NULL,
     user_id uuid NOT NULL,
     organization_id uuid NOT NULL,
-    authorization_role integer NOT NULL
+    access_role integer NOT NULL
 );
 
 

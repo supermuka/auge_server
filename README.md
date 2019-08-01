@@ -1,9 +1,6 @@
 # auge_server
 
-A web server built using [Shelf](https://pub.dartlang.org/packages/shelf).
-
-Created from templates made available by Stagehand under a BSD-style
-[license](https://github.com/dart-lang/stagehand/blob/master/LICENSE).
+Server side useing Dart/Grpc and Postgres
 
 https://console.cloud.google.com/home/dashboard?project=auge-203523&authuser=1&organizationId=57193548143
 
@@ -34,7 +31,6 @@ Postgresql 9.6 on gcloud.
 
 https://cloud.google.com/community/tutorials/setting-up-postgres
 
-user/pass: postgres/admin@levius#2018
 
 https://stackoverflow.com/questions/31249112/allow-docker-container-to-connect-to-a-local-host-postgres-database
 
@@ -61,14 +57,12 @@ https://www.browserling.com/tools/triple-des-encrypt
 
 https://medium.freecodecamp.org/how-to-get-https-working-on-your-local-development-environment-in-5-minutes-7af615770eec
 
-
 DART SDK
 
 Install
 https://www.dartlang.org/tools/sdk#install
 
 sudo sh -c 'curl https://storage.googleapis.com/dart-archive/channels/dev/release/2.0.0-dev.63.0/sdk/dartsdk-linux-arm64-release.zip > /etc/apt/sources.list.d/dart_unstable.list'
-
 
 DART update (linux)
 
@@ -92,7 +86,6 @@ Collection always return a list instance that maybe empty, not a error.
 Object/Message if not found, return a error because it is considerated a resource.
 PUT and POST return a new resource. See https://medium.com/studioarmix/learn-restful-api-design-ideals-c5ec915a430f (best practice), https://stackoverflow.com/questions/797834/should-a-restful-put-operation-return-something
 
-
 LDAP
 
 https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-openldap-and-phpldapadmin-on-ubuntu-16-04
@@ -109,8 +102,6 @@ https://docs.moodle.org/37/en/LDAP_authentication
 
 ldap vs ad - groups
 https://www.perforce.com/manuals/p4sag/Content/P4SAG/security.ldap.groups.html
-
-
 
 https://serverfault.com/questions/567776/which-field-to-use-when-authenticating-against-active-directory
 https://blogs.msdn.microsoft.com/openspecification/2009/07/10/understanding-unique-attributes-in-active-directory/

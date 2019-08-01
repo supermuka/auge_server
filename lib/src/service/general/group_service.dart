@@ -6,7 +6,7 @@ import 'dart:async';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
+import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pbgrpc.dart';
@@ -60,7 +60,7 @@ class GroupService extends GroupServiceBase {
   }
 
   @override
-  Future<IdResponse> createGroup(ServiceCall call,
+  Future<StringValue> createGroup(ServiceCall call,
       GroupRequest request) async {
     return queryInsertGroup(request);
   }
@@ -188,7 +188,7 @@ class GroupService extends GroupServiceBase {
     }
   }
 
-  static Future<IdResponse> queryInsertGroup(GroupRequest request) async {
+  static Future<StringValue> queryInsertGroup(GroupRequest request) async {
 
     if (!request.group.hasId()) {
       request.group.id = Uuid().v4();
@@ -236,8 +236,8 @@ class GroupService extends GroupServiceBase {
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
-          "user_id": request.authenticatedUserId,
-          "organization_id": request.authenticatedOrganizationId,
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
           "object_id":  request.group.id,
           "object_version": request.group.version,
           "object_class_name": group_m.Group.className,
@@ -254,7 +254,7 @@ class GroupService extends GroupServiceBase {
       rethrow;
     }
 
-    return IdResponse()..id = request.group.id;
+    return StringValue()..value = request.group.id;
   }
 
   static Future<Empty> queryUpdateGroup(GroupRequest request) async {
@@ -326,8 +326,8 @@ class GroupService extends GroupServiceBase {
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
-          "user_id": request.authenticatedUserId,
-          "organization_id": request.authenticatedOrganizationId,
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
           "object_id":  request.group.id,
           "object_version": request.group.version,
           "object_class_name": group_m.Group.className,
@@ -374,8 +374,8 @@ class GroupService extends GroupServiceBase {
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authenticatedUserId,
-                "organization_id": request.authenticatedOrganizationId,
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
                 "object_id": request.groupId,
                 "object_version": request.groupVersion,
                 "object_class_name": group_m.Group.className,
@@ -454,7 +454,7 @@ class GroupService extends GroupServiceBase {
 
     for (var row in results) {
 
-      users = await UserService.querySelectUsers(UserGetRequest()..id = row[0]..withProfile = true);
+      users = await UserService.querySelectUsers(UserGetRequest()..id = row[0]..withUserProfile = true);
 
       if (users != null && users.length != 0) {
         user = users.first;

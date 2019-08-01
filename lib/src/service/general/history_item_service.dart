@@ -88,7 +88,7 @@ class HistoryItemService extends HistoryItemServiceBase {
         for (var row in results) {
           user = await UserService.querySelectUser(UserGetRequest()
             ..id = row[1]
-            ..withProfile = true, cache: userCache);
+            ..withUserProfile = true, cache: userCache);
 
           /*
         Map changedDataMap = json.decode(row[8]);
