@@ -175,25 +175,25 @@ void main() {
         stub = new UserAccessServiceClient(channel);
       });
 
-      UserAccessesResponse UserAccessesResponse;
+      UserAccessesResponse userAccessesResponse;
       test('Call operation getUserAccesses', () async {
-         UserAccessesResponse = await stub
+         userAccessesResponse = await stub
             .getUserAccesses(UserAccessGetRequest()..organizationId = organizationId);
 
-        expect(UserAccessesResponse.UserAccesses, isNotNull);
+        expect(userAccessesResponse.userAccesses, isNotNull);
       });
 
       test('Call operation deleteUserAccesses - all items', () async {
 
-        for (final i in UserAccessesResponse.UserAccesses) {
-          await stub.deleteUserAccess(UserAccessDeleteRequest()..UserAccessId = i.id);
+        for (final i in userAccessesResponse.userAccesses) {
+          await stub.deleteUserAccess(UserAccessDeleteRequest()..userAccessId = i.id);
         }
       });
 
       test('Call operation createUserAccess', () async {
 
         StringValue idResponse = await stub
-            .createUserAccess(UserAccessRequest()..UserAccess = (UserAccess()
+            .createUserAccess(UserAccessRequest()..userAccess = (UserAccess()
           ..organization = (Organization()..id = organizationId)
           ..user = (User()..id = userId)
           ..accessRole = SystemRole.admin.index));
@@ -206,7 +206,7 @@ void main() {
       test('Call operation updateUserProfileOrganization', () async {
 
         await stub
-            .updateUserAccess(UserAccessRequest()..UserAccess = (UserAccess()
+            .updateUserAccess(UserAccessRequest()..userAccess = (UserAccess()
           ..id = id
           ..organization = (Organization()..id = organizationId)
           ..user = (User()..id = userId)
@@ -217,16 +217,16 @@ void main() {
       test('Call operation deleteUserProfileOrganization', () async {
 
         Empty emptyPb = await stub
-            .deleteUserAccess(UserAccessDeleteRequest()..UserAccessId = id);
+            .deleteUserAccess(UserAccessDeleteRequest()..userAccessId = id);
 
         expect(emptyPb, isNotNull);
 
         try {
-          UserAccess UserAccess = await stub
+          UserAccess userAccess = await stub
               .getUserAccess(UserAccessGetRequest()
             ..id = id);
 
-          expect(UserAccess, isNotEmpty);
+          expect(userAccess, isNotEmpty);
 
         } on GrpcError catch (e) {
           expect(e.code, StatusCode.notFound);

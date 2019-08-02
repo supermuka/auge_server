@@ -64,10 +64,10 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationRole = SystemRole.superAdmin
       ..authorizationModule = SystemModule.users
       ..authorizationFunctionContraints =
-      {SystemFunction.create: [],
-        SystemFunction.read: [],
-        SystemFunction.update: [],
-        SystemFunction.delete: []
+      {SystemFunction.create: [SystemRole.admin, SystemRole.standard],
+        SystemFunction.read: [SystemRole.admin, SystemRole.standard],
+        SystemFunction.update: [SystemRole.admin, SystemRole.standard],
+        SystemFunction.delete: [SystemRole.admin, SystemRole.standard]
       });
 
     // Object:  Groups
