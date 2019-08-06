@@ -229,7 +229,7 @@ class UserAccessService extends UserAccessServiceBase {
         request.userAccess.version = 0;
 
         await ctx.query(
-            "INSERT INTO general.user_profiles_organizations(id, version, user_id, organization_id, access_role) VALUES("
+            "INSERT INTO general.user_accesses(id, version, user_id, organization_id, access_role) VALUES("
                 "@id,"
                 "@version,"
                 "@user_id,"

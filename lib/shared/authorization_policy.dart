@@ -39,11 +39,13 @@ abstract class AuthorizationPolicy {
           // Find Constraints
           if (systemConstraint != null && allowAuthorizationRoleObject
               .authorizationFunctionContraints[systemFunction] != null) {
+
             if (allowAuthorizationRoleObject
                 .authorizationFunctionContraints[systemFunction]
                 .indexWhere((allow) => allow == systemConstraint) !=
                 -1) {
               isConstraintAuthorized = true;
+
             }
           }
         }
@@ -51,7 +53,6 @@ abstract class AuthorizationPolicy {
     }
     return isRoleObjectAuthorized && isFunctionAuthorized && isConstraintAuthorized;
   }
-
 }
 
 class GeneralAuthorizationPolicy extends AuthorizationPolicy {
@@ -64,10 +65,10 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       ..authorizationRole = SystemRole.superAdmin
       ..authorizationModule = SystemModule.users
       ..authorizationFunctionContraints =
-      {SystemFunction.create: [SystemRole.admin, SystemRole.standard],
-        SystemFunction.read: [SystemRole.admin, SystemRole.standard],
-        SystemFunction.update: [SystemRole.admin, SystemRole.standard],
-        SystemFunction.delete: [SystemRole.admin, SystemRole.standard]
+      {SystemFunction.create: [SystemRole.superAdmin, SystemRole.admin, SystemRole.standard],
+        SystemFunction.read: [SystemRole.superAdmin, SystemRole.admin, SystemRole.standard],
+        SystemFunction.update: [SystemRole.superAdmin, SystemRole.admin, SystemRole.standard],
+        SystemFunction.delete: [SystemRole.superAdmin, SystemRole.admin, SystemRole.standard]
       });
 
     // Object:  Groups

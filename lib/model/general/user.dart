@@ -4,9 +4,12 @@
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
 
+import 'package:auge_server/model/general/organization.dart';
+
 import 'package:auge_server/src/protos/generated/general/user.pb.dart' as user_pb;
 
 /// Domain model class to represent an user account
+/// [User] class has system attributes, except [name] used here as an user specification. [UserProfile] has personal attributes
 class User {
   static final String className = 'User';
 
@@ -27,6 +30,11 @@ class User {
   static final String inactiveField = 'inactive';
   bool inactive;
 
+  // Organization, owner this user to data maintenance
+  // The authorization for an Organization is done in UserAccess.
+  static final String managedByOrganizationField = 'managedByOrganization';
+  Organization managedByOrganization;
+
   // Profile
   static final String userProfileField = 'userProfile';
   UserProfile userProfile;
@@ -38,6 +46,8 @@ class User {
     if (this.version != null) userPb.version = this.version;
     if (this.name != null) userPb.name = this.name;
     if (this.inactive != null) userPb.inactive = this.inactive;
+    if (this.managedByOrganization != null) userPb.managedByOrganization = this.managedByOrganization.writeToProtoBuf();
+
     if (this.userProfile != null) userPb.userProfile = this.userProfile.writeToProtoBuf();
 
     return userPb;
@@ -48,6 +58,7 @@ class User {
     if (userPb.hasVersion()) this.version = userPb.version;
     if (userPb.hasName()) this.name = userPb.name;
     if (userPb.hasInactive()) this.inactive = userPb.inactive;
+    if (userPb.hasManagedByOrganization()) this.managedByOrganization = Organization()..readFromProtoBuf(userPb.managedByOrganization);
     if (userPb.hasUserProfile()) this.userProfile = UserProfile()..readFromProtoBuf(userPb.userProfile);
   }
 
@@ -62,7 +73,6 @@ class User {
       if (userPb.hasId()) map[User.idField] = userPb.id;
       if (userPb.hasVersion()) map[User.versionField] = userPb.version;
       if (userPb.hasName()) map[User.nameField] = userPb.name;
-      if (userPb.hasInactive()) map[User.inactiveField] = userPb.inactive;
       if (userPb.hasUserProfile()) {
         map[User.userProfileField] =
             UserProfile.fromProtoBufToModelMap(
@@ -70,6 +80,10 @@ class User {
                 false); // here isDeep is false, because UserProfile is like an extention
 
       }
+      if (userPb.hasManagedByOrganization())
+        map[User.managedByOrganizationField] =
+            Organization.fromProtoBufToModelMap(
+                userPb.managedByOrganization, onlyIdAndSpecificationForDepthFields, true);
     }
     return map;
   }
@@ -97,6 +111,7 @@ class UserProfile {
     if (this.image != null) userProfilePb.image = this.image;
     if (this.idiomLocale != null) userProfilePb.idiomLocale = this.idiomLocale;
 
+
     return userProfilePb;
   }
 
@@ -104,6 +119,7 @@ class UserProfile {
     if (userProfilePb.hasEMail()) this.eMail = userProfilePb.eMail;
     if (userProfilePb.hasImage()) this.image = userProfilePb.image;
     if (userProfilePb.hasIdiomLocale()) this.idiomLocale = userProfilePb.idiomLocale;
+
   }
 
   static Map<String, dynamic> fromProtoBufToModelMap(user_pb.UserProfile userProfilePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
@@ -121,6 +137,7 @@ class UserProfile {
         map[UserProfile.imageField] = userProfilePb.image;
       if (userProfilePb.hasIdiomLocale())
         map[UserProfile.idiomLocaleField] = userProfilePb.idiomLocale;
+
     }
     return map;
   }

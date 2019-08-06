@@ -3,10 +3,12 @@
 
 import 'dart:async';
 
+import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
+import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
@@ -15,6 +17,7 @@ import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
 import 'package:auge_server/model/general/user.dart' as user_m;
+import 'package:auge_server/model/general/organization.dart' as organization_m;
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 
 import 'package:uuid/uuid.dart';
@@ -65,29 +68,37 @@ class UserService extends UserServiceBase {
       queryStatement = "SELECT "
           " u.id, " //0
           " u.version, " //1
-          " u.name " //2
+          " u.name, " //2
+          " u.inactive, " //3
+          " u.managed_by_organization_id " //4
           " FROM general.users u";
           " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
-
     }
     else {
       queryStatement = "SELECT "
           " u.id, " //0
           " u.version, " //1
           " u.name, " //2
-          " user_profile.email, " //3
-          " user_profile.image, " //4
-          " user_profile.idiom_locale " //5
+          " u.inactive, " //3
+          " u.managed_by_organization_id, " //4
+          " user_profile.email, " //5
+          " user_profile.image, " //6
+          " user_profile.idiom_locale " //7
           " FROM general.users u "
           " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
     }
 
     String whereAnd = "WHERE";
     Map<String, dynamic> _substitutionValues = Map();
-    if (request != null && request.organizationId != null  && request.organizationId.isNotEmpty) {
-      queryStatement = queryStatement + " LEFT OUTER JOIN general.user_accesses user_accesses ON user_accesses.user_id = u.id";
-      queryStatement = queryStatement + " ${whereAnd} user_accesses.organization_id = @organization_id";
-      _substitutionValues.putIfAbsent("organization_id", () => request.organizationId);
+    if (request != null && request.managedByOrganizationId != null  && request.managedByOrganizationId.isNotEmpty) {
+      queryStatement = queryStatement + " ${whereAnd} user.managed_by_organization_id = @organization_id";
+      _substitutionValues.putIfAbsent("organization_id", () => request.managedByOrganizationId);
+      whereAnd = "AND";
+    }
+    if (request != null && request.managedByOrganizationIdOrAccessedByOrganizationId != null  && request.managedByOrganizationIdOrAccessedByOrganizationId.isNotEmpty) {
+      queryStatement = queryStatement + " LEFT OUTER JOIN general.user_accesses user_access ON user_access.user_id = u.id";
+      queryStatement = queryStatement + " ${whereAnd} (u.managed_by_organization_id = @organization_id OR user_access.organization_id = @organization_id)";
+      _substitutionValues.putIfAbsent("organization_id", () => request.managedByOrganizationIdOrAccessedByOrganizationId);
       whereAnd = "AND";
     }
     if (request != null && request.id != null && request.id.isNotEmpty) {
@@ -100,19 +111,30 @@ class UserService extends UserServiceBase {
     try {
       results = await (await AugeConnection.getConnection()).query(
           queryStatement, substitutionValues: _substitutionValues);
-
+      Organization organization;
       for (var row in results) {
+
+
+        if (row[4] != null) {
+          if (organization == null || row[4] != organization.id) {
+            organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[4]);
+          }
+        }
+
         User user = new User()
           ..id = row[0]
           ..version = row[1]
-          ..name = row[2];
+          ..name = row[2]
+          ..inactive = row[3]
+          ..managedByOrganization = organization;
 
         if (request != null && request.withUserProfile) {
           user.userProfile = UserProfile();
-          if (row[3] != null) user.userProfile.eMail = row[3];
-          if (row[4] != null) user.userProfile.image = row[4];
-          if (row[5] != null) user.userProfile.idiomLocale = row[5];
+          if (row[5] != null) user.userProfile.eMail = row[5];
+          if (row[6] != null) user.userProfile.image = row[6];
+          if (row[7] != null) user.userProfile.idiomLocale = row[7];
         }
+
         users.add(user);
       }
     } catch (e) {
@@ -150,16 +172,18 @@ class UserService extends UserServiceBase {
       try {
 
         await ctx.query(
-            "INSERT INTO general.users(id, version, name, inactive) VALUES("
+            "INSERT INTO general.users(id, version, name, inactive, managed_by_organization_id) VALUES("
                 "@id,"
                 "@version,"
                 "@name,"
-                "@inactive)"
+                "@inactive,"
+                "@managed_by_organization_id)"
             , substitutionValues: {
           "id": request.user.id,
           "version": request.user.version,
           "name": request.user.name,
-          "inactive": request.user.inactive});
+          "inactive": request.user.inactive,
+          "managed_by_organization_id": request.user.managedByOrganization.id});
 
         if (request.user.userProfile != null) {
           await ctx.query(
@@ -208,13 +232,13 @@ class UserService extends UserServiceBase {
         List<List<dynamic>> result = await ctx.query(
             "UPDATE general.users "
                 "SET version = @version,"
-                "name = @name,"
-                "inactivate = @inactivate "
+                "name = @name, "
+                "inactive = @inactive,"
+                "managed_by_organization_id = @managed_by_organization_id"
                 " WHERE id = @id AND version = @version - 1"
                 " RETURNING true", substitutionValues: {
           "id": request.user.id,
-          "version": request.user.version,
-          "inactivate": request.user.inactive});
+          "version": request.user.version});
 
         await ctx.query(
             "UPDATE general.user_profiles "
@@ -307,5 +331,4 @@ class UserService extends UserServiceBase {
     });
     return Empty();
   }
-
 }

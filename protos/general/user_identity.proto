@@ -8,7 +8,6 @@ package auge.protobuf;
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "general/user.proto";
-import "general/organization.proto";
 
 // The service definition.
 service UserIdentityService {
@@ -32,7 +31,6 @@ message UserIdentity {
     int32 provider = 8;
     string provider_object_id = 9;
     User user = 10;
-    Organization managed_by_organization = 11;
 }
 
 // Message request related to domain object.
@@ -56,7 +54,6 @@ message UserIdentityGetRequest {
     string password = 3;
     string user_id = 4;
     bool with_user_profile = 5;
-    string managed_by_organization_id = 6;
 }
 
 // Response list of the organization
