@@ -53,7 +53,8 @@ message UserIdentityGetRequest {
     string identification = 2;
     string password = 3;
     string user_id = 4;
-    bool with_user_profile = 5;
+    string managed_by_organization_id = 5;
+    bool with_user_profile = 6;
 }
 
 // Response list of the organization

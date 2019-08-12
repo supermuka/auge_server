@@ -231,14 +231,17 @@ class UserService extends UserServiceBase {
 
         List<List<dynamic>> result = await ctx.query(
             "UPDATE general.users "
-                "SET version = @version,"
+                "SET version = @version, "
                 "name = @name, "
-                "inactive = @inactive,"
+                "inactive = @inactive, "
                 "managed_by_organization_id = @managed_by_organization_id"
                 " WHERE id = @id AND version = @version - 1"
                 " RETURNING true", substitutionValues: {
           "id": request.user.id,
-          "version": request.user.version});
+          "version": request.user.version,
+          "name": request.user.name,
+          "inactive": request.user.inactive,
+          "managed_by_organization_id": request.user.managedByOrganization.id});
 
         await ctx.query(
             "UPDATE general.user_profiles "

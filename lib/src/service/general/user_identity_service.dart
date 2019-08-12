@@ -79,9 +79,9 @@ class UserIdentityService extends UserIdentityServiceBase {
           " ui.password_hash, " //4
           " ui.provider,  " //5
           " ui.provider_object_id,  " //9
-          " ui.user_id, " //7
-          " ui.managed_by_organization_id " //8
-          " FROM general.user_identities ui";
+          " ui.user_id " //7
+          " FROM general.user_identities ui"
+          " JOIN general.users u ON u.id = ui.user_id";
     }
 
     String whereAnd = "WHERE";
@@ -98,6 +98,13 @@ class UserIdentityService extends UserIdentityServiceBase {
       _substitutionValues.putIfAbsent("identification", () => request.identification);
       whereAnd = "AND";
     }
+    if (request != null && request.managedByOrganizationId != null && request.managedByOrganizationId.isNotEmpty) {
+      queryStatement = queryStatement +
+          " ${whereAnd} u.managed_by_organization_id = @managed_by_organization_id";
+
+      _substitutionValues.putIfAbsent("managed_by_organization_id", () => request.managedByOrganizationId);
+      // whereAnd = "AND";
+    }
 
     /*
     if (request != null && request.password_hash != null && request.password_hash.isNotEmpty) {
@@ -113,14 +120,7 @@ class UserIdentityService extends UserIdentityServiceBase {
           " ${whereAnd} ui.user_id = @user_id";
 
       _substitutionValues.putIfAbsent("user_id", () => request.userId);
-      whereAnd = "AND";
-    }
-
-    if (request != null && request.managedByOrganizationId != null && request.managedByOrganizationId.isNotEmpty) {
-      queryStatement = queryStatement +
-          " ${whereAnd} ui.managed_by_organization_id = @managed_by_organization_id";
-      _substitutionValues.putIfAbsent("managed_by_organization_id", () => request.managedByOrganizationId);
-      //The last whereAnd = "AND";
+      // whereAnd = "AND";
     }
 
     List<UserIdentity> userIdentities = [];
@@ -140,10 +140,6 @@ class UserIdentityService extends UserIdentityServiceBase {
         if (row[6] != null) userIdentity.providerObjectId = row[6];
 
         userIdentity.user = await UserService.querySelectUser(UserGetRequest()..id = row[7]..withUserProfile = request.withUserProfile);
-
-        if (row[8] != null) {
-          userIdentity.managedByOrganization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[8]);
-        }
 
         // If password is informed, calc a hash and compare to passward_hash stored
         if (request.hasPassword() && request.password.isNotEmpty) {
@@ -201,7 +197,7 @@ class UserIdentityService extends UserIdentityServiceBase {
         }
 
         await ctx.query(
-            "INSERT INTO general.user_identities(id, version, identification, provider, provider_object_id, password_salt, password_hash, user_id, managed_by_organization_id) VALUES("
+            "INSERT INTO general.user_identities(id, version, identification, provider, provider_object_id, password_salt, password_hash, user_id) VALUES("
                 "@id,"
                 "@version,"
                 "@identification,"
@@ -209,8 +205,7 @@ class UserIdentityService extends UserIdentityServiceBase {
                 "@provider_object_id,"
                 "@password_salt,"
                 "@password_hash,"
-                "@user_id,"
-                "@managed_by_organization_id)"
+                "@user_id)"
             , substitutionValues: {
           "id": request.userIdentity.id,
           "version": request.userIdentity.version,
@@ -219,8 +214,7 @@ class UserIdentityService extends UserIdentityServiceBase {
           "provider_object_id": request.userIdentity.providerObjectId,
           "password_salt": request.userIdentity.passwordSalt,
           "password_hash": request.userIdentity.passwordHash,
-          "user_id": request.userIdentity.user.id,
-          "managed_by_organization_id": request.userIdentity.managedByOrganization.id});
+          "user_id": request.userIdentity.user.id});
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
@@ -270,8 +264,7 @@ class UserIdentityService extends UserIdentityServiceBase {
                 "provider_object_id = @provider_object_id,"
                 "password_salt = @password_salt,"
                 "password_hash = @password_hash,"
-                "user_id = @user_id,"
-                "managed_by_organization_id = @managed_by_organization_id"
+                "user_id = @user_id"
                 " WHERE id = @id AND version = @version - 1"
                 " RETURNING true", substitutionValues: {
           "id": request.userIdentity.id,
@@ -281,8 +274,7 @@ class UserIdentityService extends UserIdentityServiceBase {
           "provider_object_id": request.userIdentity.providerObjectId,
           "password_salt": request.userIdentity.passwordSalt,
           "password_hash": request.userIdentity.passwordHash,
-          "user_id": request.userIdentity.user.id,
-          "managed_by_organization_id": request.userIdentity.managedByOrganization.id});
+          "user_id": request.userIdentity.user.id});
 
         // Optimistic concurrency control
         if (result.length == 0) {
