@@ -364,8 +364,8 @@ class UserAccessService extends UserAccessServiceBase {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         List<List<dynamic>> result = await ctx.query(
-            "DELETE FROM general.user_accesses user_profile_organization "
-                "WHERE user_profile_organization.id = @id AND user_profile_organization.version = @version "
+            "DELETE FROM general.user_accesses user_access "
+                "WHERE user_access.id = @id AND user_access.version = @version "
                 "RETURNING true"
             , substitutionValues: {
           "id": request.userAccessId,
@@ -376,18 +376,7 @@ class UserAccessService extends UserAccessServiceBase {
           throw new GrpcError.failedPrecondition('Precondition Failed');
         }
 
-        await ctx.query(
-            "DELETE FROM general.user_profiles user_profile WHERE user_profile.user_id = @user_id "
-            , substitutionValues: {
-          "user_id": previousUserAccess.user.id});
-
-        result = await ctx.query(
-            "DELETE FROM general.users u WHERE u.id = @id AND u.version = @version RETURNING true"
-            , substitutionValues: {
-          "id": previousUserAccess.user.id,
-          "version": previousUserAccess.user.version});
-
-        // Optimistic concurrency control
+       // Optimistic concurrency control
         if (result.length == 0) {
           throw new GrpcError.failedPrecondition('Precondition Failed');
         } else {
