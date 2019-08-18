@@ -7,7 +7,8 @@ import 'package:auge_server/shared/common_utils.dart';
 import 'package:auge_server/src/protos/generated/general/organization_configuration.pb.dart' as organization_configuration_pb;
 
 enum DirectoryServiceStatus {
-  processFinished,
+  testFinished,
+  syncFinished,
   errorException,
   errorNotConnected,
   errorNotBoundInvalidCredentials,
@@ -24,10 +25,16 @@ enum DirectoryServiceStatus {
   errorLastNameAttribute
 }
 
-enum DirectoryServiceDetail {
-  inserted,
-  updated,
-  deleted,
+enum DirectoryServiceFunction {
+  userInsert,
+  userUpdate,
+  userDelete,
+  userIdentityInsert,
+  userIdentityUpdate,
+  userIdentityDelete,
+  userAccessInsert,
+  userAccessUpdate,
+  userAccessDelete,
 }
 
 enum DirectoryServicePasswordFormat {
@@ -140,11 +147,11 @@ class DirectoryService {
   int passwordFormat;
   static final String syncIntervalField = 'syncInterval';
   int syncInterval;
-  static final String syncDateTimeField = 'syncDateTime';
-  DateTime syncDateTime;
+  static final String syncLastDateTimeField = 'syncLastDateTime';
+  DateTime syncLastDateTime;
 
-  static final String syncResultField = 'syncResult';
-  String syncResult;
+  static final String syncLastResultField = 'syncLastResult';
+  String syncLastResult;
 
   // ADMIN
   static final String adminBindDNField = 'adminBindDN';
@@ -191,8 +198,8 @@ class DirectoryService {
     if (this.sslTls != null) directoryServicePb.sslTls = this.sslTls;
     if (this.passwordFormat != null) directoryServicePb.passwordFormat = this.passwordFormat;
     if (this.syncInterval != null) directoryServicePb.syncInterval = this.syncInterval;
-    if (this.syncDateTime != null) directoryServicePb.syncDateTime = CommonUtils.timestampFromDateTime(this.syncDateTime);
-    if (this.syncResult != null) directoryServicePb.syncResult = this.syncResult;
+    if (this.syncLastDateTime != null) directoryServicePb.syncLastDateTime = CommonUtils.timestampFromDateTime(this.syncLastDateTime);
+    if (this.syncLastResult != null) directoryServicePb.syncLastResult = this.syncLastResult;
     if (this.adminBindDN != null) directoryServicePb.adminBindDN = this.adminBindDN;
     if (this.adminPassword != null) directoryServicePb.adminPassword = this.adminPassword;
     if (this.groupSearchDN != null) directoryServicePb.groupSearchDN = this.groupSearchDN;
@@ -218,8 +225,8 @@ class DirectoryService {
     if (directoryServicePb.hasSslTls()) this.sslTls = directoryServicePb.sslTls;
     if (directoryServicePb.hasPasswordFormat()) this.passwordFormat= directoryServicePb.passwordFormat;
     if (directoryServicePb.hasSyncInterval()) this.syncInterval = directoryServicePb.syncInterval;
-    if (directoryServicePb.hasSyncDateTime()) this.syncDateTime = CommonUtils.dateTimeFromTimestamp(directoryServicePb.syncDateTime);
-    if (directoryServicePb.hasSyncResult()) this.syncResult = directoryServicePb.syncResult;
+    if (directoryServicePb.hasSyncLastDateTime()) this.syncLastDateTime = CommonUtils.dateTimeFromTimestamp(directoryServicePb.syncLastDateTime);
+    if (directoryServicePb.hasSyncLastResult()) this.syncLastResult = directoryServicePb.syncLastResult;
     if (directoryServicePb.hasAdminBindDN()) this.adminBindDN = directoryServicePb.adminBindDN;
     if (directoryServicePb.hasAdminPassword()) this.adminPassword = directoryServicePb.adminPassword;
     if (directoryServicePb.hasGroupSearchDN()) this.groupSearchDN = directoryServicePb.groupSearchDN;
@@ -273,13 +280,13 @@ class DirectoryService {
         map[DirectoryService.syncIntervalField] =
             directoryServicePb.syncInterval;
 
-      if (directoryServicePb.hasSyncDateTime())
-        map[DirectoryService.syncDateTimeField] =
-            directoryServicePb.syncDateTime;
+      if (directoryServicePb.hasSyncLastDateTime())
+        map[DirectoryService.syncLastDateTimeField] =
+            directoryServicePb.syncLastDateTime;
 
-      if (directoryServicePb.hasSyncResult())
-        map[DirectoryService.syncResultField] =
-            directoryServicePb.syncResult;
+      if (directoryServicePb.hasSyncLastResult())
+        map[DirectoryService.syncLastResultField] =
+            directoryServicePb.syncLastResult;
 
       if (directoryServicePb.hasGroupSearchDN())
         map[DirectoryService.groupSearchDNField] =

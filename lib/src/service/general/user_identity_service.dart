@@ -142,9 +142,13 @@ class UserIdentityService extends UserIdentityServiceBase {
         // If password is informed, calc a hash and compare to passward_hash stored
         if (request.hasPassword() && request.password.isNotEmpty) {
 
+          print('DEBUG A ${request.password}');
+          print('DEBUG B ${userIdentity.passwordSalt}');
+
           String passwordHashComputed = base64.encode(sha256
               .convert((userIdentity.passwordSalt + request.password).codeUnits)
               .bytes);
+          print('DEBUG C ${passwordHashComputed}');
           if (userIdentity.passwordHash != passwordHashComputed) {
             // Not add to userIdentities list.
             continue;

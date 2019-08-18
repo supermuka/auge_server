@@ -87,8 +87,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         " organization_configuration.domain," //2
         " organization_configuration.directory_service_enabled," //3
         " organization_directory_services.sync_interval," //4
-        " organization_directory_services.sync_date_time," //5
-        " organization_directory_services.sync_result," //6
+        " organization_directory_services.sync_last_date_time," //5
+        " organization_directory_services.sync_last_result," //6
         " organization_directory_services.host_address," //7
         " organization_directory_services.port," //8
         " organization_directory_services.ssl_tls," //9
@@ -144,10 +144,10 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           configuration.directoryService.syncInterval = row[4];
 
         if (row[5] != null)
-          configuration.directoryService.syncDateTime = CommonUtils.timestampFromDateTime(row[5]);
+          configuration.directoryService.syncLastDateTime = CommonUtils.timestampFromDateTime(row[5]);
 
         if (row[6] != null)
-          configuration.directoryService.syncResult = row[6];
+          configuration.directoryService.syncLastResult = row[6];
 
         if (row[7] != null)
           configuration.directoryService.hostAddress = row[7];
@@ -244,8 +244,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             "INSERT INTO general.organization_directory_services("
                 "organization_id, "
                 "sync_interval,"
-                "sync_date_time,"
-                "sync_result,"
+                "sync_last_date_time,"
+                "sync_last_result,"
                 "host_address,"
                 "port,"
                 "ssl_tls,"
@@ -267,8 +267,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                 " VALUES("
                 "@organization_id, "
                 "@sync_interval,"
-                "@sync_date_time,"
-                "@sync_result,"
+                "@sync_last_date_time,"
+                "@sync_last_result,"
                 "@host_address,"
                 "@port,"
                 "@ssl_tls,"
@@ -290,8 +290,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             , substitutionValues: {
             "organization_id": request.authOrganizationId,
             "sync_interval": request.organizationConfiguration.directoryService.hasSyncInterval() ? request.organizationConfiguration.directoryService.syncInterval : null,
-            "sync_date_time": request.organizationConfiguration.directoryService.hasSyncDateTime() ? CommonUtils.dateTimeFromTimestamp(request.organizationConfiguration.directoryService.syncDateTime): null,
-            "sync_result": request.organizationConfiguration.directoryService.hasSyncResult() ? request.organizationConfiguration.directoryService.syncResult : null,
+            "sync_last_date_time": request.organizationConfiguration.directoryService.hasSyncLastDateTime() ? CommonUtils.dateTimeFromTimestamp(request.organizationConfiguration.directoryService.syncLastDateTime): null,
+            "sync_last_result": request.organizationConfiguration.directoryService.hasSyncLastResult() ? request.organizationConfiguration.directoryService.syncLastResult : null,
             "host_address": request.organizationConfiguration.directoryService.hasHostAddress() ? request.organizationConfiguration.directoryService.hostAddress: null,
             "port": request.organizationConfiguration.directoryService.hasPort() ? request.organizationConfiguration.directoryService.port: null,
             "ssl_tls": request.organizationConfiguration.directoryService.hasSslTls() ? request.organizationConfiguration.directoryService.sslTls: null,
@@ -360,8 +360,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           await ctx.query(
               "UPDATE general.organization_directory_services "
               "SET sync_interval = @sync_interval, "
-              "sync_date_time = @sync_date_time, "
-              "sync_result = @sync_result, "
+              "sync_last_date_time = @sync_last_date_time, "
+              "sync_last_result = @sync_last_result, "
               "host_address = @host_address, "
               "port = @port, "
               "ssl_tls = @ssl_tls, "
@@ -375,8 +375,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               "user_search_dn = @user_search_dn, "
               "user_search_scope = @user_search_scope, "
               "user_search_filter = @user_search_filter, "
-              "user_id_attribute = @user_id_attribute, "
-              "user_additional_id_attribute = @user_additional_id_attribute, "
+              "user_provider_object_id_attribute = @user_provider_object_id_attribute, "
+              "user_identification_attribute = @user_identification_attribute, "
               "user_first_name_attribute = @user_first_name_attribute, "
               "user_last_name_attribute = @user_last_name_attribute, "
               "user_email_attribute = @user_email_attribute "
@@ -384,8 +384,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               , substitutionValues: {
             "organization_id": request.organizationConfiguration.organizationId,
             "sync_interval": request.organizationConfiguration.directoryService.hasSyncInterval() ? request.organizationConfiguration.directoryService.syncInterval : null,
-            "sync_date_time": request.organizationConfiguration.directoryService.hasSyncDateTime() ? CommonUtils.dateTimeFromTimestamp(request.organizationConfiguration.directoryService.syncDateTime): null,
-            "sync_result": request.organizationConfiguration.directoryService.hasSyncResult() ? request.organizationConfiguration.directoryService.syncResult : null,
+            "sync_last_date_time": request.organizationConfiguration.directoryService.hasSyncLastDateTime() ? CommonUtils.dateTimeFromTimestamp(request.organizationConfiguration.directoryService.syncLastDateTime): null,
+            "sync_last_result": request.organizationConfiguration.directoryService.hasSyncLastResult() ? request.organizationConfiguration.directoryService.syncLastResult : null,
             "host_address": request.organizationConfiguration.directoryService.hasHostAddress() ? request.organizationConfiguration.directoryService.hostAddress: null,
             "port": request.organizationConfiguration.directoryService.hasPort() ? request.organizationConfiguration.directoryService.port: null,
             "ssl_tls": request.organizationConfiguration.directoryService.hasSslTls() ? request.organizationConfiguration.directoryService.sslTls: null,
@@ -472,7 +472,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
     // Format: [INFO, ERROR]: {Details}
 
-    Map<int, List<String>> processSyncResult = {};
+    Map<String, List<String>> syncLastResult = {};
 
     try {
 
@@ -592,13 +592,11 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         countLastNameAttribute = 0;
 
       List<String> directoryServiceProviderObjectIds = [];
-      List<UserRequest> insertUsersSync = [], updateUsersSync = [];
-      List<UserIdentityDeleteRequest> deleteUserIdentitiesSync = [];
-      List<UserAccessDeleteRequest> deleteUserAccessesSync = [];
-      List<UserIdentityRequest> insertUserIdentitiesSync = [], updateUserIdentitiesSync = [];
-      List<UserAccessRequest> insertUserAccessesSync = [], updateUserAccessesSync = [];
+      List<User> usersInsertSync = [], usersUpdateSync = [];
+      List<UserIdentity> userIdentitiesDeleteSync = [], userIdentitiesInsertSync = [], userIdentitiesUpdateSync = [];
+      List<UserAccess> userAccessesDeleteSync = [], userAccessesInsertSync = [], userAccessesUpdateSync = [];
 
-      bool hasChanged;
+      bool userHasChanged, userIdentityHasChanged;
 
       String userProviderObjectIdAttributeValue, userIdentificationAttributeValue, userEmailAttributeValue, userFirstNameAttributeValue, userLastNameAttributeValue;
 
@@ -663,6 +661,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             t.identification == userIdentificationAttributeValue);
 
             if (userIdentityIndexByIdentification == -1) {
+              /*
               UserRequest userRequest = UserRequest();
               userRequest.authUserId = request.authUserId;
               userRequest.authOrganizationId = request.authOrganizationId;
@@ -674,7 +673,16 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                   userLastNameAttributeValue;
               userRequest.user.userProfile = UserProfile();
               userRequest.user.userProfile.eMail = userEmailAttributeValue;
+*/
+              User user = User();
+              user.managedByOrganization = organization;
+              user.name = userFirstNameAttributeValue + ' ' +
+                  userLastNameAttributeValue;
+              user.userProfile = UserProfile();
+              if (userEmailAttributeValue != null && userEmailAttributeValue.trim().isNotEmpty)
+                user.userProfile.eMail = userEmailAttributeValue;
 
+              /*
               UserIdentityRequest userIdentityRequest = UserIdentityRequest();
               userIdentityRequest.authUserId = request.authUserId;
               userIdentityRequest.authOrganizationId =
@@ -687,7 +695,18 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                   user_identity_m.UserIdentityProvider.internal.index;
               userIdentityRequest.userIdentity.providerObjectId =
                   userProviderObjectIdAttributeValue;
+*/
 
+
+              UserIdentity userIdentity = UserIdentity();
+              /// need to format to domain
+              userIdentity.identification = userIdentificationAttributeValue;
+              userIdentity.user = user;
+              userIdentity.provider =
+                  user_identity_m.UserIdentityProvider.internal.index;
+              userIdentity.providerObjectId =
+                  userProviderObjectIdAttributeValue;
+              /*
               UserAccessRequest userAccessRequest = UserAccessRequest();
 
               userAccessRequest.userAccess = UserAccess();
@@ -695,12 +714,20 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               userAccessRequest.userAccess.organization = organization;
               userAccessRequest.userAccess.accessRole =
                   SystemRole.standard.index;
+*/
+              UserAccess userAccess = UserAccess();
 
-              insertUsersSync.add(userRequest);
-              insertUserIdentitiesSync.add(userIdentityRequest);
-              insertUserAccessesSync.add(userAccessRequest);
+              userAccess = UserAccess();
+              userAccess.user = user;
+              userAccess.organization = organization;
+              userAccess.accessRole =
+                  SystemRole.standard.index;
 
-              processSyncResult[organization_configuration_m.DirectoryServiceDetail.inserted.index].add(usersIdentities[userIdentityIndex].identification + ' ' + usersIdentities[userIdentityIndex].user.name);
+              usersInsertSync.add(user);
+              userIdentitiesInsertSync.add(userIdentity);
+              userAccessesInsertSync.add(userAccess);
+
+
 
             } else {
 
@@ -710,32 +737,32 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
             userIdentity = usersIdentities[userIdentityIndex];
 
-            hasChanged = false;
+            userHasChanged = false;
+            userIdentityHasChanged = false;
 
             if (userIdentity.user.name != userFirstNameAttribute + ' ' + userLastNameAttribute) {
               userIdentity.user.name = userFirstNameAttribute + ' ' + userLastNameAttribute;
-              hasChanged = true;
+              userHasChanged = true;
             }
 
             if (userIdentity.user.userProfile.eMail != userEmailAttributeValue) {
               userIdentity.user.userProfile.eMail = userEmailAttributeValue;
-              hasChanged = true;
+              userHasChanged = true;
             }
 
             if (userIdentity.identification != userIdentificationAttributeValue) {
               userIdentity.identification = userIdentificationAttributeValue;
-              hasChanged = true;
+              userIdentityHasChanged = true;
             }
 
             if (userIdentity.providerObjectId != userProviderObjectIdAttributeValue) {
               userIdentity.providerObjectId = userProviderObjectIdAttributeValue;
-              hasChanged = true;
+              userIdentityHasChanged = true;
             }
 
             // If some value changed
-            if (hasChanged) {
-
-
+            if (userHasChanged) {
+              /*
               UserRequest userRequest = UserRequest();
               userRequest.authUserId = request.authUserId;
               userRequest.authOrganizationId = request.authOrganizationId;
@@ -746,6 +773,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               userIdentityRequest.authUserId = request.authUserId;
               userIdentityRequest.authOrganizationId = request.authOrganizationId;
               userIdentityRequest.userIdentity =  userIdentity;
+
+               */
 
               // at first, this [UserAccess] is not controlled by directory service
               /*
@@ -759,12 +788,11 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               userAccessRequest.userAccess.organization = organization;
               userAccessRequest.userAccess.accessRole = SystemRole.standard.index;
 */
-              updateUsersSync.add(userRequest);
-              updateUserIdentitiesSync.add(userIdentityRequest);
+              usersUpdateSync.add(userIdentity.user);
+            }
+            if (userIdentityHasChanged) {
+              userIdentitiesUpdateSync.add(userIdentity);
             //  updateUserAccessesSync.add(userAccessRequest);
-
-              processSyncResult[organization_configuration_m.DirectoryServiceDetail.updated.index].add(usersIdentities[userIdentityIndex].identification + ' ' + usersIdentities[userIdentityIndex].user.name);
-
 
             }
           }
@@ -801,34 +829,37 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         int userAccessIndex;
         for (userIdentityIndex = 0;userIdentityIndex<usersIdentities.length;userIdentityIndex++) {
           providerObjectId = usersIdentities[userIdentityIndex].providerObjectId;
-          if (providerObjectId != null) {
+          if (providerObjectId != null && providerObjectId.trim().isNotEmpty) {
             if (directoryServiceProviderObjectIds.indexOf(providerObjectId) == -1) {
-              
+             /*
               UserIdentityDeleteRequest userIdentityDeleteRequest = UserIdentityDeleteRequest();
               userIdentityDeleteRequest.userIdentityId = usersIdentities[userIdentityIndex].id;
               userIdentityDeleteRequest.userIdentityVersion = usersIdentities[userIdentityIndex].version;
 
               userIdentityDeleteRequest.authUserId = request.authUserId;
               userIdentityDeleteRequest.authOrganizationId = request.authOrganizationId;
-
               deleteUserIdentitiesSync.add(userIdentityDeleteRequest);
+*/
+             userIdentitiesDeleteSync.add(usersIdentities[userIdentityIndex]);
 
-              processSyncResult[organization_configuration_m.DirectoryServiceDetail.deleted.index].add(usersIdentities[userIdentityIndex].identification + ' ' + usersIdentities[userIdentityIndex].user.name);
+              //
 
-              userAccessIndex = userAccesses.indexWhere((test) => test.user.id == usersIdentities[userIdentityIndex].id);
+              userAccessIndex = userAccesses.indexWhere((test) => test.user.id == usersIdentities[userIdentityIndex].user.id);
               if (userAccessIndex != -1) {
-
+/*
                 UserAccessDeleteRequest userAccessDeleteRequest = UserAccessDeleteRequest();
-                userAccessDeleteRequest.userAccessId = userAccesses[userIdentityIndex].id;
-                userAccessDeleteRequest.userAccessVersion = userAccesses[userIdentityIndex].version;
+                userAccessDeleteRequest.userAccessId = userAccesses[userAccessIndex].id;
+                userAccessDeleteRequest.userAccessVersion = userAccesses[userAccessIndex].version;
 
                 userAccessDeleteRequest.authUserId = request.authUserId;
                 userAccessDeleteRequest.authOrganizationId = request.authOrganizationId;
 
-                deleteUserAccessesSync.add(userAccessDeleteRequest);
-              }
 
-              processSyncResult[organization_configuration_m.DirectoryServiceDetail.deleted.index].add(usersIdentities[userIdentityIndex].identification + ' ' + usersIdentities[userIdentityIndex].user.name);
+                deleteUserAccessesSync.add(userAccessDeleteRequest);
+
+ */
+                userAccessesDeleteSync.add(userAccesses[userAccessIndex]);
+              }
 
             }
           }
@@ -837,46 +868,173 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
       // Insert, update or inactivate users on database
       if (sync) {
-        processSyncResult[organization_configuration_m.DirectoryServiceDetail.deleted.index] = [];
+        if (userIdentitiesDeleteSync.isNotEmpty) syncLastResult[organization_configuration_m.DirectoryServiceFunction.userIdentityDelete.toString()] = [];
 
         // Not found [providerObjectId] on directory service, delete identity
-        for (UserIdentityDeleteRequest userIdentityDeleteRequest in deleteUserIdentitiesSync) {
-          UserIdentityService.queryDeleteUserIdentity(userIdentityDeleteRequest);
+        for (UserIdentity userIdentity in userIdentitiesDeleteSync) {
+
+          UserIdentityDeleteRequest userIdentityDeleteRequest = UserIdentityDeleteRequest();
+          userIdentityDeleteRequest.userIdentityId = userIdentity.id;
+          userIdentityDeleteRequest.userIdentityVersion = userIdentity.version;
+
+          userIdentityDeleteRequest.authUserId = request.authUserId;
+          userIdentityDeleteRequest.authOrganizationId = request.authOrganizationId;
+
+          try {
+
+            UserIdentityService.queryDeleteUserIdentity(userIdentityDeleteRequest);
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userIdentityDelete.toString()].add('[OK]  ' + userIdentity.identification + ' ' + userIdentity.user.name);
+
+          }  catch (e) {
+            print('${e.runtimeType}, ${e}');
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userIdentityDelete.toString()].add('[NOK] ' + userIdentity.identification + ' ' + userIdentity.user.name + ' EXCEPTION: ' + e.toString());
+          }
 
         }
 
         // Not found [providerObjectId] on directory service, delete access
-        for (UserAccessDeleteRequest userAccessDeleteRequest in deleteUserAccessesSync) {
-          UserAccessService.queryDeleteUserAccess(userAccessDeleteRequest);
+        if (userAccessesDeleteSync.isNotEmpty) syncLastResult[organization_configuration_m.DirectoryServiceFunction.userAccessDelete.toString()] = [];
+        for (UserAccess userAccess in userAccessesDeleteSync) {
+
+
+          // UserAccessService.queryDeleteUserAccess(userAccessDeleteRequest);
+
+          UserAccessDeleteRequest userAccessDeleteRequest = UserAccessDeleteRequest();
+          userAccessDeleteRequest.userAccessId = userAccess.id;
+          userAccessDeleteRequest.userAccessVersion = userAccess.version;
+
+          userAccessDeleteRequest.authUserId = request.authUserId;
+          userAccessDeleteRequest.authOrganizationId = request.authOrganizationId;
+
+          try {
+
+            UserAccessService.queryDeleteUserAccess(userAccessDeleteRequest);
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userAccessDelete.index].add('[OK]  ' + userIdentity.identification + ' ' + userIdentity.user.name);
+
+          }  catch (e) {
+            print('${e.runtimeType}, ${e}');
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userAccessDelete.index].add('[NOK] ' + userIdentity.identification + ' ' + userIdentity.user.name + ' EXCEPTION: ' + e.toString());
+          }
+
         }
 
         // Update
-        for (UserRequest userRequest in updateUsersSync) {
-          UserService.queryUpdateUser(userRequest);
+        if (usersUpdateSync.isNotEmpty) syncLastResult[organization_configuration_m.DirectoryServiceFunction.userUpdate.toString()] = [];
+        for (User user in usersUpdateSync) {
+
+          UserRequest userRequest = UserRequest();
+          userRequest.authUserId = request.authUserId;
+          userRequest.authOrganizationId = request.authOrganizationId;
+
+          userRequest.user = user;
+
+          try {
+            await UserService.queryUpdateUser(userRequest);
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userUpdate.toString()].add('[OK]  ' + user.name);
+          } catch (e) {
+            print('${e.runtimeType}, ${e}');
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userUpdate.toString()].add('[NOK] ' + user.name + ' EXCEPTION: ' + e.toString());
+          }
+
         }
 
-        for (UserIdentityRequest userIdentityRequest in updateUserIdentitiesSync) {
-          UserIdentityService.queryUpdateUserIdentity(userIdentityRequest);
+        if (userIdentitiesUpdateSync.isNotEmpty) syncLastResult[organization_configuration_m.DirectoryServiceFunction.userIdentityUpdate.toString()] = [];
+        for (UserIdentity userIdentity in userIdentitiesUpdateSync) {
+          UserIdentityRequest userIdentityRequest = UserIdentityRequest();
+          userIdentityRequest.authUserId = request.authUserId;
+          userIdentityRequest.authOrganizationId = request.authOrganizationId;
+          userIdentityRequest.userIdentity =  userIdentity;
+
+          try {
+            await UserIdentityService.queryUpdateUserIdentity(userIdentityRequest);
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userIdentityUpdate.toString()].add('[OK]  ' + userIdentity.user.name + ' ' + userIdentity.identification );
+          } catch (e) {
+            print('${e.runtimeType}, ${e}');
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userIdentityUpdate.toString()].add('[NOK] ' + userIdentity.user.name + ' ' + userIdentity.identification + ' EXCEPTION: ' + e.toString());
+          }
+
         }
 
-        for (UserAccessRequest userAccessRequest in updateUserAccessesSync) {
-          UserAccessService.queryUpdateUserAccess(userAccessRequest);
+        if (userAccessesUpdateSync.isNotEmpty) syncLastResult[organization_configuration_m.DirectoryServiceFunction.userAccessUpdate.toString()] = [];
+        for (UserAccess userAccess in userAccessesUpdateSync) {
+
+          UserAccessRequest userAccessRequest = UserAccessRequest();
+
+          userAccessRequest.authUserId = request.authUserId;
+          userAccessRequest.authOrganizationId = request.authOrganizationId;
+          userAccessRequest.userAccess = userAccess;
+
+          try {
+            await UserAccessService.queryUpdateUserAccess(userAccessRequest);
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userAccessUpdate.toString()].add('[OK]  ' + userAccess.user.name + ' ' + userAccess.organization.name + ' ' +  SystemRole.values[userAccess.accessRole].toString());
+          } catch (e) {
+            print('${e.runtimeType}, ${e}');
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userAccessUpdate.toString()].add('[NOK] ' + userAccess.user.name + ' ' + userAccess.organization.name + ' ' + SystemRole.values[userAccess.accessRole].toString() + ' EXCEPTION: ' + e.toString());
+          }
         }
 
         // Insert
-        for (UserRequest userRequest in insertUsersSync) {
-          UserService.queryInsertUser(userRequest);
+        if (usersInsertSync.isNotEmpty) syncLastResult[organization_configuration_m.DirectoryServiceFunction.userInsert.toString()] = [];
+        for (User user in usersInsertSync) {
+
+          UserRequest userRequest = UserRequest();
+          userRequest.authUserId = request.authUserId;
+          userRequest.authOrganizationId = request.authOrganizationId;
+
+          userRequest.user = user;
+
+          try {
+
+            await UserService.queryInsertUser(userRequest);
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userInsert.toString()].add('[OK]  ' + user.name);
+
+          }  catch (e) {
+            print('${e.runtimeType}, ${e}');
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userInsert.toString()].add('[NOK] ' + user.name + ' ' + user.userProfile.eMail + ' EXCEPTION: ' + e.toString());
+          }
+
         }
 
-        for (UserIdentityRequest userIdentityRequest in insertUserIdentitiesSync) {
-          UserIdentityService.queryInsertUserIdentity(userIdentityRequest);
+        if (userIdentitiesInsertSync.isNotEmpty) syncLastResult[organization_configuration_m.DirectoryServiceFunction.userIdentityInsert.toString()] = [];
+        for (UserIdentity userIdentity in userIdentitiesInsertSync) {
+
+          UserIdentityRequest userIdentityRequest = UserIdentityRequest();
+          userIdentityRequest.authUserId = request.authUserId;
+          userIdentityRequest.authOrganizationId =
+              request.authOrganizationId;
+          userIdentityRequest.userIdentity = userIdentity;
+
+          try {
+
+            await UserIdentityService.queryInsertUserIdentity(userIdentityRequest);
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userIdentityInsert.toString()].add('[OK]  ' + userIdentity.user.name + ' ' + userIdentity.identification);
+
+          }  catch (e) {
+            print('${e.runtimeType}, ${e}');
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userIdentityInsert.toString()].add('[NOK] ' + userIdentity.user.name + ' ' + userIdentity.identification + ' EXCEPTION: ' + e.toString());
+          }
         }
 
-        for (UserAccessRequest userAccessRequest in insertUserAccessesSync) {
-          UserAccessService.queryInsertUserAccess(userAccessRequest);
+        if (userAccessesInsertSync.isNotEmpty) syncLastResult[organization_configuration_m.DirectoryServiceFunction.userAccessInsert.toString()] = [];
+        for (UserAccess userAccess in userAccessesInsertSync) {
+
+          UserAccessRequest userAccessRequest = UserAccessRequest();
+
+          userAccessRequest.authUserId = request.authUserId;
+          userAccessRequest.authOrganizationId = request.authOrganizationId;
+          userAccessRequest.userAccess = userAccess;
+          try {
+            await UserAccessService.queryInsertUserAccess(userAccessRequest);
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userAccessInsert.toString()].add('[OK]  ' + userAccess.user.name + ' ' + userAccess.organization.name + ' ' + SystemRole.values[userAccess.accessRole].toString());
+
+          } catch (e) {
+            print('${e.runtimeType}, ${e}');
+            syncLastResult[organization_configuration_m.DirectoryServiceFunction.userAccessInsert.toString()].add('[NOK] ' + userAccess.user.name + ' ' + userAccess.organization.name + ' ' + SystemRole.values[userAccess.accessRole].toString() + ' EXCEPTION: ' + e.toString());
+          }
+
         }
-        request.organizationConfiguration.directoryService.syncDateTime =  CommonUtils.timestampFromDateTime(DateTime.now().toUtc());
-        request.organizationConfiguration.directoryService.syncResult = json.encode(processSyncResult);
+        request.organizationConfiguration.directoryService.syncLastDateTime =  CommonUtils.timestampFromDateTime(DateTime.now().toUtc());
+        request.organizationConfiguration.directoryService.syncLastResult = json.encode(syncLastResult);
 
         OrganizationConfigurationService.queryUpdateOrganizationConfiguration(request);
 
@@ -889,6 +1047,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       rethrow;
     }
 
-    return organization_configuration_m.DirectoryServiceStatus.processFinished.index;
+    return sync ? organization_configuration_m.DirectoryServiceStatus.syncFinished.index : organization_configuration_m.DirectoryServiceStatus.testFinished.index;
   }
 }
