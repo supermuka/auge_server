@@ -25,7 +25,8 @@ enum DirectoryServiceStatus {
   errorLastNameAttribute
 }
 
-enum DirectoryServiceFunction {
+enum DirectoryServiceEvent {
+  skipEntry,
   userInsert,
   userUpdate,
   userDelete,
