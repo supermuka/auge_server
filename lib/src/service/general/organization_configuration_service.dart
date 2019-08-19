@@ -645,22 +645,29 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
         int userIdentityIndexByIdentification;
         int indexAt;
+        String userIdentificationAttributeValueFormated;
         if (sync) {
 
           userIdentityIndex = usersIdentities.indexWhere((t) => t.providerObjectId == userProviderObjectIdAttributeValue);
 
           // If not found, a new user will be inserted.
 
+          indexAt = userIdentificationAttributeValue.indexOf('@');
+
+          if (indexAt == -1) indexAt = userIdentificationAttributeValue.length;
+
+          print('DEBUG A');
+          userIdentificationAttributeValueFormated =  userIdentificationAttributeValue.substring(0, indexAt) + '@' + organizationConfiguration.domain;
+          print('DEBUG ${userIdentificationAttributeValueFormated}');
+
           // Verify if identification already exists
           if (userIdentityIndex == -1) {
 
-            indexAt = userIdentificationAttributeValue.indexOf('@');
 
-            if (indexAt == -1) indexAt = userIdentificationAttributeValue.length;
 
             // Verify if identification already exists
             userIdentityIndexByIdentification = usersIdentities.indexWhere((t) =>
-            t.identification == userIdentificationAttributeValue.substring(0, indexAt) + '@' + organizationConfiguration.domain );
+            t.identification == userIdentificationAttributeValueFormated);
 
             if (userIdentityIndexByIdentification == -1) {
 
@@ -674,7 +681,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
               UserIdentity userIdentity = UserIdentity();
               /// need to format to domain
-              userIdentity.identification = userIdentificationAttributeValue + '@' + organizationConfiguration.domain;
+              userIdentity.identification = userIdentificationAttributeValueFormated;
               userIdentity.user = user;
               userIdentity.provider =
                   user_identity_m.UserIdentityProvider.directoryService.index;
@@ -695,7 +702,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
             } else {
               if (!syncLastResult.containsKey(organization_configuration_m.DirectoryServiceEvent.skipEntry.toString())) syncLastResult[organization_configuration_m.DirectoryServiceEvent.skipEntry.toString()] = [];
-              syncLastResult[organization_configuration_m.DirectoryServiceEvent.skipEntry.toString()].add('[NOK] ' + userIdentity.identification + ' >>> Already exists.');
+              syncLastResult[organization_configuration_m.DirectoryServiceEvent.skipEntry.toString()].add('[NOK] ' + userIdentificationAttributeValueFormated + ' >>> Already exists.');
             }
 
           } else if (usersIdentities[userIdentityIndex].provider == user_identity_m.UserIdentityProvider.directoryService.index) {
@@ -715,8 +722,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               userHasChanged = true;
             }
 
-            if (userIdentity.identification != userIdentificationAttributeValue  + '@' + organizationConfiguration.domain) {
-              userIdentity.identification = userIdentificationAttributeValue  + '@' + organizationConfiguration.domain;
+            if (userIdentity.identification != userIdentificationAttributeValueFormated) {
+              userIdentity.identification = userIdentificationAttributeValueFormated;
               userIdentityHasChanged = true;
             }
 
@@ -735,7 +742,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             }
           } else {
             if (!syncLastResult.containsKey(organization_configuration_m.DirectoryServiceEvent.skipEntry.toString())) syncLastResult[organization_configuration_m.DirectoryServiceEvent.skipEntry.toString()] = [];
-            syncLastResult[organization_configuration_m.DirectoryServiceEvent.skipEntry.toString()].add('[NOK] ' + userIdentity.identification + ' >>> Already exists with another provider id.');
+            syncLastResult[organization_configuration_m.DirectoryServiceEvent.skipEntry.toString()].add('[NOK] ' + userIdentificationAttributeValueFormated + ' >>> Already exists with another provider id.');
           }
         }
       }
