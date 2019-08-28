@@ -20,6 +20,7 @@ import 'package:auge_server/src/protos/generated/general/user_identity.pbgrpc.da
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
+import 'package:auge_server/src/service/general/organization_configuration_service.dart';
 
 import 'package:auge_server/model/general/user_identity.dart' as user_identity_m;
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
@@ -142,15 +143,29 @@ class UserIdentityService extends UserIdentityServiceBase {
         // If password is informed, calc a hash and compare to passward_hash stored
         if (request.hasPassword() && request.password.isNotEmpty) {
 
-          print('DEBUG A ${request.password}');
-          print('DEBUG B ${userIdentity.passwordSalt}');
+          print('DEBUG querySelectUserIdentities w/ password');
+          // Internal identity provider
+          if (userIdentity.provider ==
+              user_identity_m.UserIdentityProvider.internal.index) {
+            String passwordHashComputed = base64.encode(sha256
+                .convert(
+                (userIdentity.passwordSalt + request.password).codeUnits)
+                .bytes);
 
-          String passwordHashComputed = base64.encode(sha256
-              .convert((userIdentity.passwordSalt + request.password).codeUnits)
-              .bytes);
-          print('DEBUG C ${passwordHashComputed}');
-          if (userIdentity.passwordHash != passwordHashComputed) {
-            // Not add to userIdentities list.
+            if (userIdentity.passwordHash != passwordHashComputed) {
+              // Not add to userIdentities list.
+              continue;
+            }
+
+          // Directory Service identity provider
+          } else if (userIdentity.provider ==
+              user_identity_m.UserIdentityProvider.directoryService.index) {
+
+            print('DEBUG 0 - authenticate DirectoryService');
+            print(OrganizationConfigurationService.authDirectoryService(userIdentity.user.managedByOrganization.id, userIdentity.identification, userIdentity.providerDn, request.password));
+            print('DEBUG 1');
+
+          } else {
             continue;
           }
         }

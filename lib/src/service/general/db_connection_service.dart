@@ -32,7 +32,8 @@ class AugeConnection {
           /* "172.18.83.17", 5432, "auge", username: "postgres", */
 
            //"10.128.0.2", 5432, "auge", username: "postgres",
-           "host.docker.internal", 5432, "auge", username: "postgres",
+           "localhost", 5432, "auge", username: "postgres",
+         //  "host.docker.internal", 5432, "auge", username: "postgres",
           password: "admin@levius#2018");
       await _connection.open();
     }

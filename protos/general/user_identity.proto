@@ -30,7 +30,8 @@ message UserIdentity {
     string password_hash = 7;
     int32 provider = 8;
     string provider_object_id = 9;
-    User user = 10;
+    string provider_dn = 10;
+    User user = 11;
 }
 
 // Message request related to domain object.

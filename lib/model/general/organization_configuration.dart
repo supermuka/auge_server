@@ -7,22 +7,21 @@ import 'package:auge_server/shared/common_utils.dart';
 import 'package:auge_server/src/protos/generated/general/organization_configuration.pb.dart' as organization_configuration_pb;
 
 enum DirectoryServiceStatus {
-  testFinished,
-  syncFinished,
+  finished,
   errorException,
   errorNotConnected,
   errorNotBoundInvalidCredentials,
   errorGroupFilterInvalid,
-  errorGroupNotFound,
-  errorManyGroupsFound,
-  errorGroupMemberAttributeNotFound,
+  errorGroupOrGroupMemberNotFound,
   errorUserNotFound,
   errorUserFilterInvalid,
   errorProviderObjectIdAttribute,
   errorIdentificationAttribute,
   errorEmailAttribute,
   errorFirstNameAttribute,
-  errorLastNameAttribute
+  errorLastNameAttribute,
+  errorUserAttributeForGroupRelationship,
+  errorUserAttributeValueForGroupRelationshipNotFound
 }
 
 enum DirectoryServiceEvent {
@@ -36,12 +35,6 @@ enum DirectoryServiceEvent {
   userAccessInsert,
   userAccessUpdate,
   userAccessDelete,
-}
-
-enum DirectoryServicePasswordFormat {
-  textPlan,
-  des,
-  sha,
 }
 
 /// Domain model class to represent a relationship between users and organizations
@@ -144,21 +137,16 @@ class DirectoryService {
   int port;
   static final String sslTlsField = 'sslTls';
   bool sslTls;
-  static final String passwordFormatField = 'passwordFormat';
-  int passwordFormat;
-  static final String syncIntervalField = 'syncInterval';
+  static final String syncBindDnField = 'syncBindDn';
+  String syncBindDn;
+  static final String syncBindPasswordField = 'syncBindPassword';
+  String syncBindPassword;
+  static final String syncIntervalField = 'sync';
   int syncInterval;
   static final String syncLastDateTimeField = 'syncLastDateTime';
   DateTime syncLastDateTime;
-
   static final String syncLastResultField = 'syncLastResult';
   String syncLastResult;
-
-  // ADMIN
-  static final String adminBindDNField = 'adminBindDN';
-  String adminBindDN; //cn=admin,dc=auge,dc=levius,dc=com,dc=br
-  static final String adminPasswordField = 'adminPassword';
-  String adminPassword;
 
   // GROUP
   static final String groupSearchDNField = 'groupSearchDN';
@@ -167,8 +155,9 @@ class DirectoryService {
   int groupSearchScope;
   static final String groupSearchFilterField = 'groupSearchFilter';
   String groupSearchFilter;
-  static final String groupMemberAttributeField = 'groupMemberAttribute'; // User´s DN
-  String groupMemberAttribute;
+  static final String groupMemberUserAttributeField = 'groupMemberUserAttribute'; // The attribute of the group that will be used to filter against the User Attribute
+  String groupMemberUserAttribute;
+
 
   // USER
   static final String userSearchDNField = 'userSearchDN';
@@ -189,6 +178,9 @@ class DirectoryService {
   String userFirstNameAttribute;
   static final String userLastNameAttributeField = 'userLastNameAttribute';
   String userLastNameAttribute;
+  static final String userAttributeForGroupRelationshipField = 'userAttributeForGroupRelationship'; //  A unique identifier used to check if the user is a member of the group
+  String userAttributeForGroupRelationship;
+
 
   organization_configuration_pb.DirectoryService writeToProtoBuf() {
     organization_configuration_pb.DirectoryService directoryServicePb = organization_configuration_pb.DirectoryService();
@@ -197,16 +189,16 @@ class DirectoryService {
     if (this.hostAddress != null) directoryServicePb.hostAddress = this.hostAddress;
     if (this.port != null) directoryServicePb.port = this.port;
     if (this.sslTls != null) directoryServicePb.sslTls = this.sslTls;
-    if (this.passwordFormat != null) directoryServicePb.passwordFormat = this.passwordFormat;
+    if (this.syncBindDn != null) directoryServicePb.syncBindDn = this.syncBindDn;
+    if (this.syncBindPassword != null) directoryServicePb.syncBindPassword = this.syncBindPassword;
     if (this.syncInterval != null) directoryServicePb.syncInterval = this.syncInterval;
     if (this.syncLastDateTime != null) directoryServicePb.syncLastDateTime = CommonUtils.timestampFromDateTime(this.syncLastDateTime);
     if (this.syncLastResult != null) directoryServicePb.syncLastResult = this.syncLastResult;
-    if (this.adminBindDN != null) directoryServicePb.adminBindDN = this.adminBindDN;
-    if (this.adminPassword != null) directoryServicePb.adminPassword = this.adminPassword;
     if (this.groupSearchDN != null) directoryServicePb.groupSearchDN = this.groupSearchDN;
     if (this.groupSearchScope != null) directoryServicePb.groupSearchScope = this.groupSearchScope;
     if (this.groupSearchFilter != null) directoryServicePb.groupSearchFilter = this.groupSearchFilter;
-    if (this.groupMemberAttribute != null) directoryServicePb.groupMemberAttribute = this.groupMemberAttribute;
+    if (this.groupMemberUserAttribute != null) directoryServicePb.groupMemberUserAttribute = this.groupMemberUserAttribute;
+    if (this.userAttributeForGroupRelationship != null) directoryServicePb.userAttributeForGroupRelationship = this.userAttributeForGroupRelationship;
     if (this.userSearchDN != null) directoryServicePb.userSearchDN = this.userSearchDN;
     if (this.userSearchScope != null) directoryServicePb.userSearchScope = this.userSearchScope;
     if (this.userSearchFilter != null) directoryServicePb.userSearchFilter = this.userSearchFilter;
@@ -224,16 +216,16 @@ class DirectoryService {
     if (directoryServicePb.hasHostAddress()) this.hostAddress = directoryServicePb.hostAddress;
     if (directoryServicePb.hasPort()) this.port = directoryServicePb.port;
     if (directoryServicePb.hasSslTls()) this.sslTls = directoryServicePb.sslTls;
-    if (directoryServicePb.hasPasswordFormat()) this.passwordFormat= directoryServicePb.passwordFormat;
+    if (directoryServicePb.hasSyncBindDn()) this.syncBindDn = directoryServicePb.syncBindDn;
+    if (directoryServicePb.hasSyncBindPassword()) this.syncBindPassword = directoryServicePb.syncBindPassword;
     if (directoryServicePb.hasSyncInterval()) this.syncInterval = directoryServicePb.syncInterval;
     if (directoryServicePb.hasSyncLastDateTime()) this.syncLastDateTime = CommonUtils.dateTimeFromTimestamp(directoryServicePb.syncLastDateTime);
     if (directoryServicePb.hasSyncLastResult()) this.syncLastResult = directoryServicePb.syncLastResult;
-    if (directoryServicePb.hasAdminBindDN()) this.adminBindDN = directoryServicePb.adminBindDN;
-    if (directoryServicePb.hasAdminPassword()) this.adminPassword = directoryServicePb.adminPassword;
     if (directoryServicePb.hasGroupSearchDN()) this.groupSearchDN = directoryServicePb.groupSearchDN;
     if (directoryServicePb.hasGroupSearchScope()) this.groupSearchScope = directoryServicePb.groupSearchScope;
     if (directoryServicePb.hasGroupSearchFilter()) this.groupSearchFilter = directoryServicePb.groupSearchFilter;
-    if (directoryServicePb.hasGroupMemberAttribute()) this.groupMemberAttribute = directoryServicePb.groupMemberAttribute;
+    if (directoryServicePb.hasGroupMemberUserAttribute()) this.groupMemberUserAttribute = directoryServicePb.groupMemberUserAttribute;
+    if (directoryServicePb.hasUserAttributeForGroupRelationship()) this.userAttributeForGroupRelationship = directoryServicePb.userAttributeForGroupRelationship;
     if (directoryServicePb.hasUserSearchDN()) this.userSearchDN = directoryServicePb.userSearchDN;
     if (directoryServicePb.hasUserSearchScope()) this.userSearchScope = directoryServicePb.userSearchScope;
     if (directoryServicePb.hasUserSearchFilter()) this.userSearchFilter = directoryServicePb.userSearchFilter;
@@ -273,9 +265,13 @@ class DirectoryService {
         map[DirectoryService.sslTlsField] =
             directoryServicePb.sslTls;
 
-      if (directoryServicePb.hasPasswordFormat())
-        map[DirectoryService.passwordFormatField] =
-            directoryServicePb.passwordFormat;
+      if (directoryServicePb.hasSyncBindDn())
+        map[DirectoryService.syncBindDnField] =
+            directoryServicePb.syncBindDn;
+
+      if (directoryServicePb.hasSyncBindPassword())
+        map[DirectoryService.syncBindPasswordField] =
+            directoryServicePb.syncBindPassword;
 
       if (directoryServicePb.hasSyncInterval())
         map[DirectoryService.syncIntervalField] =
@@ -297,9 +293,13 @@ class DirectoryService {
         map[DirectoryService.groupSearchScopeField] =
             directoryServicePb.groupSearchFilter;
 
-      if (directoryServicePb.hasGroupMemberAttribute())
-        map[DirectoryService.groupMemberAttributeField] =
-            directoryServicePb.groupMemberAttribute;
+      if (directoryServicePb.hasGroupMemberUserAttribute())
+        map[DirectoryService.groupMemberUserAttributeField] =
+            directoryServicePb.groupMemberUserAttribute;
+
+      if (directoryServicePb.hasUserAttributeForGroupRelationship())
+        map[DirectoryService.userAttributeForGroupRelationshipField] =
+            directoryServicePb.userAttributeForGroupRelationship;
 
       if (directoryServicePb.hasUserSearchDN())
         map[DirectoryService.userSearchDNField] =
