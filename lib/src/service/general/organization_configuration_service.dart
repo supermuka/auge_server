@@ -1395,8 +1395,15 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         //throw Exception('Account search filter must be in a simple format, i.e. (objectClass=posixAccount)');
       }
       print('DEBUG auth 3');
-      String userIdentityIdentificationWithoutAt = userIdentityIdentification.substring(
-          0, userIdentityIdentification.indexOf('@'));
+
+      String userIdentityIdentificationWithoutAt;
+      if (userIdentityIdentification.indexOf('@') != -1) {
+        userIdentityIdentificationWithoutAt = userIdentityIdentification
+            .substring(
+            0, userIdentityIdentification.indexOf('@'));
+      } else {
+        userIdentityIdentificationWithoutAt = userIdentityIdentification;
+      }
 
       dartdap.Filter userSearchFilterDartdap = dartdap.Filter.and([
         userSearchFilterDartdapPrimary,
@@ -1410,6 +1417,10 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         ])
       ]);
 
+      print('DEBUG ----');
+      print(userIdentityIdentification);
+      print(userIdentityIdentificationWithoutAt);
+
       var searchResult = await connection.search(
           connection.bindDN, userSearchFilterDartdap, [
         organizationConfiguration.directoryService
@@ -1420,7 +1431,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       String userAttributeForGroupRelationshipValue = null;
       await for (var entry in searchResult.stream) {
         // Processing stream of SearchEntry
-        // print("DN >>>> " + entry.dn);
+        print("DN >>>> " + entry.dn);
         countEntry++;
         //print("dn: ${entry.dn}");
 
@@ -1432,11 +1443,20 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         }
       }
 
+      print('DEBUG auth ${countEntry}');
+
       if (countEntry == 0) {
-        throw Exception('User not found.');
+
+        // found with DB. But not match with identification (uid, samaccountname, etc.)
+        return organization_configuration_m.DirectoryServiceStatus
+            .errorNotBoundInvalidCredentials.index;
+
+    //    throw Exception('User found by DN. But not found by identification.');
       } else if (countEntry > 1) {
         throw Exception('More than one user found.');
       }
+
+      print('DEBUG >>> ${userAttributeForGroupRelationshipValue}');
 
       bool searchGroupMemberUserDirectoryService = await _searchGroupMemberUserDirectoryService(
           connection, organizationConfiguration.directoryService.groupSearchFilter,
