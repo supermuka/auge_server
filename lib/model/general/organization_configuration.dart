@@ -15,12 +15,12 @@ enum DirectoryServiceStatus {
   errorGroupOrGroupMemberNotFound,
   errorUserNotFound,
   errorUserFilterInvalid,
-  errorProviderObjectIdAttribute,
-  errorIdentificationAttribute,
-  errorEmailAttribute,
-  errorFirstNameAttribute,
-  errorLastNameAttribute,
-  errorUserAttributeForGroupRelationship,
+  errorProviderObjectIdAttributeNotFound,
+  errorIdentificationAttributeNotFound,
+  errorEmailAttributeNotFound,
+  errorFirstNameAttributeNotFound,
+  errorLastNameAttributeNotFound,
+  errorUserAttributeForGroupRelationshipNotFound,
   errorUserAttributeValueForGroupRelationshipNotFound
 }
 

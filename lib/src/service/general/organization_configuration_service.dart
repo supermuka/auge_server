@@ -3,7 +3,7 @@
 
 import 'dart:async';
 
-import 'dart:convert' show base64, utf8, json;
+import 'dart:convert' show json;
 
 import 'package:grpc/grpc.dart';
 import 'package:dartdap/dartdap.dart' as dartdap;
@@ -689,10 +689,36 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
   static Future<int> _testDirectoryService(
       OrganizationConfigurationRequest request) async {
-    Future<dartdap.LdapConnection> connection = _connectDirectoryService(
-        request.organizationConfiguration.directoryService.hostAddress,
-        request.organizationConfiguration.directoryService.sslTls,
-        request.organizationConfiguration.directoryService.port);
+
+    dartdap.LdapConnection connection;
+
+    try {
+      connection = await _connectDirectoryService(
+          request.organizationConfiguration.directoryService.hostAddress,
+          request.organizationConfiguration.directoryService.sslTls,
+          request.organizationConfiguration.directoryService.port);
+      if (connection == null) {
+        return organization_configuration_m.DirectoryServiceStatus
+            .errorNotConnected.index;
+      }
+
+      // TEST BIND
+      // Authenticate. Not Anonymous
+      bool bindDirectoryService = await _bindDirectoryService(connection,
+          request.organizationConfiguration.directoryService.syncBindDn,
+          request.organizationConfiguration.directoryService.syncBindPassword);
+
+      if (!bindDirectoryService) {
+        return organization_configuration_m.DirectoryServiceStatus
+            .errorNotBoundInvalidCredentials.index;
+      }
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      return organization_configuration_m.DirectoryServiceStatus
+          .errorException.index;
+    }
+    return organization_configuration_m.DirectoryServiceStatus
+        .finished.index;
   }
 
   //TODO Avaliar a necessidde de colocar um semáfaro, de forma que quando iniciar o processo de sincronização, ninguém pode realizar qualquer alteração nos usuários, identidade e acesso
@@ -942,7 +968,19 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         // If not found, a new user will be inserted.
         indexAt = userIdentificationAttributeValue.indexOf('@');
 
-        if (indexAt == -1) indexAt = userIdentificationAttributeValue.length;
+        if (indexAt == -1) {
+          indexAt = userIdentificationAttributeValue.length;
+        } else {
+          if (userIdentificationAttributeValue != userIdentificationAttributeValue.substring(0, indexAt) + '@' +
+              request.organizationConfiguration.domain) {
+            syncLastResult[organization_configuration_m.DirectoryServiceEvent
+                .skipEntry.toString()].add(
+                '[NOK] ' + userIdentificationAttributeValue +
+                    ' >>> It is not to according the pattern: UserId without @ or UserId@${request.organizationConfiguration.domain}.');
+            continue;
+
+          }
+        }
 
         userIdentificationAttributeValueFormated =
             userIdentificationAttributeValue.substring(0, indexAt) + '@' +
@@ -1058,32 +1096,32 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
       if (countProviderObjectIdAttribute == 0) {
         return organization_configuration_m.DirectoryServiceStatus
-            .errorProviderObjectIdAttribute.index;
+            .errorProviderObjectIdAttributeNotFound.index;
       }
 
       if (countIdentificatorAttribute == 0) {
         return organization_configuration_m.DirectoryServiceStatus
-            .errorIdentificationAttribute.index;
+            .errorIdentificationAttributeNotFound.index;
       }
 
       if (countEmailAttribute == 0) {
         return organization_configuration_m.DirectoryServiceStatus
-            .errorEmailAttribute.index;
+            .errorEmailAttributeNotFound.index;
       }
 
       if (countFirstNameAttribute == 0) {
         return organization_configuration_m.DirectoryServiceStatus
-            .errorFirstNameAttribute.index;
+            .errorFirstNameAttributeNotFound.index;
       }
 
       if (countLastNameAttribute == 0) {
         return organization_configuration_m.DirectoryServiceStatus
-            .errorLastNameAttribute.index;
+            .errorLastNameAttributeNotFound.index;
       }
 
       if (countGroupRelationshipUserAttribute == 0) {
         return organization_configuration_m.DirectoryServiceStatus
-            .errorUserAttributeForGroupRelationship.index;
+            .errorUserAttributeForGroupRelationshipNotFound.index;
       }
 
       /// Delete Identity and Access
