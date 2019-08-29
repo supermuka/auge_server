@@ -94,22 +94,20 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         " organization_directory_services.host_address," //7
         " organization_directory_services.port," //8
         " organization_directory_services.ssl_tls," //9
-        " organization_directory_services.password_format," //10
-        " organization_directory_services.admin_bind_dn," //11
-        " organization_directory_services.admin_password," //12
-        " organization_directory_services.group_search_dn," //13
-        " organization_directory_services.group_search_scope," //14
-        " organization_directory_services.group_search_filter," //15
-        " organization_directory_services.group_member_user_attribute," //16
-        " organization_directory_services.user_attribute_for_group_relationship," //17
-        " organization_directory_services.user_search_dn," //18
-        " organization_directory_services.user_search_scope," //19
-        " organization_directory_services.user_search_filter," //20
-        " organization_directory_services.user_provider_object_id_attribute," //21
-        " organization_directory_services.user_identification_attribute," //22
-        " organization_directory_services.user_first_name_attribute," //23
-        " organization_directory_services.user_last_name_attribute," //24
-        " organization_directory_services.user_email_attribute" //25
+        " organization_directory_services.sync_bind_dn," //10
+        " organization_directory_services.group_search_dn," //11
+        " organization_directory_services.group_search_scope," //12
+        " organization_directory_services.group_search_filter," //13
+        " organization_directory_services.group_member_user_attribute," //14
+        " organization_directory_services.user_attribute_for_group_relationship," //15
+        " organization_directory_services.user_search_dn," //16
+        " organization_directory_services.user_search_scope," //17
+        " organization_directory_services.user_search_filter," //18
+        " organization_directory_services.user_provider_object_id_attribute," //19
+        " organization_directory_services.user_identification_attribute," //20
+        " organization_directory_services.user_first_name_attribute," //21
+        " organization_directory_services.user_last_name_attribute," //22
+        " organization_directory_services.user_email_attribute" //23
         " FROM general.organization_configurations organization_configuration"
         " LEFT OUTER JOIN general.organization_directory_services on organization_directory_services.organization_id = organization_configuration.organization_id";
 
@@ -162,46 +160,55 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         if (row[9] != null)
           configuration.directoryService.sslTls = row[9];
 
+        if (row[10] != null)
+          configuration.directoryService.syncBindDn = row[10];
+
+        /* password not saved
+        if (row[11] != null)
+          configuration.directoryService.syncBindPassword = row[11];
+
+         */
+
+        if (row[11] != null)
+          configuration.directoryService.groupSearchDN = row[11];
+
+        if (row[12] != null)
+          configuration.directoryService.groupSearchScope = row[12];
+
         if (row[13] != null)
-          configuration.directoryService.groupSearchDN = row[13];
+          configuration.directoryService.groupSearchFilter = row[13];
 
         if (row[14] != null)
-          configuration.directoryService.groupSearchScope = row[14];
+          configuration.directoryService.groupMemberUserAttribute = row[14];
 
         if (row[15] != null)
-          configuration.directoryService.groupSearchFilter = row[15];
+          configuration.directoryService.userAttributeForGroupRelationship =
+          row[15];
 
         if (row[16] != null)
-          configuration.directoryService.groupMemberUserAttribute = row[16];
+          configuration.directoryService.userSearchDN = row[16];
 
         if (row[17] != null)
-          configuration.directoryService.userAttributeForGroupRelationship =
-          row[17];
+          configuration.directoryService.userSearchScope = row[17];
 
         if (row[18] != null)
-          configuration.directoryService.userSearchDN = row[18];
+          configuration.directoryService.userSearchFilter = row[18];
 
         if (row[19] != null)
-          configuration.directoryService.userSearchScope = row[19];
+          configuration.directoryService.userProviderObjectIdAttribute =
+          row[19];
 
         if (row[20] != null)
-          configuration.directoryService.userSearchFilter = row[20];
+          configuration.directoryService.userIdentificationAttribute = row[20];
 
         if (row[21] != null)
-          configuration.directoryService.userProviderObjectIdAttribute =
-          row[21];
+          configuration.directoryService.userFirstNameAttribute = row[21];
 
         if (row[22] != null)
-          configuration.directoryService.userIdentificationAttribute = row[22];
+          configuration.directoryService.userLastNameAttribute = row[22];
 
         if (row[23] != null)
-          configuration.directoryService.userFirstNameAttribute = row[23];
-
-        if (row[24] != null)
-          configuration.directoryService.userLastNameAttribute = row[24];
-
-        if (row[25] != null)
-          configuration.directoryService.userEmailAttribute = row[25];
+          configuration.directoryService.userEmailAttribute = row[23];
 
         configurations.add(configuration);
       }
@@ -245,7 +252,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             "INSERT INTO general.organization_directory_services("
                 "organization_id, "
                 "sync_bind_dn,"
-                "sync_bind_password,"
                 "sync_interval,"
                 "sync_last_date_time,"
                 "sync_last_result,"
@@ -268,7 +274,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                 " VALUES("
                 "@organization_id, "
                 "@sync_bind_dn,"
-                "@sync_bind_password,"
                 "@sync_interval,"
                 "@sync_last_date_time,"
                 "@sync_last_result,"
@@ -293,11 +298,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           "sync_bind_dn": request.organizationConfiguration.directoryService
               .hasSyncBindDn() ? request.organizationConfiguration
               .directoryService.syncBindDn : null,
-          "sync_bind_password": request.organizationConfiguration
-              .directoryService.hasSyncBindPassword()
-              ? request.organizationConfiguration.directoryService
-              .syncBindPassword
-              : null,
           "sync_interval": request.organizationConfiguration.directoryService
               .hasSyncInterval() ? request.organizationConfiguration
               .directoryService.syncInterval : null,
@@ -432,7 +432,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           await ctx.query(
               "UPDATE general.organization_directory_services "
                   "SET sync_bind_dn = @sync_bind_dn,"
-                  "sync_bind_password = @sync_bind_password,"
                   "sync_interval = @sync_interval, "
                   "sync_last_date_time = @sync_last_date_time, "
                   "sync_last_result = @sync_last_result, "
@@ -458,11 +457,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             "sync_bind_dn": request.organizationConfiguration.directoryService
                 .hasSyncBindDn() ? request.organizationConfiguration
                 .directoryService.syncBindDn : null,
-            "sync_bind_password": request.organizationConfiguration
-                .directoryService.hasSyncBindPassword()
-                ? request.organizationConfiguration.directoryService
-                .syncBindPassword
-                : null,
             "sync_interval": request.organizationConfiguration.directoryService
                 .hasSyncInterval() ? request.organizationConfiguration
                 .directoryService.syncInterval : null,
@@ -504,7 +498,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                 .directoryService.hasGroupMemberUserAttribute() ? request
                 .organizationConfiguration.directoryService
                 .groupMemberUserAttribute : null,
-            "user_attribute_for_group_relashionship": request
+            "user_attribute_for_group_relationship": request
                 .organizationConfiguration.directoryService
                 .hasUserAttributeForGroupRelationship() ? request
                 .organizationConfiguration.directoryService
