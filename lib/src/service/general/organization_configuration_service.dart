@@ -598,15 +598,15 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           bindDn,
           bindPasswordDecoded);
      */
-      print('DEBUG BIND A');
+
       await connection.setAuthentication(
           bindDn,
           bindPassword);
-      print('DEBUG BIND ${connection.isAuthenticated}');
+
       return connection.isAuthenticated; //connection.isAuthenticated;
 
     }
-    print('DEBUG BIND C');
+
     return allowAnonymous;
   }
 
@@ -740,6 +740,13 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
     // OrganizationConfiguration organizationConfiguration = await OrganizationConfigurationService.querySelectOrganizationConfiguration(OrganizationConfigurationGetRequest()..organizationId = request.authOrganizationId);
 
+    Map<String, List<String>> syncLastResult = {};
+
+    addSyncLastResult(organization_configuration_m.DirectoryServiceEvent directoryServiceEvent, [String detail]) {
+      syncLastResult.putIfAbsent(directoryServiceEvent.toString(), () => List<String>());
+      if (detail != null) syncLastResult[directoryServiceEvent.toString()].add(detail);
+    }
+
     dartdap.LdapConnection connection;
 
     try {
@@ -834,7 +841,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
         //throw Exception('Account search filter must be in a simple format, i.e. (objectClass=posixAccount)');
       }
-      Map<String, List<String>> syncLastResult = {};
+
 
       var searchResult = await connection.search(
           userSearchDN, userSearchFilterDartdap, [
@@ -943,11 +950,13 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             request.organizationConfiguration.directoryService.groupSearchDN,
             request.organizationConfiguration.directoryService.groupSearchScope,
             userAttributeForGroupRelationshipValue)) {
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .skipEntry.toString()].add(
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .skipEntry,
               '[NOK] ' + userIdentificationAttributeValue + ' ' +
                   userAttributeForGroupRelationshipValue +
                   ' >>> User not found as a group member.');
+
           continue;
         }
 
@@ -967,10 +976,12 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         } else {
           if (userIdentificationAttributeValue != userIdentificationAttributeValue.substring(0, indexAt) + '@' +
               request.organizationConfiguration.domain) {
-            syncLastResult[organization_configuration_m.DirectoryServiceEvent
-                .skipEntry.toString()].add(
+
+            addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+                .skipEntry,
                 '[NOK] ' + userIdentificationAttributeValue +
                     ' >>> It is not to according the pattern: UserId without @ or UserId@${request.organizationConfiguration.domain}.');
+
             continue;
 
           }
@@ -1020,15 +1031,11 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             userIdentitiesInsertSync.add(userIdentity);
             userAccessesInsertSync.add(userAccess);
           } else {
-            if (!syncLastResult.containsKey(
-                organization_configuration_m.DirectoryServiceEvent.skipEntry
-                    .toString()))
-              syncLastResult[organization_configuration_m.DirectoryServiceEvent
-                  .skipEntry.toString()] = [];
-            syncLastResult[organization_configuration_m.DirectoryServiceEvent
-                .skipEntry.toString()].add(
-                '[NOK] ' + userIdentificationAttributeValueFormated +
-                    ' >>> Already exists.');
+
+              addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+                  .skipEntry,
+                  '[NOK] ' + userIdentificationAttributeValueFormated +
+                      ' >>> Already exists.');
           }
         } else if (usersIdentities[userIdentityIndex].provider ==
             user_identity_m.UserIdentityProvider.directoryService.index) {
@@ -1072,13 +1079,9 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             //  updateUserAccessesSync.add(userAccessRequest);
           }
         } else {
-          if (!syncLastResult.containsKey(
-              organization_configuration_m.DirectoryServiceEvent.skipEntry
-                  .toString()))
-            syncLastResult[organization_configuration_m.DirectoryServiceEvent
-                .skipEntry.toString()] = [];
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .skipEntry.toString()].add(
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .skipEntry,
               '[NOK] ' + userIdentificationAttributeValueFormated +
                   ' >>> Already exists with another provider id.');
         }
@@ -1142,12 +1145,10 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       }
 
       // Insert, update or inactivate users on database
-      if (userIdentitiesDeleteSync.isNotEmpty)
-        syncLastResult[organization_configuration_m.DirectoryServiceEvent
-            .userIdentityDelete.toString()] = [];
+
+
 
       // Not found [providerObjectId] on directory service, delete identity
-      print('DEBUG delete identity ${userIdentitiesDeleteSync.length}');
       for (UserIdentity userIdentity in userIdentitiesDeleteSync) {
         UserIdentityDeleteRequest userIdentityDeleteRequest = UserIdentityDeleteRequest();
         userIdentityDeleteRequest.userIdentityId = userIdentity.id;
@@ -1160,24 +1161,24 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         try {
           UserIdentityService.queryDeleteUserIdentity(
               userIdentityDeleteRequest);
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userIdentityDelete.toString()].add(
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userIdentityDelete,
               '[OK]  ' + userIdentity.identification + ' ' +
                   userIdentity.user.name);
+
         } catch (e) {
           print('${e.runtimeType}, ${e}');
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userIdentityDelete.toString()].add(
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userIdentityDelete,
               '[NOK] ' + userIdentity.identification + ' ' +
                   userIdentity.user.name + ' >>> ' + e.toString());
+
         }
       }
 
-      print('DEBUG delete access ${userAccessesDeleteSync.length}');
       // Not found [providerObjectId] on directory service, delete access
-      if (userAccessesDeleteSync.isNotEmpty)
-        syncLastResult[organization_configuration_m.DirectoryServiceEvent
-            .userAccessDelete.toString()] = [];
       for (UserAccess userAccess in userAccessesDeleteSync) {
         // UserAccessService.queryDeleteUserAccess(userAccessDeleteRequest);
 
@@ -1190,24 +1191,22 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
         try {
           UserAccessService.queryDeleteUserAccess(userAccessDeleteRequest);
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userAccessDelete.toString()].add(
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userAccessDelete,
               '[OK]  ' + userIdentity.identification + ' ' +
                   userIdentity.user.name);
+
         } catch (e) {
           print('${e.runtimeType}, ${e}');
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userAccessDelete.toString()].add(
-              '[NOK] ' + userIdentity.identification + ' ' +
-                  userIdentity.user.name + ' >>> ' + e.toString());
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userAccessDelete,'[NOK] ' + userIdentity.identification + ' ' +
+              userIdentity.user.name + ' >>> ' + e.toString());
+
         }
       }
 
-      print('DEBUG update user ${usersUpdateSync.length}');
       // Update
-      if (usersUpdateSync.isNotEmpty)
-        syncLastResult[organization_configuration_m.DirectoryServiceEvent
-            .userUpdate.toString()] = [];
       for (User user in usersUpdateSync) {
         UserRequest userRequest = UserRequest();
         userRequest.authUserId = request.authUserId;
@@ -1217,19 +1216,19 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
         try {
           await UserService.queryUpdateUser(userRequest);
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userUpdate.toString()].add('[OK]  ' + user.name);
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userUpdate, '[OK]  ' + user.name);
+
         } catch (e) {
           print('${e.runtimeType}, ${e}');
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userUpdate.toString()].add(
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userUpdate,
               '[NOK] ' + user.name + ' >>> ' + e.toString());
+
         }
       }
-      print('DEBUG update identity ${userIdentitiesUpdateSync.length}');
-      if (userIdentitiesUpdateSync.isNotEmpty)
-        syncLastResult[organization_configuration_m.DirectoryServiceEvent
-            .userIdentityUpdate.toString()] = [];
+
       for (UserIdentity userIdentity in userIdentitiesUpdateSync) {
         UserIdentityRequest userIdentityRequest = UserIdentityRequest();
         userIdentityRequest.authUserId = request.authUserId;
@@ -1239,22 +1238,22 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         try {
           await UserIdentityService.queryUpdateUserIdentity(
               userIdentityRequest);
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userIdentityUpdate.toString()].add(
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userIdentityUpdate,
               '[OK]  ' + userIdentity.user.name + ' ' +
                   userIdentity.identification);
+
         } catch (e) {
           print('${e.runtimeType}, ${e}');
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userIdentityUpdate.toString()].add(
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userIdentityUpdate,
               '[NOK] ' + userIdentity.user.name + ' ' +
                   userIdentity.identification + ' >>> ' + e.toString());
+
         }
       }
-      print('DEBUG update access ${userAccessesUpdateSync.length}');
-      if (userAccessesUpdateSync.isNotEmpty)
-        syncLastResult[organization_configuration_m.DirectoryServiceEvent
-            .userAccessUpdate.toString()] = [];
+
       for (UserAccess userAccess in userAccessesUpdateSync) {
         UserAccessRequest userAccessRequest = UserAccessRequest();
 
@@ -1264,26 +1263,26 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
         try {
           await UserAccessService.queryUpdateUserAccess(userAccessRequest);
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userAccessUpdate.toString()].add(
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userAccessUpdate,
               '[OK]  ' + userAccess.user.name + ' ' +
                   userAccess.organization.name + ' ' +
                   SystemRole.values[userAccess.accessRole].toString());
+
         } catch (e) {
           print('${e.runtimeType}, ${e}');
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userAccessUpdate.toString()].add(
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userAccessUpdate,
               '[NOK] ' + userAccess.user.name + ' ' +
                   userAccess.organization.name + ' ' +
                   SystemRole.values[userAccess.accessRole].toString() +
                   ' >>> ' + e.toString());
+
         }
       }
-      print('DEBUG insert user ${usersInsertSync.length}');
+
       // Insert
-      if (usersInsertSync.isNotEmpty)
-        syncLastResult[organization_configuration_m.DirectoryServiceEvent
-            .userInsert.toString()] = [];
       for (User user in usersInsertSync) {
         UserRequest userRequest = UserRequest();
         userRequest.authUserId = request.authUserId;
@@ -1293,19 +1292,18 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
         try {
           await UserService.queryInsertUser(userRequest);
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userInsert.toString()].add('[OK]  ' + user.name);
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userInsert,'[OK]  ' + user.name);
+
         } catch (e) {
           print('${e.runtimeType}, ${e}');
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userInsert.toString()].add(
-              '[NOK] ' + user.name + ' >>> ' + e.toString());
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userInsert,'[NOK] ' + user.name + ' >>> ' + e.toString());
+
         }
       }
-      print('DEBUG insert identity ${userIdentitiesInsertSync.length}');
-      if (userIdentitiesInsertSync.isNotEmpty)
-        syncLastResult[organization_configuration_m.DirectoryServiceEvent
-            .userIdentityInsert.toString()] = [];
+
       for (UserIdentity userIdentity in userIdentitiesInsertSync) {
         UserIdentityRequest userIdentityRequest = UserIdentityRequest();
         userIdentityRequest.authUserId = request.authUserId;
@@ -1316,22 +1314,21 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         try {
           await UserIdentityService.queryInsertUserIdentity(
               userIdentityRequest);
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userIdentityInsert.toString()].add(
-              '[OK]  ' + userIdentity.identification + ' ' +
-                  userIdentity.user.name);
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userIdentityInsert,'[OK]  ' + userIdentity.identification + ' ' +
+              userIdentity.user.name);
+
         } catch (e) {
           print('${e.runtimeType}, ${e}');
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userIdentityInsert.toString()].add(
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userIdentityInsert,
               '[NOK] ' + userIdentity.identification + ' ' +
                   userIdentity.user.name + ' >>> ' + e.toString());
+
         }
       }
-      print('DEBUG update access ${userAccessesInsertSync.length}');
-      if (userAccessesInsertSync.isNotEmpty)
-        syncLastResult[organization_configuration_m.DirectoryServiceEvent
-            .userAccessInsert.toString()] = [];
+
       for (UserAccess userAccess in userAccessesInsertSync) {
         UserAccessRequest userAccessRequest = UserAccessRequest();
 
@@ -1340,19 +1337,22 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         userAccessRequest.userAccess = userAccess;
         try {
           await UserAccessService.queryInsertUserAccess(userAccessRequest);
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userAccessInsert.toString()].add(
-              '[OK]  ' + userAccess.user.name + ' ' +
-                  userAccess.organization.name + ' ' +
-                  SystemRole.values[userAccess.accessRole].toString());
+
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userAccessInsert,
+          '[OK]  ' + userAccess.user.name + ' ' +
+          userAccess.organization.name + ' ' +
+          SystemRole.values[userAccess.accessRole].toString());
+
+
         } catch (e) {
           print('${e.runtimeType}, ${e}');
-          syncLastResult[organization_configuration_m.DirectoryServiceEvent
-              .userAccessInsert.toString()].add(
-              '[NOK] ' + userAccess.user.name + ' ' +
-                  userAccess.organization.name + ' ' +
-                  SystemRole.values[userAccess.accessRole].toString() +
-                  ' >>> ' + e.toString());
+          addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+              .userAccessInsert,'[NOK] ' + userAccess.user.name + ' ' +
+              userAccess.organization.name + ' ' +
+              SystemRole.values[userAccess.accessRole].toString() +
+              ' >>> ' + e.toString());
+
         }
       }
       request.organizationConfiguration.directoryService.syncLastDateTime =
@@ -1371,6 +1371,9 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
     return organization_configuration_m.DirectoryServiceStatus.finished
         .index;
+
+
+
   }
 
   static Future<int> authDirectoryService(String organizationId, String userIdentityIdentification, String userIdentityProviderDn, String userIdentityPassword) async {
@@ -1392,7 +1395,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
       // TEST BIND
       // Authenticate. Not Anonymous
-      print('DEBUG auth 1');
       bool bindDirectoryService = await _bindDirectoryService(connection,
           userIdentityProviderDn,
           userIdentityPassword);
@@ -1401,7 +1403,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         return organization_configuration_m.DirectoryServiceStatus
             .errorNotBoundInvalidCredentials.index;
       }
-      print('DEBUG auth 2');
 
       int startSymbol = organizationConfiguration.directoryService
           .userSearchFilter.indexOf('(');
@@ -1426,7 +1427,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
         //throw Exception('Account search filter must be in a simple format, i.e. (objectClass=posixAccount)');
       }
-      print('DEBUG auth 3');
 
       String userIdentityIdentificationWithoutAt;
       if (userIdentityIdentification.indexOf('@') != -1) {
@@ -1449,10 +1449,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         ])
       ]);
 
-      print('DEBUG ----');
-      print(userIdentityIdentification);
-      print(userIdentityIdentificationWithoutAt);
-
       var searchResult = await connection.search(
           connection.bindDN, userSearchFilterDartdap, [
         organizationConfiguration.directoryService
@@ -1463,7 +1459,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       String userAttributeForGroupRelationshipValue = null;
       await for (var entry in searchResult.stream) {
         // Processing stream of SearchEntry
-        print("DN >>>> " + entry.dn);
+        // print("DN >>>> " + entry.dn);
         countEntry++;
         //print("dn: ${entry.dn}");
 
@@ -1475,8 +1471,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         }
       }
 
-      print('DEBUG auth ${countEntry}');
-
       if (countEntry == 0) {
 
         // found with DB. But not match with identification (uid, samaccountname, etc.)
@@ -1487,8 +1481,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       } else if (countEntry > 1) {
         throw Exception('More than one user found.');
       }
-
-      print('DEBUG >>> ${userAttributeForGroupRelationshipValue}');
 
       bool searchGroupMemberUserDirectoryService = await _searchGroupMemberUserDirectoryService(
           connection, organizationConfiguration.directoryService.groupSearchFilter,
@@ -1509,4 +1501,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       rethrow;
     }
   }
+
+
 }

@@ -24,6 +24,7 @@ import 'package:auge_server/src/service/general/organization_configuration_servi
 
 import 'package:auge_server/model/general/user_identity.dart' as user_identity_m;
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/general/organization_configuration.dart' as organization_configuration_m;
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
 
@@ -143,7 +144,6 @@ class UserIdentityService extends UserIdentityServiceBase {
         // If password is informed, calc a hash and compare to passward_hash stored
         if (request.hasPassword() && request.password.isNotEmpty) {
 
-          print('DEBUG querySelectUserIdentities w/ password');
           // Internal identity provider
           if (userIdentity.provider ==
               user_identity_m.UserIdentityProvider.internal.index) {
@@ -161,9 +161,8 @@ class UserIdentityService extends UserIdentityServiceBase {
           } else if (userIdentity.provider ==
               user_identity_m.UserIdentityProvider.directoryService.index) {
 
-            print('DEBUG 0 - authenticate DirectoryService');
-            print(OrganizationConfigurationService.authDirectoryService(userIdentity.user.managedByOrganization.id, userIdentity.identification, userIdentity.providerDn, request.password));
-            print('DEBUG 1');
+            if (OrganizationConfigurationService.authDirectoryService(userIdentity.user.managedByOrganization.id, userIdentity.identification, userIdentity.providerDn, request.password) != organization_configuration_m.DirectoryServiceStatus.finished.index)
+              continue;
 
           } else {
             continue;
