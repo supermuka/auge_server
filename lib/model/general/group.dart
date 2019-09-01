@@ -21,8 +21,8 @@ class Group {
   // Specific
   static final String nameField = 'name';
   String name;
-  static final String activeField = 'active';
-  bool active;
+  static final String inactiveField = 'inactive';
+  bool inactive;
   static final String organizationField = 'organization';
   Organization organization;
   static final String groupTypeField = 'groupType';
@@ -40,7 +40,7 @@ class Group {
     if (this.id != null) groupPb.id = this.id;
     if (this.version != null) groupPb.version = this.version;
     if (this.name != null) groupPb.name = this.name;
-    if (this.active != null) groupPb.active = this.active;
+    if (this.inactive != null) groupPb.inactive = this.inactive;
     if (this.organization != null) groupPb.organization = this.organization.writeToProtoBuf();
     if (this.groupType != null) groupPb.groupType = this.groupType.writeToProtoBuf();
     if (this.superGroup != null) groupPb.superGroup = this.superGroup.writeToProtoBuf();
@@ -54,7 +54,7 @@ class Group {
     if (groupPb.hasId()) this.id = groupPb.id;
     if (groupPb.hasVersion()) this.version = groupPb.version;
     if (groupPb.hasName()) this.name = groupPb.name;
-    if (groupPb.hasActive()) this.active = groupPb.active;
+    if (groupPb.hasInactive()) this.inactive = groupPb.inactive;
     if (groupPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(groupPb.organization);
     if (groupPb.hasGroupType()) this.groupType = GroupType()..readFromProtoBuf(groupPb.groupType);
     if (groupPb.hasSuperGroup()) this.superGroup = Group()..readFromProtoBuf(groupPb.superGroup);
@@ -73,7 +73,7 @@ class Group {
       if (groupPb.hasId()) map[Group.idField] = groupPb.id;
       if (groupPb.hasVersion()) map[Group.versionField] = groupPb.version;
       if (groupPb.hasName()) map[Group.nameField] = groupPb.name;
-      if (groupPb.hasActive()) map[Group.activeField] = groupPb.active;
+      if (groupPb.hasInactive()) map[Group.inactiveField] = groupPb.inactive;
       if (groupPb.hasOrganization()) map[Group.organizationField] =
           Organization.fromProtoBufToModelMap(groupPb.organization, onlyIdAndSpecificationForDepthFields, true);
       if (groupPb.hasGroupType()) map[Group.groupTypeField] =

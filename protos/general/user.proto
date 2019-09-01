@@ -59,7 +59,8 @@ message UserGetRequest {
     string id = 1;
     string managed_by_organization_id = 2;
     string managed_by_organization_id_or_accessed_by_organization_id = 3;
-    bool with_user_profile = 4;
+    string accessedByOrganizationId = 4;
+    bool with_user_profile = 5;
 
 }
 

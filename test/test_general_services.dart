@@ -243,7 +243,7 @@ void main() {
       String groupTypeId;
 
       String name = 'Unit Test';
-      bool active = true;
+      bool inactive = true;
 
       setUp(() {
         stub = new GroupServiceClient(channel);
@@ -263,7 +263,7 @@ void main() {
           StringValue idResponsePb = await stub
             .createGroup(GroupRequest()..group = (Group()
           ..name = 'Unit Test'
-          ..active = true
+          ..inactive = true
           ..organization = (Organization()..id = organizationId)
           ..groupType = (GroupType()..id = groupTypeId)));
 
@@ -272,7 +272,7 @@ void main() {
         Group groupPb = await stub.getGroup(GroupGetRequest()..id = id);
 
         expect(groupPb.name, equals(name));
-        expect(groupPb.active, equals(active));
+        expect(groupPb.inactive, equals(inactive));
       });
 
       test('Call operation getGroups', () async {
@@ -290,7 +290,7 @@ void main() {
         expect(group, isNotNull);
         expect(group.id, id);
         expect(group.name, name);
-        expect(group.active, active);
+        expect(group.inactive, inactive);
         expect(group.organization.id, organizationId);
         expect(group.groupType.id, groupTypeId);
       });
@@ -304,14 +304,14 @@ void main() {
             .updateGroup(GroupRequest()..group = (Group()
           ..id = id
           ..name = name
-          ..active = active
+          ..inactive = inactive
           ..organization = (Organization()..id = organizationId)
           ..groupType = (GroupType()..id = groupTypeId)));
 
         Group groupPb = await stub.getGroup(GroupGetRequest()..id = id);
 
         expect(groupPb.name, equals(name));
-        expect(groupPb.active, equals(active));
+        expect(groupPb.inactive, equals(inactive));
 
       });
 

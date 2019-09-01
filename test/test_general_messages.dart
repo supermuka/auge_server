@@ -162,7 +162,7 @@ void main() {
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.version = 0;
         model.name = 'Unit Test Group';
-        model.active = true;
+        model.inactive = true;
         model.organization = organization_m.Organization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.groupType = group_m.GroupType()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.superGroup = group_m.Group()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
@@ -175,7 +175,7 @@ void main() {
         expect(model.id, equals(proto.id));
         expect(model.version, equals(proto.version));
         expect(model.name, equals(proto.name));
-        expect(model.active, equals(proto.active));
+        expect(model.inactive, equals(proto.inactive));
         expect(model.organization.id, equals(proto.organization.id));
         expect(model.groupType.id, equals(proto.groupType.id));
         expect(model.superGroup.id, equals(proto.superGroup.id));
@@ -205,7 +205,7 @@ void main() {
         expect(m[group_m.Group.idField], equals(proto.id));
         expect(m[group_m.Group.versionField], equals(proto.version));
         expect(m[group_m.Group.nameField], equals(proto.name));
-        expect(m[group_m.Group.activeField], equals(proto.active));
+        expect(m[group_m.Group.inactiveField], equals(proto.inactive));
         expect(m[group_m.Group.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
         expect(m[group_m.Group.groupTypeField][group_m.GroupType.idField], equals(proto.groupType.id));
         expect(m[group_m.Group.superGroupField][group_m.Group.idField], equals(proto.superGroup.id));

@@ -64,7 +64,7 @@ class UserService extends UserServiceBase {
 
     String queryStatement = '';
     if (request != null && request.withUserProfile == false) {
-      queryStatement = "SELECT "
+      queryStatement = "SELECT DISTINCT "
           " u.id, " //0
           " u.version, " //1
           " u.name, " //2
@@ -74,7 +74,7 @@ class UserService extends UserServiceBase {
           " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
     }
     else {
-      queryStatement = "SELECT "
+      queryStatement = "SELECT DISTINCT "
           " u.id, " //0
           " u.version, " //1
           " u.name, " //2
@@ -94,6 +94,13 @@ class UserService extends UserServiceBase {
       _substitutionValues.putIfAbsent("organization_id", () => request.managedByOrganizationId);
       whereAnd = "AND";
     }
+    if (request != null && request.accessedByOrganizationId != null  && request.accessedByOrganizationId.isNotEmpty) {
+      queryStatement = queryStatement + " LEFT OUTER JOIN general.user_accesses user_access ON user_access.user_id = u.id";
+      queryStatement = queryStatement + " ${whereAnd} user_access.organization_id = @organization_id";
+      _substitutionValues.putIfAbsent("organization_id", () => request.accessedByOrganizationId);
+      whereAnd = "AND";
+    }
+    //TODO statement DISTINCT is used because this instruction.
     if (request != null && request.managedByOrganizationIdOrAccessedByOrganizationId != null  && request.managedByOrganizationIdOrAccessedByOrganizationId.isNotEmpty) {
       queryStatement = queryStatement + " LEFT OUTER JOIN general.user_accesses user_access ON user_access.user_id = u.id";
       queryStatement = queryStatement + " ${whereAnd} (u.managed_by_organization_id = @organization_id OR user_access.organization_id = @organization_id)";
@@ -243,16 +250,18 @@ class UserService extends UserServiceBase {
           "managed_by_organization_id": request.user.managedByOrganization.id});
 
         await ctx.query(
-            "UPDATE general.user_profiles "
+            "INSERT INTO general.user_profiles(user_id, email, image, idiom_locale) "
+            "VALUES(@user_id, @email, @image, @idiom_locale) "
+            "ON CONFLICT (user_id) DO UPDATE "
                 "SET email = @email, "
                 "image = @image, "
                 "idiom_locale = @idiom_locale "
-                "WHERE user_id = @user_id"
+            //    "WHERE user_id = @user_id"
             , substitutionValues: {
           "user_id": request.user.id,
-          "email": request.user.userProfile.eMail,
-          "image": request.user.userProfile.image,
-          "idiom_locale": request.user.userProfile.idiomLocale});
+          "email": request.user.userProfile.hasEMail() ? request.user.userProfile.eMail : null,
+          "image": request.user.userProfile.hasImage() ? request.user.userProfile.image : null,
+          "idiom_locale": request.user.userProfile.hasImage() ? request.user.userProfile.idiomLocale : null});
 
         // Optimistic concurrency control
         if (result.length == 0) {

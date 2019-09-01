@@ -90,7 +90,7 @@ class GroupService extends GroupServiceBase {
         " g.id,"              //0
         " g.version, "        //1
         " g.name,"            //2
-        " g.active,"          //3
+        " g.inactive,"          //3
         " g.organization_id," //4
         " g.group_type_id,"   //5
         " g.leader_user_id,"  //6
@@ -149,7 +149,7 @@ class GroupService extends GroupServiceBase {
           ..id = row[0]
           ..version = row[1]
           ..name = row[2]
-          ..active = row[3]
+          ..inactive = row[3]
           ..organization = organization
           ..groupType = groupType;
 
@@ -201,12 +201,12 @@ class GroupService extends GroupServiceBase {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
-            //"INSERT INTO auge.groups(id, version, is_deleted, name, active, organization_id, group_type_id) VALUES("
-            "INSERT INTO general.groups(id, version, name, active, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
+            //"INSERT INTO auge.groups(id, version, is_deleted, name, inactive, organization_id, group_type_id) VALUES("
+            "INSERT INTO general.groups(id, version, name, inactive, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
                 "@id,"
                 "@version,"
                 "@name,"
-                "@active,"
+                "@inactive,"
                 "@organization_id,"
                 "@group_type_id,"
                 "@super_group_id,"
@@ -215,7 +215,7 @@ class GroupService extends GroupServiceBase {
           "id": request.group.id,
           "version": request.group.version,
           "name": request.group.name,
-          "active": request.group.active,
+          "inactive": request.group.inactive,
           "organization_id": request.group.hasOrganization() ? request.group.organization.id : null,
           "group_type_id": request.group.hasGroupType() ? request.group.groupType.id : null,
           "super_group_id": request.group.hasSuperGroup() ? request.group.superGroup.id : null,
@@ -223,7 +223,7 @@ class GroupService extends GroupServiceBase {
 
         // Assigned Members Users
         for (User user in request.group.members) {
-          await ctx.query("INSERT INTO general.groups_users"
+          await ctx.query("INSERT INTO general.group_users"
               " (group_id,"
               " user_id)"
               " VALUES"
@@ -270,7 +270,7 @@ class GroupService extends GroupServiceBase {
             "UPDATE general.groups"
                 " SET version = @version,"
                 " name = @name,"
-                " active = @active,"
+                " inactive = @inactive,"
                 " organization_id = @organization_id,"
                 " group_type_id = @group_type_id,"
                 " super_group_id = @super_group_id,"
@@ -280,7 +280,7 @@ class GroupService extends GroupServiceBase {
           "id": request.group.id,
           "version": ++request.group.version,
           "name": request.group.name,
-          "active": request.group.active,
+          "inactive": request.group.inactive,
           "organization_id": request.group.hasOrganization() ? request.group.organization.id : null,
           "group_type_id": request.group.hasGroupType() ?  request.group.groupType.id : null,
           "super_group_id": request.group.hasSuperGroup() ? request.group.superGroup.id : null,
@@ -290,7 +290,7 @@ class GroupService extends GroupServiceBase {
         // Members users
         StringBuffer membersUsersId = new StringBuffer();
         for (User user in request.group.members) {
-          await ctx.query("INSERT INTO general.groups_users"
+          await ctx.query("INSERT INTO general.group_users"
               " (group_id,"
               " user_id)"
               " VALUES"
@@ -311,7 +311,7 @@ class GroupService extends GroupServiceBase {
         }
 
         if (membersUsersId.isNotEmpty) {
-          await ctx.query("DELETE FROM general.groups_users"
+          await ctx.query("DELETE FROM general.group_users"
               " WHERE group_id = @id"
               " AND user_id NOT IN (${membersUsersId.toString()})"
               , substitutionValues: {
@@ -355,7 +355,7 @@ class GroupService extends GroupServiceBase {
 
         // It hasn´t version concurrent control, because just it is included or deleted.
         await ctx.query(
-            "DELETE FROM general.groups_users gu WHERE gu.group_id = @group_id  "
+            "DELETE FROM general.group_users gu WHERE gu.group_id = @group_id  "
                 "RETURNING true"
             , substitutionValues: {
           "group_id": request.groupId});
@@ -439,7 +439,7 @@ class GroupService extends GroupServiceBase {
     String queryStatement;
 
     queryStatement = "SELECT group_users.user_id"
-        " FROM general.groups_users group_users";
+        " FROM general.group_users group_users";
 
     Map<String, dynamic> substitutionValues;
 

@@ -42,7 +42,7 @@ message Group {
     int32 version = 2;
 
     string name = 3;
-    bool active = 4;
+    bool inactive = 4;
     Organization organization = 5;
     GroupType group_type = 6;
     Group super_group = 7;

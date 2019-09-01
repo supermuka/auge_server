@@ -25,6 +25,7 @@ enum DirectoryServiceStatus {
 }
 
 enum DirectoryServiceEvent {
+  entry,
   skipEntry,
   userInsert,
   userUpdate,
@@ -47,6 +48,7 @@ class OrganizationConfiguration {
   static final String versionField = 'version';
   int version;
 
+  // Need to be unique
   static final String domainField = 'domain';
   String domain;
 

@@ -1,6 +1,6 @@
 # auge_server
 
-Server side useing Dart/Grpc and Postgres
+Server side using Dart/Grpc and Postgres
 
 https://console.cloud.google.com/home/dashboard?project=auge-203523&authuser=1&organizationId=57193548143
 

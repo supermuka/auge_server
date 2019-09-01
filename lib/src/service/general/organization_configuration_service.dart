@@ -88,13 +88,13 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         " organization_configuration.version," //1
         " organization_configuration.domain," //2
         " organization_configuration.directory_service_enabled," //3
-        " organization_directory_services.sync_interval," //4
-        " organization_directory_services.sync_last_date_time," //5
-        " organization_directory_services.sync_last_result," //6
-        " organization_directory_services.host_address," //7
-        " organization_directory_services.port," //8
-        " organization_directory_services.ssl_tls," //9
-        " organization_directory_services.sync_bind_dn," //10
+        " organization_directory_services.host_address," //7 - 4
+        " organization_directory_services.port," //8 - 5
+        " organization_directory_services.ssl_tls," //9 - 6
+        " organization_directory_services.sync_bind_dn," //10 - 7
+        " organization_directory_services.sync_interval," //4 - 8
+        " organization_directory_services.sync_last_date_time," //5 - 9
+        " organization_directory_services.sync_last_result," //6 - 10
         " organization_directory_services.group_search_dn," //11
         " organization_directory_services.group_search_scope," //12
         " organization_directory_services.group_search_filter," //13
@@ -142,32 +142,31 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           configuration.directoryServiceEnabled = row[3];
 
         if (row[4] != null)
-          configuration.directoryService.syncInterval = row[4];
+          configuration.directoryService.hostAddress = row[4];
 
         if (row[5] != null)
-          configuration.directoryService.syncLastDateTime =
-              CommonUtils.timestampFromDateTime(row[5]);
+          configuration.directoryService.port = row[5];
 
         if (row[6] != null)
-          configuration.directoryService.syncLastResult = row[6];
+          configuration.directoryService.sslTls = row[6];
 
         if (row[7] != null)
-          configuration.directoryService.hostAddress = row[7];
-
-        if (row[8] != null)
-          configuration.directoryService.port = row[8];
-
-        if (row[9] != null)
-          configuration.directoryService.sslTls = row[9];
-
-        if (row[10] != null)
-          configuration.directoryService.syncBindDn = row[10];
+          configuration.directoryService.syncBindDn = row[7];
 
         /* password not saved
         if (row[11] != null)
           configuration.directoryService.syncBindPassword = row[11];
 
          */
+        if (row[8] != null)
+          configuration.directoryService.syncInterval = row[8];
+
+        if (row[9] != null)
+          configuration.directoryService.syncLastDateTime =
+              CommonUtils.timestampFromDateTime(row[9]);
+
+        if (row[10] != null)
+          configuration.directoryService.syncLastResult = row[10];
 
         if (row[11] != null)
           configuration.directoryService.groupSearchDN = row[11];
@@ -899,7 +898,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         // Processing stream of SearchEntry
         // print("DN >>>> " + entry.dn);
         countEntry++;
-        //print("dn: ${entry.dn}");
+        print("DEBUG dn: ${entry.dn}");
+
 
 
         userProviderObjectIdAttributeValue = null;
@@ -942,6 +942,10 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             userAttributeForGroupRelationshipValue = attr.values?.first;
           }
         }
+
+        addSyncLastResult(organization_configuration_m.DirectoryServiceEvent
+            .entry,
+            '[OK] ${userIdentificationAttributeValue} ${userAttributeForGroupRelationshipValue} DN: ${entry.dn}');
 
         //Verify if user is member of group
         if (!await _searchGroupMemberUserDirectoryService(
