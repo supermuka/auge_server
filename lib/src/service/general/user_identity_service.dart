@@ -20,11 +20,11 @@ import 'package:auge_server/src/protos/generated/general/user_identity.pbgrpc.da
 import 'package:auge_server/src/service/general/db_connection_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
-import 'package:auge_server/src/service/general/organization_configuration_service.dart';
+import 'package:auge_server/src/service/general/organization_directory_service_service.dart';
 
 import 'package:auge_server/model/general/user_identity.dart' as user_identity_m;
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
-import 'package:auge_server/model/general/organization_configuration.dart' as organization_configuration_m;
+import 'package:auge_server/model/general/organization_directory_service.dart' as organization_directory_service_m;
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
 
@@ -161,7 +161,7 @@ class UserIdentityService extends UserIdentityServiceBase {
           } else if (userIdentity.provider ==
               user_identity_m.UserIdentityProvider.directoryService.index) {
 
-            if (OrganizationConfigurationService.authDirectoryService(userIdentity.user.managedByOrganization.id, userIdentity.identification, userIdentity.providerDn, request.password) != organization_configuration_m.DirectoryServiceStatus.finished.index)
+            if (OrganizationDirectoryServiceService.authDirectoryService(userIdentity.user.managedByOrganization.id, userIdentity.identification, userIdentity.providerDn, request.password) != organization_directory_service_m.DirectoryServiceStatus.finished.index)
               continue;
 
           } else {

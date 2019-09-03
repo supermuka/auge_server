@@ -511,9 +511,8 @@ class MeasureService extends MeasureServiceBase {
               "system_module_index": SystemModule.objectives.index,
               "system_function_index": SystemFunction.create.index,
               "date_time": DateTime.now().toUtc(),
-              ///"description": request.measureProgress.currentValue,
+              "description": null, //'# ${request.measureProgress.currentValue}',
               "changed_values": history_item_m.HistoryItem.changedValuesJson({}, measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress, true))});
-
 
       });
     } catch (e) {
@@ -577,7 +576,7 @@ class MeasureService extends MeasureServiceBase {
                 "system_module_index": SystemModule.objectives.index,
                 "system_function_index": SystemFunction.update.index,
                 "date_time": DateTime.now().toUtc(),
-                "description": request.measureProgress.currentValue,
+                "description": null, //'# ${request.measureProgress.currentValue}',
                 "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.MeasureProgress.fromProtoBufToModelMap(previousMeasureProgress), measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress))});
 
         }
@@ -623,7 +622,7 @@ class MeasureService extends MeasureServiceBase {
                   "system_module_index": SystemModule.objectives.index,
                   "system_function_index": SystemFunction.delete.index,
                   "date_time": DateTime.now().toUtc(),
-                  "description": previousMeasureProgress.currentValue,
+                  "description": null, //'# ${previousMeasureProgress.currentValue}',
                   "changed_values": history_item_m.HistoryItem
                       .changedValuesJson(
                       measure_m.MeasureProgress.fromProtoBufToModelMap(

@@ -1,0 +1,78 @@
+// Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
+// Author: Samuel C. Schwebel
+
+syntax = "proto3";
+
+package auge.protobuf;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+//import "general/organization.proto";
+
+// The configuration service definition.
+service OrganizationDirectoryServiceService {
+
+    rpc GetOrganizationDirectoryService (OrganizationDirectoryServiceGetRequest) returns (OrganizationDirectoryService) {}
+
+    rpc CreateOrganizationDirectoryService (OrganizationDirectoryServiceRequest) returns (google.protobuf.StringValue) {}
+    rpc UpdateOrganizationDirectoryService (OrganizationDirectoryServiceRequest) returns (google.protobuf.Empty) {}
+
+    // LDAP
+   // rpc TestConnection (ConfigurationRequest) returns (google.protobuf.BoolValue)  {}
+  //  rpc TestBind (ConfigurationRequest) returns (google.protobuf.BoolValue)  {}
+  //  rpc TestGroup (ConfigurationRequest) returns (google.protobuf.BoolValue)  {}
+    rpc TestOrganizationDirectoryService(OrganizationDirectoryServiceRequest) returns (google.protobuf.Int32Value) {}
+    rpc SyncOrganizationDirectoryService(OrganizationDirectoryServiceRequest) returns (google.protobuf.Int32Value) {}
+}
+
+// Message to respective domain object.
+message OrganizationDirectoryService {
+    string organization_id = 1;
+    int32 version = 2;
+    bool directory_service_enabled = 3;
+    // CONNECTION
+    string host_address = 4;
+    int32 port = 5;
+    bool ssl_tls = 6;
+    string sync_bind_dn = 7;
+    string sync_bind_password = 8;
+    int32 sync_interval = 9;
+    google.protobuf.Timestamp sync_last_date_time = 10;
+    string sync_last_result = 11;
+
+    // GROUP
+    string group_search_DN = 12;
+    int32 group_search_scope = 13;
+    string group_search_filter = 14;
+    string group_member_user_attribute = 15;
+
+    // USER
+    string user_search_DN = 16;
+    int32 user_search_scope = 17;
+    string user_search_filter = 18;
+    string user_provider_object_id_attribute = 19;
+    string user_identification_attribute = 20;
+    string user_email_attribute = 21;
+    string user_first_name_attribute = 22;
+    string user_last_name_attribute = 23;
+    string user_attribute_for_group_relationship = 24;
+}
+
+// Message request related to domain object.
+message OrganizationDirectoryServiceRequest {
+    OrganizationDirectoryService organizationDirectoryService = 1;
+    string auth_user_id = 4;
+    string auth_organization_id = 5;
+}
+
+message OrganizationDirectoryServiceAuthRequest {
+    string organization_id = 1;
+    string identification = 2;
+    string password = 3;
+}
+
+// Request for query select
+message OrganizationDirectoryServiceGetRequest {
+    string organization_id = 1;
+}

@@ -261,7 +261,7 @@ class UserService extends UserServiceBase {
           "user_id": request.user.id,
           "email": request.user.userProfile.hasEMail() ? request.user.userProfile.eMail : null,
           "image": request.user.userProfile.hasImage() ? request.user.userProfile.image : null,
-          "idiom_locale": request.user.userProfile.hasImage() ? request.user.userProfile.idiomLocale : null});
+          "idiom_locale": request.user.userProfile.hasIdiomLocale() ? request.user.userProfile.idiomLocale : null});
 
         // Optimistic concurrency control
         if (result.length == 0) {
