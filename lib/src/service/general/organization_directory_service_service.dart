@@ -21,7 +21,6 @@ import 'package:auge_server/src/protos/generated/general/organization_directory_
 import 'package:auge_server/src/service/general/organization_service.dart';
 
 import 'package:auge_server/model/general/user_identity.dart' as user_identity_m;
-import 'package:auge_server/model/general/organization_configuration.dart' as organization_configuration_m;
 import 'package:auge_server/model/general/organization_directory_service.dart' as organization_directory_service_m;
 import 'package:auge_server/model/general/authorization.dart' show SystemRole, SystemModule, SystemFunction;
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
@@ -87,43 +86,48 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
 
     String queryStatement;
 
-    queryStatement = "SELECT organization_directory_services.id," //0
-        " organization_directory_services.version," //1
-        " organization_directory_services.directory_service_enabled," //2
-        " organization_directory_services.host_address," //3
-        " organization_directory_services.port," //4
-        " organization_directory_services.ssl_tls," //5
-        " organization_directory_services.sync_bind_dn," //6
-        " organization_directory_services.sync_interval," //7
-        " organization_directory_services.sync_last_date_time," //8
-        " organization_directory_services.sync_last_result," //9
-        " organization_directory_services.group_search_dn," //10
-        " organization_directory_services.group_search_scope," //11
-        " organization_directory_services.group_search_filter," //12
-        " organization_directory_services.group_member_user_attribute," //13
-        " organization_directory_services.user_attribute_for_group_relationship," //14
-        " organization_directory_services.user_search_dn," //15
-        " organization_directory_services.user_search_scope," //16
-        " organization_directory_services.user_search_filter," //17
-        " organization_directory_services.user_provider_object_id_attribute," //18
-        " organization_directory_services.user_identification_attribute," //19
-        " organization_directory_services.user_first_name_attribute," //20
-        " organization_directory_services.user_last_name_attribute," //21
-        " organization_directory_services.user_email_attribute, " //22
-        " organization_directory_services.organization_id " //23
-        " FROM general.organization_configurations organization_configuration"
-        " LEFT OUTER JOIN general.organization_directory_services on organization_directory_services.organization_id = organization_configuration.organization_id";
+    queryStatement = "SELECT organization_directory_service.id," //0
+        " organization_directory_service.version," //1
+        " organization_directory_service.directory_service_enabled," //2
+        " organization_directory_service.host_address," //3
+        " organization_directory_service.port," //4
+        " organization_directory_service.ssl_tls," //5
+        " organization_directory_service.sync_bind_dn," //6
+        " organization_directory_service.sync_interval," //7
+        " organization_directory_service.sync_last_date_time," //8
+        " organization_directory_service.sync_last_result," //9
+        " organization_directory_service.group_search_dn," //10
+        " organization_directory_service.group_search_scope," //11
+        " organization_directory_service.group_search_filter," //12
+        " organization_directory_service.group_member_user_attribute," //13
+        " organization_directory_service.user_attribute_for_group_relationship," //14
+        " organization_directory_service.user_search_dn," //15
+        " organization_directory_service.user_search_scope," //16
+        " organization_directory_service.user_search_filter," //17
+        " organization_directory_service.user_provider_object_id_attribute," //18
+        " organization_directory_service.user_identification_attribute," //19
+        " organization_directory_service.user_first_name_attribute," //20
+        " organization_directory_service.user_last_name_attribute," //21
+        " organization_directory_service.user_email_attribute, " //22
+        " organization_directory_service.organization_id " //23
+        " FROM general.organization_directory_services organization_directory_service";
 
     Map<String, dynamic> substitutionValues;
 
-    if (request.organizationId != null && request.organizationId.isNotEmpty) {
+    if (request.id != null && request.id.isNotEmpty) {
       queryStatement +=
-      " WHERE organization_configuration.organization_id = @organization_id";
+      " WHERE organization_directory_service.id = @id";
+      substitutionValues = {
+        "id": request.id,
+      };
+    } else if (request.organizationId != null && request.organizationId.isNotEmpty) {
+      queryStatement +=
+      " WHERE organization_directory_service.organization_id = @organization_id";
       substitutionValues = {
         "organization_id": request.organizationId,
       };
     } else {
-      throw Exception('Organization id does not informed.');
+      throw Exception('Organization id or id does not informed.');
     }
 
     List<OrganizationDirectoryService> organizationDirectoryServices = [];
@@ -132,6 +136,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
           queryStatement, substitutionValues: substitutionValues);
 
       for (var row in results) {
+
         OrganizationDirectoryService organizationDirectoryService = OrganizationDirectoryService()
           ..id = row[0]
           ..version = row[1];
@@ -212,6 +217,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
 
         organizationDirectoryServices.add(organizationDirectoryService);
       }
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -328,8 +334,8 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
               "organization_id": request.authOrganizationId,
               "object_id": request.organizationDirectoryService.id,
               "object_version": request.organizationDirectoryService.version,
-              "object_class_name": organization_configuration_m
-                  .OrganizationConfiguration.className,
+              "object_class_name": organization_directory_service_m
+                  .OrganizationDirectoryService.className,
               "system_module_index": SystemModule.organization.index,
               "system_function_index": SystemFunction.create.index,
               "date_time": DateTime.now().toUtc(),
@@ -448,8 +454,8 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
                 "organization_id": request.authOrganizationId,
                 "object_id": request.organizationDirectoryService.organization.id,
                 "object_version": request.organizationDirectoryService.version,
-                "object_class_name": organization_configuration_m
-                    .OrganizationConfiguration.className,
+                "object_class_name": organization_directory_service_m
+                    .OrganizationDirectoryService.className,
                 "system_module_index": SystemModule.organization.index,
                 "system_function_index": SystemFunction.update.index,
                 "date_time": DateTime.now().toUtc(),

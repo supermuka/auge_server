@@ -65,21 +65,26 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
     Map<String, dynamic> substitutionValues;
 
-    if (request.organizationId != null && request.organizationId.isNotEmpty) {
+    if (request.id != null && request.id.isNotEmpty) {
+      queryStatement +=
+      " WHERE organization_configuration.id = @id";
+      substitutionValues = {
+        "id": request.id,
+      };
+    } else if (request.organizationId != null && request.organizationId.isNotEmpty) {
       queryStatement +=
       " WHERE organization_configuration.organization_id = @organization_id";
       substitutionValues = {
         "organization_id": request.organizationId,
       };
     } else {
-      throw Exception('Organization id does not informed.');
+      throw Exception('Organization id or id does not informed.');
     }
 
     List<OrganizationConfiguration> configurations = [];
     try {
       results = await (await AugeConnection.getConnection()).query(
           queryStatement, substitutionValues: substitutionValues);
-
       for (var row in results) {
         OrganizationConfiguration configuration = OrganizationConfiguration()
           ..id = row[0]
@@ -89,7 +94,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           configuration.domain = row[2];
 
         if (row[3] != null)
-          configuration.organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[2]);
+          configuration.organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[3]);
 
         configurations.add(configuration);
       }
@@ -97,7 +102,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
-
     return configurations;
   }
 
@@ -122,17 +126,17 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
     }
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
+
         await ctx.query(
-            "INSERT INTO general.organization_configurations(id, version, domain, organization_id) VALUES"
-                "(@id,"
+            "INSERT INTO general.organization_configurations(id, version, domain, organization_id) "
+                "VALUES(@id,"
                 "@version,"
                 "@domain,"
                 "@organization_id)"
             , substitutionValues: {
           "id": request.organizationConfiguration.id,
           "version": request.organizationConfiguration.version,
-          "domain": request.organizationConfiguration
-              .domain,
+          "domain": request.organizationConfiguration.hasDomain() ? request.organizationConfiguration.domain : null,
           "organization_id": request.organizationConfiguration.organization.id,});
 
         // Create a history item
@@ -168,6 +172,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           ..organizationId = request.organizationConfiguration.organization.id);
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
+
         List<List<dynamic>> result = await ctx.query(
             "UPDATE general.organization_configurations "
                 "SET version = @version, "
