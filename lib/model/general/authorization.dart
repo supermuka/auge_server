@@ -7,9 +7,7 @@ enum SystemRole { superAdmin, admin, standard }
 enum SystemModule { users,
                     user_profile,
                     groups,
-                    organizations,
-                    organization_profile,
-                    configuration,
+                    organization,
                     objectives,
                     initiatives }
 

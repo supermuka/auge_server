@@ -87,7 +87,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
 
     String queryStatement;
 
-    queryStatement = "SELECT organization_directory_services.organization_id," //0
+    queryStatement = "SELECT organization_directory_services.id," //0
         " organization_directory_services.version," //1
         " organization_directory_services.directory_service_enabled," //2
         " organization_directory_services.host_address," //3
@@ -109,7 +109,8 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
         " organization_directory_services.user_identification_attribute," //19
         " organization_directory_services.user_first_name_attribute," //20
         " organization_directory_services.user_last_name_attribute," //21
-        " organization_directory_services.user_email_attribute" //22
+        " organization_directory_services.user_email_attribute, " //22
+        " organization_directory_services.organization_id " //23
         " FROM general.organization_configurations organization_configuration"
         " LEFT OUTER JOIN general.organization_directory_services on organization_directory_services.organization_id = organization_configuration.organization_id";
 
@@ -132,7 +133,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
 
       for (var row in results) {
         OrganizationDirectoryService organizationDirectoryService = OrganizationDirectoryService()
-          ..organizationId = row[0]
+          ..id = row[0]
           ..version = row[1];
 
         if (row[2] != null)
@@ -206,6 +207,9 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
         if (row[22] != null)
           organizationDirectoryService.userEmailAttribute = row[22];
 
+        if (row[23] != null) 
+          organizationDirectoryService.organization = await OrganizationService.querySelectOrganization((OrganizationGetRequest()..id = row[23]));
+
         organizationDirectoryServices.add(organizationDirectoryService);
       }
     } catch (e) {
@@ -235,7 +239,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query(
             "INSERT INTO general.organization_directory_services("
-                "organization_id, "
+                "id, "
                 "version,"
                 "directory_service_enabled,"
                 "sync_bind_dn,"
@@ -257,9 +261,10 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
                 "user_identification_attribute,"
                 "user_first_name_attribute,"
                 "user_last_name_attribute,"
-                "user_email_attribute)"
+                "user_email_attribute,"
+                "organization_id)"
                 " VALUES("
-                "@organization_id, "
+                "@id, "
                 "@version,"
                 "@directory_service_enabled,"
                 "@sync_bind_dn,"
@@ -281,9 +286,10 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
                 "@user_identification_attribute,"
                 "@user_first_name_attribute,"
                 "@user_last_name_attribute,"
-                "@user_email_attribute)"
+                "@user_email_attribute,"
+                "@organization_id)"
             , substitutionValues: {
-          "organization_id": request.authOrganizationId,
+          "id": request.organizationDirectoryService.id,
           "version": request.organizationDirectoryService.version,
           "directory_service_enabled": request.organizationDirectoryService.directoryServiceEnabled,
           "sync_bind_dn": request.organizationDirectoryService.hasSyncBindDn() ? request.organizationDirectoryService.syncBindDn : null,
@@ -311,6 +317,8 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
               : null,
           "user_email_attribute": request.organizationDirectoryService.hasUserEmailAttribute()
               ? request.organizationDirectoryService.userEmailAttribute : null,
+          "organization_id": request.organizationDirectoryService.hasOrganization()
+              ? request.organizationDirectoryService.organization.id : null,
         });
 
         // Create a history item
@@ -318,11 +326,11 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
             substitutionValues: {"id": Uuid().v4(),
               "user_id": request.authUserId,
               "organization_id": request.authOrganizationId,
-              "object_id": request.authOrganizationId,
+              "object_id": request.organizationDirectoryService.id,
               "object_version": request.organizationDirectoryService.version,
               "object_class_name": organization_configuration_m
                   .OrganizationConfiguration.className,
-              "system_module_index": SystemModule.configuration.index,
+              "system_module_index": SystemModule.organization.index,
               "system_function_index": SystemFunction.create.index,
               "date_time": DateTime.now().toUtc(),
               "description": null,
@@ -343,7 +351,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
       OrganizationDirectoryServiceRequest request) async {
     OrganizationDirectoryService previousDirectoryService = await querySelectOrganizationDirectoryService(
         OrganizationDirectoryServiceGetRequest()
-          ..organizationId = request.organizationDirectoryService.organizationId);
+          ..organizationId = request.organizationDirectoryService.organization.id);
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
@@ -370,11 +378,12 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
                   "user_identification_attribute = @user_identification_attribute, "
                   "user_first_name_attribute = @user_first_name_attribute, "
                   "user_last_name_attribute = @user_last_name_attribute, "
-                  "user_email_attribute = @user_email_attribute "
-                  "WHERE organization_id = @organization_id AND version = @version - 1 "
+                  "user_email_attribute = @user_email_attribute, "
+                   "organization_id = @organization_id "
+                  "WHERE id = @id AND version = @version - 1 "
                   "RETURNING true"
               , substitutionValues: {
-            "organization_id": request.organizationDirectoryService.organizationId,
+            "id": request.organizationDirectoryService.organization.id,
             "version": ++request.organizationDirectoryService.version,
             "directory_service_enabled": request.organizationDirectoryService.directoryServiceEnabled,
             "sync_bind_dn": request.organizationDirectoryService.hasSyncBindDn() ? request.organizationDirectoryService.syncBindDn : null,
@@ -422,7 +431,10 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
                 .organizationDirectoryService.userLastNameAttribute : null,
             "user_email_attribute": request.organizationDirectoryService.hasUserEmailAttribute()
                 ? request.organizationDirectoryService.userEmailAttribute
-                : null,});
+                : null,
+            "organization_id": request.organizationDirectoryService.hasOrganization()
+              ? request.organizationDirectoryService.organization.id
+              : null,});
 
       // Optimistic concurrency control
       if (result.length == 0) {
@@ -434,11 +446,11 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
               substitutionValues: {"id": Uuid().v4(),
                 "user_id": request.authUserId,
                 "organization_id": request.authOrganizationId,
-                "object_id": request.organizationDirectoryService.organizationId,
+                "object_id": request.organizationDirectoryService.organization.id,
                 "object_version": request.organizationDirectoryService.version,
                 "object_class_name": organization_configuration_m
                     .OrganizationConfiguration.className,
-                "system_module_index": SystemModule.configuration.index,
+                "system_module_index": SystemModule.organization.index,
                 "system_function_index": SystemFunction.update.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": null, // without description, at first moment
@@ -610,7 +622,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
   static Future<int> _syncDirectoryService(
       OrganizationDirectoryServiceRequest request) async {
 
-    OrganizationConfiguration organizationConfiguration = await OrganizationConfigurationService.querySelectOrganizationConfiguration(OrganizationConfigurationGetRequest()..organizationId = request.organizationDirectoryService.organizationId);
+    OrganizationConfiguration organizationConfiguration = await OrganizationConfigurationService.querySelectOrganizationConfiguration(OrganizationConfigurationGetRequest()..organizationId = request.organizationDirectoryService.organization.id);
 
     if (organizationConfiguration == null) {
       throw 'Organization configuration not found';
@@ -1274,7 +1286,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
 
   static Future<int> authDirectoryService(String organizationId, String userIdentityIdentification, String userIdentityProviderDn, String userIdentityPassword) async {
 
-    OrganizationConfiguration organizationConfiguration = await OrganizationConfigurationService.querySelectOrganizationConfiguration(OrganizationConfigurationGetRequest()..organizationId = organizationId);
+    //OrganizationConfiguration organizationConfiguration = await OrganizationConfigurationService.querySelectOrganizationConfiguration(OrganizationConfigurationGetRequest()..organizationId = organizationId);
     OrganizationDirectoryService organizationDirectoryService = await OrganizationDirectoryServiceService.querySelectOrganizationDirectoryService(OrganizationDirectoryServiceGetRequest()..organizationId = organizationId);
 
     dartdap.LdapConnection connection;

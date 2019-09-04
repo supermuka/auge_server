@@ -161,7 +161,7 @@ class UserIdentityService extends UserIdentityServiceBase {
           } else if (userIdentity.provider ==
               user_identity_m.UserIdentityProvider.directoryService.index) {
 
-            if (OrganizationDirectoryServiceService.authDirectoryService(userIdentity.user.managedByOrganization.id, userIdentity.identification, userIdentity.providerDn, request.password) != organization_directory_service_m.DirectoryServiceStatus.finished.index)
+            if (await OrganizationDirectoryServiceService.authDirectoryService(userIdentity.user.managedByOrganization.id, userIdentity.identification, userIdentity.providerDn, request.password) != organization_directory_service_m.DirectoryServiceStatus.finished.index)
               continue;
 
           } else {

@@ -2,9 +2,9 @@
 // Author: Samuel C. Schwebel
 
 import 'package:auge_server/shared/common_utils.dart';
-
+import 'package:auge_server/model/general/organization.dart';
 // ignore_for_file: uri_has_not_been_generated
-import 'package:auge_server/src/protos/generated/general/organization_directory_services.pb.dart' as organization_directory_services_pb;
+import 'package:auge_server/src/protos/generated/general/organization_directory_service.pb.dart' as organization_directory_service_pb;
 
 enum DirectoryServiceStatus {
   finished,
@@ -43,8 +43,8 @@ class OrganizationDirectoryService {
   static final String className = 'OrganizationDirectoryService';
 
   // Base fields
-  static final String organizationIdField = 'organizationId';
-  String organizationId;
+  static final String idField = 'id';
+  String id;
   static final String versionField = 'version';
   int version;
 
@@ -100,12 +100,15 @@ class OrganizationDirectoryService {
   static final String userAttributeForGroupRelationshipField = 'userAttributeForGroupRelationship'; //  A unique identifier used to check if the user is a member of the group
   String userAttributeForGroupRelationship;
 
+  static final String organizationField = 'organization';
+  Organization organization;
 
-  organization_directory_services_pb.DirectoryService writeToProtoBuf() {
-    organization_directory_services_pb.OrganizationDirectoryService organizationDirectoryServicePb = organization_directory_services_pb.OrganizationDirectoryService();
+
+  organization_directory_service_pb.OrganizationDirectoryService writeToProtoBuf() {
+    organization_directory_service_pb.OrganizationDirectoryService organizationDirectoryServicePb = organization_directory_service_pb.OrganizationDirectoryService();
 
 
-    if (this.directoryServiceEnabled != null) organizationDirectoryServicePb.directoryServiceEnabled = this.hostAddress;
+    if (this.directoryServiceEnabled != null) organizationDirectoryServicePb.directoryServiceEnabled = this.directoryServiceEnabled;
     if (this.hostAddress != null) organizationDirectoryServicePb.hostAddress = this.hostAddress;
     if (this.port != null) organizationDirectoryServicePb.port = this.port;
     if (this.sslTls != null) organizationDirectoryServicePb.sslTls = this.sslTls;
@@ -127,11 +130,12 @@ class OrganizationDirectoryService {
     if (this.userFirstNameAttribute != null) organizationDirectoryServicePb.userFirstNameAttribute = this.userFirstNameAttribute;
     if (this.userLastNameAttribute != null) organizationDirectoryServicePb.userLastNameAttribute = this.userLastNameAttribute;
     if (this.userEmailAttribute != null) organizationDirectoryServicePb.userEmailAttribute = this.userEmailAttribute;
+    if (this.organization != null) organizationDirectoryServicePb.organization = this.organization.writeToProtoBuf();
 
     return organizationDirectoryServicePb;
   }
 
-  void readFromProtoBuf(organization_directory_services_pb.OrganizationDirectoryService organizationDirectoryServicePb) {
+  void readFromProtoBuf(organization_directory_service_pb.OrganizationDirectoryService organizationDirectoryServicePb) {
 
     if (organizationDirectoryServicePb.hasDirectoryServiceEnabled()) this.directoryServiceEnabled = organizationDirectoryServicePb.directoryServiceEnabled;
     if (organizationDirectoryServicePb.hasHostAddress()) this.hostAddress = organizationDirectoryServicePb.hostAddress;
@@ -155,21 +159,22 @@ class OrganizationDirectoryService {
     if (organizationDirectoryServicePb.hasUserFirstNameAttribute()) this.userFirstNameAttribute = organizationDirectoryServicePb.userFirstNameAttribute;
     if (organizationDirectoryServicePb.hasUserLastNameAttribute()) this.userLastNameAttribute = organizationDirectoryServicePb.userLastNameAttribute;
     if (organizationDirectoryServicePb.hasUserEmailAttribute()) this.userEmailAttribute = organizationDirectoryServicePb.userEmailAttribute;
+    if (organizationDirectoryServicePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(organizationDirectoryServicePb.organization);
 
   }
 
-  static Map<String, dynamic> fromProtoBufToModelMap(organization_directory_services_pb.OrganizationDirectoryService organizationDirectoryServicePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
+  static Map<String, dynamic> fromProtoBufToModelMap(organization_directory_service_pb.OrganizationDirectoryService organizationDirectoryServicePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
   Map<String, dynamic> map = Map();
 
   if (onlyIdAndSpecificationForDepthFields && isDeep) {
 
-    if (organizationDirectoryServicePb.hasOrganizationId())
-      map[OrganizationDirectoryService.organizationIdField] =
-          organizationDirectoryServicePb.organizationId;
+    if (organizationDirectoryServicePb.hasId())
+      map[OrganizationDirectoryService.idField] =
+          organizationDirectoryServicePb.id;
   } else {
-    if (organizationDirectoryServicePb.hasOrganizationId())
-      map[OrganizationDirectoryService.organizationIdField] =
-          organizationDirectoryServicePb.organizationId;
+    if (organizationDirectoryServicePb.hasId())
+      map[OrganizationDirectoryService.idField] =
+          organizationDirectoryServicePb.id;
 
     if (organizationDirectoryServicePb.hasHostAddress())
     map[OrganizationDirectoryService.hostAddressField] =
@@ -250,6 +255,12 @@ class OrganizationDirectoryService {
     if (organizationDirectoryServicePb.hasUserEmailAttribute())
     map[OrganizationDirectoryService.userEmailAttributeField] =
         organizationDirectoryServicePb.userEmailAttribute;
+
+    if (organizationDirectoryServicePb.hasOrganization())
+      map[OrganizationDirectoryService.organizationField] =
+          Organization.fromProtoBufToModelMap(
+              organizationDirectoryServicePb.organization, onlyIdAndSpecificationForDepthFields, true);
+
     }
     return map;
   }

@@ -84,21 +84,10 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       });
 
     // Object:  Organizations
-    // Function: CRUD
+    // Organization, OrganizationConfiguration and OrganizationDirectoryService
     authorizations.add(new Authorization()
       ..authorizationRole = SystemRole.superAdmin
-      ..authorizationModule = SystemModule.organizations
-      ..authorizationFunctionContraints =
-      {SystemFunction.create: [],
-        SystemFunction.read: [],
-        SystemFunction.update: [],
-        SystemFunction.delete: []
-      });
-
-    // Object:  Organization Profile (detail)
-    authorizations.add(new Authorization()
-      ..authorizationRole = SystemRole.superAdmin
-      ..authorizationModule = SystemModule.organization_profile
+      ..authorizationModule = SystemModule.organization
       ..authorizationFunctionContraints =
       {
         SystemFunction.read: [],
@@ -106,14 +95,16 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
       });
 
     // Object: Configuration
+    /*
     authorizations.add(new Authorization()
       ..authorizationRole = SystemRole.superAdmin
-      ..authorizationModule = SystemModule.configuration
+      ..authorizationModule = SystemModule.organization
       ..authorizationFunctionContraints =
       {
         SystemFunction.read: [],
         SystemFunction.update: []
       });
+     */
 
     // Role: Admin
     // Object:  User
@@ -140,17 +131,6 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
         SystemFunction.update: [],
         SystemFunction.delete: []
       });
-
-    // Object:  Organization Profile (detail)
-    authorizations.add(new Authorization()
-      ..authorizationRole = SystemRole.admin
-      ..authorizationModule = SystemModule.organization_profile
-      ..authorizationFunctionContraints =
-      {
-        SystemFunction.read: [],
-        SystemFunction.update: []
-      });
-
 
     // Role: standard
     // Object:  user_profile

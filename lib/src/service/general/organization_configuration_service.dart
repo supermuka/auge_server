@@ -3,6 +3,7 @@
 
 import 'dart:async';
 
+import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
@@ -10,13 +11,13 @@ import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dar
 
 import 'package:auge_server/src/protos/generated/general/organization_configuration.pbgrpc.dart';
 
+import 'package:auge_server/model/general/organization_configuration.dart' as organization_configuration_m;
+import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
 
 import 'package:auge_server/src/service/general/db_connection_service.dart';
-
-import 'package:auge_server/src/service/general/user_service.dart';
-import 'package:auge_server/src/service/general/user_identity_service.dart';
-import 'package:auge_server/src/service/general/user_access_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
+import 'package:auge_server/src/service/general/organization_service.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -56,9 +57,10 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
     String queryStatement;
 
-    queryStatement = "SELECT organization_configuration.organization_id," //0
+    queryStatement = "SELECT organization_configuration.id," //0
         " organization_configuration.version," //1
-        " organization_configuration.domain" //2
+        " organization_configuration.domain," //2
+        " organization_configuration.organization_id" //3
         " FROM general.organization_configurations organization_configuration";
 
     Map<String, dynamic> substitutionValues;
@@ -80,11 +82,14 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
       for (var row in results) {
         OrganizationConfiguration configuration = OrganizationConfiguration()
-          ..organizationId = row[0]
+          ..id = row[0]
           ..version = row[1];
 
         if (row[2] != null)
           configuration.domain = row[2];
+
+        if (row[3] != null)
+          configuration.organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[2]);
 
         configurations.add(configuration);
       }
@@ -111,18 +116,42 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
   /// return id
   static Future<StringValue> queryInsertOrganizationConfiguration(
       OrganizationConfigurationRequest request) async {
+
+    if (!request.organizationConfiguration.hasId()) {
+      request.organizationConfiguration.id = Uuid().v4();
+    }
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query(
-            "INSERT INTO general.organization_configurations(organization_id, version, domain) VALUES"
-                "(@organization_id,"
+            "INSERT INTO general.organization_configurations(id, version, domain, organization_id) VALUES"
+                "(@id,"
                 "@version,"
-                "@domain)"
+                "@domain,"
+                "@organization_id)"
             , substitutionValues: {
-          "organization_id": request.authOrganizationId,
+          "id": request.organizationConfiguration.id,
           "version": request.organizationConfiguration.version,
           "domain": request.organizationConfiguration
-              .domain});
+              .domain,
+          "organization_id": request.organizationConfiguration.organization.id,});
+
+        // Create a history item
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+            substitutionValues: {"id": Uuid().v4(),
+              "user_id": request.authUserId,
+              "organization_id": request.authOrganizationId,
+              "object_id": request.organizationConfiguration.id,
+              "object_version": request.organizationConfiguration.version,
+              "object_class_name": organization_configuration_m
+                  .OrganizationConfiguration.className,
+              "system_module_index": SystemModule.organization.index,
+              "system_function_index": SystemFunction.create.index,
+              "date_time": DateTime.now().toUtc(),
+              "description": null, // without description, at first moment
+              "changed_values": history_item_m.HistoryItem.changedValuesJson({},
+                  organization_configuration_m.OrganizationConfiguration
+                      .fromProtoBufToModelMap(
+                      request.organizationConfiguration, true))});
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -136,25 +165,47 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
       OrganizationConfigurationRequest request) async {
     OrganizationConfiguration previousConfiguration = await querySelectOrganizationConfiguration(
         OrganizationConfigurationGetRequest()
-          ..organizationId = request.organizationConfiguration.organizationId);
+          ..organizationId = request.organizationConfiguration.organization.id);
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         List<List<dynamic>> result = await ctx.query(
             "UPDATE general.organization_configurations "
                 "SET version = @version, "
-                "domain = @domain "
-                "WHERE organization_id = @organization_id AND version = @version - 1 "
+                "domain = @domain, "
+                "organization_id = @organization_id "
+                "WHERE id = @id AND version = @version - 1 "
                 "RETURNING true"
             , substitutionValues: {
-          "organization_id": request.organizationConfiguration.organizationId,
+          "id": request.organizationConfiguration.id,
           "version": ++request.organizationConfiguration.version,
-          "domain": request.organizationConfiguration.hasDomain() ? request.organizationConfiguration.domain : null});
+          "domain": request.organizationConfiguration.hasDomain() ? request.organizationConfiguration.domain : null,
+          "organization_id": request.organizationConfiguration.organization.id,});
 
         // Optimistic concurrency control
         if (result.length == 0) {
           throw new GrpcError.failedPrecondition('Precondition Failed');
-        }
-      });
+        } else {
+          // Create a history item
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: {"id": Uuid().v4(),
+                "user_id": request.authUserId,
+                "organization_id": request.authOrganizationId,
+                "object_id": request.organizationConfiguration.id,
+                "object_version": request.organizationConfiguration.version,
+                "object_class_name": organization_configuration_m
+                    .OrganizationConfiguration.className,
+                "system_module_index": SystemModule.organization.index,
+                "system_function_index": SystemFunction.update.index,
+                "date_time": DateTime.now().toUtc(),
+                "description": null, // without description, at first moment
+                "changed_values": history_item_m.HistoryItem.changedValuesJson(
+                    organization_configuration_m.OrganizationConfiguration
+                        .fromProtoBufToModelMap(
+                        previousConfiguration, true),
+                    organization_configuration_m.OrganizationConfiguration
+                        .fromProtoBufToModelMap(
+                        request.organizationConfiguration, true))});
+      }});
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;

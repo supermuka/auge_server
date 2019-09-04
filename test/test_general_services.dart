@@ -298,7 +298,6 @@ void main() {
       test('Call operation updateGroup', () async {
         // Partial data
         String name = 'Unit Test 2';
-        bool active  = false;
 
         await stub
             .updateGroup(GroupRequest()..group = (Group()

@@ -8,7 +8,7 @@ package auge.protobuf;
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
-//import "general/organization.proto";
+import "general/organization.proto";
 
 // The configuration service definition.
 service OrganizationDirectoryServiceService {
@@ -28,7 +28,7 @@ service OrganizationDirectoryServiceService {
 
 // Message to respective domain object.
 message OrganizationDirectoryService {
-    string organization_id = 1;
+    string id = 1;
     int32 version = 2;
     bool directory_service_enabled = 3;
     // CONNECTION
@@ -57,6 +57,8 @@ message OrganizationDirectoryService {
     string user_first_name_attribute = 22;
     string user_last_name_attribute = 23;
     string user_attribute_for_group_relationship = 24;
+
+    Organization organization = 25;
 }
 
 // Message request related to domain object.

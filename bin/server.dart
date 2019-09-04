@@ -21,11 +21,12 @@ import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/service/general/common_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
+import 'package:auge_server/src/service/general/organization_configuration_service.dart';
+import 'package:auge_server/src/service/general/organization_directory_service_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/user_identity_service.dart';
 import 'package:auge_server/src/service/general/user_access_service.dart';
 import 'package:auge_server/src/service/general/group_service.dart';
-import 'package:auge_server/src/service/general/organization_configuration_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
 import 'package:auge_server/src/service/objective/measure_service.dart';
 import 'package:auge_server/src/service/initiative/initiative_service.dart';
@@ -38,6 +39,7 @@ Future<void> main(List<String> args) async {
     CommonService(),
     OrganizationService(),
     OrganizationConfigurationService(),
+    OrganizationDirectoryServiceService(),
     HistoryItemService(),
     UserService(),
     UserIdentityService(),
