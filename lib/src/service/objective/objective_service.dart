@@ -20,7 +20,7 @@ import 'package:auge_server/model/objective/objective.dart' as objective_m;
 import 'package:auge_server/shared/common_utils.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
 
-import 'package:auge_server/src/service/general/db_connection_service.dart';
+import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/src/service/objective/measure_service.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';

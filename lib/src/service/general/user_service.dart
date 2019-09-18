@@ -11,7 +11,7 @@ import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dar
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
-import 'package:auge_server/src/service/general/db_connection_service.dart';
+import 'package:auge_server/src/util/db_connection.dart';
 
 import 'package:auge_server/src/service/general/history_item_service.dart';
 

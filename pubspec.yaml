@@ -42,6 +42,7 @@ dependencies:
   #  git:
   #    url: git://github.com/sigurdm/grpc-dart.git
   #    ref: ff07ddeae8dcae519b848a9d869dad9724a3ed42
+  mailer: ^3.0.2
 
 dev_dependencies:
   test: ^1.6.3

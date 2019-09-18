@@ -8,7 +8,7 @@ import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
 
-import 'package:auge_server/src/service/general/db_connection_service.dart';
+import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 
 class HistoryItemService extends HistoryItemServiceBase {

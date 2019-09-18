@@ -27,7 +27,7 @@ import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 
 import 'package:auge_server/shared/common_utils.dart';
 
-import 'package:auge_server/src/service/general/db_connection_service.dart';
+import 'package:auge_server/src/util/db_connection.dart';
 
 import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/user_identity_service.dart';

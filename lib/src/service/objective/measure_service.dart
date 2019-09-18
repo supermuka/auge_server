@@ -10,7 +10,7 @@ import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/objective/measure.pbgrpc.dart';
 
-import 'package:auge_server/src/service/general/db_connection_service.dart';
+import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/model/general/authorization.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
 

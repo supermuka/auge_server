@@ -9,7 +9,7 @@ import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 
-import 'package:auge_server/src/service/general/db_connection_service.dart';
+import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;

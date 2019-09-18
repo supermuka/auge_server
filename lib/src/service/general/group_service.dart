@@ -11,7 +11,7 @@ import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pbgrpc.dart';
 
-import 'package:auge_server/src/service/general/db_connection_service.dart';
+import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 

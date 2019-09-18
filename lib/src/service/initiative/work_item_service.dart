@@ -20,7 +20,7 @@ import 'package:auge_server/model/general/authorization.dart' show SystemModule,
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
 import 'package:auge_server/model/initiative/work_item.dart' as work_item_m;
 
-import 'package:auge_server/src/service/general/db_connection_service.dart';
+import 'package:auge_server/src/util/db_connection.dart';
 
 import 'package:uuid/uuid.dart';
 
