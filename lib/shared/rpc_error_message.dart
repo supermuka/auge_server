@@ -27,5 +27,6 @@ class RpcErrorDetailMessage {
   static const String workItemDataNotFoundReason = 'Workitem data not found.';
   static const String workItemInvalidArgument = 'Workitem invalid argument.';
   static const String workItemPreconditionFailed = 'Workitem precondition failed.';
+  static const String objectiveNotificationUserInvalidArgument = 'Objective Notification User invalid argument.';
 }
 

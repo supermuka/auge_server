@@ -3,7 +3,11 @@
 
 import 'dart:async';
 
+import 'package:auge_server/shared/message/messages.dart';
+import 'package:auge_server/shared/message/model_messages.dart';
 import 'package:grpc/grpc.dart';
+
+import 'package:auge_server/src/util/mail.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
@@ -69,7 +73,6 @@ class ObjectiveService extends ObjectiveServiceBase {
       ObjectiveDeleteRequest request) async {
     return queryDeleteObjective(request);
   }
-
 
   // QUERY
   // *** OBJECTIVES ***
@@ -260,6 +263,34 @@ class ObjectiveService extends ObjectiveServiceBase {
     }
   }
 
+  /// Objective Notification User
+  static void objectiveNotification(Objective objective, String className, SystemFunction systemFunction) {
+
+    // MODEL
+    List<AugeMailMessageTo> mailMessages = [];
+
+    // Leader
+    if (objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
+
+    mailMessages.add(AugeMailMessageTo([objective.leader.userProfile.eMail],
+        '${ClassNameMsg.label(className)} ${objective.name}',
+        /* "<h1>Test</h1>\n<p>Hey! Here's some HTML content</p>" */
+        '<p>'
+            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())} ${ClassNameMsg.label(className)} <a href="http://auge.levius.com.br/">${objective.name}</a>.'
+            '</p>'
+            '<p style="font-size:small;color:#666;">'
+            '<span>__</span>'
+            '<br/>'
+            '${MailMsg.youIsReceivingThisEMailBecauseYouIsThe()} ${ClassNameMsg.label(className)} ${FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')}.'
+            '<br/>'
+            '<a href="http://auge.levius.com.br/">${MailMsg.viewOrReplyIt()}</a>.'
+            '</p>'));
+
+    // SEND E-MAIL
+    AugeMail().send(mailMessages);
+
+  }
+
   /// Create (insert) a new objective
   static Future<StringValue> queryInsertObjective(ObjectiveRequest request) async {
     if (!request.objective.hasId()) {
@@ -312,6 +343,8 @@ class ObjectiveService extends ObjectiveServiceBase {
               "description": request.objective.name,
               "changed_values": history_item_m.HistoryItem.changedValuesJson({}, objective_m.Objective.fromProtoBufToModelMap(request.objective, true))});
 
+        objectiveNotification(request.objective, objective_m
+            .Objective.className, SystemFunction.create);
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -324,7 +357,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   static Future<Empty> queryUpdateObjective(ObjectiveRequest request) async {
 
     // Recovery to log to history
-    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objective.id);
+    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objective.id..withProfile = true);
 
     try {
 
@@ -383,6 +416,10 @@ class ObjectiveService extends ObjectiveServiceBase {
         }
 
       });
+
+      objectiveNotification(request.objective, objective_m
+          .Objective.className, SystemFunction.update);
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -395,7 +432,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   static Future<Empty> queryDeleteObjective(ObjectiveDeleteRequest request) async {
 
     // Recovery to log to history
-    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId);
+    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withProfile = true);
 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -432,6 +469,10 @@ class ObjectiveService extends ObjectiveServiceBase {
 
         }
       });
+
+      objectiveNotification(previousObjective, objective_m
+          .Objective.className, SystemFunction.delete);
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;

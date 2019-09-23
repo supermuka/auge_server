@@ -289,6 +289,9 @@ class UserService extends UserServiceBase {
                         .fromProtoBufToModelMap(
                         request.user))});
         }
+
+        // Send mail notification
+
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
