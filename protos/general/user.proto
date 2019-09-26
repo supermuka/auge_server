@@ -9,6 +9,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "general/organization.proto";
 
+/// USER
 // The service definition.
 service UserService {
 
@@ -46,6 +47,7 @@ message UserDeleteRequest {
     string auth_organization_id = 4;
 }
 
+/// USERPROFILE
 // Message to respective domain object.
 message UserProfile {
  //   bool is_super_admin = 1;
@@ -61,7 +63,7 @@ message UserGetRequest {
     string managed_by_organization_id_or_accessed_by_organization_id = 3;
     string accessedByOrganizationId = 4;
     bool with_user_profile = 5;
-
+    bool with_objective = 6;
 }
 
 // Response list of the organization

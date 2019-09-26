@@ -13,7 +13,7 @@ import "general/group.proto";
 import "general/user.proto";
 import "initiative/stage.proto";
 import "initiative/work_item.proto";
-import "objective/objective.proto";
+import "objective/objective_measure.proto";
 
 
 // The service definition.

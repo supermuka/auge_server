@@ -7,8 +7,7 @@ import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
-import 'package:auge_server/src/protos/generated/objective/objective.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/objective/measure.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/objective/objective_measure.pbgrpc.dart';
 
 void main() {
 

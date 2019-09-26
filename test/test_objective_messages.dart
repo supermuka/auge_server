@@ -1,7 +1,6 @@
 import 'package:test/test.dart';
 
-import 'package:auge_server/src/protos/generated/objective/objective.pb.dart' as objective_pb;
-import 'package:auge_server/src/protos/generated/objective/measure.pb.dart' as measure_pb;
+import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart' as objective_measure_pb;
 
 import 'package:auge_server/model/objective/objective.dart' as objective_m;
 import 'package:auge_server/model/objective/measure.dart' as measure_m;
@@ -21,7 +20,7 @@ void main() {
     group('OBJECTIVE.', () {
 
       objective_m.Objective model = objective_m.Objective();
-      objective_pb.Objective proto;
+      objective_measure_pb.Objective proto;
 
       setUp(() {
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
@@ -78,7 +77,7 @@ void main() {
     group('MEASURE.', () {
 
       measure_m.Measure model = measure_m.Measure();
-      measure_pb.Measure proto;
+      objective_measure_pb.Measure proto;
 
       setUp(() {
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';

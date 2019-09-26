@@ -3,18 +3,19 @@
 
 import 'dart:async';
 
-import 'package:auge_server/shared/message/messages.dart';
 import 'package:auge_server/shared/message/model_messages.dart';
+import 'package:auge_server/src/protos/generated/objective/objective_measure.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/util/mail.dart';
+import 'package:auge_server/shared/message/messages.dart';
+import 'package:auge_server/shared/message/model_messages.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
-import 'package:auge_server/src/protos/generated/objective/objective.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/objective/measure.pb.dart';
+import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart';
 import 'package:auge_server/src/protos/generated/general/group.pb.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
@@ -160,7 +161,7 @@ class ObjectiveService extends ObjectiveServiceBase {
           if (row[7] != null) {
             leaderUser = await UserService.querySelectUser(UserGetRequest()
               ..id = row[7]
-              ..withUserProfile = objectiveSelectRequest.withProfile);
+              ..withUserProfile = objectiveSelectRequest.withUserProfile);
           }
 
           if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0) {
@@ -171,7 +172,7 @@ class ObjectiveService extends ObjectiveServiceBase {
               ..alignedToRecursive = --objectiveSelectRequest.alignedToRecursive
               ..withArchived = objectiveSelectRequest.withArchived
               ..withMeasures = objectiveSelectRequest.withMeasures
-              ..withProfile = objectiveSelectRequest.withProfile);
+              ..withUserProfile = objectiveSelectRequest.withUserProfile);
           }
 
           // Organization
@@ -264,7 +265,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   /// Objective Notification User
-  static void objectiveNotification(Objective objective, String className, SystemFunction systemFunction) {
+  static void objectiveNotification(Objective objective, String className, SystemFunction systemFunction, String description) {
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -272,19 +273,13 @@ class ObjectiveService extends ObjectiveServiceBase {
     // Leader
     if (objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
-    mailMessages.add(AugeMailMessageTo([objective.leader.userProfile.eMail],
-        '${ClassNameMsg.label(className)} ${objective.name}',
-        /* "<h1>Test</h1>\n<p>Hey! Here's some HTML content</p>" */
-        '<p>'
-            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())} ${ClassNameMsg.label(className)} <a href="http://auge.levius.com.br/">${objective.name}</a>.'
-            '</p>'
-            '<p style="font-size:small;color:#666;">'
-            '<span>__</span>'
-            '<br/>'
-            '${MailMsg.youIsReceivingThisEMailBecauseYouIsThe()} ${ClassNameMsg.label(className)} ${FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')}.'
-            '<br/>'
-            '<a href="http://auge.levius.com.br/">${MailMsg.viewOrReplyIt()}</a>.'
-            '</p>'));
+    mailMessages.add(
+        AugeMailMessageTo(
+            [objective.leader.userProfile.eMail],
+            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())}',
+            '${ClassNameMsg.label(className)}',
+            description,
+            '${FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')}'));
 
     // SEND E-MAIL
     AugeMail().send(mailMessages);
@@ -300,6 +295,9 @@ class ObjectiveService extends ObjectiveServiceBase {
     request.objective.version = 0;
 
     try {
+
+      Map<String, dynamic> historyItemNotificationValues;
+
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query("INSERT INTO objective.objectives(id, version, name, description, start_date, end_date, archived, aligned_to_objective_id, organization_id, leader_user_id, group_id) VALUES"
             "(@id,"
@@ -329,23 +327,26 @@ class ObjectiveService extends ObjectiveServiceBase {
             });
 
         // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-            substitutionValues: {"id": Uuid().v4(),
-              "user_id": request.authUserId,
-              "organization_id": request.authOrganizationId,
-              "object_id": request.objective.id,
-              "object_version": request.objective.version,
-              "object_class_name": objective_m
-                  .Objective.className,
-              "system_module_index": SystemModule.objectives.index,
-              "system_function_index": SystemFunction.create.index,
-              "date_time": DateTime.now().toUtc(),
-              "description": request.objective.name,
-              "changed_values": history_item_m.HistoryItem.changedValuesJson({}, objective_m.Objective.fromProtoBufToModelMap(request.objective, true))});
+        historyItemNotificationValues = {"id": Uuid().v4(),
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
+          "object_id": request.objective.id,
+          "object_version": request.objective.version,
+          "object_class_name": objective_m
+              .Objective.className,
+          "system_module_index": SystemModule.objectives.index,
+          "system_function_index": SystemFunction.create.index,
+          "date_time": DateTime.now().toUtc(),
+          "description": request.objective.name,
+          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, objective_m.Objective.fromProtoBufToModelMap(request.objective, true))};
 
-        objectiveNotification(request.objective, objective_m
-            .Objective.className, SystemFunction.create);
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+            substitutionValues: historyItemNotificationValues);
+
+
       });
+
+      objectiveNotification(request.objective, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -353,12 +354,13 @@ class ObjectiveService extends ObjectiveServiceBase {
     return (StringValue()..value = request.objective.id);
   }
 
+
   /// Update an initiative passing an instance of [Objective]
   static Future<Empty> queryUpdateObjective(ObjectiveRequest request) async {
 
     // Recovery to log to history
-    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objective.id..withProfile = true);
-
+    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objective.id..withUserProfile = true);
+    Map<String, dynamic> historyItemNotificationValues;
     try {
 
       List<List<dynamic>> result;
@@ -399,26 +401,27 @@ class ObjectiveService extends ObjectiveServiceBase {
         else {
 
           // Create a history item
+          historyItemNotificationValues = {"id": Uuid().v4(),
+            "user_id": request.authUserId,
+            "organization_id": request.authOrganizationId,
+            "object_id": request.objective.id,
+            "object_version": request.objective.version,
+            "object_class_name": objective_m
+                .Objective.className,
+            "system_module_index": SystemModule.objectives.index,
+            "system_function_index": SystemFunction.update.index,
+            "date_time": DateTime.now().toUtc(),
+            "description": request.objective.name,
+            "changed_values": history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), objective_m.Objective.fromProtoBufToModelMap(request.objective, true))};
+
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-              substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authUserId,
-                "organization_id": request.authOrganizationId,
-                "object_id": request.objective.id,
-                "object_version": request.objective.version,
-                "object_class_name": objective_m
-                    .Objective.className,
-                "system_module_index": SystemModule.objectives.index,
-                "system_function_index": SystemFunction.update.index,
-                "date_time": DateTime.now().toUtc(),
-                "description": request.objective.name,
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), objective_m.Objective.fromProtoBufToModelMap(request.objective, true))});
+              substitutionValues: historyItemNotificationValues);
 
         }
 
       });
 
-      objectiveNotification(request.objective, objective_m
-          .Objective.className, SystemFunction.update);
+      objectiveNotification(request.objective, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -432,9 +435,11 @@ class ObjectiveService extends ObjectiveServiceBase {
   static Future<Empty> queryDeleteObjective(ObjectiveDeleteRequest request) async {
 
     // Recovery to log to history
-    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withProfile = true);
+    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
 
     try {
+      Map<String, dynamic> historyItemNotificationValues;
+
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
 
@@ -454,24 +459,25 @@ class ObjectiveService extends ObjectiveServiceBase {
         else {
 
           // Create a history item
+          historyItemNotificationValues = {"id": Uuid().v4(),
+            "user_id": request.authUserId,
+            "organization_id": request.authOrganizationId,
+            "object_id": request.objectiveId,
+            "object_version": request.objectiveVersion,
+            "object_class_name": objective_m.Objective.className,
+            "system_module_index": SystemModule.objectives.index,
+            "system_function_index": SystemFunction.delete.index,
+            "date_time": DateTime.now().toUtc(),
+            "description": previousObjective.name,
+            "changed_values":  history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), {})};
+
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-              substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authUserId,
-                "organization_id": request.authOrganizationId,
-                "object_id": request.objectiveId,
-                "object_version": request.objectiveVersion,
-                "object_class_name": objective_m.Objective.className,
-                "system_module_index": SystemModule.objectives.index,
-                "system_function_index": SystemFunction.delete.index,
-                "date_time": DateTime.now().toUtc(),
-                "description": previousObjective.name,
-                "changed_values":  history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), {})});
+              substitutionValues: historyItemNotificationValues);
 
         }
       });
 
-      objectiveNotification(previousObjective, objective_m
-          .Objective.className, SystemFunction.delete);
+      objectiveNotification(previousObjective, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

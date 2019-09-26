@@ -12,7 +12,7 @@ import 'package:auge_server/src/protos/generated/general/group.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/work_item.pb.dart';
 import 'package:auge_server/src/protos/generated/initiative/initiative.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/objective/objective.pb.dart';
+import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart';
 
 import 'package:auge_server/shared/rpc_error_message.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
@@ -133,7 +133,7 @@ class InitiativeService extends InitiativeServiceBase {
 
       // user = (await _augeApi.getUsers(id: row[4])).first;
       if (row[5] != null) {
-        user = await UserService.querySelectUser(UserGetRequest()..id = row[5]..withUserProfile = initiativeGetRequest.withProfile);
+        user = await UserService.querySelectUser(UserGetRequest()..id = row[5]..withUserProfile = initiativeGetRequest.withUserProfile);
       } else {
         user = null;
       }
@@ -279,7 +279,7 @@ class InitiativeService extends InitiativeServiceBase {
     // Recovery to log to history
     Initiative previousInitiative = await querySelectInitiative(InitiativeGetRequest()
       ..id = request.initiative.id
-      ..withProfile = true
+      ..withUserProfile = true
     );
 
     try {

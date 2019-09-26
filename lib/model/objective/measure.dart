@@ -5,7 +5,8 @@ import 'package:auge_server/shared/common_utils.dart';
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
-import 'package:auge_server/src/protos/generated/objective/measure.pb.dart' as measure_pb;
+import 'package:auge_server/model/objective/objective.dart';
+import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart' as objective_measure_pb;
 
 /// Domain model class to represent an measure
 class Measure {
@@ -41,6 +42,8 @@ class Measure {
   double currentValue; // field calculeted on measureProgress
   static final String measureProgressField = 'measureProgress';
   List<MeasureProgress> measureProgress;
+  static final String objectiveField = 'objective';
+  Objective objective;
 
   Measure() {
     // lastHistoryItem = HistoryItem();
@@ -77,8 +80,8 @@ class Measure {
     return _progress;
   }
 
-  measure_pb.Measure writeToProtoBuf() {
-    measure_pb.Measure measurePb = measure_pb.Measure();
+  objective_measure_pb.Measure writeToProtoBuf() {
+    objective_measure_pb.Measure measurePb = objective_measure_pb.Measure();
 
     if (this.id != null) measurePb.id = this.id;
     if (this.version != null) measurePb.version = this.version;
@@ -95,10 +98,12 @@ class Measure {
 
     if (this.measureProgress != null && this.measureProgress.isNotEmpty) measurePb.measureProgress.addAll(this.measureProgress.map((m) => m.writeToProtoBuf()));
 
+    if (this.objective != null) measurePb.objective = this.objective.writeToProtoBuf();
+
     return measurePb;
   }
 
-  readFromProtoBuf(measure_pb.Measure measurePb) {
+  readFromProtoBuf(objective_measure_pb.Measure measurePb) {
     if (measurePb.hasId()) this.id = measurePb.id;
     if (measurePb.hasVersion()) this.version = measurePb.version;
     if (measurePb.hasName()) this.name = measurePb.name;
@@ -111,9 +116,10 @@ class Measure {
     if (measurePb.hasCurrentValue()) this.currentValue = measurePb.currentValue;
     if (measurePb.hasMeasureUnit()) this.measureUnit = MeasureUnit()..readFromProtoBuf(measurePb.measureUnit);
     if (measurePb.measureProgress.isNotEmpty) this.measureProgress = measurePb.measureProgress.map((u) => MeasureProgress()..readFromProtoBuf(u)).toList();
+    if (measurePb.hasObjective()) this.objective = Objective()..readFromProtoBuf(measurePb.objective);
   }
 
-  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.Measure measurePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
+  static Map<String, dynamic> fromProtoBufToModelMap(objective_measure_pb.Measure measurePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
     if (onlyIdAndSpecificationForDepthFields && isDeep) {
@@ -147,6 +153,9 @@ class Measure {
         map[Measure.measureProgressField] =
             measurePb.measureProgress.map((mp) =>
                 MeasureProgress.fromProtoBufToModelMap(mp, onlyIdAndSpecificationForDepthFields, true)).toList();
+      if (measurePb.hasObjective())
+        map[Measure.objectiveField] = Objective.fromProtoBufToModelMap(
+            measurePb.objective, onlyIdAndSpecificationForDepthFields, true);
     }
 
     return map;
@@ -174,36 +183,31 @@ class MeasureProgress {
   double currentValue;
   static final String commentField = 'comment';
   String comment;
+  static final String measureField = 'measure';
+  Measure measure;
 
   MeasureProgress() {
     // lastHistoryItem = HistoryItem();
   }
 
-  measure_pb.MeasureProgress writeToProtoBuf() {
-    measure_pb.MeasureProgress measureProgressPb = measure_pb.MeasureProgress();
+  objective_measure_pb.MeasureProgress writeToProtoBuf() {
+    objective_measure_pb.MeasureProgress measureProgressPb = objective_measure_pb.MeasureProgress();
 
     if (this.id != null) measureProgressPb.id = this.id;
     if (this.version != null) measureProgressPb.version = this.version;
 
     if (this.date != null)  measureProgressPb.date =  CommonUtils.timestampFromDateTime(this.date.toUtc());
-    /*{
-      Timestamp t = Timestamp();
-      int microsecondsSinceEpoch = this.date
-          .toUtc()
-          .microsecondsSinceEpoch;
-      t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
-      t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
-      measureProgressPb.date = t;
-    }*/
 
     if (this.currentValue != null)
       measureProgressPb.currentValue = this.currentValue;
     if (this.comment != null) measureProgressPb.comment = this.comment;
 
+    if (this.measure != null) measureProgressPb.measure = this.measure.writeToProtoBuf();
+
     return measureProgressPb;
   }
 
-  readFromProtoBuf(measure_pb.MeasureProgress measureProgressPb) {
+  readFromProtoBuf(objective_measure_pb.MeasureProgress measureProgressPb) {
     if (measureProgressPb.hasId()) this.id = measureProgressPb.id;
     if (measureProgressPb.hasVersion())
       this.version = measureProgressPb.version;
@@ -218,9 +222,11 @@ class MeasureProgress {
       this.currentValue = measureProgressPb.currentValue;
     if (measureProgressPb.hasComment())
       this.comment = measureProgressPb.comment;
+    if (measureProgressPb.hasMeasure())
+      this.measure = Measure()..readFromProtoBuf(measureProgressPb.measure);
   }
 
-  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureProgress measureProgressPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
+  static Map<String, dynamic> fromProtoBufToModelMap(objective_measure_pb.MeasureProgress measureProgressPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
     if (onlyIdAndSpecificationForDepthFields && isDeep) {
@@ -239,6 +245,8 @@ class MeasureProgress {
         map[MeasureProgress.currentValueField] = measureProgressPb.currentValue;
       if (measureProgressPb.hasComment())
         map[MeasureProgress.commentField] = measureProgressPb.comment;
+      if (measureProgressPb.hasMeasure()) map[MeasureProgress.measureField] =
+          Measure.fromProtoBufToModelMap(measureProgressPb.measure, onlyIdAndSpecificationForDepthFields, true);
     }
     return map;
   }
@@ -254,8 +262,8 @@ class MeasureUnit {
   static const nameField = 'name';
   String name;
 
-  measure_pb.MeasureUnit writeToProtoBuf() {
-    measure_pb.MeasureUnit measureUnitPb = measure_pb.MeasureUnit();
+  objective_measure_pb.MeasureUnit writeToProtoBuf() {
+    objective_measure_pb.MeasureUnit measureUnitPb = objective_measure_pb.MeasureUnit();
 
     if (this.id != null) measureUnitPb.id = this.id;
     if (this.symbol != null) measureUnitPb.symbol = this.symbol;
@@ -264,13 +272,13 @@ class MeasureUnit {
     return measureUnitPb;
   }
 
-  readFromProtoBuf(measure_pb.MeasureUnit measureUnitPb) {
+  readFromProtoBuf(objective_measure_pb.MeasureUnit measureUnitPb) {
     if (measureUnitPb.hasId()) this.id = measureUnitPb.id;
     if (measureUnitPb.hasSymbol()) this.symbol = measureUnitPb.symbol;
     if (measureUnitPb.hasName()) this.name = measureUnitPb.name;
   }
 
-  static Map<String, dynamic> fromProtoBufToModelMap(measure_pb.MeasureUnit measureUnitPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
+  static Map<String, dynamic> fromProtoBufToModelMap(objective_measure_pb.MeasureUnit measureUnitPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
     if (onlyIdAndSpecificationForDepthFields && isDeep) {

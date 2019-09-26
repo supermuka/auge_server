@@ -3,12 +3,16 @@
 
 import 'dart:async';
 import 'package:auge_server/shared/common_utils.dart';
-
+import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart';
+import 'package:auge_server/shared/message/messages.dart';
+import 'package:auge_server/shared/message/model_messages.dart';
 import 'package:grpc/grpc.dart';
+
+import 'package:auge_server/src/util/mail.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
-import 'package:auge_server/src/protos/generated/objective/measure.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/objective/objective_measure.pbgrpc.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/model/general/authorization.dart';
@@ -16,9 +20,11 @@ import 'package:auge_server/shared/rpc_error_message.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/model/objective/objective.dart' as objective_m;
 import 'package:auge_server/model/objective/measure.dart' as measure_m;
 
 import 'package:auge_server/src/service/general/history_item_service.dart';
+import 'package:auge_server/src/service/objective/objective_service.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -140,8 +146,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   // *** MEASURES ***
-  static Future<List<Measure>> querySelectMeasures(MeasureGetRequest request /*
-      {String objectiveId, String id, bool isDeleted = false} */) async {
+  static Future<List<Measure>> querySelectMeasures(MeasureGetRequest request) async {
     List<List> results;
 
     String queryStatement;
@@ -155,7 +160,8 @@ class MeasureService extends MeasureServiceBase {
         " start_value::REAL," //6
         " end_value::REAL," //7
         " (select current_value from objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //8
-        " measure_unit_id " //9
+        " measure_unit_id," //9
+        " objective_id" //10
         " FROM objective.measures measure ";
 
     Map<String, dynamic> substitutionValues;
@@ -183,14 +189,6 @@ class MeasureService extends MeasureServiceBase {
       MeasureUnit measureUnit;
 
       for (var row in results) {
-        if (row[9] != null)
-          //  measureUnit = await getMeasureUnitById(row[8]);
-          measureUnits = await querySelectMeasureUnits(id: row[9]);
-        if (measureUnits != null && measureUnits.length != 0) {
-          measureUnit = measureUnits.first;
-        }
-        else
-          measureUnit = null;
 
         Measure measure = Measure();
 
@@ -205,7 +203,20 @@ class MeasureService extends MeasureServiceBase {
         if (row[6] != null) measure.startValue = row[6];
         if (row[7] != null) measure.endValue = row[7];
         if (row[8] != null) measure.currentValue = row[8];
+
+
+        if (row[9] != null)
+          //  measureUnit = await getMeasureUnitById(row[8]);
+          measureUnits = await querySelectMeasureUnits(id: row[9]);
+        if (measureUnits != null && measureUnits.length != 0) {
+          measureUnit = measureUnits.first;
+        }
+        else
+          measureUnit = null;
+
         if (measureUnit != null) measure.measureUnit = measureUnit;
+
+        if (request.hasWithObjective() && request.withObjective == true) measure.objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = row[10]);
 
         measures.add(measure);
       }
@@ -222,6 +233,28 @@ class MeasureService extends MeasureServiceBase {
     }
   }
 
+  /// Objective Measure Notification User
+  static void measureNotification(Measure measure, String className, SystemFunction systemFunction, String description) {
+
+    // MODEL
+    List<AugeMailMessageTo> mailMessages = [];
+
+    // Leader
+    if (measure.objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
+
+    mailMessages.add(
+        AugeMailMessageTo(
+            [measure.objective.leader.userProfile.eMail],
+            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())}',
+            '${ClassNameMsg.label(className)}',
+            description,
+            '${FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')}'));
+
+    // SEND E-MAIL
+    AugeMail().send(mailMessages);
+
+  }
+
   /// Create (insert) a new measures
   static Future<StringValue> queryInsertMeasure(
       MeasureRequest request) async {
@@ -230,6 +263,8 @@ class MeasureService extends MeasureServiceBase {
     }
 
     request.measure.version = 0;
+
+    Map<String, dynamic> historyItemNotificationValues;
 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -260,25 +295,33 @@ class MeasureService extends MeasureServiceBase {
         });
 
         // Create a history item
+        Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
+
+        historyItemNotificationValues =  {"id": Uuid().v4(),
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
+          "object_id": request.measure.id,
+          "object_version": request.measure.version,
+          "object_class_name": measure_m
+              .Measure.className,
+          "system_module_index": SystemModule.objectives.index,
+          "system_function_index": SystemFunction.create.index,
+          "date_time": DateTime.now().toUtc(),
+          "description": '${request.measure.name} @ ${objective.name}',
+          "changed_values": history_item_m.HistoryItem
+              .changedValuesJson({},
+              measure_m.Measure
+                  .fromProtoBufToModelMap(
+                  request.measure))};
+
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-            substitutionValues: {"id": Uuid().v4(),
-              "user_id": request.authUserId,
-              "organization_id": request.authOrganizationId,
-              "object_id": request.measure.id,
-              "object_version": request.measure.version,
-              "object_class_name": measure_m
-                  .Measure.className,
-              "system_module_index": SystemModule.objectives.index,
-              "system_function_index": SystemFunction.create.index,
-              "date_time": DateTime.now().toUtc(),
-              "description": request.measure.name,
-              "changed_values": history_item_m.HistoryItem
-                  .changedValuesJson({},
-                  measure_m.Measure
-                      .fromProtoBufToModelMap(
-                      request.measure))});
+            substitutionValues: historyItemNotificationValues);
 
       });
+
+      // Notification
+      measureNotification(request.measure, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -289,6 +332,9 @@ class MeasureService extends MeasureServiceBase {
 
   /// Update [Measure]
   Future<Empty> queryUpdateMeasure(MeasureRequest request) async {
+
+    Map<String, dynamic> historyItemNotificationValues;
+
     try {
 
       // Recovery to log to history
@@ -331,21 +377,29 @@ class MeasureService extends MeasureServiceBase {
         } else {
 
           // Create a history item
+          Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
+
+          historyItemNotificationValues = {"id": Uuid().v4(),
+            "user_id": request.authUserId,
+            "organization_id": request.authOrganizationId,
+            "object_id": request.measure.id,
+            "object_version": request.measure.version,
+            "object_class_name": measure_m
+                .Measure.className,
+            "system_module_index": SystemModule.objectives.index,
+            "system_function_index": SystemFunction.update.index,
+            "date_time": DateTime.now().toUtc(),
+            "description": '${request.measure.name} @ ${objective.name}',
+            "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.Measure.fromProtoBufToModelMap(previousMeasure, true), measure_m.Measure.fromProtoBufToModelMap(request.measure, true))};
+
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-              substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authUserId,
-                "organization_id": request.authOrganizationId,
-                "object_id": request.measure.id,
-                "object_version": request.measure.version,
-                "object_class_name": measure_m
-                    .Measure.className,
-                "system_module_index": SystemModule.objectives.index,
-                "system_function_index": SystemFunction.update.index,
-                "date_time": DateTime.now().toUtc(),
-                "description": request.measure.name,
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.Measure.fromProtoBufToModelMap(previousMeasure, true), measure_m.Measure.fromProtoBufToModelMap(request.measure, true))});
+              substitutionValues: historyItemNotificationValues);
         }
       });
+
+      // Notification
+      measureNotification(request.measure, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -356,7 +410,8 @@ class MeasureService extends MeasureServiceBase {
   /// Delete a [Measure] by id
   Future<Empty> queryDeleteMeasure(MeasureDeleteRequest request) async {
 
-    Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId);
+    Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId..withObjective = true);
+    Map<String, dynamic> historyItemNotificationValues;
 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -373,24 +428,31 @@ class MeasureService extends MeasureServiceBase {
         if (result.isEmpty) {
           throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
         } else {
+
           // Create a history item
+          historyItemNotificationValues = {"id": Uuid().v4(),
+            "user_id": request.authUserId,
+            "organization_id": request.authOrganizationId,
+            "object_id": request.measureId,
+            "object_version": request.measureVersion,
+            "object_class_name": measure_m. Measure.className,
+            "system_module_index": SystemModule.objectives.index,
+            "system_function_index": SystemFunction.delete.index,
+            "date_time": DateTime.now().toUtc(),
+            "description": previousMeasure.name,
+            "changed_values": history_item_m.HistoryItem.changedValuesJson(
+                measure_m.Measure.fromProtoBufToModelMap(
+                    previousMeasure, true), {})};
+
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-              substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authUserId,
-                "organization_id": request.authOrganizationId,
-                "object_id": request.measureId,
-                "object_version": request.measureVersion,
-                "object_class_name": measure_m. Measure.className,
-                "system_module_index": SystemModule.objectives.index,
-                "system_function_index": SystemFunction.delete.index,
-                "date_time": DateTime.now().toUtc(),
-                "description": previousMeasure.name,
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                    measure_m.Measure.fromProtoBufToModelMap(
-                        previousMeasure, true), {})});
+              substitutionValues: historyItemNotificationValues);
         }
 
       });
+
+      // Notification
+      measureNotification(previousMeasure, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -399,8 +461,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   // *** MEASURES PROGRESS ***
-  static Future<List<MeasureProgress>> querySelectMeasureProgresses(MeasureProgressGetRequest request /*
-      {String measureId, String id, bool isDeleted = false, bool withAuditUser = false}*/) async {
+  static Future<List<MeasureProgress>> querySelectMeasureProgresses(MeasureProgressGetRequest request) async {
     List<List> results;
 
     String queryStatement;
@@ -430,7 +491,7 @@ class MeasureService extends MeasureServiceBase {
     results = await (await AugeConnection.getConnection()).query(
         queryStatement, substitutionValues: substitutionValues);
 
-    List<MeasureProgress> mesuareProgresses = new List();
+    List<MeasureProgress> measureProgresses = new List();
 
     if (results != null && results.isNotEmpty) {
       for (var row in results) {
@@ -454,10 +515,14 @@ class MeasureService extends MeasureServiceBase {
             measureProgress.comment = row[4];
           }
 
-        mesuareProgresses.add(measureProgress);
+          if (request.withMeasure && request.withMeasure == true && row[5] != null) {
+            measureProgress.measure = await MeasureService.querySelectMeasure(MeasureGetRequest()..id = row[5]);
+          }
+
+        measureProgresses.add(measureProgress);
       }
     }
-    return mesuareProgresses;
+    return measureProgresses;
   }
 
   static Future<MeasureProgress> querySelectMeasureProgress(MeasureProgressGetRequest request) async {
@@ -470,10 +535,35 @@ class MeasureService extends MeasureServiceBase {
     }
   }
 
+
+  /// Objective Measure Progress Notification User
+  static void measureProgressNotification(MeasureProgress measureProgress, String description, String className, SystemFunction systemFunction) {
+
+    // MODEL
+    List<AugeMailMessageTo> mailMessages = [];
+
+    // Leader
+    if (measureProgress.measure.objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
+
+    mailMessages.add(
+        AugeMailMessageTo(
+            [measureProgress.measure.objective.leader.userProfile.eMail],
+            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())}',
+            '${ClassNameMsg.label(className)}',
+            description,
+            '${FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')}'));
+
+    // SEND E-MAIL
+    AugeMail().send(mailMessages);
+
+  }
+
+
+
   /// Create current value of the [MeasureProgress]
   static Future<StringValue> queryInsertMeasureProgress(
       MeasureProgressRequest request) async {
-
+    Map<String, dynamic> historyItemNotificationValues;
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         if (!request.measureProgress.hasId()) {
@@ -500,21 +590,32 @@ class MeasureService extends MeasureServiceBase {
         });
 
         // Create a history item
+        historyItemNotificationValues =  {"id": Uuid().v4(),
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
+          "object_id": request.measureProgress.id,
+          "object_version": request.measureProgress.version,
+          "object_class_name": measure_m
+              .Measure.className,
+          "system_module_index": SystemModule.objectives.index,
+          "system_function_index": SystemFunction.create.index,
+          "date_time": DateTime.now().toUtc(),
+          "description": '${request.measureProgress.currentValue} @ ${request.measureProgress.measure.name}',
+          "changed_values": history_item_m.HistoryItem
+              .changedValuesJson({},
+              measure_m.MeasureProgress
+                  .fromProtoBufToModelMap(
+                  request.measureProgress))};
+
+
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-            substitutionValues: {"id": Uuid().v4(),
-              "user_id": request.authUserId,
-              "organization_id": request.authOrganizationId,
-              "object_id": request.measureProgress.id,
-              "object_version": request.measureProgress.version,
-              "object_class_name": measure_m
-                  .MeasureProgress.className,
-              "system_module_index": SystemModule.objectives.index,
-              "system_function_index": SystemFunction.create.index,
-              "date_time": DateTime.now().toUtc(),
-              "description": null, //'# ${request.measureProgress.currentValue}',
-              "changed_values": history_item_m.HistoryItem.changedValuesJson({}, measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress, true))});
+            substitutionValues: historyItemNotificationValues);
 
       });
+
+      // Notification
+      measureProgressNotification(request.measureProgress, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -527,7 +628,7 @@ class MeasureService extends MeasureServiceBase {
       MeasureProgressRequest request) async {
     // Recovery to log to history
     MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgress.id);
-
+    Map<String, dynamic> historyItemNotificationValues;
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         DateTime dateTimeNow = DateTime.now().toUtc();
@@ -565,23 +666,28 @@ class MeasureService extends MeasureServiceBase {
               RpcErrorDetailMessage.measurePreconditionFailed);
         } else {
           // Create a history item
-          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-              substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authUserId,
-                "organization_id": request.authOrganizationId,
-                "object_id": request.measureProgress.id,
-                "object_version": request.measureProgress.version,
-                "object_class_name": measure_m
-                    .MeasureProgress.className,
-                "system_module_index": SystemModule.objectives.index,
-                "system_function_index": SystemFunction.update.index,
-                "date_time": DateTime.now().toUtc(),
-                "description": null, //'# ${request.measureProgress.currentValue}',
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.MeasureProgress.fromProtoBufToModelMap(previousMeasureProgress), measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress))});
+          historyItemNotificationValues = {"id": Uuid().v4(),
+            "user_id": request.authUserId,
+            "organization_id": request.authOrganizationId,
+            "object_id": request.measureProgress.id,
+            "object_version": request.measureProgress.version,
+            "object_class_name": measure_m
+                .MeasureProgress.className,
+            "system_module_index": SystemModule.objectives.index,
+            "system_function_index": SystemFunction.update.index,
+            "date_time": DateTime.now().toUtc(),
+            "description": null, //'# ${request.measureProgress.currentValue}',
+            "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.MeasureProgress.fromProtoBufToModelMap(previousMeasureProgress), measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress))};
 
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: historyItemNotificationValues);
         }
 
       });
+
+      // Notification
+      measureProgressNotification(request.measureProgress, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -595,6 +701,8 @@ class MeasureService extends MeasureServiceBase {
     MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgressId);
 
     try {
+
+      Map<String, dynamic> historyItemNotificationValues;
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
@@ -612,23 +720,29 @@ class MeasureService extends MeasureServiceBase {
                 RpcErrorDetailMessage.measurePreconditionFailed);
           } else {
             // Create a history item
+            historyItemNotificationValues = {"id": Uuid().v4(),
+              "user_id": request.authUserId,
+              "organization_id": request.authOrganizationId,
+              "object_id": request.measureProgressId,
+              "object_version": request.measureProgressVersion,
+              "object_class_name": measure_m.MeasureProgress.className,
+              "system_module_index": SystemModule.objectives.index,
+              "system_function_index": SystemFunction.delete.index,
+              "date_time": DateTime.now().toUtc(),
+              "description": null, //'# ${previousMeasureProgress.currentValue}',
+              "changed_values": history_item_m.HistoryItem
+                  .changedValuesJson(
+                  measure_m.MeasureProgress.fromProtoBufToModelMap(
+                      previousMeasureProgress, true), {})};
+
             await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-                substitutionValues: {"id": Uuid().v4(),
-                  "user_id": request.authUserId,
-                  "organization_id": request.authOrganizationId,
-                  "object_id": request.measureProgressId,
-                  "object_version": request.measureProgressVersion,
-                  "object_class_name": measure_m.MeasureProgress.className,
-                  "system_module_index": SystemModule.objectives.index,
-                  "system_function_index": SystemFunction.delete.index,
-                  "date_time": DateTime.now().toUtc(),
-                  "description": null, //'# ${previousMeasureProgress.currentValue}',
-                  "changed_values": history_item_m.HistoryItem
-                      .changedValuesJson(
-                      measure_m.MeasureProgress.fromProtoBufToModelMap(
-                          previousMeasureProgress, true), {})});
+                substitutionValues: historyItemNotificationValues);
           }
       });
+
+      // Notification
+      measureProgressNotification(previousMeasureProgress, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
