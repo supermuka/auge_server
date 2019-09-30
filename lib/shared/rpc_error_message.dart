@@ -7,9 +7,9 @@ class RpcErrorMessage {
 
 class RpcErrorDetailMessage {
   static const String groupUpdatePreconditionFailed = 'GroupUpdatePreconditionFailed';
-  static const String initiativeDataNotFoundReason = 'Initiative data not found.';
-  static const String initiativeInvalidArgument = 'Initiative invalid argument.';
-  static const String initiativePreconditionFailed = 'Initiative precondition failed.';
+  static const String workDataNotFoundReason = 'Work data not found.';
+  static const String workInvalidArgument = 'Work invalid argument.';
+  static const String workPreconditionFailed = 'Work precondition failed.';
   static const String measurePreconditionFailed = 'Measure precondition failed.';
   static const String measureProgressUpdatePreconditionFailed = 'MeasureProgressUpdatePreconditionFailed';
   static const String measureProgressDataNotFoundReason = 'Measure progress data not found.';

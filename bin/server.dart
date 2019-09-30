@@ -29,10 +29,10 @@ import 'package:auge_server/src/service/general/user_access_service.dart';
 import 'package:auge_server/src/service/general/group_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
 import 'package:auge_server/src/service/objective/measure_service.dart';
-import 'package:auge_server/src/service/initiative/initiative_service.dart';
-import 'package:auge_server/src/service/initiative/state_service.dart';
-import 'package:auge_server/src/service/initiative/stage_service.dart';
-import 'package:auge_server/src/service/initiative/work_item_service.dart';
+import 'package:auge_server/src/service/work/work_service.dart';
+import 'package:auge_server/src/service/work/state_service.dart';
+import 'package:auge_server/src/service/work/work_stage_service.dart';
+import 'package:auge_server/src/service/work/work_item_service.dart';
 
 Future<void> main(List<String> args) async {
   final server = new Server([
@@ -48,8 +48,8 @@ Future<void> main(List<String> args) async {
     ObjectiveService(),
     MeasureService(),
     StateService(),
-    StageService(),
-    InitiativeService(),
+    WorkStageService(),
+    WorkService(),
     WorkItemService()]);
   await server.serve(port: 9091);
   print('Server listening on port ${server.port}...');

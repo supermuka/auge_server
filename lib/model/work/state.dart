@@ -6,13 +6,13 @@
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
 
-import 'package:auge_server/src/protos/generated/initiative/state.pb.dart' as state_pb;
+import 'package:auge_server/src/protos/generated/work/state.pb.dart' as state_pb;
 
 const _colorHue = 'hue';
 const _colorSaturation = 'saturation';
 const _colorLightness = 'lightness';
 
-/// Domain model class to represent an initiative  phase (backlog, workflow, archive)
+/// Domain model class to represent an work state (backlog, workflow, archive --- initial, working, finished)
 class State {
   static final String className = 'State';
 
@@ -25,7 +25,7 @@ class State {
   // Specific
   static final String nameField = 'name';
   String name;
-  // Define initiative state order
+  // Define work state order
   static final String indexField = 'index';
   int index;
   static final String colorField = 'color';

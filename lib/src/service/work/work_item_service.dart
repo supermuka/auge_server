@@ -4,21 +4,28 @@
 import 'dart:async';
 
 import 'package:grpc/grpc.dart';
+import 'package:auge_server/src/util/mail.dart';
+
+import 'package:auge_server/shared/message/messages.dart';
+import 'package:auge_server/shared/message/model_messages.dart';
+
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
-import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart';
-import 'package:auge_server/src/protos/generated/initiative/work_item.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/work/work_stage.pb.dart';
+import 'package:auge_server/src/protos/generated/work/work_work_item.pbgrpc.dart';
 
 import 'package:auge_server/shared/rpc_error_message.dart';
 import 'package:auge_server/shared/common_utils.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
-import 'package:auge_server/src/service/initiative/stage_service.dart';
+import 'package:auge_server/src/service/work/work_stage_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
+import 'package:auge_server/src/service/work/work_service.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
 import 'package:auge_server/model/general/history_item.dart' as history_item_m;
-import 'package:auge_server/model/initiative/work_item.dart' as work_item_m;
+import 'package:auge_server/model/work/work.dart' as work_m;
+import 'package:auge_server/model/work/work_item.dart' as work_item_m;
 
 import 'package:auge_server/src/util/db_connection.dart';
 
@@ -77,30 +84,31 @@ class WorkItemService extends WorkItemServiceBase {
   // QUERY
 
   // *** INITIATIVE WORK ITEMS ***
-  static Future<List<WorkItem>> querySelectWorkItems(WorkItemGetRequest workItemGetRequest /* {String initiativeId, String id} */) async {
+  static Future<List<WorkItem>> querySelectWorkItems(WorkItemGetRequest workItemGetRequest) async {
 
     List<List<dynamic>> results;
 
     String queryStatement;
 
-    queryStatement = "SELECT work_item.id,"
-        " work_item.version,"
-        " work_item.name,"
-        " work_item.description,"
-        " work_item.due_date,"
-        " work_item.completed,"
-        " work_item.stage_id"
-        " FROM initiative.work_items work_item"
-        " JOIN initiative.stages stage ON stage.id = work_item.stage_id";
+    queryStatement = "SELECT work_item.id," //0
+        " work_item.version," //1
+        " work_item.name," //2
+        " work_item.description," //3
+        " work_item.due_date," //4
+        " work_item.completed," //5
+        " work_item.stage_id," //6
+        " work_item.work_id" //7
+        " FROM work.work_items work_item";
+      //  " JOIN work.work_stages work_stage ON stage.id = work_item.stage_id";
 
     Map<String, dynamic> substitutionValues;
 
     if (workItemGetRequest.hasId()) {
       queryStatement += " WHERE work_item.id = @id";
       substitutionValues = {"id": workItemGetRequest.id};
-    } else if (workItemGetRequest.hasInitiativeId() ) {
-      queryStatement += " WHERE work_item.initiative_id = @initiative_id";
-      substitutionValues = {"initiative_id": workItemGetRequest.initiativeId};
+    } else if (workItemGetRequest.hasWorkId() ) {
+      queryStatement += " WHERE work_item.work_id = @work_id";
+      substitutionValues = {"work_id": workItemGetRequest.workId};
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workItemInvalidArgument );
     }
@@ -109,13 +117,13 @@ class WorkItemService extends WorkItemServiceBase {
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
     List<WorkItem> workItems = new List();
-    Stage stage;
+    WorkStage workStage;
     List<User> assignedToUsers;
     List<WorkItemCheckItem> checkItems;
     WorkItem workItem;
     for (var row in results) {
 
-      stage = await StageService.querySelectStage(StageGetRequest()..id = row[6]);
+      workStage = await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[6]);
 
       assignedToUsers = await querySelectWorkItemAssignedToUsers(row[0]);
 
@@ -125,16 +133,19 @@ class WorkItemService extends WorkItemServiceBase {
       if (row[3] != null) workItem.description = row[3];
       if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4]);
       if (row[5] != null) workItem.completed = row[5];
-      if (stage != null) workItem.stage = stage;
+      if (workStage != null) workItem.workStage = workStage;
       if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
       if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
+
+      if (workItemGetRequest.hasWithWork() && workItemGetRequest.withWork == true && row[7] != null) {
+        workItem.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[7]);
+      }
 
       workItems.add(workItem);
 
     }
     return workItems;
   }
-
 
   // *** INITIATIVE WORK ITEMS CHECKED ITEMS ***
   static Future<List<WorkItemCheckItem>> querySelectWorkItemCheckItems(WorkItemCheckItemGetRequest workItemCheckItemGetRequest) async {
@@ -144,7 +155,7 @@ class WorkItemService extends WorkItemServiceBase {
     String queryStatement;
 
     queryStatement = "SELECT check_item.id, check_item.version, check_item.name, check_item.finished"
-        " FROM initiative.work_item_check_items check_item";
+        " FROM work.work_item_check_items check_item";
 
     Map<String, dynamic> substitutionValues;
 
@@ -180,7 +191,7 @@ class WorkItemService extends WorkItemServiceBase {
     String queryStatement;
 
     queryStatement = "SELECT work_item_assigned_user.user_id"
-        " FROM initiative.work_item_assigned_users work_item_assigned_user";
+        " FROM work.work_item_assigned_users work_item_assigned_user";
 
     Map<String, dynamic> substitutionValues;
 
@@ -203,6 +214,28 @@ class WorkItemService extends WorkItemServiceBase {
     return assignedToUsers;
   }
 
+  /// Workitem Notification User
+  static void workItemNotification(WorkItem workItem, String className, SystemFunction systemFunction, String description) {
+
+    // MODEL
+    List<AugeMailMessageTo> mailMessages = [];
+
+    // Leader
+    if (workItem.work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
+
+    mailMessages.add(
+        AugeMailMessageTo(
+            [workItem.work.leader.userProfile.eMail],
+            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())}',
+            '${ClassNameMsg.label(className)}',
+            description,
+            '${FieldMsg.label('${work_m.Work.className}.${work_m.Work.leaderField}')}'));
+
+    // SEND E-MAIL
+    AugeMail().send(mailMessages);
+
+  }
+
   /// Create (insert) a new instance of [WorkItem]
   static Future<StringValue> queryInsertWorkItem(WorkItemRequest request) async {
 
@@ -210,17 +243,21 @@ class WorkItemService extends WorkItemServiceBase {
       request.workItem.id = Uuid().v4();
     }
     request.workItem.version = 0;
+
+    Map<String, dynamic> historyItemNotificationValues;
+
     try {
+
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
-        await ctx.query("INSERT INTO initiative.work_items"
+        await ctx.query("INSERT INTO work.work_items"
             "(id,"
             "version,"
             "name,"
             "description,"
             "due_date,"
             "completed,"
-            "initiative_id,"
+            "work_id,"
             "stage_id)"
             "VALUES"
             "(@id,"
@@ -229,7 +266,7 @@ class WorkItemService extends WorkItemServiceBase {
             "@description,"
             "@due_date,"
             "@completed,"
-            "@initiative_id,"
+            "@work_id,"
             "@stage_id)"
             , substitutionValues: {
               "id": request.workItem.id,
@@ -238,12 +275,12 @@ class WorkItemService extends WorkItemServiceBase {
               "description": request.workItem.hasDescription() ? request.workItem.description : null,
               "due_date": request.workItem.hasDueDate() ? CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) : null,
               "completed": request.workItem.hasCompleted() ? request.workItem.completed : null,
-              "initiative_id": request.hasInitiativeId() ? request.initiativeId : null,
-              "stage_id": request.workItem.hasStage() ? request.workItem.stage.id : null});
+              "work_id": request.hasWorkId() ? request.workId : null,
+              "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null});
 
         // Assigned Members Users
         for (User user in request.workItem.assignedTo) {
-          await ctx.query("INSERT INTO initiative.work_item_assigned_users"
+          await ctx.query("INSERT INTO work.work_item_assigned_users"
               " (work_item_id,"
               " user_id)"
               " VALUES"
@@ -259,7 +296,7 @@ class WorkItemService extends WorkItemServiceBase {
           checkItem.id = new Uuid().v4();
           checkItem.version = 0;
 
-          await ctx.query("INSERT INTO initiative.work_item_check_items"
+          await ctx.query("INSERT INTO work.work_item_check_items"
               " (id,"
               " version,"
               " name,"
@@ -280,26 +317,30 @@ class WorkItemService extends WorkItemServiceBase {
         }
 
         // Create a history item
-        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-            substitutionValues: {"id": Uuid().v4(),
-              "user_id": request.authUserId,
-              "organization_id": request.authOrganizationId,
-              "object_id": request.workItem.id,
-              "object_version": request.workItem.version,
-              "object_class_name": work_item_m
-                  .WorkItem.className,
-              "system_module_index": SystemModule.initiatives.index,
-              "system_function_index": SystemFunction.create.index,
-              "date_time": DateTime.now().toUtc(),
-              "description": request.workItem.name,
-              "changed_values": history_item_m.HistoryItem
-                  .changedValuesJson({},
-                  work_item_m.WorkItem
-                      .fromProtoBufToModelMap(
-                      request.workItem))});
+        historyItemNotificationValues = {"id": Uuid().v4(),
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
+          "object_id": request.workItem.id,
+          "object_version": request.workItem.version,
+          "object_class_name": work_item_m
+              .WorkItem.className,
+          "system_module_index": SystemModule.works.index,
+          "system_function_index": SystemFunction.create.index,
+          "date_time": DateTime.now().toUtc(),
+          "description": request.workItem.name,
+          "changed_values": history_item_m.HistoryItem
+              .changedValuesJson({},
+              work_item_m.WorkItem
+                  .fromProtoBufToModelMap(
+                  request.workItem))};
 
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+            substitutionValues: historyItemNotificationValues);
 
       });
+
+      // Notification
+      workItemNotification(request.workItem, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -309,24 +350,26 @@ class WorkItemService extends WorkItemServiceBase {
     return StringValue()..value = request.workItem.id;
   }
 
-  /// Update an initiative passing an instance of [WorkItem]
+  /// Update an work passing an instance of [WorkItem]
   static Future<Empty> queryUpdateWorkItem(WorkItemRequest request) async {
 
     // Recovery to log to history
     WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id);
+
+    Map<String, dynamic> historyItemNotificationValues;
 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         List<List<dynamic>> result;
 
-        result = await ctx.query("UPDATE initiative.work_items"
+        result = await ctx.query("UPDATE work.work_items"
             " SET version = @version, "
             " name = @name,"
             " description = @description,"
             " due_date = @due_date,"
             " completed = @completed,"
-            " initiative_id = @initiative_id,"
+            " work_id = @work_id,"
             " stage_id = @stage_id"
             " WHERE id = @id AND version = @version - 1"
             " RETURNING true"
@@ -341,14 +384,14 @@ class WorkItemService extends WorkItemServiceBase {
               "completed": request.workItem.hasCompleted()
                   ? request.workItem.completed
                   : null,
-              "initiative_id": request.initiativeId,
-              "stage_id": request.workItem.hasStage() ? request.workItem.stage.id : null});
+              "work_id": request.workId,
+              "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null});
 
         // Assigned Members Users
         StringBuffer assignedToUsersId = new StringBuffer();
         for (User user in request.workItem.assignedTo) {
           await ctx.query(
-              "INSERT INTO initiative.work_item_assigned_users"
+              "INSERT INTO work.work_item_assigned_users"
                   " (work_item_id,"
                   " user_id)"
                   " VALUES"
@@ -369,7 +412,7 @@ class WorkItemService extends WorkItemServiceBase {
 
         if (assignedToUsersId.isNotEmpty) {
           await ctx.query(
-              "DELETE FROM initiative.work_item_assigned_users"
+              "DELETE FROM work.work_item_assigned_users"
                   " WHERE work_item_id = @id"
                   " AND user_id NOT IN (${assignedToUsersId.toString()})"
               , substitutionValues: {
@@ -383,7 +426,7 @@ class WorkItemService extends WorkItemServiceBase {
             checkItem.id = new Uuid().v4();
 
             await ctx.query(
-                "INSERT INTO initiative.work_item_check_items"
+                "INSERT INTO work.work_item_check_items"
                     " (id,"
                     " name,"
                     " finished,"
@@ -399,7 +442,7 @@ class WorkItemService extends WorkItemServiceBase {
               "finished": checkItem.finished,
               "work_item_id": request.workItem.id});
           } else {
-            await ctx.query("UPDATE initiative.work_item_check_items SET"
+            await ctx.query("UPDATE work.work_item_check_items SET"
                 " name = @name,"
                 " finished = @finished,"
                 " work_item_id = @work_item_id"
@@ -419,7 +462,7 @@ class WorkItemService extends WorkItemServiceBase {
         }
 
         String queryDelete;
-        queryDelete = "DELETE FROM initiative.work_item_check_items work_item_check_item WHERE work_item_check_item.work_item_id = @work_item_id";
+        queryDelete = "DELETE FROM work.work_item_check_items work_item_check_item WHERE work_item_check_item.work_item_id = @work_item_id";
         if (checkItemsId.isNotEmpty) {
           queryDelete =
               queryDelete + " AND work_item_check_item.id NOT IN (${checkItemsId.toString()})";
@@ -434,29 +477,35 @@ class WorkItemService extends WorkItemServiceBase {
         else {
 
           // Create a history item
+          historyItemNotificationValues =  {"id": Uuid().v4(),
+            "user_id": request.authUserId,
+            "organization_id": request.authOrganizationId,
+            "object_id": request.workItem.id,
+            "object_version": request.workItem.version,
+            "object_class_name": work_item_m
+                .WorkItem.className,
+            "system_module_index": SystemModule.works.index,
+            "system_function_index": SystemFunction.update.index,
+            "date_time": DateTime.now().toUtc(),
+            "description": request.workItem.name,
+            "changed_values": history_item_m.HistoryItem
+                .changedValuesJson(
+                work_item_m.WorkItem
+                    .fromProtoBufToModelMap(
+                    previousWorkItem),
+                work_item_m.WorkItem
+                    .fromProtoBufToModelMap(
+                    request.workItem))};
+
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-              substitutionValues: {"id": Uuid().v4(),
-                "user_id": request.authUserId,
-                "organization_id": request.authOrganizationId,
-                "object_id": request.workItem.id,
-                "object_version": request.workItem.version,
-                "object_class_name": work_item_m
-                    .WorkItem.className,
-                "system_module_index": SystemModule.initiatives.index,
-                "system_function_index": SystemFunction.update.index,
-                "date_time": DateTime.now().toUtc(),
-                "description": request.workItem.name,
-                "changed_values": history_item_m.HistoryItem
-                    .changedValuesJson(
-                    work_item_m.WorkItem
-                        .fromProtoBufToModelMap(
-                        previousWorkItem),
-                    work_item_m.WorkItem
-                        .fromProtoBufToModelMap(
-                        request.workItem))});
+              substitutionValues: historyItemNotificationValues);
         }
 
       });
+
+      // Notification
+      workItemNotification(request.workItem, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -467,24 +516,26 @@ class WorkItemService extends WorkItemServiceBase {
   /// Delete a WorkItem by [id]
   static Future<Empty> queryDeleteWorkItem(WorkItemDeleteRequest request) async {
 
-    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId);
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..withWork = true);
+
+    Map<String, dynamic> historyItemNotificationValues;
 
     try {
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
-        await ctx.query("DELETE FROM initiative.work_item_check_items work_item_check_item WHERE work_item_check_item.work_item_id = @work_item_id",
+        await ctx.query("DELETE FROM work.work_item_check_items work_item_check_item WHERE work_item_check_item.work_item_id = @work_item_id",
             substitutionValues: {"work_item_id": request.workItemId});
 
         await ctx.query(
-            "DELETE FROM initiative.work_item_assigned_users"
+            "DELETE FROM work.work_item_assigned_users"
                 " WHERE work_item_id = @work_item_id"
             , substitutionValues: {
           "work_item_id": request.workItemId});
 
 
         List<List<dynamic>> result = await ctx.query(
-              "DELETE FROM initiative.work_items work_item"
+              "DELETE FROM work.work_items work_item"
                   " WHERE work_item.id = @id and work_item.version = @version"
                   " RETURNING true"
               , substitutionValues: {
@@ -493,25 +544,31 @@ class WorkItemService extends WorkItemServiceBase {
 
           // Optimistic concurrency control
           if (result.isEmpty) {
-            throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
+            throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.workPreconditionFailed );
           } else {
             // Create a history item
+            historyItemNotificationValues = {"id": Uuid().v4(),
+              "user_id": request.authUserId,
+              "organization_id": request.authOrganizationId,
+              "object_id": request.workItemId,
+              "object_version": request.workItemVersion,
+              "object_class_name": work_item_m.WorkItem.className,
+              "system_module_index": SystemModule.works.index,
+              "system_function_index": SystemFunction.delete.index,
+              "date_time": DateTime.now().toUtc(),
+              "description": previousWorkItem.name,
+              "changed_values": history_item_m.HistoryItem.changedValuesJson(
+                  work_item_m.WorkItem.fromProtoBufToModelMap(
+                      previousWorkItem, true), {})};
+
             await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
-                substitutionValues: {"id": Uuid().v4(),
-                  "user_id": request.authUserId,
-                  "organization_id": request.authOrganizationId,
-                  "object_id": request.workItemId,
-                  "object_version": request.workItemVersion,
-                  "object_class_name": work_item_m.WorkItem.className,
-                  "system_module_index": SystemModule.initiatives.index,
-                  "system_function_index": SystemFunction.delete.index,
-                  "date_time": DateTime.now().toUtc(),
-                  "description": previousWorkItem.name,
-                  "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                      work_item_m.WorkItem.fromProtoBufToModelMap(
-                          previousWorkItem, true), {})});
+                substitutionValues: historyItemNotificationValues);
           }
       });
+
+      // Notification
+      workItemNotification(previousWorkItem, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;

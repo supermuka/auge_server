@@ -426,7 +426,7 @@ class MeasureService extends MeasureServiceBase {
 
         // Optimistic concurrency control
         if (result.isEmpty) {
-          throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.initiativePreconditionFailed );
+          throw new GrpcError.failedPrecondition( RpcErrorDetailMessage.workPreconditionFailed );
         } else {
 
           // Create a history item

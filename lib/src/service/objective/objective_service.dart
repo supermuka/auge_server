@@ -3,7 +3,7 @@
 
 import 'dart:async';
 
-import 'package:auge_server/shared/message/model_messages.dart';
+
 import 'package:auge_server/src/protos/generated/objective/objective_measure.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
@@ -222,23 +222,6 @@ class ObjectiveService extends ObjectiveServiceBase {
             objectives.add(objective);
           }
 
-
-          /*
-          if (!objectiveSelectRequest.treeAlignedWithChildren) {
-            // Parent must be present in the list (objectives);
-            if (row[8] == null)
-              objectivesTree.add(objective);
-            else {
-              objectives
-                  .singleWhere((o) => o.id == row[8])
-                  ?.alignedWithChildren
-                  ?.add(objective);
-            }
-
-            // objectives.singleWhere((o) => o.id == objective.alignedTo, orElse: )?.alignedWithChildren?.add(objective);
-          }
-
-           */
         }
       }
 

@@ -9,7 +9,7 @@ enum SystemModule { users,
                     groups,
                     organization,
                     objectives,
-                    initiatives }
+                    works }
 
 // User
 enum SystemFunction {

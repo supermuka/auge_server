@@ -1,0 +1,62 @@
+// Copyright (c) 2019, Levius Tecnologia Ltda. All rights reserved.
+// Author: Samuel C. Schwebel
+
+syntax = "proto3";
+
+package auge.protobuf;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "work/state.proto";
+
+// The service definition.
+service WorkStageService {
+    rpc GetWorkStages (WorkStageGetRequest) returns (WorkStagesResponse) {}
+    rpc GetWorkStage (WorkStageGetRequest) returns (WorkStage) {}
+
+    rpc CreateWorkStage (WorkStageRequest) returns (google.protobuf.StringValue) {}
+    rpc UpdateWorkStage (WorkStageRequest) returns (google.protobuf.Empty) {}
+    rpc DeleteWorkStage (WorkStageDeleteRequest) returns (google.protobuf.Empty) {}
+}
+
+// Message to respective domain object.
+message WorkStage {
+    // Base
+    string id = 1;
+    int32 version = 2;
+
+    // Specific
+    string name = 3;
+    State state = 4;
+
+    // Define work stage order
+    int32 index = 5;
+}
+
+// Request related for model domain
+message WorkStageRequest {
+    WorkStage work_stage = 1;
+    string work_id = 2;
+    string auth_user_id = 3;
+    string auth_organization_id = 4;
+}
+
+// Request message for delete related for model domain
+message WorkStageDeleteRequest {
+    string work_stage_id = 1;
+    int32 work_stage_version = 2;
+    string auth_user_id = 3;
+    string auth_organization_id = 4;
+}
+
+// Response list of the stages
+message WorkStagesResponse {
+    repeated WorkStage work_stages = 1;
+}
+
+// Request for query param
+message WorkStageGetRequest {
+
+    string id = 1;
+    string work_id = 2;
+}

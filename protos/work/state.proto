@@ -23,7 +23,7 @@ message State {
 
     // Specific
     string name = 3;
-    // Define initiative state order
+    // Define work state order
     int32 index = 4;
     map<string, int32> color = 5;
 }

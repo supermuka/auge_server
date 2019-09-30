@@ -3,7 +3,8 @@
 
 import 'package:auge_server/shared/common_utils.dart';
 
-import 'package:auge_server/model/initiative/stage.dart';
+import 'package:auge_server/model/work/work.dart';
+import 'package:auge_server/model/work/work_stage.dart';
 import 'package:auge_server/model/general/user.dart';
 
 import 'package:intl/intl.dart';
@@ -12,9 +13,9 @@ import 'package:intl/date_symbol_data_local.dart';
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
-import 'package:auge_server/src/protos/generated/initiative/work_item.pb.dart' as work_item_pb;
+import 'package:auge_server/src/protos/generated/work/work_work_item.pb.dart' as work_work_item_pb;
 
-/// Domain model class to represent an initiative item work (task, issue, feature, etc.)
+/// Domain model class to represent an work item work (task, issue, feature, etc.)
 class WorkItem {
   static final String className = 'WorkItem';
 
@@ -35,10 +36,12 @@ class WorkItem {
   int completed;
   static final String checkItemsField = 'checkItems';
   List<WorkItemCheckItem> checkItems;
-  static final String stageField = 'stage';
-  Stage stage;
+  static final String workStageField = 'workStage';
+  WorkStage workStage;
   static final String assignedToField = 'assignedTo';
   List<User> assignedTo;
+  static final String workField = 'work';
+  Work work;
 
   WorkItem() {
     initializeDateFormatting(Intl.defaultLocale);
@@ -56,8 +59,8 @@ class WorkItem {
     }
   }
 
-  work_item_pb.WorkItem writeToProtoBuf() {
-    work_item_pb.WorkItem workItemPb = work_item_pb.WorkItem();
+  work_work_item_pb.WorkItem writeToProtoBuf() {
+    work_work_item_pb.WorkItem workItemPb = work_work_item_pb.WorkItem();
 
     if (this.id != null) workItemPb.id = this.id;
     if (this.version != null) workItemPb.version = this.version;
@@ -74,21 +77,21 @@ class WorkItem {
     }
     */
 
-    if (this.stage != null) workItemPb.stage = this.stage.writeToProtoBuf();
+    if (this.workStage != null) workItemPb.workStage = this.workStage.writeToProtoBuf();
 
     if (this.checkItems != null && this.checkItems.isNotEmpty) workItemPb.checkItems.addAll(this.checkItems.map((m) => m.writeToProtoBuf()));
     if (this.assignedTo != null && this.assignedTo.isNotEmpty) workItemPb.assignedTo.addAll(this.assignedTo.map((m) => m.writeToProtoBuf()));
-
+    if (this.work != null) workItemPb.work = this.work.writeToProtoBuf();
     return workItemPb;
   }
 
-  readFromProtoBuf(work_item_pb.WorkItem workItemPb) {
+  readFromProtoBuf(work_work_item_pb.WorkItem workItemPb) {
     if (workItemPb.hasId()) this.id = workItemPb.id;
     if (workItemPb.hasVersion()) this.version = workItemPb.version;
     if (workItemPb.hasName()) this.name = workItemPb.name;
     if (workItemPb.hasDescription()) this.description = workItemPb.description;
     if (workItemPb.hasCompleted()) this.completed = workItemPb.completed;
-    if (workItemPb.hasStage()) this.stage = Stage()..readFromProtoBuf(workItemPb.stage);
+    if (workItemPb.hasWorkStage()) this.workStage = WorkStage()..readFromProtoBuf(workItemPb.workStage);
 
     if (workItemPb.hasDueDate())  this.dueDate = CommonUtils.dateTimeFromTimestamp(workItemPb.dueDate); /*{
       this.dueDate = DateTime.fromMicrosecondsSinceEpoch(workItemPb.dueDate.seconds.toInt() * 1000000 + workItemPb.dueDate.nanos ~/ 1000 );
@@ -96,10 +99,11 @@ class WorkItem {
 
     if (workItemPb.checkItems.isNotEmpty) this.checkItems = workItemPb.checkItems.map((u) => WorkItemCheckItem()..readFromProtoBuf(u)).toList();
     if (workItemPb.assignedTo.isNotEmpty) this.assignedTo = workItemPb.assignedTo.map((u) => User()..readFromProtoBuf(u)).toList();
+    if (workItemPb.hasWork()) this.work = Work()..readFromProtoBuf(workItemPb.work);
 
   }
 
-  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItem workItemPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
+  static Map<String, dynamic> fromProtoBufToModelMap(work_work_item_pb.WorkItem workItemPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
     if (onlyIdAndSpecificationForDepthFields && isDeep) {
@@ -114,7 +118,7 @@ class WorkItem {
         map[WorkItem.descriptionField] = workItemPb.description;
       if (workItemPb.hasCompleted())
         map[WorkItem.completedField] = workItemPb.completed;
-      if (workItemPb.hasStage()) map[WorkItem.stageField] = Stage.fromProtoBufToModelMap(workItemPb.stage);
+      if (workItemPb.hasWorkStage()) map[WorkItem.workStageField] = WorkStage.fromProtoBufToModelMap(workItemPb.workStage);
       if (workItemPb.hasDueDate())
         map[WorkItem.dueDateField] = CommonUtils.dateTimeFromTimestamp(workItemPb.dueDate);
 
@@ -124,6 +128,7 @@ class WorkItem {
       if (workItemPb.assignedTo.isNotEmpty) map[WorkItem.assignedToField] =
           workItemPb.assignedTo.map((at) =>
               User.fromProtoBufToModelMap(at, onlyIdAndSpecificationForDepthFields, true)).toList();
+      if (workItemPb.hasWork()) map[WorkItem.workField] = Work.fromProtoBufToModelMap(workItemPb.work);
     }
     return map;
   }
@@ -143,8 +148,8 @@ class WorkItemCheckItem {
   static const String indexField = 'index';
   int index;
 
-  work_item_pb.WorkItemCheckItem writeToProtoBuf() {
-    work_item_pb.WorkItemCheckItem workItemCheckItemPb = work_item_pb.WorkItemCheckItem();
+  work_work_item_pb.WorkItemCheckItem writeToProtoBuf() {
+    work_work_item_pb.WorkItemCheckItem workItemCheckItemPb = work_work_item_pb.WorkItemCheckItem();
 
     if (this.id != null) workItemCheckItemPb.id = this.id;
     if (this.version != null) workItemCheckItemPb.version = this.version;
@@ -155,14 +160,14 @@ class WorkItemCheckItem {
     return workItemCheckItemPb;
   }
 
-  readFromProtoBuf(work_item_pb.WorkItemCheckItem workItemCheckItemPb) {
+  readFromProtoBuf(work_work_item_pb.WorkItemCheckItem workItemCheckItemPb) {
     if (workItemCheckItemPb.hasId()) this.id = workItemCheckItemPb.id;
     if (workItemCheckItemPb.hasName()) this.name = workItemCheckItemPb.name;
     if (workItemCheckItemPb.hasFinished()) this.finished = workItemCheckItemPb.finished;
     if (workItemCheckItemPb.hasIndex()) this.index = workItemCheckItemPb.index;
   }
 
-  static Map<String, dynamic> fromProtoBufToModelMap(work_item_pb.WorkItemCheckItem workItemCheckItemPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
+  static Map<String, dynamic> fromProtoBufToModelMap(work_work_item_pb.WorkItemCheckItem workItemCheckItemPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
     if (onlyIdAndSpecificationForDepthFields && isDeep) {

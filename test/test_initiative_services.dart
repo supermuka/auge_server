@@ -9,34 +9,33 @@ import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
-import 'package:auge_server/src/protos/generated/initiative/initiative.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/initiative/work_item.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/initiative/stage.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/initiative/state.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/work/work_work_item.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/work/work_stage.pbgrpc.dart';
+import 'package:auge_server/src/protos/generated/work/state.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/group.pbgrpc.dart';
 
 void main() {
 
-  group('Test Initiative Module Services.', ()
+  group('Test Work Module Services.', ()
   {
     ClientChannel channel;
     OrganizationServiceClient organizationStub;
     UserServiceClient userStub;
     StateServiceClient stateStub;
-    StageServiceClient stageStub;
-    InitiativeServiceClient initiativeStub;
+    WorkStageServiceClient stageStub;
+    WorkServiceClient workStub;
     GroupServiceClient groupStub;
     WorkItemServiceClient workItemStub;
 
     String id;
     String organizationId;
     String userId;
-    String initiativeId;
+    String workId;
     String stateId;
     String stageId;
     String groupId;
     String workItemId;
-    Stage stage;
+    WorkStage workStage;
 
     setUp(() async {
       channel = ClientChannel('localhost',
@@ -47,8 +46,8 @@ void main() {
       organizationStub = OrganizationServiceClient(channel);
       userStub = UserServiceClient(channel);
       stateStub = StateServiceClient(channel);
-      stageStub = StageServiceClient(channel);
-      initiativeStub = InitiativeServiceClient(channel);
+      stageStub = WorkStageServiceClient(channel);
+      workStub = WorkServiceClient(channel);
       groupStub = GroupServiceClient(channel);
       workItemStub = WorkItemServiceClient(channel);
     });
@@ -112,15 +111,15 @@ void main() {
       });
     });
 
-    group('Initiative and WorkItem Service.', ()
+    group('Work and WorkItem Service.', ()
     {
       String name = 'Unit test';
       String description = 'Description test';
 
-      test('Call operation createInitiative', () async {
+      test('Call operation createWork', () async {
 
-        StringValue idResponsePb = await initiativeStub
-            .createInitiative(InitiativeRequest()..initiative = (Initiative()
+        StringValue idResponsePb = await workStub
+            .createWork(WorkRequest()..work = (Work()
           ..name = name
           ..description = description
           ..organization = (Organization()
@@ -129,7 +128,7 @@ void main() {
             ..id = groupId)
           ..leader = (User()
             ..id = userId)
-          ..stages.add(Stage()
+          ..workStages.add(WorkStage()
             ..id = 'f9ea90d6-79ab-42c2-b238-0323c4b20a78'
             ..name = 'Test Stage'
             ..state = (State()
@@ -138,71 +137,71 @@ void main() {
         expect(idResponsePb.hasValue(), isTrue);
 
         id = idResponsePb.value;
-        initiativeId = id;
+        workId = id;
       });
 
-      test('Call operation getInitiative', () async {
-        Initiative initiative = await initiativeStub
-            .getInitiative(InitiativeGetRequest()
+      test('Call operation getWork', () async {
+        Work work = await workStub
+            .getWork(WorkGetRequest()
           ..id = id);
-        expect(initiative, isNotNull);
+        expect(work, isNotNull);
 
-        expect(initiative, isNotNull);
-        expect(initiative.id, id);
-        expect(initiative.name, name);
-        expect(initiative.description, description);
+        expect(work, isNotNull);
+        expect(work.id, id);
+        expect(work.name, name);
+        expect(work.description, description);
 
-        stage = initiative.stages.first;
+        workStage = work.workStages.first;
       });
 
-      test('Call operation getInitiatives', () async {
-        InitiativesResponse initiativesResponse = await initiativeStub
-            .getInitiatives(InitiativeGetRequest()
+      test('Call operation getWorks', () async {
+        WorksResponse worksResponse = await workStub
+            .getWorks(WorkGetRequest()
           ..organizationId = organizationId);
 
-        expect(initiativesResponse.initiatives, isNotEmpty);
-        expect(initiativesResponse.initiatives.length, greaterThanOrEqualTo(1));
+        expect(worksResponse.works, isNotEmpty);
+        expect(worksResponse.works.length, greaterThanOrEqualTo(1));
       });
 
 
-      test('Call operation updateInitiative', () async {
+      test('Call operation updateWork', () async {
         name = 'Unit test 2';
         description = 'Description test 2';
 
-        await initiativeStub
-          ..updateInitiative(InitiativeRequest()..initiative = (Initiative()
-            ..id = initiativeId
+        await workStub
+          ..updateWork(WorkRequest()..work = (Work()
+            ..id = workId
             ..name = name
             ..description = description
             ..organization = (Organization()
               ..id = organizationId)));
 
-        Initiative initiative = await initiativeStub
-            .getInitiative(InitiativeGetRequest()
-          ..id = initiativeId);
+        Work work = await workStub
+            .getWork(WorkGetRequest()
+          ..id = workId);
 
-        expect(initiative, isNotNull);
-        expect(initiative.id, initiativeId);
-        expect(initiative.name, name);
-        expect(initiative.description, description);
+        expect(work, isNotNull);
+        expect(work.id, workId);
+        expect(work.name, name);
+        expect(work.description, description);
       });
 
       test('Call operation getStages', () async {
-        StagesResponse stagesResponse = await stageStub
-            .getStages(StageGetRequest()
-          ..initiativeId = initiativeId);
-        expect(stagesResponse.stages, isNotNull);
+        WorkStagesResponse stagesResponse = await stageStub
+            .getWorkStages(WorkStageGetRequest()
+          ..workId = workId);
+        expect(stagesResponse.workStages, isNotNull);
 
-        if (stagesResponse.stages.length != 0)
-          stageId = stagesResponse.stages.first.id;
+        if (stagesResponse.workStages.length != 0)
+          stageId = stagesResponse.workStages.first.id;
       });
 
       test('Call operation getStage', () async {
-        Stage stage = await stageStub
-            .getStage(StageGetRequest()
+        WorkStage workStage = await stageStub
+            .getWorkStage(WorkStageGetRequest()
           ..id = stageId);
-        expect(stage.id, isNotNull);
-        expect(stage.id, stageId);
+        expect(workStage.id, isNotNull);
+        expect(workStage.id, stageId);
       });
 
       test('Call operation createWorkItem', () async {
@@ -216,7 +215,7 @@ void main() {
           ..checkItems.add(WorkItemCheckItem()
             ..id = 'f9ea90d6-79ab-42c2-b238-0323c4b20a78'
             ..name = 'Check Item Test')
-          ..stage = stage)..initiativeId = initiativeId);
+          ..workStage = workStage)..workId = workId);
 
         expect(idResponsePb.hasValue(), isTrue);
 
@@ -238,7 +237,7 @@ void main() {
       test('Call operation getWorkItems', () async {
         WorkItemsResponse workItemsResponse = await workItemStub
             .getWorkItems(WorkItemGetRequest()
-          ..initiativeId = initiativeId);
+          ..workId = workId);
 
         expect(workItemsResponse.workItems, isNotEmpty);
         expect(workItemsResponse.workItems.length, greaterThanOrEqualTo(1));
@@ -254,7 +253,7 @@ void main() {
             ..version = 0
             ..name = name
             ..description = description
-            ..stage = stage)..initiativeId = initiativeId);
+            ..workStage = workStage)..workId = workId);
 
         WorkItem workItem = await workItemStub
             .getWorkItem(WorkItemGetRequest()

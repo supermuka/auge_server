@@ -1,22 +1,21 @@
 import 'package:test/test.dart';
 
-import 'package:auge_server/src/protos/generated/initiative/initiative.pb.dart' as initiative_pb;
-import 'package:auge_server/src/protos/generated/initiative/work_item.pb.dart' as work_item_pb;
-import 'package:auge_server/src/protos/generated/initiative/stage.pb.dart' as stage_pb;
-import 'package:auge_server/src/protos/generated/initiative/state.pb.dart' as state_pb;
+import 'package:auge_server/src/protos/generated/work/work_work_item.pb.dart' as work_work_item_pb;
+import 'package:auge_server/src/protos/generated/work/work_stage.pb.dart' as work_stage_pb;
+import 'package:auge_server/src/protos/generated/work/state.pb.dart' as state_pb;
 
 import 'package:auge_server/model/general/organization.dart' as organization_m;
 import 'package:auge_server/model/general/group.dart' as group_m;
 import 'package:auge_server/model/general/user.dart' as user_m;
-import 'package:auge_server/model/initiative/initiative.dart' as initiative_m;
-import 'package:auge_server/model/initiative/work_item.dart' as work_item_m;
-import 'package:auge_server/model/initiative/stage.dart' as stage_m;
-import 'package:auge_server/model/initiative/state.dart' as state_m;
+import 'package:auge_server/model/work/work.dart' as work_m;
+import 'package:auge_server/model/work/work_item.dart' as work_item_m;
+import 'package:auge_server/model/work/work_stage.dart' as stage_m;
+import 'package:auge_server/model/work/state.dart' as state_m;
 import 'package:auge_server/model/objective/objective.dart' as objective_m;
 
 void main() {
 
-  group('Test Initiative Messages.', ()
+  group('Test Work Messages.', ()
   {
     setUp(() {
 
@@ -28,8 +27,8 @@ void main() {
 
     group('Stage entity.', () {
 
-      stage_m.Stage model = stage_m.Stage();
-      stage_pb.Stage proto;
+      stage_m.WorkStage model = stage_m.WorkStage();
+      work_stage_pb.WorkStage proto;
 
       setUp(() {
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
@@ -57,19 +56,19 @@ void main() {
 
       test('Call readToProtoBuffer.', () async {
 
-        model = stage_m.Stage();
+        model = stage_m.WorkStage();
         model.readFromProtoBuf(proto);
 
         callExcept();
       });
 
       test('Call fromProtoBufToModelMap.', () async {
-        Map<String, dynamic> m = stage_m.Stage.fromProtoBufToModelMap(proto);
-        expect(m[stage_m.Stage.idField], equals(proto.id));
-        expect(m[stage_m.Stage.versionField], equals(proto.version));
-        expect(m[stage_m.Stage.nameField], equals(proto.name));
-        expect(m[stage_m.Stage.indexField], equals(proto.index));
-        expect(m[stage_m.Stage.stateField][state_m.State.idField], equals(proto.state.id));
+        Map<String, dynamic> m = stage_m.WorkStage.fromProtoBufToModelMap(proto);
+        expect(m[stage_m.WorkStage.idField], equals(proto.id));
+        expect(m[stage_m.WorkStage.versionField], equals(proto.version));
+        expect(m[stage_m.WorkStage.nameField], equals(proto.name));
+        expect(m[stage_m.WorkStage.indexField], equals(proto.index));
+        expect(m[stage_m.WorkStage.stateField][state_m.State.idField], equals(proto.state.id));
       });
 
     });
@@ -122,10 +121,10 @@ void main() {
       });
     });
 
-    group('Initiative entity.', () {
+    group('Work entity.', () {
 
-      initiative_m.Initiative model = initiative_m.Initiative();
-      initiative_pb.Initiative proto;
+      work_m.Work model = work_m.Work();
+      work_work_item_pb.Work proto;
 
       setUp(() {
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
@@ -137,7 +136,7 @@ void main() {
         model.leader = user_m.User()..id = 'a15496bc-9437-4e43-af00-b546ab47952e';
         model.objective = objective_m.Objective()..id = '30a4330f-1de7-454b-9bbd-2e83ec71b621';
         model.workItems.add(work_item_m.WorkItem()..id = 'eb801742-61f7-4da2-b498-984fc7bc4504');
-        model.stages.add(stage_m.Stage()..id = '7f8b226c-ee2d-4533-9e19-606bfc098d0e');
+        model.workStages.add(stage_m.WorkStage()..id = '7f8b226c-ee2d-4533-9e19-606bfc098d0e');
 
       });
 
@@ -155,8 +154,8 @@ void main() {
         expect(model.workItems.isNotEmpty, equals(proto.workItems.isNotEmpty));
         expect(model.workItems.first.id, equals(proto.workItems.first.id));
 
-        expect(model.stages.isNotEmpty, equals(proto.stages.isNotEmpty));
-        expect(model.stages.first.id, equals(proto.stages.first.id));
+        expect(model.workStages.isNotEmpty, equals(proto.workStages.isNotEmpty));
+        expect(model.workStages.first.id, equals(proto.workStages.first.id));
       }
 
       test('Call writeToProtoBuffer.', () async {
@@ -169,7 +168,7 @@ void main() {
 
       test('Call readToProtoBuffer.', () async {
 
-        model = initiative_m.Initiative();
+        model = work_m.Work();
         model.readFromProtoBuf(proto);
 
         callExcept();
@@ -177,31 +176,31 @@ void main() {
 
       test('Call readToProtoBuffer.', () async {
 
-        model = initiative_m.Initiative();
+        model = work_m.Work();
         model.readFromProtoBuf(proto);
 
         callExcept();
       });
 
       test('Call fromProtoBufToModelMap.', () async {
-        Map<String, dynamic> m = initiative_m.Initiative.fromProtoBufToModelMap(proto);
-        expect(m[initiative_m.Initiative.idField], equals(proto.id));
-        expect(m[initiative_m.Initiative.versionField], equals(proto.version));
-        expect(m[initiative_m.Initiative.nameField], equals(proto.name));
-        expect(m[initiative_m.Initiative.descriptionField], equals(proto.description));
-        expect(m[initiative_m.Initiative.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
-        expect(m[initiative_m.Initiative.groupField][group_m.Group.idField], equals(proto.group.id));
-        expect(m[initiative_m.Initiative.leaderField][user_m.User.idField], equals(proto.leader.id));
-        expect(m[initiative_m.Initiative.objectiveField][objective_m.Objective.idField], equals(proto.objective.id));
-        expect(m[initiative_m.Initiative.workItemsField].first[work_item_m.WorkItem.idField], equals(proto.workItems.first.id));
-        expect(m[initiative_m.Initiative.stagesField].first[stage_m.Stage.idField], equals(proto.stages.first.id));
+        Map<String, dynamic> m = work_m.Work.fromProtoBufToModelMap(proto);
+        expect(m[work_m.Work.idField], equals(proto.id));
+        expect(m[work_m.Work.versionField], equals(proto.version));
+        expect(m[work_m.Work.nameField], equals(proto.name));
+        expect(m[work_m.Work.descriptionField], equals(proto.description));
+        expect(m[work_m.Work.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
+        expect(m[work_m.Work.groupField][group_m.Group.idField], equals(proto.group.id));
+        expect(m[work_m.Work.leaderField][user_m.User.idField], equals(proto.leader.id));
+        expect(m[work_m.Work.objectiveField][objective_m.Objective.idField], equals(proto.objective.id));
+        expect(m[work_m.Work.workItemsField].first[work_item_m.WorkItem.idField], equals(proto.workItems.first.id));
+        expect(m[work_m.Work.workStagesField].first[stage_m.WorkStage.idField], equals(proto.workStages.first.id));
       });
     });
 
     group('WorkItem entity.', () {
 
       work_item_m.WorkItem model = work_item_m.WorkItem();
-      work_item_pb.WorkItem proto;
+      work_work_item_pb.WorkItem proto;
 
       setUp(() {
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';

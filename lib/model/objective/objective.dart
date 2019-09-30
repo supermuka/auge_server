@@ -13,7 +13,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
-import 'package:auge_server/src/protos/generated/objective/objective.pb.dart' as objective_pb;
+import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart' as objective_measure_pb;
 
 /// Domain model class to represent an objective
 class Objective {
@@ -79,8 +79,8 @@ class Objective {
     return (countMeasuresProgress != 0) ? (sumMeasuresProgress / countMeasuresProgress * 100).toInt() : 0;
   }
 
-  objective_pb.Objective writeToProtoBuf() {
-    objective_pb.Objective objectivePb = objective_pb.Objective();
+  objective_measure_pb.Objective writeToProtoBuf() {
+    objective_measure_pb.Objective objectivePb = objective_measure_pb.Objective();
 
     if (this.id != null) objectivePb.id = this.id;
     if (this.version != null) objectivePb.version = this.version;
@@ -102,7 +102,7 @@ class Objective {
     return objectivePb;
   }
 
-  readFromProtoBuf(objective_pb.Objective objectivePb) {
+  readFromProtoBuf(objective_measure_pb.Objective objectivePb) {
     if (objectivePb.hasId()) this.id = objectivePb.id;
     if (objectivePb.hasVersion()) this.version = objectivePb.version;
     if (objectivePb.hasName()) this.name = objectivePb.name;
@@ -125,7 +125,7 @@ class Objective {
     if (objectivePb.measures.isNotEmpty) this.measures = objectivePb.measures.map((u) => Measure()..readFromProtoBuf(u)).toList();
   }
 
-  static Map<String, dynamic> fromProtoBufToModelMap(objective_pb.Objective objectivePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
+  static Map<String, dynamic> fromProtoBufToModelMap(objective_measure_pb.Objective objectivePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
     Map<String, dynamic> map = Map();
 
     if (onlyIdAndSpecificationForDepthFields && isDeep) {

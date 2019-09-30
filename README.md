@@ -111,3 +111,9 @@ https://docs.microsoft.com/pt-br/windows/desktop/AD/naming-properties
 bug:
 
 https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=599585
+
+
+BPM VS WORKFLOW.
+https://solutionsreview.com/business-process-management/understanding-the-difference-between-workflow-management-and-bpm/#targetText=Workflow%20Management%20vs.%20BPM,it%20in%20a%20different%20manner.&targetText=BPM%2C%20on%20the%20other%20hand,processes%20to%20improve%20their%20efficiency.
+http://blog.iprocess.com.br/2012/09/bpm-e-workflow-qual-a-diferenca/
+http://garysamuelson.com/blog/?p=1413
