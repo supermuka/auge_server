@@ -2,7 +2,6 @@ import 'package:test/test.dart';
 
 import 'package:grpc/grpc.dart';
 
-import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
@@ -11,8 +10,9 @@ import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 
 import 'package:auge_server/src/protos/generated/work/work_work_item.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/work/work_stage.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/work/state.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/group.pbgrpc.dart';
+
+import 'package:auge_server/model/general/group.dart' as group_m;
 
 void main() {
 
@@ -21,7 +21,6 @@ void main() {
     ClientChannel channel;
     OrganizationServiceClient organizationStub;
     UserServiceClient userStub;
-    StateServiceClient stateStub;
     WorkStageServiceClient stageStub;
     WorkServiceClient workStub;
     GroupServiceClient groupStub;
@@ -45,7 +44,6 @@ void main() {
 
       organizationStub = OrganizationServiceClient(channel);
       userStub = UserServiceClient(channel);
-      stateStub = StateServiceClient(channel);
       stageStub = WorkStageServiceClient(channel);
       workStub = WorkServiceClient(channel);
       groupStub = GroupServiceClient(channel);
@@ -68,23 +66,6 @@ void main() {
       });
     });
 
-    group('State Service.', () {
-      test('Call operation getStates', () async {
-        StatesResponse statesResponse = await stateStub
-            .getStates(Empty());
-        expect(statesResponse.states, isNotNull);
-
-        if (statesResponse.states.length != 0)
-          stateId = statesResponse.states.first.id;
-      });
-
-      test('Call operation getState', () async {
-         State state = await stateStub
-            .getState(StateGetRequest()..id = stateId);
-        expect(state.id, isNotNull);
-        expect(state.id, stateId);
-      });
-    });
 
     group('User Service.', () {
       test('Call operation getUsers', () async {
@@ -131,8 +112,7 @@ void main() {
           ..workStages.add(WorkStage()
             ..id = 'f9ea90d6-79ab-42c2-b238-0323c4b20a78'
             ..name = 'Test Stage'
-            ..state = (State()
-              ..id = stateId))));
+            ..stateIndex = group_m.GroupType.businessUnit.index)));
 
         expect(idResponsePb.hasValue(), isTrue);
 
@@ -264,7 +244,6 @@ void main() {
         expect(workItem.name, name);
         expect(workItem.description, description);
       });
-
     });
   });
 }

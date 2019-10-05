@@ -1,9 +1,9 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
+import "dart:collection";
 
 import 'package:auge_server/model/general/organization.dart';
 import 'package:auge_server/model/general/user.dart';
-import 'package:auge_server/model/work/state.dart';
 import 'package:auge_server/model/work/work_stage.dart';
 import 'package:auge_server/model/work/work_item.dart';
 import 'package:auge_server/model/general/group.dart';
@@ -52,21 +52,31 @@ class Work  {
 
   Map<State, int> get stateWorkItemsCount {
     Map<State, int> m = new Map();
-    Map<String, State> mSameState = new Map();
-    State state;
+   // Map<int, State> mSameState = SplayTreeMap(); // new Map();
+    // Two item on list. First is the state object and the last the count number of workitems
+    Map<int, List<dynamic>> mSameState = SplayTreeMap();
+    List<dynamic> state;
     workItems.forEach( (key) {
-      // Get a same object for all State objects with identical id
-      state =  mSameState.putIfAbsent(key.workStage.state.id, () => key.workStage.state);
+      // Get a same object for all State objects with identical index. Used index as a key to sort
+      state =  mSameState.putIfAbsent(key.workStage.state.index, () => [key.workStage.state, 0]);
 
-      m.putIfAbsent(state , () => 0);
-      m.update(state, (i) => i + 1);
+      //
+      state[1]++;
+
+   //   m.putIfAbsent(state , () => 0);
+   //   m.update(state, (i) => i + 1);
     });
+
+    mSameState.forEach((k, v) => m.putIfAbsent(v.first, () => v.last));
+
     return m;
+
+     //return m;
   }
 
   Map<WorkStage, int> get stageWorkItemsCount  {
     Map<WorkStage, int> m = new Map();
-    Map<String, WorkStage> mSameStage = new Map();
+    Map<String, WorkStage> mSameStage =  Map();
     WorkStage stage;
     workItems.forEach( (key) {
       // Get a same object for all State objects with identical id

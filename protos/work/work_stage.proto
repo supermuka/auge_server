@@ -7,7 +7,6 @@ package auge.protobuf;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
-import "work/state.proto";
 
 // The service definition.
 service WorkStageService {
@@ -27,7 +26,7 @@ message WorkStage {
 
     // Specific
     string name = 3;
-    State state = 4;
+    int32 state_index = 4;
 
     // Define work stage order
     int32 index = 5;

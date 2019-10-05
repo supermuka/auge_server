@@ -164,7 +164,7 @@ void main() {
         model.name = 'Unit Test Group';
         model.inactive = true;
         model.organization = organization_m.Organization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
-        model.groupType = group_m.GroupType()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
+        model.groupType =  group_m.GroupType.businessUnit;
         model.superGroup = group_m.Group()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.leader = user_m.User()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
         model.members.add(user_m.User()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e');
@@ -177,7 +177,7 @@ void main() {
         expect(model.name, equals(proto.name));
         expect(model.inactive, equals(proto.inactive));
         expect(model.organization.id, equals(proto.organization.id));
-        expect(model.groupType.id, equals(proto.groupType.id));
+        expect(model.groupType.index, equals(proto.groupTypeIndex));
         expect(model.superGroup.id, equals(proto.superGroup.id));
         expect(model.leader.id, equals(proto.leader.id));
         expect(model.members.first.id, equals(proto.members.first.id));
@@ -207,36 +207,12 @@ void main() {
         expect(m[group_m.Group.nameField], equals(proto.name));
         expect(m[group_m.Group.inactiveField], equals(proto.inactive));
         expect(m[group_m.Group.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
-        expect(m[group_m.Group.groupTypeField][group_m.GroupType.idField], equals(proto.groupType.id));
+        expect(m[group_m.Group.groupTypeField][group_m.Group.groupTypeField], equals(proto.groupTypeIndex));
         expect(m[group_m.Group.superGroupField][group_m.Group.idField], equals(proto.superGroup.id));
         expect(m[group_m.Group.leaderField][user_m.User.idField], equals(proto.leader.id));
         expect(m[group_m.Group.membersField].first[user_m.User.idField], equals(proto.members.first.id));
       });
 
-      test('GroupType entity. Call writeToProtoBuf and readToProtoBuf.', () async {
-
-        group_m.GroupType model = group_m.GroupType();
-
-        model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
-        model.name = 'Unit Test GroupType';
-
-        group_pb.GroupType proto;
-
-        void callExcept() {
-          expect(model.id, equals(proto.id));
-          expect(model.name, equals(proto.name));
-        }
-
-        proto = model.writeToProtoBuf();
-
-        callExcept();
-
-        model = group_m.GroupType();
-        model.readFromProtoBuf(proto);
-
-        callExcept();
-
-      });
     });
   });
 }

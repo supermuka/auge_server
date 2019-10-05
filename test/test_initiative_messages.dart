@@ -2,7 +2,6 @@ import 'package:test/test.dart';
 
 import 'package:auge_server/src/protos/generated/work/work_work_item.pb.dart' as work_work_item_pb;
 import 'package:auge_server/src/protos/generated/work/work_stage.pb.dart' as work_stage_pb;
-import 'package:auge_server/src/protos/generated/work/state.pb.dart' as state_pb;
 
 import 'package:auge_server/model/general/organization.dart' as organization_m;
 import 'package:auge_server/model/general/group.dart' as group_m;
@@ -10,7 +9,6 @@ import 'package:auge_server/model/general/user.dart' as user_m;
 import 'package:auge_server/model/work/work.dart' as work_m;
 import 'package:auge_server/model/work/work_item.dart' as work_item_m;
 import 'package:auge_server/model/work/work_stage.dart' as stage_m;
-import 'package:auge_server/model/work/state.dart' as state_m;
 import 'package:auge_server/model/objective/objective.dart' as objective_m;
 
 void main() {
@@ -35,7 +33,7 @@ void main() {
         model.version = 0;
         model.name = 'Name test';
         model.index = 0;
-        model.state = state_m.State()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
+        model.state = stage_m.State.notStarted;
       });
 
       void callExcept() {
@@ -43,7 +41,7 @@ void main() {
         expect(model.version, equals(proto.version));
         expect(model.name, equals(proto.name));
         expect(model.index, equals(proto.index));
-        expect(model.state.id, equals(proto.state.id));
+        expect(model.state.index, equals(proto.stateIndex));
       }
 
       test('Call writeToProtoBuffer.', () async {
@@ -68,56 +66,7 @@ void main() {
         expect(m[stage_m.WorkStage.versionField], equals(proto.version));
         expect(m[stage_m.WorkStage.nameField], equals(proto.name));
         expect(m[stage_m.WorkStage.indexField], equals(proto.index));
-        expect(m[stage_m.WorkStage.stateField][state_m.State.idField], equals(proto.state.id));
-      });
-
-    });
-
-
-    group('State entity.', () {
-
-      state_m.State model = state_m.State();
-      state_pb.State proto;
-
-      setUp(() {
-        model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
-        model.version = 0;
-        model.name = 'Name test';
-        model.color = {'x': 0};
-        model.index = 0;
-      });
-
-      void callExcept() {
-        expect(model.id, equals(proto.id));
-        expect(model.version, equals(proto.version));
-        expect(model.name, equals(proto.name));
-        expect(model.index, equals(proto.index));
-        expect(model.color['x'], equals(proto.color['x']));
-      }
-
-      test('Call writeToProtoBuffer.', () async {
-
-        proto = model.writeToProtoBuf();
-
-        callExcept();
-
-      });
-
-      test('Call readToProtoBuffer.', () async {
-
-        model = state_m.State();
-        model.readFromProtoBuf(proto);
-
-        callExcept();
-      });
-
-      test('Call fromProtoBufToModelMap.', () async {
-        Map<String, dynamic> m = state_m.State.fromProtoBufToModelMap(proto);
-        expect(m[state_m.State.idField], equals(proto.id));
-        expect(m[state_m.State.versionField], equals(proto.version));
-        expect(m[state_m.State.nameField], equals(proto.name));
-        expect(m[state_m.State.indexField], equals(proto.index));
-        expect(m[state_m.State.colorField], equals(proto.color));
+        expect(m[stage_m.WorkStage.stateField], equals(proto.stateIndex));
       });
     });
 

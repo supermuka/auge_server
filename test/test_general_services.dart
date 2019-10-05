@@ -1,3 +1,4 @@
+import 'package:auge_server/model/general/group.dart' as group_m;
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:test/test.dart';
 
@@ -240,7 +241,7 @@ void main() {
     {
       GroupServiceClient stub;
 
-      String groupTypeId;
+      int groupTypeId = group_m.GroupType.company.index;
 
       String name = 'Unit Test';
       bool inactive = true;
@@ -250,14 +251,6 @@ void main() {
 
       });
 
-      test('Call operation getGroupTypes', () async {
-        GroupTypesResponse groupTypesResponse = await stub
-            .getGroupTypes(Empty());
-
-        expect(groupTypesResponse.groupTypes, isNotNull);
-
-        groupTypeId = groupTypesResponse.groupTypes.first.id;
-      });
 
       test('Call operation createGroup', () async {
           StringValue idResponsePb = await stub
@@ -265,7 +258,7 @@ void main() {
           ..name = 'Unit Test'
           ..inactive = true
           ..organization = (Organization()..id = organizationId)
-          ..groupType = (GroupType()..id = groupTypeId)));
+          ..groupTypeIndex = groupTypeId));
 
         id = idResponsePb.value;
 
@@ -292,7 +285,7 @@ void main() {
         expect(group.name, name);
         expect(group.inactive, inactive);
         expect(group.organization.id, organizationId);
-        expect(group.groupType.id, groupTypeId);
+        expect(group.groupTypeIndex, groupTypeId);
       });
 
       test('Call operation updateGroup', () async {
@@ -305,7 +298,7 @@ void main() {
           ..name = name
           ..inactive = inactive
           ..organization = (Organization()..id = organizationId)
-          ..groupType = (GroupType()..id = groupTypeId)));
+          ..groupTypeIndex = groupTypeId));
 
         Group groupPb = await stub.getGroup(GroupGetRequest()..id = id);
 

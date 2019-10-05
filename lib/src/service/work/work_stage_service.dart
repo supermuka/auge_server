@@ -7,12 +7,10 @@ import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
-import 'package:auge_server/src/protos/generated/work/state.pb.dart';
 import 'package:auge_server/src/protos/generated/work/work_stage.pbgrpc.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
-import 'package:auge_server/src/service/work/state_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
@@ -70,14 +68,13 @@ class WorkStageService extends WorkStageServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT work_stage.id,"
-        " work_stage.version,"
-        " work_stage.name,"
-        " work_stage.index,"
-        " work_stage.work_id,"
-        " work_stage.state_id"
-        " FROM work.work_stages work_stage"
-        " JOIN work.states state ON state.id = work_stage.state_id";
+    queryStatement = "SELECT work_stage.id," //0
+        " work_stage.version," //1
+        " work_stage.name," //2
+        " work_stage.index," //3
+        " work_stage.work_id," //4
+        " work_stage.state_index" //5
+        " FROM work.work_stages work_stage";
 
     Map<String, dynamic> substitutionValues;
 
@@ -91,7 +88,7 @@ class WorkStageService extends WorkStageServiceBase {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.stageInvalidArgument );
     }
 
-    queryStatement += " ORDER BY state.index, work_stage.index";
+    queryStatement += " ORDER BY work_stage.state_index, work_stage.index";
 
     results = await (await AugeConnection.getConnection()).query(
         queryStatement, substitutionValues: substitutionValues);
@@ -100,18 +97,19 @@ class WorkStageService extends WorkStageServiceBase {
     WorkStage workStage;
     for (var row in results) {
 
-      List<State> states = await StateService.querySelectStates(StateGetRequest()..id = row[5]);
+     // List<State> states = await StateService.querySelectStates(StateGetRequest()..id = row[5]);
 
       workStage = WorkStage()
         ..id = row[0]
         ..version = row[1]
         ..name = row[2]
-        ..index = row[3];
-
+        ..index = row[3]
+        ..stateIndex = row[5];
+/*
       if (states.isNotEmpty) {
         workStage.state = states?.first;
       }
-
+*/
       workStages.add(workStage);
     }
 
@@ -140,19 +138,19 @@ class WorkStageService extends WorkStageServiceBase {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
-            "INSERT INTO work.work_stages(id, version, name, index, state_id, work_id) VALUES"
+            "INSERT INTO work.work_stages(id, version, name, index, state_index, work_id) VALUES"
                 "(@id,"
                 "@version,"
                 "@name,"
                 "@index,"
-                "@state_id,"
+                "@state_index,"
                 "@work_id)"
             , substitutionValues: {
           "id": request.workStage.id,
           "version": request.workStage.version,
           "name": request.workStage.name,
           "index": request.workStage.index,
-          "state_id": request.workStage.hasState() ? request.workStage.state.id : null,
+          "state_index": request.workStage.hasStateIndex() ? request.workStage.stateIndex : null,
           "work_id": request.workId});
 
 
@@ -195,7 +193,7 @@ class WorkStageService extends WorkStageServiceBase {
             " version = @version,"
             " name = @name,"
             " index = @index,"
-            " state_id = @state_id,"
+            " state_index = @state_index,"
             " work_id = @work_id"
             " WHERE id = @id AND version = @version - 1"
             " RETURNING true "
@@ -204,7 +202,7 @@ class WorkStageService extends WorkStageServiceBase {
               "version": ++request.workStage.version,
               "name": request.workStage.name,
               "index": request.workStage.index,
-              "state_id": request.workStage.state.id,
+              "state_index": request.workStage.stateIndex,
               "work_id": request.workId});
 
         // Optimistic concurrency control

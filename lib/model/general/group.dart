@@ -8,6 +8,8 @@ import 'package:auge_server/model/general/user.dart';
 // ignore_for_file: uri_has_not_been_generated
 import 'package:auge_server/src/protos/generated/general/group.pb.dart' as group_pb;
 
+enum GroupType {company, businessUnit, department, team}
+
 /// Domain model class to represent a group
 class Group {
   static final String className = 'Group';
@@ -42,7 +44,7 @@ class Group {
     if (this.name != null) groupPb.name = this.name;
     if (this.inactive != null) groupPb.inactive = this.inactive;
     if (this.organization != null) groupPb.organization = this.organization.writeToProtoBuf();
-    if (this.groupType != null) groupPb.groupType = this.groupType.writeToProtoBuf();
+    if (this.groupType != null) groupPb.groupTypeIndex = this.groupType.index;
     if (this.superGroup != null) groupPb.superGroup = this.superGroup.writeToProtoBuf();
     if (this.leader != null) groupPb.leader = this.leader.writeToProtoBuf();
     if (this.members != null && this.members.isNotEmpty) groupPb.members.addAll(this.members.map((m) => m.writeToProtoBuf()));
@@ -56,7 +58,7 @@ class Group {
     if (groupPb.hasName()) this.name = groupPb.name;
     if (groupPb.hasInactive()) this.inactive = groupPb.inactive;
     if (groupPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(groupPb.organization);
-    if (groupPb.hasGroupType()) this.groupType = GroupType()..readFromProtoBuf(groupPb.groupType);
+    if (groupPb.hasGroupTypeIndex()) this.groupType = GroupType.values[groupPb.groupTypeIndex];
     if (groupPb.hasSuperGroup()) this.superGroup = Group()..readFromProtoBuf(groupPb.superGroup);
     if (groupPb.hasLeader()) this.leader = User()..readFromProtoBuf(groupPb.leader);
     if (groupPb.members.isNotEmpty) this.members = groupPb.members.map((u) => User()..readFromProtoBuf(u)).toList();
@@ -76,8 +78,7 @@ class Group {
       if (groupPb.hasInactive()) map[Group.inactiveField] = groupPb.inactive;
       if (groupPb.hasOrganization()) map[Group.organizationField] =
           Organization.fromProtoBufToModelMap(groupPb.organization, onlyIdAndSpecificationForDepthFields, true);
-      if (groupPb.hasGroupType()) map[Group.groupTypeField] =
-          GroupType.fromProtoBufToModelMap(groupPb.groupType, onlyIdAndSpecificationForDepthFields, true);
+      if (groupPb.hasGroupTypeIndex()) map[Group.groupTypeField] = groupPb.groupTypeIndex;
       if (groupPb.hasSuperGroup()) map[Group.superGroupField] =
           Group.fromProtoBufToModelMap(groupPb.superGroup, onlyIdAndSpecificationForDepthFields, true);
       if (groupPb.hasLeader()) map[Group.leaderField] =
@@ -86,46 +87,6 @@ class Group {
           groupPb.members.map((u) => User.fromProtoBufToModelMap(u, onlyIdAndSpecificationForDepthFields, true))
               .toList();
     }
-
-    return map;
-  }
-
-}
-
-/// Domain model class to represent a group type
-class GroupType {
-  static final String className = 'GroupType';
-
-  static const String idField = 'id';
-  String id;
-  static const String nameField = 'name';
-  String name;
-
-  group_pb.GroupType writeToProtoBuf() {
-    group_pb.GroupType groupTypePb = group_pb.GroupType();
-
-    if (this.id != null) groupTypePb.id = this.id;
-    if (this.name != null) groupTypePb.name = this.name;
-
-    return groupTypePb;
-  }
-
-  readFromProtoBuf(group_pb.GroupType groupPb) {
-    if (groupPb.hasId()) this.id = groupPb.id;
-    if (groupPb.hasName()) this.name = groupPb.name;
-  }
-
-  static Map<String, dynamic> fromProtoBufToModelMap(group_pb.GroupType groupTypePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
-    Map<String, dynamic> map = Map();
-
-    if (onlyIdAndSpecificationForDepthFields && isDeep) {
-      if (groupTypePb.hasId()) map[GroupType.idField] = groupTypePb.id;
-      if (groupTypePb.hasName()) map[GroupType.nameField] = groupTypePb.name;
-    } else  {
-      if (groupTypePb.hasId()) map[GroupType.idField] = groupTypePb.id;
-      if (groupTypePb.hasName()) map[GroupType.nameField] = groupTypePb.name;
-    }
-
     return map;
   }
 }

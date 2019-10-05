@@ -26,6 +26,7 @@ import 'package:uuid/uuid.dart';
 class GroupService extends GroupServiceBase {
 
   // API
+  /*
   @override
   Future<GroupTypesResponse> getGroupTypes(ServiceCall call,
       Empty empty) async {
@@ -39,6 +40,7 @@ class GroupService extends GroupServiceBase {
     if (groupType == null) throw new GrpcError.notFound("Group Type not found.");
     return groupType;
   }
+*/
 
   @override
   Future<GroupsResponse> getGroups(ServiceCall call,
@@ -92,7 +94,7 @@ class GroupService extends GroupServiceBase {
         " g.name,"            //2
         " g.inactive,"          //3
         " g.organization_id," //4
-        " g.group_type_id,"   //5
+        " g.group_type_index,"   //5
         " g.leader_user_id,"  //6
         " g.super_group_id "  //7
         " FROM general.groups g ";
@@ -116,7 +118,6 @@ class GroupService extends GroupServiceBase {
     List<Group> groups = [];
     User leader;
     Group superGroup;
-    GroupType groupType;
     List<User> members;
 
     if (results.length > 0) {
@@ -140,7 +141,7 @@ class GroupService extends GroupServiceBase {
         }
 
         // No need of the cache. It´s doesn't persist on data base.
-        groupType = await GroupService.querySelectGroupType(GroupTypeGetRequest()..id = row[5]);
+        //groupType = await GroupService.querySelectGroupType(GroupTypeGetRequest()..id = row[5]);
         //sleep(Duration(seconds: 1));
 
         members = await querySelectGroupMembers(row[0]);
@@ -151,7 +152,7 @@ class GroupService extends GroupServiceBase {
           ..name = row[2]
           ..inactive = row[3]
           ..organization = organization
-          ..groupType = groupType;
+          ..groupTypeIndex = row[5];
 
         if (superGroup != null) {
           group.superGroup = superGroup;
@@ -201,14 +202,13 @@ class GroupService extends GroupServiceBase {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
-            //"INSERT INTO auge.groups(id, version, is_deleted, name, inactive, organization_id, group_type_id) VALUES("
-            "INSERT INTO general.groups(id, version, name, inactive, organization_id, group_type_id, super_group_id, leader_user_id) VALUES("
+            "INSERT INTO general.groups(id, version, name, inactive, organization_id, group_type_index, super_group_id, leader_user_id) VALUES("
                 "@id,"
                 "@version,"
                 "@name,"
                 "@inactive,"
                 "@organization_id,"
-                "@group_type_id,"
+                "@group_type_index,"
                 "@super_group_id,"
                 "@leader_user_id)"
             , substitutionValues: {
@@ -217,7 +217,7 @@ class GroupService extends GroupServiceBase {
           "name": request.group.name,
           "inactive": request.group.inactive,
           "organization_id": request.group.hasOrganization() ? request.group.organization.id : null,
-          "group_type_id": request.group.hasGroupType() ? request.group.groupType.id : null,
+          "group_type_index": request.group.hasGroupTypeIndex() ? request.group.groupTypeIndex : null,
           "super_group_id": request.group.hasSuperGroup() ? request.group.superGroup.id : null,
           "leader_user_id": request.group.hasLeader() ? request.group.leader.id : null});
 
@@ -272,7 +272,7 @@ class GroupService extends GroupServiceBase {
                 " name = @name,"
                 " inactive = @inactive,"
                 " organization_id = @organization_id,"
-                " group_type_id = @group_type_id,"
+                " group_type_index = @group_type_index,"
                 " super_group_id = @super_group_id,"
                 " leader_user_id = @leader_user_id"
                 " WHERE id = @id AND version = @version - 1"
@@ -282,7 +282,7 @@ class GroupService extends GroupServiceBase {
           "name": request.group.name,
           "inactive": request.group.inactive,
           "organization_id": request.group.hasOrganization() ? request.group.organization.id : null,
-          "group_type_id": request.group.hasGroupType() ?  request.group.groupType.id : null,
+          "group_type_index": request.group.hasGroupTypeIndex() ?  request.group.groupTypeIndex : null,
           "super_group_id": request.group.hasSuperGroup() ? request.group.superGroup.id : null,
           "leader_user_id": request.group.hasLeader() ? request.group.leader.id : null}
         );
@@ -397,6 +397,7 @@ class GroupService extends GroupServiceBase {
   }
 
   // *** GROUP TYPES ***
+  /*
   static Future<List<GroupType>> querySelectGroupTypes([GroupTypeGetRequest request]) async {
 
     List<GroupType> groupTypes = new List();
@@ -422,7 +423,9 @@ class GroupService extends GroupServiceBase {
 
     return (request != null && request.id != null) ? [groupTypes.singleWhere((t) => (t.id == request.id))] : groupTypes;
   }
+*/
 
+  /*
   static Future<GroupType> querySelectGroupType(GroupTypeGetRequest request) async {
 
     List<GroupType> groupTypes = await querySelectGroupTypes(request);
@@ -430,6 +433,8 @@ class GroupService extends GroupServiceBase {
     return (groupTypes.isNotEmpty) ? groupTypes.first : [];
 
   }
+
+*/
 
   // *** GROUP MEMBERS ***
   static Future<List<User>> querySelectGroupMembers(String groupId) async {

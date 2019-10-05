@@ -33,9 +33,11 @@ class StateService extends StateServiceBase {
   }
 
   // QUERY
-  // *** INITIATIVE STATES ***
+  // *** WORK STATES ***
   static Future<List<State>> querySelectStates([StateGetRequest stateGetRequest]) async {
 
+
+/*
     List<List<dynamic>> results;
 
     String queryStatement;
@@ -62,6 +64,7 @@ class StateService extends StateServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
+    */
   }
 
   static Future<State> querySelectState(StateGetRequest stateGetRequest) async {

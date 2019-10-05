@@ -1,11 +1,11 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-import 'state.dart';
-
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
 import 'package:auge_server/src/protos/generated/work/work_stage.pb.dart' as work_stage_pb;
+
+enum State {notStarted, inProgress, completed}
 
 /// Domain model class to represent an work stage (activies, bucket or swimlanes)
 class WorkStage {
@@ -28,7 +28,6 @@ class WorkStage {
   int index;
 
   WorkStage() {
-    state = State();
   }
 
   work_stage_pb.WorkStage writeToProtoBuf() {
@@ -39,7 +38,7 @@ class WorkStage {
     if (this.name != null) workStagePb.name = this.name;
     if (this.index != null) workStagePb.index = this.index;
 
-    if (this.state != null) workStagePb.state = this.state.writeToProtoBuf();
+    if (this.state != null) workStagePb.stateIndex = this.state.index;
 
 
     return workStagePb;
@@ -50,7 +49,7 @@ class WorkStage {
     if (workStagePb.hasVersion()) this.version = workStagePb.version;
     if (workStagePb.hasName()) this.name = workStagePb.name;
     if (workStagePb.hasIndex()) this.index = workStagePb.index;
-    if (workStagePb.hasState()) this.state = State()..readFromProtoBuf(workStagePb.state);
+    if (workStagePb.hasStateIndex()) this.state = State.values[workStagePb.stateIndex];
 
   }
 
@@ -65,8 +64,7 @@ class WorkStage {
       if (workStagePb.hasVersion()) map[WorkStage.versionField] = workStagePb.version;
       if (workStagePb.hasName()) map[WorkStage.nameField] = workStagePb.name;
       if (workStagePb.hasIndex()) map[WorkStage.indexField] = workStagePb.index;
-      if (workStagePb.hasState()) map[WorkStage.stateField] =
-          State.fromProtoBufToModelMap(workStagePb.state, onlyIdAndSpecificationForDepthFields, true);
+      if (workStagePb.hasStateIndex()) map[WorkStage.stateField] = workStagePb.stateIndex;
     }
     return map;
   }
