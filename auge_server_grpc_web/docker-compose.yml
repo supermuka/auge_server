@@ -1,0 +1,19 @@
+version: '3.4'
+services:
+  auge-server:
+#    volumes:
+#      - /d/Levius/IdeaProjects/auge_server:/auge_server
+    build:
+      context: ./
+      dockerfile: ./docker/auge_server/Dockerfile
+    ports:
+      - "9091:9091"
+  envoy:
+    build:
+      context: ./
+      dockerfile:  ./docker/envoy/Dockerfile
+    image: grpcweb/envoy
+    ports:
+      - "8080:8080"
+    links:
+      - auge-server

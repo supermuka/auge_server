@@ -1,0 +1,14 @@
+{
+   "@@locale": "en",
+   "@@last_modified": "2018-03-20T11:46:18.210518",
+   "headerTitleMessage": "{title,select, Organizations{Organizations}others{Not Defined}}",
+   "@headerTitleMessage": {
+     "description": "Header title page",
+     "type": "text",
+     "placeholders": {
+       "title": {
+         "example": "Organizations"
+       }
+     }
+   }
+ }

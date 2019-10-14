@@ -1,0 +1,14 @@
+{
+   "@@locale": "pt_BR",
+   "@@last_modified": "2018-03-20T11:46:18.210518",
+   "headerTitleMessage": "{title,select, Organizations{Organização}others{Não Definido}}",
+   "@headerTitleMessage": {
+     "description": "Título do Cabeçalho da Página",
+     "type": "text",
+     "placeholders": {
+       "title": {
+         "example": "Organizações"
+       }
+     }
+   }
+ }
