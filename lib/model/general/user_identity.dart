@@ -70,6 +70,7 @@ class UserIdentity {
 
     if (userIdentityPb.hasId()) this.id = userIdentityPb.id;
     if (userIdentityPb.hasVersion()) this.version = userIdentityPb.version;
+    if (userIdentityPb.hasIdentification()) this.identification = userIdentityPb.identification;
     if (userIdentityPb.hasProviderDn()) this.providerDn = userIdentityPb.providerDn;
     if (userIdentityPb.hasPassword()) this.password = userIdentityPb.password;
     if (userIdentityPb.hasProvider()) this.provider = userIdentityPb.provider;
