@@ -150,7 +150,8 @@ message WorkItemAttachment {
 
     // Specific
     string name = 2;
-    string content = 3;
+    string type = 3;
+    string content = 4;
 }
 
 // Response list of the WorkItemAttachment

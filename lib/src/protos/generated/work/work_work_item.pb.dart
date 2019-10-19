@@ -475,7 +475,8 @@ class WorkItemAttachment extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkItemAttachment', package: const $pb.PackageName('auge.protobuf'))
     ..aOS(1, 'id')
     ..aOS(2, 'name')
-    ..aOS(3, 'content')
+    ..aOS(3, 'type')
+    ..aOS(4, 'content')
     ..hasRequiredFields = false
   ;
 
@@ -503,10 +504,15 @@ class WorkItemAttachment extends $pb.GeneratedMessage {
   $core.bool hasName() => $_has(1);
   void clearName() => clearField(2);
 
-  $core.String get content => $_getS(2, '');
-  set content($core.String v) { $_setString(2, v); }
-  $core.bool hasContent() => $_has(2);
-  void clearContent() => clearField(3);
+  $core.String get type => $_getS(2, '');
+  set type($core.String v) { $_setString(2, v); }
+  $core.bool hasType() => $_has(2);
+  void clearType() => clearField(3);
+
+  $core.String get content => $_getS(3, '');
+  set content($core.String v) { $_setString(3, v); }
+  $core.bool hasContent() => $_has(3);
+  void clearContent() => clearField(4);
 }
 
 class WorkItemAttachmentsResponse extends $pb.GeneratedMessage {

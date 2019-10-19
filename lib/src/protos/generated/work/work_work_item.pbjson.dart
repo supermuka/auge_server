@@ -116,7 +116,8 @@ const WorkItemAttachment$json = const {
   '2': const [
     const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     const {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
-    const {'1': 'content', '3': 3, '4': 1, '5': 9, '10': 'content'},
+    const {'1': 'type', '3': 3, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'content', '3': 4, '4': 1, '5': 9, '10': 'content'},
   ],
 };
 

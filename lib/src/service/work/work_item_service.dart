@@ -298,16 +298,19 @@ class WorkItemService extends WorkItemServiceBase {
           await ctx.query("INSERT INTO work.work_item_attachments"
               " (id,"
               " name,"
+              " type,"
               " content,"
               " work_item_id)"
               " VALUES"
               " (@id,"
               " @name,"
+              " @type,"
               " @content,"
               " @work_item_id)"
               , substitutionValues: {
                 "id": attachment.id,
                 "name": attachment.name,
+                "type": attachment.type,
                 "content": attachment.hasContent() ? attachment.content : false,
                 "work_item_id": request.workItem.id});
         }
@@ -446,16 +449,19 @@ class WorkItemService extends WorkItemServiceBase {
                 "INSERT INTO work.work_item_attachments"
                     " (id,"
                     " name,"
+                    " type,"
                     " content,"
                     " work_item_id)"
                     " VALUES"
                     " (@id,"
                     " @name,"
+                    " @type,"
                     " @content,"
                     " @work_item_id)"
                 , substitutionValues: {
               "id": workItemAttachment.id,
               "name": workItemAttachment.name,
+              "type": workItemAttachment.type,
               "content": workItemAttachment.content,
               "work_item_id": request.workItem.id});
           } /* else {

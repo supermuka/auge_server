@@ -144,6 +144,8 @@ class WorkItemAttachment {
   int version;
   static const String nameField = 'name';
   String name;
+  static const String typeField = 'type';
+  String type;
   static const String contentField = 'content';
   String content; // base64
 
@@ -152,6 +154,7 @@ class WorkItemAttachment {
 
     if (this.id != null) workItemAttachmentPb.id = this.id;
     if (this.name != null) workItemAttachmentPb.name = this.name;
+    if (this.type != null) workItemAttachmentPb.type = this.type;
     if (this.content != null) workItemAttachmentPb.content = this.content;
 
     return workItemAttachmentPb;
@@ -160,6 +163,7 @@ class WorkItemAttachment {
   readFromProtoBuf(work_work_item_pb.WorkItemAttachment workItemAttachmentPb) {
     if (workItemAttachmentPb.hasId()) this.id = workItemAttachmentPb.id;
     if (workItemAttachmentPb.hasName()) this.name = workItemAttachmentPb.name;
+    if (workItemAttachmentPb.hasType()) this.type = workItemAttachmentPb.type;
     if (workItemAttachmentPb.hasContent()) this.content = workItemAttachmentPb.content;
   }
 
@@ -176,6 +180,8 @@ class WorkItemAttachment {
         map[WorkItemAttachment.idField] = workItemAttachmentPb.id;
       if (workItemAttachmentPb.hasName())
         map[WorkItemAttachment.nameField] = workItemAttachmentPb.name;
+      if (workItemAttachmentPb.hasType())
+        map[WorkItemAttachment.typeField] = workItemAttachmentPb.type;
       if (workItemAttachmentPb.hasContent())
         map[WorkItemAttachment.contentField] = workItemAttachmentPb.content;
 
