@@ -359,6 +359,7 @@ class WorkItemMsg {
         'Check Item': 'Check Item',
         'No Match': 'No Match',
         'Select a value': 'Select a value',
+        'Drop File Here': 'Drop File Here',
         'other': 'Not Defined'})}",
       name: "workItemLabel",
       args: [label],

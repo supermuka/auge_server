@@ -107,8 +107,9 @@ message WorkItem {
 
     repeated User assigned_to = 10;
     repeated WorkItemCheckItem check_items = 11;
+    repeated WorkItemAttachment attachments = 12;
 
-    Work work = 12;
+    Work work = 13;
 }
 
 // Request for query select
@@ -142,19 +143,41 @@ message WorkItemGetRequest {
 }
 
 // Message to respective domain object.
+message WorkItemAttachment {
+
+    // Base
+    string id = 1;
+
+    // Specific
+    string name = 2;
+    string content = 3;
+}
+
+// Response list of the WorkItemAttachment
+message WorkItemAttachmentsResponse {
+    repeated WorkItemAttachment work_item_attachments = 1;
+}
+
+// Request for query param
+message WorkItemAttachmentGetRequest {
+    // Base
+    string id = 1;
+    string work_item_id = 2;
+}
+
+// Message to respective domain object.
 message WorkItemCheckItem {
 
     // Base
     string id = 1;
-    int32 version = 2;
 
     // Specific
-    string name = 3;
-    bool finished = 4;
+    string name = 2;
+    bool finished = 3;
 
     // Define check item order
-    int32 index = 5;
-    string work_item_check_item_id = 6; // Just to pass parent id
+    int32 index = 4;
+   // string work_item_check_item_id = 6; // Just to pass parent id
 }
 
 // Response list of the WorkItemCheckItems

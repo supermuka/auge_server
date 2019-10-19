@@ -10,7 +10,6 @@ import 'package:auge_server/model/general/user.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
 import 'package:auge_server/src/protos/generated/work/work_work_item.pb.dart' as work_work_item_pb;
@@ -40,20 +39,22 @@ class WorkItem {
   WorkStage workStage;
   static final String assignedToField = 'assignedTo';
   List<User> assignedTo;
+  static final String attachmentsField = 'attachments';
+  List<WorkItemAttachment> attachments;
   static final String workField = 'work';
   Work work;
 
   WorkItem() {
     initializeDateFormatting(Intl.defaultLocale);
-    assignedTo = new List<User>();
-    checkItems = new List<WorkItemCheckItem>();
-
+    assignedTo = List<User>();
+    checkItems = List<WorkItemCheckItem>();
+    attachments = List<WorkItemAttachment>();
   }
 
   bool get isOverdue {
     if (dueDate != null) {
-      DateFormat formatador = new DateFormat('yMd');
-      return ( formatador.format(dueDate).compareTo(formatador.format(new DateTime.now())) < 0 );
+      DateFormat formater = new DateFormat('yMd');
+      return ( formater.format(dueDate).compareTo(formater.format(new DateTime.now())) < 0 );
     } else {
       return false;
     }
@@ -78,7 +79,7 @@ class WorkItem {
     */
 
     if (this.workStage != null) workItemPb.workStage = this.workStage.writeToProtoBuf();
-
+    if (this.attachments != null && this.attachments.isNotEmpty) workItemPb.attachments.addAll(this.attachments.map((m) => m.writeToProtoBuf()));
     if (this.checkItems != null && this.checkItems.isNotEmpty) workItemPb.checkItems.addAll(this.checkItems.map((m) => m.writeToProtoBuf()));
     if (this.assignedTo != null && this.assignedTo.isNotEmpty) workItemPb.assignedTo.addAll(this.assignedTo.map((m) => m.writeToProtoBuf()));
     if (this.work != null) workItemPb.work = this.work.writeToProtoBuf();
@@ -96,7 +97,7 @@ class WorkItem {
     if (workItemPb.hasDueDate())  this.dueDate = CommonUtils.dateTimeFromTimestamp(workItemPb.dueDate); /*{
       this.dueDate = DateTime.fromMicrosecondsSinceEpoch(workItemPb.dueDate.seconds.toInt() * 1000000 + workItemPb.dueDate.nanos ~/ 1000 );
     }*/
-
+    if (workItemPb.attachments.isNotEmpty) this.attachments = workItemPb.attachments.map((u) => WorkItemAttachment()..readFromProtoBuf(u)).toList();
     if (workItemPb.checkItems.isNotEmpty) this.checkItems = workItemPb.checkItems.map((u) => WorkItemCheckItem()..readFromProtoBuf(u)).toList();
     if (workItemPb.assignedTo.isNotEmpty) this.assignedTo = workItemPb.assignedTo.map((u) => User()..readFromProtoBuf(u)).toList();
     if (workItemPb.hasWork()) this.work = Work()..readFromProtoBuf(workItemPb.work);
@@ -121,7 +122,9 @@ class WorkItem {
       if (workItemPb.hasWorkStage()) map[WorkItem.workStageField] = WorkStage.fromProtoBufToModelMap(workItemPb.workStage);
       if (workItemPb.hasDueDate())
         map[WorkItem.dueDateField] = CommonUtils.dateTimeFromTimestamp(workItemPb.dueDate);
-
+      if (workItemPb.attachments.isNotEmpty) map[WorkItem.attachmentsField] =
+          workItemPb.attachments.map((ci) =>
+              WorkItemAttachment.fromProtoBufToModelMap(ci, onlyIdAndSpecificationForDepthFields, true)).toList();
       if (workItemPb.checkItems.isNotEmpty) map[WorkItem.checkItemsField] =
           workItemPb.checkItems.map((ci) =>
               WorkItemCheckItem.fromProtoBufToModelMap(ci, onlyIdAndSpecificationForDepthFields, true)).toList();
@@ -129,6 +132,53 @@ class WorkItem {
           workItemPb.assignedTo.map((at) =>
               User.fromProtoBufToModelMap(at, onlyIdAndSpecificationForDepthFields, true)).toList();
       if (workItemPb.hasWork()) map[WorkItem.workField] = Work.fromProtoBufToModelMap(workItemPb.work);
+    }
+    return map;
+  }
+}
+
+class WorkItemAttachment {
+  static const String idField = 'id';
+  String id;
+  static const String versionField = 'version';
+  int version;
+  static const String nameField = 'name';
+  String name;
+  static const String contentField = 'content';
+  String content; // base64
+
+  work_work_item_pb.WorkItemAttachment writeToProtoBuf() {
+    work_work_item_pb.WorkItemAttachment workItemAttachmentPb = work_work_item_pb.WorkItemAttachment();
+
+    if (this.id != null) workItemAttachmentPb.id = this.id;
+    if (this.name != null) workItemAttachmentPb.name = this.name;
+    if (this.content != null) workItemAttachmentPb.content = this.content;
+
+    return workItemAttachmentPb;
+  }
+
+  readFromProtoBuf(work_work_item_pb.WorkItemAttachment workItemAttachmentPb) {
+    if (workItemAttachmentPb.hasId()) this.id = workItemAttachmentPb.id;
+    if (workItemAttachmentPb.hasName()) this.name = workItemAttachmentPb.name;
+    if (workItemAttachmentPb.hasContent()) this.content = workItemAttachmentPb.content;
+  }
+
+  static Map<String, dynamic> fromProtoBufToModelMap(work_work_item_pb.WorkItemAttachment workItemAttachmentPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
+    Map<String, dynamic> map = Map();
+
+    if (onlyIdAndSpecificationForDepthFields && isDeep) {
+      if (workItemAttachmentPb.hasId())
+        map[WorkItemAttachment.idField] = workItemAttachmentPb.id;
+      if (workItemAttachmentPb.hasName())
+        map[WorkItemAttachment.nameField] = workItemAttachmentPb.name;
+    } else {
+      if (workItemAttachmentPb.hasId())
+        map[WorkItemAttachment.idField] = workItemAttachmentPb.id;
+      if (workItemAttachmentPb.hasName())
+        map[WorkItemAttachment.nameField] = workItemAttachmentPb.name;
+      if (workItemAttachmentPb.hasContent())
+        map[WorkItemAttachment.contentField] = workItemAttachmentPb.content;
+
     }
     return map;
   }
@@ -152,7 +202,6 @@ class WorkItemCheckItem {
     work_work_item_pb.WorkItemCheckItem workItemCheckItemPb = work_work_item_pb.WorkItemCheckItem();
 
     if (this.id != null) workItemCheckItemPb.id = this.id;
-    if (this.version != null) workItemCheckItemPb.version = this.version;
     if (this.name != null) workItemCheckItemPb.name = this.name;
     if (this.finished != null) workItemCheckItemPb.finished = this.finished;
     if (this.index != null) workItemCheckItemPb.index = this.index;
@@ -178,8 +227,6 @@ class WorkItemCheckItem {
     } else {
       if (workItemCheckItemPb.hasId())
         map[WorkItemCheckItem.idField] = workItemCheckItemPb.id;
-      if (workItemCheckItemPb.hasVersion())
-        map[WorkItemCheckItem.versionField] = workItemCheckItemPb.version;
       if (workItemCheckItemPb.hasName())
         map[WorkItemCheckItem.nameField] = workItemCheckItemPb.name;
       if (workItemCheckItemPb.hasFinished())

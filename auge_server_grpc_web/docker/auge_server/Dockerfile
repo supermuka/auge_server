@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/dart:2.6.0-dev.6.0
+FROM google/dart:2.6.0-dev.8.0
 
 COPY bin/auge_server.dart.snapshot /etc/auge_server/auge_server.dart.snapshot
 

@@ -18,8 +18,8 @@ class Group extends $pb.GeneratedMessage {
     ..a<$core.int>(2, 'version', $pb.PbFieldType.O3)
     ..aOS(3, 'name')
     ..aOB(4, 'inactive')
-    ..a<$0.Organization>(5, 'organization', $pb.PbFieldType.OM, $0.Organization.getDefault, $0.Organization.create)
-    ..a<$core.int>(6, 'groupTypeIndex', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, 'groupTypeIndex', $pb.PbFieldType.O3)
+    ..a<$0.Organization>(6, 'organization', $pb.PbFieldType.OM, $0.Organization.getDefault, $0.Organization.create)
     ..a<Group>(7, 'superGroup', $pb.PbFieldType.OM, Group.getDefault, Group.create)
     ..a<$3.User>(8, 'leader', $pb.PbFieldType.OM, $3.User.getDefault, $3.User.create)
     ..pc<$3.User>(9, 'members', $pb.PbFieldType.PM,$3.User.create)
@@ -60,15 +60,15 @@ class Group extends $pb.GeneratedMessage {
   $core.bool hasInactive() => $_has(3);
   void clearInactive() => clearField(4);
 
-  $0.Organization get organization => $_getN(4);
-  set organization($0.Organization v) { setField(5, v); }
-  $core.bool hasOrganization() => $_has(4);
-  void clearOrganization() => clearField(5);
+  $core.int get groupTypeIndex => $_get(4, 0);
+  set groupTypeIndex($core.int v) { $_setSignedInt32(4, v); }
+  $core.bool hasGroupTypeIndex() => $_has(4);
+  void clearGroupTypeIndex() => clearField(5);
 
-  $core.int get groupTypeIndex => $_get(5, 0);
-  set groupTypeIndex($core.int v) { $_setSignedInt32(5, v); }
-  $core.bool hasGroupTypeIndex() => $_has(5);
-  void clearGroupTypeIndex() => clearField(6);
+  $0.Organization get organization => $_getN(5);
+  set organization($0.Organization v) { setField(6, v); }
+  $core.bool hasOrganization() => $_has(5);
+  void clearOrganization() => clearField(6);
 
   Group get superGroup => $_getN(6);
   set superGroup(Group v) { setField(7, v); }

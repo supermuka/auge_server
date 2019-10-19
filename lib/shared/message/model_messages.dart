@@ -87,6 +87,7 @@ class FieldMsg {
       '${Group.className}.${Group.superGroupField}':'Super Group',
       '${Group.className}.${Group.leaderField}':'Leader',
       '${Group.className}.${Group.membersField}':'Members',
+      
       //OBJECTIVE
       '${Objective.className}.${Objective.nameField}':'Name',
       '${Objective.className}.${Objective.descriptionField}':'Description',
@@ -96,6 +97,7 @@ class FieldMsg {
       '${Objective.className}.${Objective.startDateField}':'Start Date',
       '${Objective.className}.${Objective.endDateField}':'End Date',
       '${Objective.className}.${Objective.archivedField}':'Archived',
+      
       //MEASURE
       '${Measure.className}.${Measure.nameField}':'Name',
       '${Measure.className}.${Measure.descriptionField}':'Description',
@@ -105,13 +107,16 @@ class FieldMsg {
       '${Measure.className}.${Measure.decimalsNumberField}':'Decimals Number',
       '${Measure.className}.${Measure.measureUnitField}':'Unit',
       '${Measure.className}.${Measure.metricField}':'Metric',
+      
       //MEASURE PROGRESS
       '${MeasureProgress.className}.${MeasureProgress.dateField}':'Date',
       '${MeasureProgress.className}.${MeasureProgress.currentValueField}':'Current Value',
       '${MeasureProgress.className}.${MeasureProgress.commentField}':'Comment',
+      
       //ORGANIZATION
       '${Organization.className}.${Organization.nameField}':'Name',
       '${Organization.className}.${Organization.codeField}':'EIN',
+      
       //INITIATIVE
       '${Work.className}.${Work.nameField}':'Name',
       '${Work.className}.${Work.descriptionField}':'Description',
@@ -119,9 +124,11 @@ class FieldMsg {
       '${Work.className}.${Work.leaderField}':'Leader',
       '${Work.className}.${Work.workStagesField}':'Stages',
       '${Work.className}.${Work.objectiveField}':'Objective',
+      
       //STAGE
       '${WorkStage.className}.${WorkStage.nameField}':'Name',
       '${WorkStage.className}.${WorkStage.stateField}':'State',
+      
       //WORK ITEMS
       '${WorkItem.className}.${WorkItem.nameField}':'Name',
       '${WorkItem.className}.${WorkItem.descriptionField}':'Description',
@@ -129,7 +136,9 @@ class FieldMsg {
       '${WorkItem.className}.${WorkItem.completedField}':'Completed',
       '${WorkItem.className}.${WorkItem.workStageField}':'Stage',
       '${WorkItem.className}.${WorkItem.assignedToField}':'Assigned To',
+      '${WorkItem.className}.${WorkItem.attachmentsField}':'Attachments',
       '${WorkItem.className}.${WorkItem.checkItemsField}':'Check Items',
+      
       //CONFIGURATION
       '${OrganizationConfiguration.className}.${OrganizationConfiguration.domainField}':'Domínio',
 

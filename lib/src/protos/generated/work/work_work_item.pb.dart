@@ -9,12 +9,12 @@ import 'dart:core' as $core show bool, Deprecated, double, int, List, Map, overr
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'work_stage.pb.dart' as $6;
-import '../objective/objective_measure.pb.dart' as $7;
+import 'work_stage.pb.dart' as $5;
+import '../objective/objective_measure.pb.dart' as $6;
 import '../general/organization.pb.dart' as $0;
 import '../general/group.pb.dart' as $4;
 import '../general/user.pb.dart' as $3;
-import '../google/protobuf/timestamp.pb.dart' as $9;
+import '../google/protobuf/timestamp.pb.dart' as $8;
 
 class Work extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('Work', package: const $pb.PackageName('auge.protobuf'))
@@ -22,9 +22,9 @@ class Work extends $pb.GeneratedMessage {
     ..a<$core.int>(2, 'version', $pb.PbFieldType.O3)
     ..aOS(3, 'name')
     ..aOS(4, 'description')
-    ..pc<$6.WorkStage>(5, 'workStages', $pb.PbFieldType.PM,$6.WorkStage.create)
+    ..pc<$5.WorkStage>(5, 'workStages', $pb.PbFieldType.PM,$5.WorkStage.create)
     ..pc<WorkItem>(6, 'workItems', $pb.PbFieldType.PM,WorkItem.create)
-    ..a<$7.Objective>(7, 'objective', $pb.PbFieldType.OM, $7.Objective.getDefault, $7.Objective.create)
+    ..a<$6.Objective>(7, 'objective', $pb.PbFieldType.OM, $6.Objective.getDefault, $6.Objective.create)
     ..a<$0.Organization>(8, 'organization', $pb.PbFieldType.OM, $0.Organization.getDefault, $0.Organization.create)
     ..a<$4.Group>(9, 'group', $pb.PbFieldType.OM, $4.Group.getDefault, $4.Group.create)
     ..a<$3.User>(10, 'leader', $pb.PbFieldType.OM, $3.User.getDefault, $3.User.create)
@@ -65,12 +65,12 @@ class Work extends $pb.GeneratedMessage {
   $core.bool hasDescription() => $_has(3);
   void clearDescription() => clearField(4);
 
-  $core.List<$6.WorkStage> get workStages => $_getList(4);
+  $core.List<$5.WorkStage> get workStages => $_getList(4);
 
   $core.List<WorkItem> get workItems => $_getList(5);
 
-  $7.Objective get objective => $_getN(6);
-  set objective($7.Objective v) { setField(7, v); }
+  $6.Objective get objective => $_getN(6);
+  set objective($6.Objective v) { setField(7, v); }
   $core.bool hasObjective() => $_has(6);
   void clearObjective() => clearField(7);
 
@@ -251,12 +251,13 @@ class WorkItem extends $pb.GeneratedMessage {
     ..a<$core.int>(2, 'version', $pb.PbFieldType.O3)
     ..aOS(3, 'name')
     ..aOS(4, 'description')
-    ..a<$9.Timestamp>(5, 'dueDate', $pb.PbFieldType.OM, $9.Timestamp.getDefault, $9.Timestamp.create)
+    ..a<$8.Timestamp>(5, 'dueDate', $pb.PbFieldType.OM, $8.Timestamp.getDefault, $8.Timestamp.create)
     ..a<$core.int>(6, 'completed', $pb.PbFieldType.O3)
-    ..a<$6.WorkStage>(7, 'workStage', $pb.PbFieldType.OM, $6.WorkStage.getDefault, $6.WorkStage.create)
+    ..a<$5.WorkStage>(7, 'workStage', $pb.PbFieldType.OM, $5.WorkStage.getDefault, $5.WorkStage.create)
     ..pc<$3.User>(10, 'assignedTo', $pb.PbFieldType.PM,$3.User.create)
     ..pc<WorkItemCheckItem>(11, 'checkItems', $pb.PbFieldType.PM,WorkItemCheckItem.create)
-    ..a<Work>(12, 'work', $pb.PbFieldType.OM, Work.getDefault, Work.create)
+    ..pc<WorkItemAttachment>(12, 'attachments', $pb.PbFieldType.PM,WorkItemAttachment.create)
+    ..a<Work>(13, 'work', $pb.PbFieldType.OM, Work.getDefault, Work.create)
     ..hasRequiredFields = false
   ;
 
@@ -294,8 +295,8 @@ class WorkItem extends $pb.GeneratedMessage {
   $core.bool hasDescription() => $_has(3);
   void clearDescription() => clearField(4);
 
-  $9.Timestamp get dueDate => $_getN(4);
-  set dueDate($9.Timestamp v) { setField(5, v); }
+  $8.Timestamp get dueDate => $_getN(4);
+  set dueDate($8.Timestamp v) { setField(5, v); }
   $core.bool hasDueDate() => $_has(4);
   void clearDueDate() => clearField(5);
 
@@ -304,8 +305,8 @@ class WorkItem extends $pb.GeneratedMessage {
   $core.bool hasCompleted() => $_has(5);
   void clearCompleted() => clearField(6);
 
-  $6.WorkStage get workStage => $_getN(6);
-  set workStage($6.WorkStage v) { setField(7, v); }
+  $5.WorkStage get workStage => $_getN(6);
+  set workStage($5.WorkStage v) { setField(7, v); }
   $core.bool hasWorkStage() => $_has(6);
   void clearWorkStage() => clearField(7);
 
@@ -313,10 +314,12 @@ class WorkItem extends $pb.GeneratedMessage {
 
   $core.List<WorkItemCheckItem> get checkItems => $_getList(8);
 
-  Work get work => $_getN(9);
-  set work(Work v) { setField(12, v); }
-  $core.bool hasWork() => $_has(9);
-  void clearWork() => clearField(12);
+  $core.List<WorkItemAttachment> get attachments => $_getList(9);
+
+  Work get work => $_getN(10);
+  set work(Work v) { setField(13, v); }
+  $core.bool hasWork() => $_has(10);
+  void clearWork() => clearField(13);
 }
 
 class WorkItemRequest extends $pb.GeneratedMessage {
@@ -468,14 +471,105 @@ class WorkItemGetRequest extends $pb.GeneratedMessage {
   void clearWithWork() => clearField(3);
 }
 
+class WorkItemAttachment extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkItemAttachment', package: const $pb.PackageName('auge.protobuf'))
+    ..aOS(1, 'id')
+    ..aOS(2, 'name')
+    ..aOS(3, 'content')
+    ..hasRequiredFields = false
+  ;
+
+  WorkItemAttachment._() : super();
+  factory WorkItemAttachment() => create();
+  factory WorkItemAttachment.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WorkItemAttachment.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  WorkItemAttachment clone() => WorkItemAttachment()..mergeFromMessage(this);
+  WorkItemAttachment copyWith(void Function(WorkItemAttachment) updates) => super.copyWith((message) => updates(message as WorkItemAttachment));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static WorkItemAttachment create() => WorkItemAttachment._();
+  WorkItemAttachment createEmptyInstance() => create();
+  static $pb.PbList<WorkItemAttachment> createRepeated() => $pb.PbList<WorkItemAttachment>();
+  static WorkItemAttachment getDefault() => _defaultInstance ??= create()..freeze();
+  static WorkItemAttachment _defaultInstance;
+
+  $core.String get id => $_getS(0, '');
+  set id($core.String v) { $_setString(0, v); }
+  $core.bool hasId() => $_has(0);
+  void clearId() => clearField(1);
+
+  $core.String get name => $_getS(1, '');
+  set name($core.String v) { $_setString(1, v); }
+  $core.bool hasName() => $_has(1);
+  void clearName() => clearField(2);
+
+  $core.String get content => $_getS(2, '');
+  set content($core.String v) { $_setString(2, v); }
+  $core.bool hasContent() => $_has(2);
+  void clearContent() => clearField(3);
+}
+
+class WorkItemAttachmentsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkItemAttachmentsResponse', package: const $pb.PackageName('auge.protobuf'))
+    ..pc<WorkItemAttachment>(1, 'workItemAttachments', $pb.PbFieldType.PM,WorkItemAttachment.create)
+    ..hasRequiredFields = false
+  ;
+
+  WorkItemAttachmentsResponse._() : super();
+  factory WorkItemAttachmentsResponse() => create();
+  factory WorkItemAttachmentsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WorkItemAttachmentsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  WorkItemAttachmentsResponse clone() => WorkItemAttachmentsResponse()..mergeFromMessage(this);
+  WorkItemAttachmentsResponse copyWith(void Function(WorkItemAttachmentsResponse) updates) => super.copyWith((message) => updates(message as WorkItemAttachmentsResponse));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static WorkItemAttachmentsResponse create() => WorkItemAttachmentsResponse._();
+  WorkItemAttachmentsResponse createEmptyInstance() => create();
+  static $pb.PbList<WorkItemAttachmentsResponse> createRepeated() => $pb.PbList<WorkItemAttachmentsResponse>();
+  static WorkItemAttachmentsResponse getDefault() => _defaultInstance ??= create()..freeze();
+  static WorkItemAttachmentsResponse _defaultInstance;
+
+  $core.List<WorkItemAttachment> get workItemAttachments => $_getList(0);
+}
+
+class WorkItemAttachmentGetRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkItemAttachmentGetRequest', package: const $pb.PackageName('auge.protobuf'))
+    ..aOS(1, 'id')
+    ..aOS(2, 'workItemId')
+    ..hasRequiredFields = false
+  ;
+
+  WorkItemAttachmentGetRequest._() : super();
+  factory WorkItemAttachmentGetRequest() => create();
+  factory WorkItemAttachmentGetRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WorkItemAttachmentGetRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  WorkItemAttachmentGetRequest clone() => WorkItemAttachmentGetRequest()..mergeFromMessage(this);
+  WorkItemAttachmentGetRequest copyWith(void Function(WorkItemAttachmentGetRequest) updates) => super.copyWith((message) => updates(message as WorkItemAttachmentGetRequest));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static WorkItemAttachmentGetRequest create() => WorkItemAttachmentGetRequest._();
+  WorkItemAttachmentGetRequest createEmptyInstance() => create();
+  static $pb.PbList<WorkItemAttachmentGetRequest> createRepeated() => $pb.PbList<WorkItemAttachmentGetRequest>();
+  static WorkItemAttachmentGetRequest getDefault() => _defaultInstance ??= create()..freeze();
+  static WorkItemAttachmentGetRequest _defaultInstance;
+
+  $core.String get id => $_getS(0, '');
+  set id($core.String v) { $_setString(0, v); }
+  $core.bool hasId() => $_has(0);
+  void clearId() => clearField(1);
+
+  $core.String get workItemId => $_getS(1, '');
+  set workItemId($core.String v) { $_setString(1, v); }
+  $core.bool hasWorkItemId() => $_has(1);
+  void clearWorkItemId() => clearField(2);
+}
+
 class WorkItemCheckItem extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkItemCheckItem', package: const $pb.PackageName('auge.protobuf'))
     ..aOS(1, 'id')
-    ..a<$core.int>(2, 'version', $pb.PbFieldType.O3)
-    ..aOS(3, 'name')
-    ..aOB(4, 'finished')
-    ..a<$core.int>(5, 'index', $pb.PbFieldType.O3)
-    ..aOS(6, 'workItemCheckItemId')
+    ..aOS(2, 'name')
+    ..aOB(3, 'finished')
+    ..a<$core.int>(4, 'index', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -498,30 +592,20 @@ class WorkItemCheckItem extends $pb.GeneratedMessage {
   $core.bool hasId() => $_has(0);
   void clearId() => clearField(1);
 
-  $core.int get version => $_get(1, 0);
-  set version($core.int v) { $_setSignedInt32(1, v); }
-  $core.bool hasVersion() => $_has(1);
-  void clearVersion() => clearField(2);
+  $core.String get name => $_getS(1, '');
+  set name($core.String v) { $_setString(1, v); }
+  $core.bool hasName() => $_has(1);
+  void clearName() => clearField(2);
 
-  $core.String get name => $_getS(2, '');
-  set name($core.String v) { $_setString(2, v); }
-  $core.bool hasName() => $_has(2);
-  void clearName() => clearField(3);
+  $core.bool get finished => $_get(2, false);
+  set finished($core.bool v) { $_setBool(2, v); }
+  $core.bool hasFinished() => $_has(2);
+  void clearFinished() => clearField(3);
 
-  $core.bool get finished => $_get(3, false);
-  set finished($core.bool v) { $_setBool(3, v); }
-  $core.bool hasFinished() => $_has(3);
-  void clearFinished() => clearField(4);
-
-  $core.int get index => $_get(4, 0);
-  set index($core.int v) { $_setSignedInt32(4, v); }
-  $core.bool hasIndex() => $_has(4);
-  void clearIndex() => clearField(5);
-
-  $core.String get workItemCheckItemId => $_getS(5, '');
-  set workItemCheckItemId($core.String v) { $_setString(5, v); }
-  $core.bool hasWorkItemCheckItemId() => $_has(5);
-  void clearWorkItemCheckItemId() => clearField(6);
+  $core.int get index => $_get(3, 0);
+  set index($core.int v) { $_setSignedInt32(3, v); }
+  $core.bool hasIndex() => $_has(3);
+  void clearIndex() => clearField(4);
 }
 
 class WorkItemCheckItemsResponse extends $pb.GeneratedMessage {

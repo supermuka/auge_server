@@ -70,7 +70,8 @@ const WorkItem$json = const {
     const {'1': 'work_stage', '3': 7, '4': 1, '5': 11, '6': '.auge.protobuf.WorkStage', '10': 'workStage'},
     const {'1': 'assigned_to', '3': 10, '4': 3, '5': 11, '6': '.auge.protobuf.User', '10': 'assignedTo'},
     const {'1': 'check_items', '3': 11, '4': 3, '5': 11, '6': '.auge.protobuf.WorkItemCheckItem', '10': 'checkItems'},
-    const {'1': 'work', '3': 12, '4': 1, '5': 11, '6': '.auge.protobuf.Work', '10': 'work'},
+    const {'1': 'attachments', '3': 12, '4': 3, '5': 11, '6': '.auge.protobuf.WorkItemAttachment', '10': 'attachments'},
+    const {'1': 'work', '3': 13, '4': 1, '5': 11, '6': '.auge.protobuf.Work', '10': 'work'},
   ],
 };
 
@@ -110,15 +111,37 @@ const WorkItemGetRequest$json = const {
   ],
 };
 
+const WorkItemAttachment$json = const {
+  '1': 'WorkItemAttachment',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'content', '3': 3, '4': 1, '5': 9, '10': 'content'},
+  ],
+};
+
+const WorkItemAttachmentsResponse$json = const {
+  '1': 'WorkItemAttachmentsResponse',
+  '2': const [
+    const {'1': 'work_item_attachments', '3': 1, '4': 3, '5': 11, '6': '.auge.protobuf.WorkItemAttachment', '10': 'workItemAttachments'},
+  ],
+};
+
+const WorkItemAttachmentGetRequest$json = const {
+  '1': 'WorkItemAttachmentGetRequest',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'work_item_id', '3': 2, '4': 1, '5': 9, '10': 'workItemId'},
+  ],
+};
+
 const WorkItemCheckItem$json = const {
   '1': 'WorkItemCheckItem',
   '2': const [
     const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    const {'1': 'version', '3': 2, '4': 1, '5': 5, '10': 'version'},
-    const {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
-    const {'1': 'finished', '3': 4, '4': 1, '5': 8, '10': 'finished'},
-    const {'1': 'index', '3': 5, '4': 1, '5': 5, '10': 'index'},
-    const {'1': 'work_item_check_item_id', '3': 6, '4': 1, '5': 9, '10': 'workItemCheckItemId'},
+    const {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'finished', '3': 3, '4': 1, '5': 8, '10': 'finished'},
+    const {'1': 'index', '3': 4, '4': 1, '5': 5, '10': 'index'},
   ],
 };
 

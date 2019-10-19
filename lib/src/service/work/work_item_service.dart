@@ -154,7 +154,7 @@ class WorkItemService extends WorkItemServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT check_item.id, check_item.version, check_item.name, check_item.finished"
+    queryStatement = "SELECT check_item.id, check_item.name, check_item.finished"
         " FROM work.work_item_check_items check_item";
 
     Map<String, dynamic> substitutionValues;
@@ -167,7 +167,7 @@ class WorkItemService extends WorkItemServiceBase {
     List<WorkItemCheckItem> checkItems = new List();
     for (var row in results) {
 
-      checkItems.add(new WorkItemCheckItem()..id = row[0]..version = row[1]..name = row[2]..finished = row[3]);
+      checkItems.add(new WorkItemCheckItem()..id = row[0]..name = row[1]..finished = row[2]);
     }
 
     return checkItems;
@@ -291,26 +291,43 @@ class WorkItemService extends WorkItemServiceBase {
                 "user_id": user.id});
         }
 
+        // Attachment list
+        for (WorkItemAttachment attachment in request.workItem.attachments) {
+          attachment.id = new Uuid().v4();
+
+          await ctx.query("INSERT INTO work.work_item_attachments"
+              " (id,"
+              " name,"
+              " content,"
+              " work_item_id)"
+              " VALUES"
+              " (@id,"
+              " @name,"
+              " @content,"
+              " @work_item_id)"
+              , substitutionValues: {
+                "id": attachment.id,
+                "name": attachment.name,
+                "content": attachment.hasContent() ? attachment.content : false,
+                "work_item_id": request.workItem.id});
+        }
+
         // Check item list
         for (WorkItemCheckItem checkItem in request.workItem.checkItems) {
           checkItem.id = new Uuid().v4();
-          checkItem.version = 0;
 
           await ctx.query("INSERT INTO work.work_item_check_items"
               " (id,"
-              " version,"
               " name,"
               " finished,"
               " work_item_id)"
               " VALUES"
               " (@id,"
-              " @version,"
               " @name,"
               " @finished,"
               " @work_item_id)"
               , substitutionValues: {
                 "id": checkItem.id,
-                "version": checkItem.version,
                 "name": checkItem.name,
                 "finished": checkItem.hasFinished() ? checkItem.finished : false,
                 "work_item_id": request.workItem.id});
@@ -419,6 +436,62 @@ class WorkItemService extends WorkItemServiceBase {
             "id": request.workItem.id});
         }
 
+        // WorkItemAttachment list
+        StringBuffer workItemsId = new StringBuffer();
+        for (WorkItemAttachment workItemAttachment in request.workItem.attachments) {
+          if (!workItemAttachment.hasId()) {
+            workItemAttachment.id = new Uuid().v4();
+
+            await ctx.query(
+                "INSERT INTO work.work_item_attachments"
+                    " (id,"
+                    " name,"
+                    " content,"
+                    " work_item_id)"
+                    " VALUES"
+                    " (@id,"
+                    " @name,"
+                    " @content,"
+                    " @work_item_id)"
+                , substitutionValues: {
+              "id": workItemAttachment.id,
+              "name": workItemAttachment.name,
+              "content": workItemAttachment.content,
+              "work_item_id": request.workItem.id});
+          } /* else {
+            checkItem.version++;
+            await ctx.query("UPDATE work.work_item_check_items SET"
+                " name = @name,"
+                " version = @version,"
+                " finished = @finished,"
+                " work_item_id = @work_item_id"
+                " WHERE id = @id AND version = @version - 1"
+                , substitutionValues: {
+                  "id": checkItem.id,
+                  "version": checkItem.version,
+                  "name": checkItem.name,
+                  "finished": checkItem.finished,
+                  "work_item_id": request.workItem.id});
+
+          }*/
+
+          if (workItemsId.isNotEmpty)
+            workItemsId.write(',');
+          workItemsId.write("'");
+          workItemsId.write(workItemAttachment.id);
+          workItemsId.write("'");
+        }
+
+        String queryDelete;
+        queryDelete = "DELETE FROM work.work_item_attachments work_item_attachment WHERE work_item_attachment.work_item_id = @work_item_attachment";
+        if (workItemsId.isNotEmpty) {
+          queryDelete =
+              queryDelete + " AND work_item_attachment.id NOT IN (${workItemsId.toString()})";
+        }
+
+        await ctx.query(queryDelete, substitutionValues: {"work_item_id": request.workItem.id});
+
+
         // Check item list
         StringBuffer checkItemsId = new StringBuffer();
         for (WorkItemCheckItem checkItem in request.workItem.checkItems) {
@@ -461,14 +534,14 @@ class WorkItemService extends WorkItemServiceBase {
           checkItemsId.write("'");
         }
 
-        String queryDelete;
-        queryDelete = "DELETE FROM work.work_item_check_items work_item_check_item WHERE work_item_check_item.work_item_id = @work_item_id";
+        String queryDeleteCheckItems;
+        queryDeleteCheckItems = "DELETE FROM work.work_item_check_items work_item_check_item WHERE work_item_check_item.work_item_id = @work_item_id";
         if (checkItemsId.isNotEmpty) {
-          queryDelete =
-              queryDelete + " AND work_item_check_item.id NOT IN (${checkItemsId.toString()})";
+          queryDeleteCheckItems =
+              queryDeleteCheckItems + " AND work_item_check_item.id NOT IN (${checkItemsId.toString()})";
         }
 
-        await ctx.query(queryDelete, substitutionValues: {"work_item_id": request.workItem.id});
+        await ctx.query(queryDeleteCheckItems, substitutionValues: {"work_item_id": request.workItem.id});
 
         // Optimistic concurrency control
         if (result.isEmpty) {
