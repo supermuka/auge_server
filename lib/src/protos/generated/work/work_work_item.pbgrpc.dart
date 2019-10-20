@@ -187,6 +187,11 @@ class WorkItemServiceClient extends $grpc.Client {
           '/auge.protobuf.WorkItemService/DeleteWorkItem',
           ($7.WorkItemDeleteRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) => $2.Empty.fromBuffer(value));
+  static final _$getWorkItemAttachment = $grpc.ClientMethod<
+          $7.WorkItemAttachmentGetRequest, $7.WorkItemAttachment>(
+      '/auge.protobuf.WorkItemService/GetWorkItemAttachment',
+      ($7.WorkItemAttachmentGetRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $7.WorkItemAttachment.fromBuffer(value));
   static final _$getWorkItemCheckItems = $grpc.ClientMethod<
           $7.WorkItemCheckItemGetRequest, $7.WorkItemCheckItemsResponse>(
       '/auge.protobuf.WorkItemService/GetWorkItemCheckItems',
@@ -237,6 +242,15 @@ class WorkItemServiceClient extends $grpc.Client {
       {$grpc.CallOptions options}) {
     final call = $createCall(
         _$deleteWorkItem, $async.Stream.fromIterable([request]),
+        options: options);
+    return $grpc.ResponseFuture(call);
+  }
+
+  $grpc.ResponseFuture<$7.WorkItemAttachment> getWorkItemAttachment(
+      $7.WorkItemAttachmentGetRequest request,
+      {$grpc.CallOptions options}) {
+    final call = $createCall(
+        _$getWorkItemAttachment, $async.Stream.fromIterable([request]),
         options: options);
     return $grpc.ResponseFuture(call);
   }
@@ -293,6 +307,15 @@ abstract class WorkItemServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $7.WorkItemDeleteRequest.fromBuffer(value),
         ($2.Empty value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$7.WorkItemAttachmentGetRequest,
+            $7.WorkItemAttachment>(
+        'GetWorkItemAttachment',
+        getWorkItemAttachment_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $7.WorkItemAttachmentGetRequest.fromBuffer(value),
+        ($7.WorkItemAttachment value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$7.WorkItemCheckItemGetRequest,
             $7.WorkItemCheckItemsResponse>(
         'GetWorkItemCheckItems',
@@ -329,6 +352,12 @@ abstract class WorkItemServiceBase extends $grpc.Service {
     return deleteWorkItem(call, await request);
   }
 
+  $async.Future<$7.WorkItemAttachment> getWorkItemAttachment_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$7.WorkItemAttachmentGetRequest> request) async {
+    return getWorkItemAttachment(call, await request);
+  }
+
   $async.Future<$7.WorkItemCheckItemsResponse> getWorkItemCheckItems_Pre(
       $grpc.ServiceCall call,
       $async.Future<$7.WorkItemCheckItemGetRequest> request) async {
@@ -345,6 +374,8 @@ abstract class WorkItemServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $7.WorkItemRequest request);
   $async.Future<$2.Empty> deleteWorkItem(
       $grpc.ServiceCall call, $7.WorkItemDeleteRequest request);
+  $async.Future<$7.WorkItemAttachment> getWorkItemAttachment(
+      $grpc.ServiceCall call, $7.WorkItemAttachmentGetRequest request);
   $async.Future<$7.WorkItemCheckItemsResponse> getWorkItemCheckItems(
       $grpc.ServiceCall call, $7.WorkItemCheckItemGetRequest request);
 }

@@ -25,7 +25,9 @@ class RpcErrorDetailMessage {
   static const String stateDataNotFoundReason = 'State data not found.';
   static const String userDataNotFoundReason = 'UserDataNotFound';
   static const String workItemDataNotFoundReason = 'Workitem data not found.';
+  static const String workItemAttachmentDataNotFoundReason = 'Workitem attachment data not found.';
   static const String workItemInvalidArgument = 'Workitem invalid argument.';
+  static const String workItemAttachmentInvalidArgument = 'Workitem attachment invalid argument.';
   static const String workItemPreconditionFailed = 'Workitem precondition failed.';
   static const String objectiveNotificationUserInvalidArgument = 'Objective Notification User invalid argument.';
 }

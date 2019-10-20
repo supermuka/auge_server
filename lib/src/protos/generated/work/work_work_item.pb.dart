@@ -542,6 +542,7 @@ class WorkItemAttachmentGetRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkItemAttachmentGetRequest', package: const $pb.PackageName('auge.protobuf'))
     ..aOS(1, 'id')
     ..aOS(2, 'workItemId')
+    ..aOB(3, 'withContent')
     ..hasRequiredFields = false
   ;
 
@@ -568,6 +569,11 @@ class WorkItemAttachmentGetRequest extends $pb.GeneratedMessage {
   set workItemId($core.String v) { $_setString(1, v); }
   $core.bool hasWorkItemId() => $_has(1);
   void clearWorkItemId() => clearField(2);
+
+  $core.bool get withContent => $_get(2, false);
+  set withContent($core.bool v) { $_setBool(2, v); }
+  $core.bool hasWithContent() => $_has(2);
+  void clearWithContent() => clearField(3);
 }
 
 class WorkItemCheckItem extends $pb.GeneratedMessage {

@@ -81,8 +81,16 @@ class WorkItemService extends WorkItemServiceBase {
     return workItemCheckItemsResponse;
   }
 
-  // QUERY
+  @override
+  Future<WorkItemAttachment> getWorkItemAttachment(ServiceCall call,
+      WorkItemAttachmentGetRequest workItemAttachmentGetRequest) async {
+    WorkItemAttachment workItemAttachment = await querySelectWorkItemAttachment(workItemAttachmentGetRequest);
+    if (workItemAttachment == null) throw new GrpcError.notFound(
+        RpcErrorDetailMessage.workItemAttachmentDataNotFoundReason);
+    return workItemAttachment;
+  }
 
+  // QUERY
   // *** INITIATIVE WORK ITEMS ***
   static Future<List<WorkItem>> querySelectWorkItems(WorkItemGetRequest workItemGetRequest) async {
 
@@ -119,6 +127,7 @@ class WorkItemService extends WorkItemServiceBase {
     List<WorkItem> workItems = new List();
     WorkStage workStage;
     List<User> assignedToUsers;
+    List<WorkItemAttachment> attachments;
     List<WorkItemCheckItem> checkItems;
     WorkItem workItem;
     for (var row in results) {
@@ -126,6 +135,8 @@ class WorkItemService extends WorkItemServiceBase {
       workStage = await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[6]);
 
       assignedToUsers = await querySelectWorkItemAssignedToUsers(row[0]);
+
+      attachments = await querySelectWorkItemAttachments(WorkItemAttachmentGetRequest()..workItemId = row[0]..withContent = false);
 
       checkItems = await querySelectWorkItemCheckItems(WorkItemCheckItemGetRequest()..workItemId = row[0]);
 
@@ -135,6 +146,7 @@ class WorkItemService extends WorkItemServiceBase {
       if (row[5] != null) workItem.completed = row[5];
       if (workStage != null) workItem.workStage = workStage;
       if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
+      if (attachments.isNotEmpty) workItem.attachments.addAll(attachments);
       if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
 
       if (workItemGetRequest.hasWithWork() && workItemGetRequest.withWork == true && row[7] != null) {
@@ -147,7 +159,7 @@ class WorkItemService extends WorkItemServiceBase {
     return workItems;
   }
 
-  // *** INITIATIVE WORK ITEMS CHECKED ITEMS ***
+  // *** WORK ITEMS CHECKED ITEMS ***
   static Future<List<WorkItemCheckItem>> querySelectWorkItemCheckItems(WorkItemCheckItemGetRequest workItemCheckItemGetRequest) async {
 
     List<List> results;
@@ -173,14 +185,66 @@ class WorkItemService extends WorkItemServiceBase {
     return checkItems;
   }
 
+  // *** ATTACHMENT ***
+  static Future<List<WorkItemAttachment>> querySelectWorkItemAttachments(WorkItemAttachmentGetRequest workItemAttachmentGetRequest) async {
+
+    List<List> results;
+
+    String queryStatement;
+
+    queryStatement = "SELECT attachment.id, attachment.name, attachment.type";
+    if (workItemAttachmentGetRequest.hasWithContent() && workItemAttachmentGetRequest.withContent)  queryStatement += ", attachment.content";
+    queryStatement += " FROM work.work_item_attachments attachment";
+
+    Map<String, dynamic> substitutionValues;
+
+    queryStatement += " WHERE attachment.work_item_id = @work_item_id";
+
+    substitutionValues = {"work_item_id": workItemAttachmentGetRequest.workItemId};
+
+    if (workItemAttachmentGetRequest.hasId()) {
+      queryStatement += " WHERE attachment.id = @id";
+      substitutionValues = {"id": workItemAttachmentGetRequest.id};
+    } else if (workItemAttachmentGetRequest.hasWorkItemId() ) {
+      queryStatement += " WHERE attachment.work_item_id = @work_item_id";
+      substitutionValues = {"work_id": workItemAttachmentGetRequest.workItemId};
+    } else {
+      throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workItemAttachmentInvalidArgument );
+    }
+
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+
+    List<WorkItemAttachment> attachments =  List();
+    for (var row in results) {
+      WorkItemAttachment workItemAttachment = WorkItemAttachment()..id = row[0]..name = row[1]..type = row[2];
+      if (workItemAttachmentGetRequest.withContent) {
+        workItemAttachment.content = row[3];
+      }
+
+      attachments.add(workItemAttachment);
+    }
+
+    return attachments;
+  }
+
+  static Future<WorkItemAttachment> querySelectWorkItemAttachment(WorkItemAttachmentGetRequest workItemAttachmentGetRequest /* String id */) async {
+
+    List<WorkItemAttachment> workItemAttachments = await querySelectWorkItemAttachments(workItemAttachmentGetRequest);
+
+    if (workItemAttachments == null || workItemAttachments.isEmpty) throw new GrpcError.notFound(
+        RpcErrorDetailMessage.workItemAttachmentDataNotFoundReason);
+    else
+      return workItemAttachments.first;
+  }
+
   static Future<WorkItem> querySelectWorkItem(WorkItemGetRequest workItemGetRequest /* String id */) async {
 
-    List<WorkItem> workItem = await querySelectWorkItems(workItemGetRequest);
+    List<WorkItem> workItems = await querySelectWorkItems(workItemGetRequest);
 
-    if (workItem == null || workItem.isEmpty) throw new GrpcError.notFound(
+    if (workItems == null || workItems.isEmpty) throw new GrpcError.notFound(
         RpcErrorDetailMessage.workItemDataNotFoundReason);
     else
-      return workItem.first;
+      return workItems.first;
   }
 
   // *** INITIATIVE WORK ITEMS ASSIGNED ***
@@ -489,7 +553,7 @@ class WorkItemService extends WorkItemServiceBase {
         }
 
         String queryDelete;
-        queryDelete = "DELETE FROM work.work_item_attachments work_item_attachment WHERE work_item_attachment.work_item_id = @work_item_attachment";
+        queryDelete = "DELETE FROM work.work_item_attachments work_item_attachment WHERE work_item_attachment.work_item_id = @work_item_id";
         if (workItemsId.isNotEmpty) {
           queryDelete =
               queryDelete + " AND work_item_attachment.id NOT IN (${workItemsId.toString()})";

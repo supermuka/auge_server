@@ -87,6 +87,7 @@ service WorkItemService {
     rpc DeleteWorkItem (WorkItemDeleteRequest) returns (google.protobuf.Empty) {}
     // rpc SoftDeleteWorkItem (WorkItem) returns (google.protobuf.Empty) {} // Normally returns Empty, but as this system uses "soft delete" approach, must be returned the resource updated.
 
+    rpc GetWorkItemAttachment (WorkItemAttachmentGetRequest) returns (WorkItemAttachment) {}
     rpc GetWorkItemCheckItems (WorkItemCheckItemGetRequest) returns (WorkItemCheckItemsResponse) {}
 }
 
@@ -164,6 +165,7 @@ message WorkItemAttachmentGetRequest {
     // Base
     string id = 1;
     string work_item_id = 2;
+    bool with_content = 3;
 }
 
 // Message to respective domain object.
