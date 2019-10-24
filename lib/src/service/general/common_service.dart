@@ -17,25 +17,6 @@ class CommonService extends CommonServiceBase {
       DateTimeGetRequest dateTimeGetRequest) async {
     try {
 
-    //  Timestamp t = Timestamp();
-
-      /*
-      if (dateTimeGetRequest.isUtc) {
-        int microsecondsSinceEpoch = DateTime
-            .now()
-            .toUtc()
-            .microsecondsSinceEpoch;
-        t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
-        t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
-      }
-      else {
-        int microsecondsSinceEpoch = DateTime.now()
-            .microsecondsSinceEpoch;
-        t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
-        t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
-      }
-      */
-
       return new DateTimeResponse()..dateTime = CommonUtils.timestampFromDateTime(dateTimeGetRequest.isUtc ? DateTime
           .now()
           .toUtc() : DateTime
