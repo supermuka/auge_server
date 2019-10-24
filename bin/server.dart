@@ -52,5 +52,6 @@ Future<void> main(List<String> args) async {
     WorkService(),
     WorkItemService()]);
   await server.serve(port: 9091);
+
   print('Server listening on port ${server.port}...');
 }

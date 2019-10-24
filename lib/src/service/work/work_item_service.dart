@@ -198,7 +198,6 @@ class WorkItemService extends WorkItemServiceBase {
 
     Map<String, dynamic> substitutionValues;
 
-    queryStatement += " WHERE attachment.work_item_id = @work_item_id";
 
     substitutionValues = {"work_item_id": workItemAttachmentGetRequest.workItemId};
 
@@ -207,7 +206,7 @@ class WorkItemService extends WorkItemServiceBase {
       substitutionValues = {"id": workItemAttachmentGetRequest.id};
     } else if (workItemAttachmentGetRequest.hasWorkItemId() ) {
       queryStatement += " WHERE attachment.work_item_id = @work_item_id";
-      substitutionValues = {"work_id": workItemAttachmentGetRequest.workItemId};
+      substitutionValues = {"work_item_id": workItemAttachmentGetRequest.workItemId};
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workItemAttachmentInvalidArgument );
     }
@@ -217,7 +216,7 @@ class WorkItemService extends WorkItemServiceBase {
     List<WorkItemAttachment> attachments =  List();
     for (var row in results) {
       WorkItemAttachment workItemAttachment = WorkItemAttachment()..id = row[0]..name = row[1]..type = row[2];
-      if (workItemAttachmentGetRequest.withContent) {
+      if (workItemAttachmentGetRequest.hasWithContent() && workItemAttachmentGetRequest.withContent) {
         workItemAttachment.content = row[3];
       }
 

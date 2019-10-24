@@ -29,11 +29,12 @@ class AugeConnection {
     if (_connection == null || _connection.isClosed) {
       _connection = new PostgreSQLConnection(
 
+           // cloud internal ip - when deploy
+         // "10.128.0.2", 5432, "auge", username: "postgres",
 
-           //"10.128.0.2", 5432, "auge", username: "postgres",
-          // "localhost", 5432, "auge", username: "postgres",
+           //"localhost", 5432, "auge", username: "postgres",
          // Run on Windows
-          "host.docker.internal", 5432, "auge", username: "postgres",
+         "host.docker.internal", 5432, "auge", username: "postgres",
 
        // ip a
        // docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default

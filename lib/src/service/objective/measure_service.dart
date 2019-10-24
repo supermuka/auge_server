@@ -262,11 +262,16 @@ class MeasureService extends MeasureServiceBase {
       request.measure.id = new Uuid().v4();
     }
 
+
     request.measure.version = 0;
 
     Map<String, dynamic> historyItemNotificationValues;
 
     try {
+
+      // Create a history item
+      Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
+
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
@@ -294,8 +299,6 @@ class MeasureService extends MeasureServiceBase {
           "objective_id": request.hasObjectiveId() ? request.objectiveId : null,
         });
 
-        // Create a history item
-        Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
 
         historyItemNotificationValues =  {"id": Uuid().v4(),
           "user_id": request.authUserId,
@@ -316,6 +319,7 @@ class MeasureService extends MeasureServiceBase {
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: historyItemNotificationValues);
+
 
       });
 
