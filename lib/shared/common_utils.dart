@@ -20,12 +20,14 @@ class CommonUtils {
   }
 
   /// Return a Dart [DateTime] from Protobuf [Timestamp]
+/*
   static DateTime dateTimeFromTimestamp(Timestamp timestamp) {
     if (timestamp == null) return null;
     return DateTime.fromMicrosecondsSinceEpoch(
         timestamp.seconds.toInt() * 1000000 +
             timestamp.nanos ~/ 1000);
   }
+*/
 
   static String createCryptoRandomString([int length = 32]) {
 

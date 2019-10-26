@@ -69,7 +69,7 @@ class WorkItem {
     if (this.description != null) workItemPb.description = this.description;
     if (this.completed != null) workItemPb.completed = this.completed;
 
-    if (this.dueDate != null) workItemPb.dueDate = CommonUtils.timestampFromDateTime(this.dueDate.toUtc()); /*{
+    if (this.dueDate != null) workItemPb.dueDate = CommonUtils.timestampFromDateTime(this.dueDate); /*{
       Timestamp t = Timestamp();
       int microsecondsSinceEpoch = this.dueDate.toUtc().microsecondsSinceEpoch;
       t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
@@ -94,9 +94,14 @@ class WorkItem {
     if (workItemPb.hasCompleted()) this.completed = workItemPb.completed;
     if (workItemPb.hasWorkStage()) this.workStage = WorkStage()..readFromProtoBuf(workItemPb.workStage);
 
-    if (workItemPb.hasDueDate())  this.dueDate = CommonUtils.dateTimeFromTimestamp(workItemPb.dueDate); /*{
+    print('*-*-*- readFromProtoBuf');
+    print(workItemPb.dueDate.toDateTime());
+    // if (workItemPb.hasDueDate())  this.dueDate = CommonUtils.dateTimeFromTimestamp(workItemPb.dueDate);
+    if (workItemPb.hasDueDate())  this.dueDate = workItemPb.dueDate.toDateTime();
+    /*{
       this.dueDate = DateTime.fromMicrosecondsSinceEpoch(workItemPb.dueDate.seconds.toInt() * 1000000 + workItemPb.dueDate.nanos ~/ 1000 );
     }*/
+    print(this.dueDate);
     if (workItemPb.attachments.isNotEmpty) this.attachments = workItemPb.attachments.map((u) => WorkItemAttachment()..readFromProtoBuf(u)).toList();
     if (workItemPb.checkItems.isNotEmpty) this.checkItems = workItemPb.checkItems.map((u) => WorkItemCheckItem()..readFromProtoBuf(u)).toList();
     if (workItemPb.assignedTo.isNotEmpty) this.assignedTo = workItemPb.assignedTo.map((u) => User()..readFromProtoBuf(u)).toList();
@@ -120,8 +125,13 @@ class WorkItem {
       if (workItemPb.hasCompleted())
         map[WorkItem.completedField] = workItemPb.completed;
       if (workItemPb.hasWorkStage()) map[WorkItem.workStageField] = WorkStage.fromProtoBufToModelMap(workItemPb.workStage);
+      /*
       if (workItemPb.hasDueDate())
         map[WorkItem.dueDateField] = CommonUtils.dateTimeFromTimestamp(workItemPb.dueDate);
+*/
+      if (workItemPb.hasDueDate())
+        map[WorkItem.dueDateField] = workItemPb.dueDate.toDateTime();
+
       if (workItemPb.attachments.isNotEmpty) map[WorkItem.attachmentsField] =
           workItemPb.attachments.map((ci) =>
               WorkItemAttachment.fromProtoBufToModelMap(ci, onlyIdAndSpecificationForDepthFields, true)).toList();

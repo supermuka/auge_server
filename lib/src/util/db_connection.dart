@@ -4,6 +4,7 @@
 import 'dart:async';
 
 import 'package:postgres/postgres.dart';
+import 'package:auge_server/src/util/configuration.dart';
 
 class AugeConnection {
 
@@ -27,6 +28,10 @@ class AugeConnection {
 
   static Future<PostgreSQLConnection> getConnection() async {
     if (_connection == null || _connection.isClosed) {
+
+
+      AugeConfiguration augeConfiguration = AugeConfiguration('config/configuration.yaml');
+
       _connection = new PostgreSQLConnection(
 
            // cloud internal ip - when deploy
@@ -34,7 +39,13 @@ class AugeConnection {
 
            //"localhost", 5432, "auge", username: "postgres",
          // Run on Windows
-         "host.docker.internal", 5432, "auge", username: "postgres",
+        // "host.docker.internal", 5432, "auge", username: "postgres",
+        //  password: "admin@levius#2018");
+          augeConfiguration.database.host,
+          augeConfiguration.database.port,
+          augeConfiguration.database.databaseName,
+          username: augeConfiguration.database.username,
+          password: augeConfiguration.database.password);
 
        // ip a
        // docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default
@@ -47,7 +58,7 @@ class AugeConnection {
         // >>> FOI UTILIZADO PARA DEFINIR O RANGE NO /etc/postgresql/9.6/main/pg_hba.conf <<<
 
        //   "172.17.0.1", 5432, "auge", username: "postgres",
-          password: "admin@levius#2018");
+
       await _connection.open();
     }
     return _connection;

@@ -1,0 +1,6 @@
+database:
+  host: 'host.docker.internal'
+  port: 5432
+  databaseName: 'auge'
+  username: 'postgres'
+  password: 'admin@levius#2018'

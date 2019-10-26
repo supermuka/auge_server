@@ -35,6 +35,9 @@ import 'package:auge_server/src/service/work/work_stage_service.dart';
 import 'package:auge_server/src/service/work/work_item_service.dart';
 
 Future<void> main(List<String> args) async {
+
+
+
   final server = new Server([
     CommonService(),
     OrganizationService(),

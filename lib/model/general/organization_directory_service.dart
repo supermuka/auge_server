@@ -144,7 +144,8 @@ class OrganizationDirectoryService {
     if (organizationDirectoryServicePb.hasSyncBindDn()) this.syncBindDn = organizationDirectoryServicePb.syncBindDn;
     if (organizationDirectoryServicePb.hasSyncBindPassword()) this.syncBindPassword = organizationDirectoryServicePb.syncBindPassword;
     if (organizationDirectoryServicePb.hasSyncInterval()) this.syncInterval = organizationDirectoryServicePb.syncInterval;
-    if (organizationDirectoryServicePb.hasSyncLastDateTime()) this.syncLastDateTime = CommonUtils.dateTimeFromTimestamp(organizationDirectoryServicePb.syncLastDateTime);
+   // if (organizationDirectoryServicePb.hasSyncLastDateTime()) this.syncLastDateTime = CommonUtils.dateTimeFromTimestamp(organizationDirectoryServicePb.syncLastDateTime);
+    if (organizationDirectoryServicePb.hasSyncLastDateTime()) this.syncLastDateTime = organizationDirectoryServicePb.syncLastDateTime.toDateTime();
     if (organizationDirectoryServicePb.hasSyncLastResult()) this.syncLastResult = organizationDirectoryServicePb.syncLastResult;
     if (organizationDirectoryServicePb.hasGroupSearchDN()) this.groupSearchDN = organizationDirectoryServicePb.groupSearchDN;
     if (organizationDirectoryServicePb.hasGroupSearchScope()) this.groupSearchScope = organizationDirectoryServicePb.groupSearchScope;

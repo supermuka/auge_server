@@ -300,9 +300,9 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
           "directory_service_enabled": request.organizationDirectoryService.directoryServiceEnabled,
           "sync_bind_dn": request.organizationDirectoryService.hasSyncBindDn() ? request.organizationDirectoryService.syncBindDn : null,
           "sync_interval": request.organizationDirectoryService.hasSyncInterval() ? request.organizationDirectoryService.syncInterval : null,
-          "sync_last_date_time": request.organizationDirectoryService.hasSyncLastDateTime() ? CommonUtils
+          "sync_last_date_time": request.organizationDirectoryService.hasSyncLastDateTime() ? /* CommonUtils
               .dateTimeFromTimestamp(
-              request.organizationDirectoryService.syncLastDateTime) : null,
+              request.organizationDirectoryService.syncLastDateTime) */ request.organizationDirectoryService.syncLastDateTime.toDateTime() : null,
           "sync_last_result": request.organizationDirectoryService.hasSyncLastResult() ? request.organizationDirectoryService.syncLastResult : null,
           "host_address": request.organizationDirectoryService.hasHostAddress() ? request.organizationDirectoryService.hostAddress : null,
           "port": request.organizationDirectoryService.hasPort() ? request.organizationDirectoryService.port : null,
@@ -394,9 +394,9 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
             "directory_service_enabled": request.organizationDirectoryService.directoryServiceEnabled,
             "sync_bind_dn": request.organizationDirectoryService.hasSyncBindDn() ? request.organizationDirectoryService.syncBindDn : null,
             "sync_interval": request.organizationDirectoryService.hasSyncInterval() ? request.organizationDirectoryService.syncInterval : null,
-            "sync_last_date_time": request.organizationDirectoryService.hasSyncLastDateTime() ? CommonUtils
+            "sync_last_date_time": request.organizationDirectoryService.hasSyncLastDateTime() ? /* CommonUtils
                 .dateTimeFromTimestamp(
-                request.organizationDirectoryService.syncLastDateTime) : null,
+                request.organizationDirectoryService.syncLastDateTime) */ request.organizationDirectoryService.syncLastDateTime.toDateTime() : null,
             "sync_last_result": request.organizationDirectoryService.hasSyncLastResult()
                 ? request.organizationDirectoryService.syncLastResult
                 : null,

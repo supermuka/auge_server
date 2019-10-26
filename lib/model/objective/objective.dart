@@ -110,11 +110,13 @@ class Objective {
     if (objectivePb.hasArchived()) this.archived = objectivePb.archived;
 
     if (objectivePb.hasStartDate()) {
-      this.startDate = CommonUtils.dateTimeFromTimestamp(objectivePb.startDate);
+      // this.startDate = CommonUtils.dateTimeFromTimestamp(objectivePb.startDate);
+      this.startDate = objectivePb.startDate.toDateTime();
     }
 
     if (objectivePb.hasEndDate()) {
-      this.endDate = CommonUtils.dateTimeFromTimestamp(objectivePb.endDate);
+      // this.endDate = CommonUtils.dateTimeFromTimestamp(objectivePb.endDate);
+      this.endDate = objectivePb.endDate.toDateTime();
     }
 
     if (objectivePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(objectivePb.organization);
@@ -140,10 +142,19 @@ class Objective {
         map[Objective.descriptionField] = objectivePb.description;
       if (objectivePb.hasArchived())
         map[Objective.archivedField] = objectivePb.archived;
+      /*
       if (objectivePb.hasStartDate())
         map[Objective.startDateField] = CommonUtils.dateTimeFromTimestamp(objectivePb.startDate);
+*/
+      if (objectivePb.hasStartDate())
+        map[Objective.startDateField] = objectivePb.startDate.toDateTime();
+/*
       if (objectivePb.hasEndDate())
         map[Objective.endDateField] = CommonUtils.dateTimeFromTimestamp(objectivePb.endDate);
+*/
+      if (objectivePb.hasEndDate())
+        map[Objective.endDateField] = objectivePb.endDate.toDateTime();
+
       if (objectivePb.hasOrganization()) Organization
           .fromProtoBufToModelMap(objectivePb.organization, onlyIdAndSpecificationForDepthFields, true);
       if (objectivePb.hasGroup()) map[Objective.groupField] =

@@ -211,7 +211,8 @@ class MeasureProgress {
     if (measureProgressPb.hasId()) this.id = measureProgressPb.id;
     if (measureProgressPb.hasVersion())
       this.version = measureProgressPb.version;
-    if (measureProgressPb.hasDate()) this.date = CommonUtils.dateTimeFromTimestamp(measureProgressPb.date);
+    //if (measureProgressPb.hasDate()) this.date = CommonUtils.dateTimeFromTimestamp(measureProgressPb.date);
+    if (measureProgressPb.hasDate()) this.date = measureProgressPb.date.toDateTime();
     /*
         DateTime.fromMicrosecondsSinceEpoch(
             measureProgressPb.date.seconds.toInt() * 1000000 +
@@ -239,8 +240,12 @@ class MeasureProgress {
         map[MeasureProgress.idField] = measureProgressPb.id;
       if (measureProgressPb.hasVersion())
         map[MeasureProgress.versionField] = measureProgressPb.version;
+      /*
       if (measureProgressPb.hasDate())
         map[MeasureProgress.dateField] = CommonUtils.dateTimeFromTimestamp(measureProgressPb.date);
+       */
+      if (measureProgressPb.hasDate())
+        map[MeasureProgress.dateField] = measureProgressPb.date.toDateTime();
       if (measureProgressPb.hasCurrentValue())
         map[MeasureProgress.currentValueField] = measureProgressPb.currentValue;
       if (measureProgressPb.hasComment())

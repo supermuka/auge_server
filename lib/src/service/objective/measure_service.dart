@@ -587,7 +587,7 @@ class MeasureService extends MeasureServiceBase {
             , substitutionValues: {
           "id": request.measureProgress.id,
           "version": request.measureProgress.version,
-          "date": request.measureProgress.hasDate() ? CommonUtils.dateTimeFromTimestamp(request.measureProgress.date) : DateTime.now().toUtc(),
+          "date": request.measureProgress.hasDate() ? /* CommonUtils.dateTimeFromTimestamp(request.measureProgress.date) */ request.measureProgress.date.toDateTime() : DateTime.now().toUtc(),
           "current_value": request.measureProgress.hasCurrentValue() ? request.measureProgress.currentValue : null,
           "comment": request.measureProgress.hasComment() ? request.measureProgress.comment : null,
           "measure_id": request.hasMeasureId() ? request.measureId : null,
@@ -657,7 +657,7 @@ class MeasureService extends MeasureServiceBase {
           "version": ++request.measureProgress.version,
           "date": request.measureProgress.date == null
               ? dateTimeNow
-              : CommonUtils.dateTimeFromTimestamp(request.measureProgress.date),
+              : /* CommonUtils.dateTimeFromTimestamp(request.measureProgress.date) */ request.measureProgress.date.toDateTime(),
           "current_value": request.measureProgress.hasCurrentValue() ? request.measureProgress.currentValue : null,
           "comment": request.measureProgress.hasComment() ? request.measureProgress.comment : null,
           "measure_id": request.hasMeasureId() ? request.measureId : null,

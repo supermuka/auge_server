@@ -143,6 +143,7 @@ class WorkItemService extends WorkItemServiceBase {
       workItem = WorkItem()..id = row[0]..version = row[1]..name = row[2];
       if (row[3] != null) workItem.description = row[3];
       if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4]);
+
       if (row[5] != null) workItem.completed = row[5];
       if (workStage != null) workItem.workStage = workStage;
       if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
@@ -336,7 +337,7 @@ class WorkItemService extends WorkItemServiceBase {
               "version": request.workItem.version,
               "name": request.workItem.name,
               "description": request.workItem.hasDescription() ? request.workItem.description : null,
-              "due_date": request.workItem.hasDueDate() ? CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) : null,
+              "due_date": request.workItem.hasDueDate() ? /* CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) */ request.workItem.dueDate.toDateTime() : null,
               "completed": request.workItem.hasCompleted() ? request.workItem.completed : null,
               "work_id": request.hasWorkId() ? request.workId : null,
               "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null});
@@ -409,7 +410,7 @@ class WorkItemService extends WorkItemServiceBase {
               .WorkItem.className,
           "system_module_index": SystemModule.works.index,
           "system_function_index": SystemFunction.create.index,
-          "date_time": DateTime.now().toUtc(),
+          "date_time": DateTime.now(),
           "description": request.workItem.name,
           "changed_values": history_item_m.HistoryItem
               .changedValuesJson({},
@@ -463,7 +464,7 @@ class WorkItemService extends WorkItemServiceBase {
               "description": request.workItem.hasDescription()
                   ? request.workItem.description
                   : null,
-              "due_date": request.workItem.hasDueDate() ? CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) : null,
+              "due_date": request.workItem.hasDueDate() ? /* CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) */ request.workItem.dueDate.toDateTime() : null,
               "completed": request.workItem.hasCompleted()
                   ? request.workItem.completed
                   : null,
@@ -628,7 +629,7 @@ class WorkItemService extends WorkItemServiceBase {
                 .WorkItem.className,
             "system_module_index": SystemModule.works.index,
             "system_function_index": SystemFunction.update.index,
-            "date_time": DateTime.now().toUtc(),
+            "date_time": DateTime.now(),
             "description": request.workItem.name,
             "changed_values": history_item_m.HistoryItem
                 .changedValuesJson(
@@ -697,7 +698,7 @@ class WorkItemService extends WorkItemServiceBase {
               "object_class_name": work_item_m.WorkItem.className,
               "system_module_index": SystemModule.works.index,
               "system_function_index": SystemFunction.delete.index,
-              "date_time": DateTime.now().toUtc(),
+              "date_time": DateTime.now(),
               "description": previousWorkItem.name,
               "changed_values": history_item_m.HistoryItem.changedValuesJson(
                   work_item_m.WorkItem.fromProtoBufToModelMap(

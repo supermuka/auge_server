@@ -14,7 +14,10 @@
 
 FROM google/dart:2.6.0-dev.8.0
 
-COPY bin/auge_server.dart.snapshot /etc/auge_server/auge_server.dart.snapshot
+# understand a way to inform a directory specific here or implementation. Today configuraion.yaml is read on current directory.
+COPY config/configuration.yaml /etc/auge_server/config/configuration.yaml
+COPY bin/auge_server.dart.snapshot /etc/auge_server/bin/auge_server.dart.snapshot
 
 EXPOSE 9091
-CMD /usr/bin/dart /etc/auge_server/auge_server.dart.snapshot
+WORKDIR "/etc/auge_server/"
+CMD /usr/bin/dart bin/auge_server.dart.snapshot

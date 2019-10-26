@@ -79,7 +79,8 @@ class HistoryItem {
     if (historyItemPb.hasSystemFunctionIndex()) this.systemFunctionIndex = historyItemPb.systemFunctionIndex;
 
     if (historyItemPb.hasDateTime()) {
-      this.dateTime = CommonUtils.dateTimeFromTimestamp(historyItemPb.dateTime);
+      // this.dateTime = CommonUtils.dateTimeFromTimestamp(historyItemPb.dateTime);
+      this.dateTime = historyItemPb.dateTime.toDateTime();
     }
     if (historyItemPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(historyItemPb.organization);
     if (historyItemPb.hasUser()) this.user = User()..readFromProtoBuf(historyItemPb.user);
