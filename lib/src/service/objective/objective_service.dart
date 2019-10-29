@@ -253,7 +253,10 @@ class ObjectiveService extends ObjectiveServiceBase {
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
-    // Leader
+    // Leader  - Verify if send e-mail
+    if (!objective.leader.userProfile.eMailNotification) return;
+
+    // Leader - eMail
     if (objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
     mailMessages.add(

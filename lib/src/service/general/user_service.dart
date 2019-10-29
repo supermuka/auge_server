@@ -81,8 +81,9 @@ class UserService extends UserServiceBase {
           " u.inactive, " //3
           " u.managed_by_organization_id, " //4
           " user_profile.email, " //5
-          " user_profile.image, " //6
-          " user_profile.idiom_locale " //7
+          " user_profile.email_notification, " //6
+          " user_profile.image, " //7
+          " user_profile.idiom_locale " //8
           " FROM general.users u "
           " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
     }
@@ -137,8 +138,9 @@ class UserService extends UserServiceBase {
         if (request != null && request.withUserProfile) {
           user.userProfile = UserProfile();
           if (row[5] != null) user.userProfile.eMail = row[5];
-          if (row[6] != null) user.userProfile.image = row[6];
-          if (row[7] != null) user.userProfile.idiomLocale = row[7];
+          if (row[6] != null) user.userProfile.eMailNotification = row[6];
+          if (row[7] != null) user.userProfile.image = row[7];
+          if (row[8] != null) user.userProfile.idiomLocale = row[8];
         }
 
         users.add(user);
@@ -193,13 +195,15 @@ class UserService extends UserServiceBase {
 
         if (request.user.userProfile != null) {
           await ctx.query(
-              "INSERT INTO general.user_profiles(user_id, email, image, idiom_locale) VALUES("
+              "INSERT INTO general.user_profiles(user_id, email, email_notification, image, idiom_locale) VALUES("
                   "@id,"
                   "@email,"
+                  "@email_notification,"
                   "@image,"
                   "@idiom_locale)", substitutionValues: {
             "id": request.user.id,
             "email": request.user.userProfile.eMail,
+            "email_notification": request.user.userProfile.eMailNotification,
             "image": request.user.userProfile.image,
             "idiom_locale": request.user.userProfile.idiomLocale});
         }
@@ -250,16 +254,18 @@ class UserService extends UserServiceBase {
           "managed_by_organization_id": request.user.managedByOrganization.id});
 
         await ctx.query(
-            "INSERT INTO general.user_profiles(user_id, email, image, idiom_locale) "
-            "VALUES(@user_id, @email, @image, @idiom_locale) "
+            "INSERT INTO general.user_profiles(user_id, email, email_notification, image, idiom_locale) "
+            "VALUES(@user_id, @email, @email_notification, @image, @idiom_locale) "
             "ON CONFLICT (user_id) DO UPDATE "
                 "SET email = @email, "
+                "email_notification = @email_notification, "
                 "image = @image, "
                 "idiom_locale = @idiom_locale "
             //    "WHERE user_id = @user_id"
             , substitutionValues: {
           "user_id": request.user.id,
           "email": request.user.userProfile.hasEMail() ? request.user.userProfile.eMail : null,
+          "email_notification": request.user.userProfile.hasEMailNotification() ? request.user.userProfile.eMailNotification : null,
           "image": request.user.userProfile.hasImage() ? request.user.userProfile.image : null,
           "idiom_locale": request.user.userProfile.hasIdiomLocale() ? request.user.userProfile.idiomLocale : null});
 

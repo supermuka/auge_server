@@ -5,12 +5,12 @@
 // @dart = 2.3
 // ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
 
-import 'dart:core' as $core show bool, Deprecated, double, int, List, Map, override, pragma, String;
+import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class WorkStage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkStage', package: const $pb.PackageName('auge.protobuf'))
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkStage', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
     ..aOS(1, 'id')
     ..a<$core.int>(2, 'version', $pb.PbFieldType.O3)
     ..aOS(3, 'name')
@@ -30,38 +30,59 @@ class WorkStage extends $pb.GeneratedMessage {
   static WorkStage create() => WorkStage._();
   WorkStage createEmptyInstance() => create();
   static $pb.PbList<WorkStage> createRepeated() => $pb.PbList<WorkStage>();
-  static WorkStage getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static WorkStage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WorkStage>(create);
   static WorkStage _defaultInstance;
 
-  $core.String get id => $_getS(0, '');
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
   set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
   void clearId() => clearField(1);
 
-  $core.int get version => $_get(1, 0);
+  @$pb.TagNumber(2)
+  $core.int get version => $_getIZ(1);
+  @$pb.TagNumber(2)
   set version($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
   $core.bool hasVersion() => $_has(1);
+  @$pb.TagNumber(2)
   void clearVersion() => clearField(2);
 
-  $core.String get name => $_getS(2, '');
+  @$pb.TagNumber(3)
+  $core.String get name => $_getSZ(2);
+  @$pb.TagNumber(3)
   set name($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
   $core.bool hasName() => $_has(2);
+  @$pb.TagNumber(3)
   void clearName() => clearField(3);
 
-  $core.int get stateIndex => $_get(3, 0);
+  @$pb.TagNumber(4)
+  $core.int get stateIndex => $_getIZ(3);
+  @$pb.TagNumber(4)
   set stateIndex($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
   $core.bool hasStateIndex() => $_has(3);
+  @$pb.TagNumber(4)
   void clearStateIndex() => clearField(4);
 
-  $core.int get index => $_get(4, 0);
+  @$pb.TagNumber(5)
+  $core.int get index => $_getIZ(4);
+  @$pb.TagNumber(5)
   set index($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
   $core.bool hasIndex() => $_has(4);
+  @$pb.TagNumber(5)
   void clearIndex() => clearField(5);
 }
 
 class WorkStageRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkStageRequest', package: const $pb.PackageName('auge.protobuf'))
-    ..a<WorkStage>(1, 'workStage', $pb.PbFieldType.OM, WorkStage.getDefault, WorkStage.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkStageRequest', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
+    ..aOM<WorkStage>(1, 'workStage', subBuilder: WorkStage.create)
     ..aOS(2, 'workId')
     ..aOS(3, 'authUserId')
     ..aOS(4, 'authOrganizationId')
@@ -79,32 +100,51 @@ class WorkStageRequest extends $pb.GeneratedMessage {
   static WorkStageRequest create() => WorkStageRequest._();
   WorkStageRequest createEmptyInstance() => create();
   static $pb.PbList<WorkStageRequest> createRepeated() => $pb.PbList<WorkStageRequest>();
-  static WorkStageRequest getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static WorkStageRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WorkStageRequest>(create);
   static WorkStageRequest _defaultInstance;
 
+  @$pb.TagNumber(1)
   WorkStage get workStage => $_getN(0);
+  @$pb.TagNumber(1)
   set workStage(WorkStage v) { setField(1, v); }
+  @$pb.TagNumber(1)
   $core.bool hasWorkStage() => $_has(0);
+  @$pb.TagNumber(1)
   void clearWorkStage() => clearField(1);
+  @$pb.TagNumber(1)
+  WorkStage ensureWorkStage() => $_ensure(0);
 
-  $core.String get workId => $_getS(1, '');
+  @$pb.TagNumber(2)
+  $core.String get workId => $_getSZ(1);
+  @$pb.TagNumber(2)
   set workId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
   $core.bool hasWorkId() => $_has(1);
+  @$pb.TagNumber(2)
   void clearWorkId() => clearField(2);
 
-  $core.String get authUserId => $_getS(2, '');
+  @$pb.TagNumber(3)
+  $core.String get authUserId => $_getSZ(2);
+  @$pb.TagNumber(3)
   set authUserId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
   $core.bool hasAuthUserId() => $_has(2);
+  @$pb.TagNumber(3)
   void clearAuthUserId() => clearField(3);
 
-  $core.String get authOrganizationId => $_getS(3, '');
+  @$pb.TagNumber(4)
+  $core.String get authOrganizationId => $_getSZ(3);
+  @$pb.TagNumber(4)
   set authOrganizationId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
   $core.bool hasAuthOrganizationId() => $_has(3);
+  @$pb.TagNumber(4)
   void clearAuthOrganizationId() => clearField(4);
 }
 
 class WorkStageDeleteRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkStageDeleteRequest', package: const $pb.PackageName('auge.protobuf'))
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkStageDeleteRequest', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
     ..aOS(1, 'workStageId')
     ..a<$core.int>(2, 'workStageVersion', $pb.PbFieldType.O3)
     ..aOS(3, 'authUserId')
@@ -123,33 +163,50 @@ class WorkStageDeleteRequest extends $pb.GeneratedMessage {
   static WorkStageDeleteRequest create() => WorkStageDeleteRequest._();
   WorkStageDeleteRequest createEmptyInstance() => create();
   static $pb.PbList<WorkStageDeleteRequest> createRepeated() => $pb.PbList<WorkStageDeleteRequest>();
-  static WorkStageDeleteRequest getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static WorkStageDeleteRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WorkStageDeleteRequest>(create);
   static WorkStageDeleteRequest _defaultInstance;
 
-  $core.String get workStageId => $_getS(0, '');
+  @$pb.TagNumber(1)
+  $core.String get workStageId => $_getSZ(0);
+  @$pb.TagNumber(1)
   set workStageId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
   $core.bool hasWorkStageId() => $_has(0);
+  @$pb.TagNumber(1)
   void clearWorkStageId() => clearField(1);
 
-  $core.int get workStageVersion => $_get(1, 0);
+  @$pb.TagNumber(2)
+  $core.int get workStageVersion => $_getIZ(1);
+  @$pb.TagNumber(2)
   set workStageVersion($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
   $core.bool hasWorkStageVersion() => $_has(1);
+  @$pb.TagNumber(2)
   void clearWorkStageVersion() => clearField(2);
 
-  $core.String get authUserId => $_getS(2, '');
+  @$pb.TagNumber(3)
+  $core.String get authUserId => $_getSZ(2);
+  @$pb.TagNumber(3)
   set authUserId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
   $core.bool hasAuthUserId() => $_has(2);
+  @$pb.TagNumber(3)
   void clearAuthUserId() => clearField(3);
 
-  $core.String get authOrganizationId => $_getS(3, '');
+  @$pb.TagNumber(4)
+  $core.String get authOrganizationId => $_getSZ(3);
+  @$pb.TagNumber(4)
   set authOrganizationId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
   $core.bool hasAuthOrganizationId() => $_has(3);
+  @$pb.TagNumber(4)
   void clearAuthOrganizationId() => clearField(4);
 }
 
 class WorkStagesResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkStagesResponse', package: const $pb.PackageName('auge.protobuf'))
-    ..pc<WorkStage>(1, 'workStages', $pb.PbFieldType.PM,WorkStage.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkStagesResponse', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
+    ..pc<WorkStage>(1, 'workStages', $pb.PbFieldType.PM, subBuilder: WorkStage.create)
     ..hasRequiredFields = false
   ;
 
@@ -164,14 +221,16 @@ class WorkStagesResponse extends $pb.GeneratedMessage {
   static WorkStagesResponse create() => WorkStagesResponse._();
   WorkStagesResponse createEmptyInstance() => create();
   static $pb.PbList<WorkStagesResponse> createRepeated() => $pb.PbList<WorkStagesResponse>();
-  static WorkStagesResponse getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static WorkStagesResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WorkStagesResponse>(create);
   static WorkStagesResponse _defaultInstance;
 
+  @$pb.TagNumber(1)
   $core.List<WorkStage> get workStages => $_getList(0);
 }
 
 class WorkStageGetRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkStageGetRequest', package: const $pb.PackageName('auge.protobuf'))
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('WorkStageGetRequest', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
     ..aOS(1, 'id')
     ..aOS(2, 'workId')
     ..hasRequiredFields = false
@@ -188,17 +247,26 @@ class WorkStageGetRequest extends $pb.GeneratedMessage {
   static WorkStageGetRequest create() => WorkStageGetRequest._();
   WorkStageGetRequest createEmptyInstance() => create();
   static $pb.PbList<WorkStageGetRequest> createRepeated() => $pb.PbList<WorkStageGetRequest>();
-  static WorkStageGetRequest getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static WorkStageGetRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WorkStageGetRequest>(create);
   static WorkStageGetRequest _defaultInstance;
 
-  $core.String get id => $_getS(0, '');
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
   set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
   void clearId() => clearField(1);
 
-  $core.String get workId => $_getS(1, '');
+  @$pb.TagNumber(2)
+  $core.String get workId => $_getSZ(1);
+  @$pb.TagNumber(2)
   set workId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
   $core.bool hasWorkId() => $_has(1);
+  @$pb.TagNumber(2)
   void clearWorkId() => clearField(2);
 }
 

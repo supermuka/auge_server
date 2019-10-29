@@ -7,26 +7,26 @@
 
 import 'dart:async' as $async;
 
-import 'dart:core' as $core show int, String, List;
+import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'history_item.pb.dart' as $5;
+import 'history_item.pb.dart' as $4;
 export 'history_item.pb.dart';
 
 class HistoryItemServiceClient extends $grpc.Client {
   static final _$getHistory =
-      $grpc.ClientMethod<$5.HistoryItemGetRequest, $5.HistoryResponse>(
+      $grpc.ClientMethod<$4.HistoryItemGetRequest, $4.HistoryResponse>(
           '/auge.protobuf.HistoryItemService/GetHistory',
-          ($5.HistoryItemGetRequest value) => value.writeToBuffer(),
+          ($4.HistoryItemGetRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $5.HistoryResponse.fromBuffer(value));
+              $4.HistoryResponse.fromBuffer(value));
 
   HistoryItemServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions options})
       : super(channel, options: options);
 
-  $grpc.ResponseFuture<$5.HistoryResponse> getHistory(
-      $5.HistoryItemGetRequest request,
+  $grpc.ResponseFuture<$4.HistoryResponse> getHistory(
+      $4.HistoryItemGetRequest request,
       {$grpc.CallOptions options}) {
     final call = $createCall(
         _$getHistory, $async.Stream.fromIterable([request]),
@@ -40,21 +40,21 @@ abstract class HistoryItemServiceBase extends $grpc.Service {
 
   HistoryItemServiceBase() {
     $addMethod(
-        $grpc.ServiceMethod<$5.HistoryItemGetRequest, $5.HistoryResponse>(
+        $grpc.ServiceMethod<$4.HistoryItemGetRequest, $4.HistoryResponse>(
             'GetHistory',
             getHistory_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $5.HistoryItemGetRequest.fromBuffer(value),
-            ($5.HistoryResponse value) => value.writeToBuffer()));
+                $4.HistoryItemGetRequest.fromBuffer(value),
+            ($4.HistoryResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$5.HistoryResponse> getHistory_Pre($grpc.ServiceCall call,
-      $async.Future<$5.HistoryItemGetRequest> request) async {
+  $async.Future<$4.HistoryResponse> getHistory_Pre($grpc.ServiceCall call,
+      $async.Future<$4.HistoryItemGetRequest> request) async {
     return getHistory(call, await request);
   }
 
-  $async.Future<$5.HistoryResponse> getHistory(
-      $grpc.ServiceCall call, $5.HistoryItemGetRequest request);
+  $async.Future<$4.HistoryResponse> getHistory(
+      $grpc.ServiceCall call, $4.HistoryItemGetRequest request);
 }

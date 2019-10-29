@@ -31,8 +31,8 @@ dependencies:
   #http: ^0.12.0
   #http2: ^1.0.0
   #_discoveryapis_commons: ^0.1.8+1
-  protobuf: ^0.13.12
-  grpc: ^2.0.0+1
+  protobuf: ^1.0.0
+  grpc: ^2.1.2
   dartdap: ^0.4.2
   #grpc:
   #  git:

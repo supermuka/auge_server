@@ -66,6 +66,7 @@ class FieldMsg {
 
       //USERPROFILE
       '${UserProfile.className}.${UserProfile.eMailField}': 'e-Mail',
+      '${UserProfile.className}.${UserProfile.eMailNotificationField}': 'e-Mail Notification',
       '${UserProfile.className}.${UserProfile.imageField}':'Image',
       '${UserProfile.className}.${UserProfile.idiomLocaleField}':'Idioma',
 

@@ -53,8 +53,9 @@ message UserProfile {
  //   bool is_super_admin = 1;
     // string image = 2;
     string e_mail = 1;
-    string image = 2;
-    string idiom_locale = 3;
+    bool e_mail_notification = 2;
+    string image = 3;
+    string idiom_locale = 4;
 }
 
 message UserGetRequest {

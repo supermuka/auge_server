@@ -151,6 +151,7 @@ class WorkItemService extends WorkItemServiceBase {
       if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
 
       if (workItemGetRequest.hasWithWork() && workItemGetRequest.withWork == true && row[7] != null) {
+
         workItem.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[7]);
       }
 
@@ -284,7 +285,10 @@ class WorkItemService extends WorkItemServiceBase {
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
-    // Leader
+    // Leader  - Verify if send e-mail
+    if (!workItem.work.leader.userProfile.eMailNotification) return;
+
+    // Leader - eMail
     if (workItem.work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
 
     mailMessages.add(

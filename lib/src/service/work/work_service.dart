@@ -205,11 +205,14 @@ class WorkService extends WorkServiceBase {
   /// Work Notification User
   static void workNotification(Work work, String className, SystemFunction systemFunction, String description) {
 
+    // Leader - Verify if send e-mail
+    if (!work.leader.userProfile.eMailNotification) return;
+
+    // Leader - eMail
+    if (work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
+
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
-
-    // Leader
-    if (work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
 
     mailMessages.add(
         AugeMailMessageTo(

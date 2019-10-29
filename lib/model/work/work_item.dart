@@ -94,8 +94,6 @@ class WorkItem {
     if (workItemPb.hasCompleted()) this.completed = workItemPb.completed;
     if (workItemPb.hasWorkStage()) this.workStage = WorkStage()..readFromProtoBuf(workItemPb.workStage);
 
-    print('*-*-*- readFromProtoBuf');
-    print(workItemPb.dueDate.toDateTime());
     // if (workItemPb.hasDueDate())  this.dueDate = CommonUtils.dateTimeFromTimestamp(workItemPb.dueDate);
     if (workItemPb.hasDueDate())  this.dueDate = workItemPb.dueDate.toDateTime();
     /*{

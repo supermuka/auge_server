@@ -96,6 +96,9 @@ class UserProfile {
   static final String eMailField = 'eMail';
   String eMail;
 
+  static final String eMailNotificationField = 'eMailNotification';
+  bool eMailNotification;
+
   // Base64
   static final String imageField = 'image';
   String image;
@@ -104,10 +107,13 @@ class UserProfile {
   static final String idiomLocaleField = 'idiomLocale';
   String idiomLocale;
 
+
+
   user_pb.UserProfile writeToProtoBuf() {
     user_pb.UserProfile userProfilePb = user_pb.UserProfile();
 
     if (this.eMail != null) userProfilePb.eMail = this.eMail;
+    if (this.eMailNotification != null) userProfilePb.eMailNotification = this.eMailNotification;
     if (this.image != null) userProfilePb.image = this.image;
     if (this.idiomLocale != null) userProfilePb.idiomLocale = this.idiomLocale;
 
@@ -117,6 +123,7 @@ class UserProfile {
 
   readFromProtoBuf(user_pb.UserProfile userProfilePb) {
     if (userProfilePb.hasEMail()) this.eMail = userProfilePb.eMail;
+    if (userProfilePb.hasEMailNotification()) this.eMailNotification = userProfilePb.eMailNotification;
     if (userProfilePb.hasImage()) this.image = userProfilePb.image;
     if (userProfilePb.hasIdiomLocale()) this.idiomLocale = userProfilePb.idiomLocale;
 
@@ -133,6 +140,8 @@ class UserProfile {
  //       map[UserProfile.isSuperAdminField] = userProfilePb.isSuperAdmin;
       if (userProfilePb.hasEMail())
         map[UserProfile.eMailField] = userProfilePb.eMail;
+      if (userProfilePb.hasEMailNotification())
+        map[UserProfile.eMailNotificationField] = userProfilePb.eMailNotification;
       if (userProfilePb.hasImage())
         map[UserProfile.imageField] = userProfilePb.image;
       if (userProfilePb.hasIdiomLocale())

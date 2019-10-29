@@ -5,14 +5,14 @@
 // @dart = 2.3
 // ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
 
-import 'dart:core' as $core show bool, Deprecated, double, int, List, Map, override, pragma, String;
+import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import '../google/protobuf/timestamp.pb.dart' as $1;
 
 class DateTimeGetRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('DateTimeGetRequest', package: const $pb.PackageName('auge.protobuf'))
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('DateTimeGetRequest', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
     ..aOB(1, 'isUtc')
     ..hasRequiredFields = false
   ;
@@ -28,18 +28,23 @@ class DateTimeGetRequest extends $pb.GeneratedMessage {
   static DateTimeGetRequest create() => DateTimeGetRequest._();
   DateTimeGetRequest createEmptyInstance() => create();
   static $pb.PbList<DateTimeGetRequest> createRepeated() => $pb.PbList<DateTimeGetRequest>();
-  static DateTimeGetRequest getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static DateTimeGetRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DateTimeGetRequest>(create);
   static DateTimeGetRequest _defaultInstance;
 
-  $core.bool get isUtc => $_get(0, false);
+  @$pb.TagNumber(1)
+  $core.bool get isUtc => $_getBF(0);
+  @$pb.TagNumber(1)
   set isUtc($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
   $core.bool hasIsUtc() => $_has(0);
+  @$pb.TagNumber(1)
   void clearIsUtc() => clearField(1);
 }
 
 class DateTimeResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('DateTimeResponse', package: const $pb.PackageName('auge.protobuf'))
-    ..a<$1.Timestamp>(1, 'dateTime', $pb.PbFieldType.OM, $1.Timestamp.getDefault, $1.Timestamp.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('DateTimeResponse', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
+    ..aOM<$1.Timestamp>(1, 'dateTime', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -54,12 +59,19 @@ class DateTimeResponse extends $pb.GeneratedMessage {
   static DateTimeResponse create() => DateTimeResponse._();
   DateTimeResponse createEmptyInstance() => create();
   static $pb.PbList<DateTimeResponse> createRepeated() => $pb.PbList<DateTimeResponse>();
-  static DateTimeResponse getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static DateTimeResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DateTimeResponse>(create);
   static DateTimeResponse _defaultInstance;
 
+  @$pb.TagNumber(1)
   $1.Timestamp get dateTime => $_getN(0);
+  @$pb.TagNumber(1)
   set dateTime($1.Timestamp v) { setField(1, v); }
+  @$pb.TagNumber(1)
   $core.bool hasDateTime() => $_has(0);
+  @$pb.TagNumber(1)
   void clearDateTime() => clearField(1);
+  @$pb.TagNumber(1)
+  $1.Timestamp ensureDateTime() => $_ensure(0);
 }
 

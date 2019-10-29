@@ -40,8 +40,9 @@ const UserProfile$json = const {
   '1': 'UserProfile',
   '2': const [
     const {'1': 'e_mail', '3': 1, '4': 1, '5': 9, '10': 'eMail'},
-    const {'1': 'image', '3': 2, '4': 1, '5': 9, '10': 'image'},
-    const {'1': 'idiom_locale', '3': 3, '4': 1, '5': 9, '10': 'idiomLocale'},
+    const {'1': 'e_mail_notification', '3': 2, '4': 1, '5': 8, '10': 'eMailNotification'},
+    const {'1': 'image', '3': 3, '4': 1, '5': 9, '10': 'image'},
+    const {'1': 'idiom_locale', '3': 4, '4': 1, '5': 9, '10': 'idiomLocale'},
   ],
 };
 
@@ -53,6 +54,7 @@ const UserGetRequest$json = const {
     const {'1': 'managed_by_organization_id_or_accessed_by_organization_id', '3': 3, '4': 1, '5': 9, '10': 'managedByOrganizationIdOrAccessedByOrganizationId'},
     const {'1': 'accessedByOrganizationId', '3': 4, '4': 1, '5': 9, '10': 'accessedByOrganizationId'},
     const {'1': 'with_user_profile', '3': 5, '4': 1, '5': 8, '10': 'withUserProfile'},
+    const {'1': 'with_objective', '3': 6, '4': 1, '5': 8, '10': 'withObjective'},
   ],
 };
 

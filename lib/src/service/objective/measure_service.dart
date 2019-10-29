@@ -236,11 +236,14 @@ class MeasureService extends MeasureServiceBase {
   /// Objective Measure Notification User
   static void measureNotification(Measure measure, String className, SystemFunction systemFunction, String description) {
 
+    // Leader - Verify if send e-mail
+    if (!measure.objective.leader.userProfile.eMailNotification) return;
+
+    // Leader - eMail
+    if (measure.objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
+
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
-
-    // Leader
-    if (measure.objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
     mailMessages.add(
         AugeMailMessageTo(
@@ -546,7 +549,10 @@ class MeasureService extends MeasureServiceBase {
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
-    // Leader
+    // Leader  - Verify if send e-mail
+    if (!measureProgress.measure.objective.leader.userProfile.eMailNotification) return;
+
+    // Leader - eMail
     if (measureProgress.measure.objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
     mailMessages.add(

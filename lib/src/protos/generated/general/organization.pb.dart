@@ -5,12 +5,12 @@
 // @dart = 2.3
 // ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
 
-import 'dart:core' as $core show bool, Deprecated, double, int, List, Map, override, pragma, String;
+import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class Organization extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('Organization', package: const $pb.PackageName('auge.protobuf'))
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('Organization', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
     ..aOS(1, 'id')
     ..a<$core.int>(2, 'version', $pb.PbFieldType.O3)
     ..aOS(3, 'name')
@@ -29,33 +29,50 @@ class Organization extends $pb.GeneratedMessage {
   static Organization create() => Organization._();
   Organization createEmptyInstance() => create();
   static $pb.PbList<Organization> createRepeated() => $pb.PbList<Organization>();
-  static Organization getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static Organization getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Organization>(create);
   static Organization _defaultInstance;
 
-  $core.String get id => $_getS(0, '');
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
   set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
   void clearId() => clearField(1);
 
-  $core.int get version => $_get(1, 0);
+  @$pb.TagNumber(2)
+  $core.int get version => $_getIZ(1);
+  @$pb.TagNumber(2)
   set version($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
   $core.bool hasVersion() => $_has(1);
+  @$pb.TagNumber(2)
   void clearVersion() => clearField(2);
 
-  $core.String get name => $_getS(2, '');
+  @$pb.TagNumber(3)
+  $core.String get name => $_getSZ(2);
+  @$pb.TagNumber(3)
   set name($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
   $core.bool hasName() => $_has(2);
+  @$pb.TagNumber(3)
   void clearName() => clearField(3);
 
-  $core.String get code => $_getS(3, '');
+  @$pb.TagNumber(4)
+  $core.String get code => $_getSZ(3);
+  @$pb.TagNumber(4)
   set code($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
   $core.bool hasCode() => $_has(3);
+  @$pb.TagNumber(4)
   void clearCode() => clearField(4);
 }
 
 class OrganizationRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('OrganizationRequest', package: const $pb.PackageName('auge.protobuf'))
-    ..a<Organization>(1, 'organization', $pb.PbFieldType.OM, Organization.getDefault, Organization.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('OrganizationRequest', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
+    ..aOM<Organization>(1, 'organization', subBuilder: Organization.create)
     ..aOS(2, 'authUserId')
     ..aOS(3, 'authOrganizationId')
     ..hasRequiredFields = false
@@ -72,27 +89,42 @@ class OrganizationRequest extends $pb.GeneratedMessage {
   static OrganizationRequest create() => OrganizationRequest._();
   OrganizationRequest createEmptyInstance() => create();
   static $pb.PbList<OrganizationRequest> createRepeated() => $pb.PbList<OrganizationRequest>();
-  static OrganizationRequest getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static OrganizationRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OrganizationRequest>(create);
   static OrganizationRequest _defaultInstance;
 
+  @$pb.TagNumber(1)
   Organization get organization => $_getN(0);
+  @$pb.TagNumber(1)
   set organization(Organization v) { setField(1, v); }
+  @$pb.TagNumber(1)
   $core.bool hasOrganization() => $_has(0);
+  @$pb.TagNumber(1)
   void clearOrganization() => clearField(1);
+  @$pb.TagNumber(1)
+  Organization ensureOrganization() => $_ensure(0);
 
-  $core.String get authUserId => $_getS(1, '');
+  @$pb.TagNumber(2)
+  $core.String get authUserId => $_getSZ(1);
+  @$pb.TagNumber(2)
   set authUserId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
   $core.bool hasAuthUserId() => $_has(1);
+  @$pb.TagNumber(2)
   void clearAuthUserId() => clearField(2);
 
-  $core.String get authOrganizationId => $_getS(2, '');
+  @$pb.TagNumber(3)
+  $core.String get authOrganizationId => $_getSZ(2);
+  @$pb.TagNumber(3)
   set authOrganizationId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
   $core.bool hasAuthOrganizationId() => $_has(2);
+  @$pb.TagNumber(3)
   void clearAuthOrganizationId() => clearField(3);
 }
 
 class OrganizationDeleteRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('OrganizationDeleteRequest', package: const $pb.PackageName('auge.protobuf'))
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('OrganizationDeleteRequest', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
     ..aOS(1, 'organizationId')
     ..a<$core.int>(2, 'organizationVersion', $pb.PbFieldType.O3)
     ..aOS(3, 'authUserId')
@@ -111,32 +143,49 @@ class OrganizationDeleteRequest extends $pb.GeneratedMessage {
   static OrganizationDeleteRequest create() => OrganizationDeleteRequest._();
   OrganizationDeleteRequest createEmptyInstance() => create();
   static $pb.PbList<OrganizationDeleteRequest> createRepeated() => $pb.PbList<OrganizationDeleteRequest>();
-  static OrganizationDeleteRequest getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static OrganizationDeleteRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OrganizationDeleteRequest>(create);
   static OrganizationDeleteRequest _defaultInstance;
 
-  $core.String get organizationId => $_getS(0, '');
+  @$pb.TagNumber(1)
+  $core.String get organizationId => $_getSZ(0);
+  @$pb.TagNumber(1)
   set organizationId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
   $core.bool hasOrganizationId() => $_has(0);
+  @$pb.TagNumber(1)
   void clearOrganizationId() => clearField(1);
 
-  $core.int get organizationVersion => $_get(1, 0);
+  @$pb.TagNumber(2)
+  $core.int get organizationVersion => $_getIZ(1);
+  @$pb.TagNumber(2)
   set organizationVersion($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
   $core.bool hasOrganizationVersion() => $_has(1);
+  @$pb.TagNumber(2)
   void clearOrganizationVersion() => clearField(2);
 
-  $core.String get authUserId => $_getS(2, '');
+  @$pb.TagNumber(3)
+  $core.String get authUserId => $_getSZ(2);
+  @$pb.TagNumber(3)
   set authUserId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
   $core.bool hasAuthUserId() => $_has(2);
+  @$pb.TagNumber(3)
   void clearAuthUserId() => clearField(3);
 
-  $core.String get authOrganizationId => $_getS(3, '');
+  @$pb.TagNumber(4)
+  $core.String get authOrganizationId => $_getSZ(3);
+  @$pb.TagNumber(4)
   set authOrganizationId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
   $core.bool hasAuthOrganizationId() => $_has(3);
+  @$pb.TagNumber(4)
   void clearAuthOrganizationId() => clearField(4);
 }
 
 class OrganizationGetRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('OrganizationGetRequest', package: const $pb.PackageName('auge.protobuf'))
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('OrganizationGetRequest', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
     ..aOS(1, 'id')
     ..hasRequiredFields = false
   ;
@@ -152,18 +201,23 @@ class OrganizationGetRequest extends $pb.GeneratedMessage {
   static OrganizationGetRequest create() => OrganizationGetRequest._();
   OrganizationGetRequest createEmptyInstance() => create();
   static $pb.PbList<OrganizationGetRequest> createRepeated() => $pb.PbList<OrganizationGetRequest>();
-  static OrganizationGetRequest getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static OrganizationGetRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OrganizationGetRequest>(create);
   static OrganizationGetRequest _defaultInstance;
 
-  $core.String get id => $_getS(0, '');
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
   set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
   void clearId() => clearField(1);
 }
 
 class OrganizationsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('OrganizationsResponse', package: const $pb.PackageName('auge.protobuf'))
-    ..pc<Organization>(1, 'organizations', $pb.PbFieldType.PM,Organization.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('OrganizationsResponse', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
+    ..pc<Organization>(1, 'organizations', $pb.PbFieldType.PM, subBuilder: Organization.create)
     ..hasRequiredFields = false
   ;
 
@@ -178,9 +232,11 @@ class OrganizationsResponse extends $pb.GeneratedMessage {
   static OrganizationsResponse create() => OrganizationsResponse._();
   OrganizationsResponse createEmptyInstance() => create();
   static $pb.PbList<OrganizationsResponse> createRepeated() => $pb.PbList<OrganizationsResponse>();
-  static OrganizationsResponse getDefault() => _defaultInstance ??= create()..freeze();
+  @$core.pragma('dart2js:noInline')
+  static OrganizationsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OrganizationsResponse>(create);
   static OrganizationsResponse _defaultInstance;
 
+  @$pb.TagNumber(1)
   $core.List<Organization> get organizations => $_getList(0);
 }
 
