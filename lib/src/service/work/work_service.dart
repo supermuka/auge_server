@@ -203,7 +203,7 @@ class WorkService extends WorkServiceBase {
   }
 
   /// Work Notification User
-  static void workNotification(Work work, String className, SystemFunction systemFunction, String description) {
+  static void workNotification(Work work, String className, int systemFunctionIndex, String description) {
 
     // Leader - Verify if send e-mail
     if (!work.leader.userProfile.eMailNotification) return;
@@ -217,7 +217,7 @@ class WorkService extends WorkServiceBase {
     mailMessages.add(
         AugeMailMessageTo(
             [work.leader.userProfile.eMail],
-            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())}',
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
             '${ClassNameMsg.label(className)}',
             description,
             '${FieldMsg.label('${work_m.Work.className}.${work_m.Work.leaderField}')}'));
@@ -276,7 +276,7 @@ class WorkService extends WorkServiceBase {
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
       });
 
-      workNotification(request.work, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      workNotification(request.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -355,7 +355,7 @@ class WorkService extends WorkServiceBase {
 
       });
 
-      workNotification(request.work, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      workNotification(request.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -407,7 +407,7 @@ class WorkService extends WorkServiceBase {
         }
       });
 
-      workNotification(previousWork, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      workNotification(previousWork, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

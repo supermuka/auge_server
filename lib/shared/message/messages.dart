@@ -385,6 +385,7 @@ class ObjectiveMsg {
         'Progress': 'Progress',
         'No Match': 'No Match',
         'Sorted By': 'Sorted By',
+        'Ultimate Objective': 'Ultimate Objective',
         'other': 'Not Defined'})}",
       name: "objectiveLabel",
       args: [label],

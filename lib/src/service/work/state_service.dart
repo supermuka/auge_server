@@ -2,12 +2,10 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/protos/generated/work/state.pbgrpc.dart';
-import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
 
 class StateService extends StateServiceBase {

@@ -280,7 +280,7 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Workitem Notification User
-  static void workItemNotification(WorkItem workItem, String className, SystemFunction systemFunction, String description) {
+  static void workItemNotification(WorkItem workItem, String className, int systemFunctionIndex, String description) {
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -294,7 +294,7 @@ class WorkItemService extends WorkItemServiceBase {
     mailMessages.add(
         AugeMailMessageTo(
             [workItem.work.leader.userProfile.eMail],
-            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())}',
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
             '${ClassNameMsg.label(className)}',
             description,
             '${FieldMsg.label('${work_m.Work.className}.${work_m.Work.leaderField}')}'));
@@ -428,7 +428,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(request.workItem, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      workItemNotification(request.workItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -651,7 +651,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(request.workItem, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      workItemNotification(request.workItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -714,7 +714,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(previousWorkItem, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      workItemNotification(previousWorkItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

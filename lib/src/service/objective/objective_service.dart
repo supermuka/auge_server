@@ -107,11 +107,11 @@ class ObjectiveService extends ObjectiveServiceBase {
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.objectiveInvalidArgument );
     }
-    if (!objectiveSelectRequest.withArchived) {
+    if (objectiveSelectRequest.hasWithArchived() && !objectiveSelectRequest.withArchived) {
       queryStatementWhere = queryStatementWhere + " AND objective.archived <> true";
     }
     String queryStatement;
-    if (objectiveSelectRequest.treeAlignedWithChildren) {
+    if (objectiveSelectRequest.hasTreeAlignedWithChildren() && objectiveSelectRequest.treeAlignedWithChildren) {
       queryStatement =
           "WITH RECURSIVE nodes(" + queryStatementColumns.replaceAll("objective.", "") + ") AS ("
               " SELECT " + queryStatementColumns +
@@ -165,11 +165,11 @@ class ObjectiveService extends ObjectiveServiceBase {
           }
 
           if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0) {
-            --objectiveSelectRequest.alignedToRecursive;
+            //--objectiveSelectRequest.alignedToRecursive;
             alignedToObjective =
             await ObjectiveService.querySelectObjective(ObjectiveGetRequest()
               ..id = row[8]
-              ..alignedToRecursive = --objectiveSelectRequest.alignedToRecursive
+              ..alignedToRecursive = (objectiveSelectRequest.alignedToRecursive-1)
               ..withArchived = objectiveSelectRequest.withArchived
               ..withMeasures = objectiveSelectRequest.withMeasures
               ..withUserProfile = objectiveSelectRequest.withUserProfile);
@@ -235,7 +235,6 @@ class ObjectiveService extends ObjectiveServiceBase {
     }
   }
 
-
   static Future<Objective> querySelectObjective(ObjectiveGetRequest request) async {
 
     List<Objective> objectives = await querySelectObjectives(request);
@@ -248,7 +247,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   /// Objective Notification User
-  static void objectiveNotification(Objective objective, String className, SystemFunction systemFunction, String description) {
+  static void objectiveNotification(Objective objective, String className, int systemFunctionIndex, String description) {
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -262,7 +261,7 @@ class ObjectiveService extends ObjectiveServiceBase {
     mailMessages.add(
         AugeMailMessageTo(
             [objective.leader.userProfile.eMail],
-            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())}',
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
             '${ClassNameMsg.label(className)}',
             description,
             '${FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')}'));
@@ -332,7 +331,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
       });
 
-      objectiveNotification(request.objective, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -407,7 +406,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
       });
 
-      objectiveNotification(request.objective, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -463,7 +462,7 @@ class ObjectiveService extends ObjectiveServiceBase {
         }
       });
 
-      objectiveNotification(previousObjective, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      objectiveNotification(previousObjective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

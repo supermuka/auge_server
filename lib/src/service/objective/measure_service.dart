@@ -234,7 +234,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Objective Measure Notification User
-  static void measureNotification(Measure measure, String className, SystemFunction systemFunction, String description) {
+  static void measureNotification(Measure measure, String className, int systemFunctionIndex, String description) {
 
     // Leader - Verify if send e-mail
     if (!measure.objective.leader.userProfile.eMailNotification) return;
@@ -248,7 +248,7 @@ class MeasureService extends MeasureServiceBase {
     mailMessages.add(
         AugeMailMessageTo(
             [measure.objective.leader.userProfile.eMail],
-            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())}',
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
             '${ClassNameMsg.label(className)}',
             description,
             '${FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')}'));
@@ -323,11 +323,10 @@ class MeasureService extends MeasureServiceBase {
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: historyItemNotificationValues);
 
-
       });
 
       // Notification
-      measureNotification(request.measure, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      measureNotification(request.measure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -346,6 +345,9 @@ class MeasureService extends MeasureServiceBase {
 
       // Recovery to log to history
       Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measure.id);
+
+      // TODO (this is made just to get a objective name, found a way to improve the performance)
+      Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = false);
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         List<List<dynamic>> result;
@@ -384,8 +386,6 @@ class MeasureService extends MeasureServiceBase {
         } else {
 
           // Create a history item
-          Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
-
           historyItemNotificationValues = {"id": Uuid().v4(),
             "user_id": request.authUserId,
             "organization_id": request.authOrganizationId,
@@ -405,7 +405,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(request.measure, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      measureNotification(request.measure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -458,7 +458,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(previousMeasure, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      measureNotification(previousMeasure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -544,7 +544,7 @@ class MeasureService extends MeasureServiceBase {
 
 
   /// Objective Measure Progress Notification User
-  static void measureProgressNotification(MeasureProgress measureProgress, String description, String className, SystemFunction systemFunction) {
+  static void measureProgressNotification(MeasureProgress measureProgress, String className, int systemFunctionIndex, String description) {
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -558,7 +558,7 @@ class MeasureService extends MeasureServiceBase {
     mailMessages.add(
         AugeMailMessageTo(
             [measureProgress.measure.objective.leader.userProfile.eMail],
-            '${SystemFunctionMsg.inPastLabel(systemFunction.toString())}',
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
             '${ClassNameMsg.label(className)}',
             description,
             '${FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')}'));
@@ -624,7 +624,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureProgressNotification(request.measureProgress, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      measureProgressNotification(request.measureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -638,6 +638,7 @@ class MeasureService extends MeasureServiceBase {
       MeasureProgressRequest request) async {
     // Recovery to log to history
     MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgress.id);
+
     Map<String, dynamic> historyItemNotificationValues;
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -686,7 +687,7 @@ class MeasureService extends MeasureServiceBase {
             "system_module_index": SystemModule.objectives.index,
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
-            "description": null, //'# ${request.measureProgress.currentValue}',
+            "description": '${request.measureProgress.currentValue} @ ${request.measureProgress.measure.name}',
             "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.MeasureProgress.fromProtoBufToModelMap(previousMeasureProgress), measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress))};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -696,7 +697,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureProgressNotification(request.measureProgress, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      measureProgressNotification(request.measureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -751,7 +752,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureProgressNotification(previousMeasureProgress, historyItemNotificationValues['className'], historyItemNotificationValues['systemFunction'], historyItemNotificationValues['description']);
+      measureProgressNotification(previousMeasureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
