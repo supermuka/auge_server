@@ -515,7 +515,7 @@ class GroupMsg {
         'Edit Group': 'Edit Group',
         'Add Group': 'Add Group',
         'No Match': 'No Match',
-        'Inactive': 'Inactive',
+        'Active': 'Active',
         'Inactive': 'Inactive',
         'other': 'Not Defined'})}",
       name: "groupLabel",
@@ -563,7 +563,7 @@ class InsightMsg {
       'Measures below 30% progress': 'Measures below 30% progress',
 
       'Works': 'Works',
-      'Number total of Works': 'Number total of Works',
+      'Number total of works': 'Number total of works',
       'Works Completed': 'Works Completed',
       'Works Requiring Attention': 'Works Requiring Attention',
       'Works with 100% work items completed': 'Works with 100% work items completed',
