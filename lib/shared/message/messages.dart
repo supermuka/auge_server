@@ -8,6 +8,7 @@ class CommonMsg {
       "${Intl.select(label, {
         'AUGE': 'AUGE',
         'Objectives and Works': 'Objectives and Works',
+        'Search': 'Search',
         'other': 'Not Defined'})}",
       name: "label",
       args: [label],
@@ -379,6 +380,7 @@ class ObjectiveMsg {
   /// Label for work
   static label(String label) => Intl.message(
       "${Intl.select(label, {
+        'Objective': 'Objective',
         'Objectives': 'Objectives',
         'Edit Objective': 'Edit Objective',
         'Add Objective': 'Add Objective',
@@ -545,6 +547,8 @@ class InsightMsg {
   /// Label for Insight
   static label(String label) => Intl.message(
     "${Intl.select(label, {
+      'Group': 'Group',
+      'Leader': 'Leader',
       'Objectives Overall': 'Objectives Overall',
       'Objectives and Measures': 'Objectives and Measures',
       'Works and Work Items': 'Works and Work Items',

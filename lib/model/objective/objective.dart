@@ -67,12 +67,17 @@ class Objective {
     double sumMeasuresProgress = 0.0;
     int countMeasuresProgress = 0;
     for (int i = 0;i < measures?.length;i++) {
-      if (measures[i].endValue != null && measures[i].startValue != null && measures[i].currentValue != null ) {
-        double endMinusStart = measures[i].endValue - measures[i].startValue;
-        if (endMinusStart != 0) {
-          sumMeasuresProgress = sumMeasuresProgress +
-              (measures[i].currentValue - measures[i].startValue) / endMinusStart;
+      if (measures[i].endValue != null && measures[i].startValue != null) {
+        if (measures[i].currentValue == null) {
           countMeasuresProgress++;
+        } else {
+          double endMinusStart = measures[i].endValue - measures[i].startValue;
+          if (endMinusStart != 0) {
+            sumMeasuresProgress = sumMeasuresProgress +
+                (measures[i].currentValue - measures[i].startValue) /
+                    endMinusStart;
+            countMeasuresProgress++;
+          }
         }
       }
     }
