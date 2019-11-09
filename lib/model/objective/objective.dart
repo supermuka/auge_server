@@ -97,8 +97,8 @@ class Objective {
 
     if (this.archived != null) objectivePb.archived = this.archived;
     if (this.organization != null) objectivePb.organization = this.organization.writeToProtoBuf();
-    if (this.group != null) objectivePb.group = this.group.writeToProtoBuf();
-    if (this.leader != null) objectivePb.leader = this.leader.writeToProtoBuf();
+    if (this.group != null) objectivePb.group =  this.group.writeToProtoBuf();
+    if (this.leader != null) objectivePb.leader = this.leader.writeToProtoBuf(); //this.leader.writeToProtoBuf();
     if (this.alignedTo != null) objectivePb.alignedTo = this.alignedTo.writeToProtoBuf();
 
     if (this.alignedWithChildren != null && this.alignedWithChildren.isNotEmpty) objectivePb.alignedWithChildren.addAll(this.alignedWithChildren.map((a) => a.writeToProtoBuf()));
@@ -107,7 +107,7 @@ class Objective {
     return objectivePb;
   }
 
-  readFromProtoBuf(objective_measure_pb.Objective objectivePb) {
+  readFromProtoBuf(objective_measure_pb.Objective objectivePb, Map<String, dynamic> cache) {
     if (objectivePb.hasId()) this.id = objectivePb.id;
     if (objectivePb.hasVersion()) this.version = objectivePb.version;
     if (objectivePb.hasName()) this.name = objectivePb.name;
@@ -124,12 +124,12 @@ class Objective {
       this.endDate = objectivePb.endDate.toDateTime();
     }
 
-    if (objectivePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(objectivePb.organization);
-    if (objectivePb.hasGroup()) this.group = Group()..readFromProtoBuf(objectivePb.group);
-    if (objectivePb.hasLeader()) this.leader = User()..readFromProtoBuf(objectivePb.leader);
-    if (objectivePb.hasAlignedTo()) this.alignedTo = Objective()..readFromProtoBuf(objectivePb.alignedTo);
-    if (objectivePb.alignedWithChildren.isNotEmpty) this.alignedWithChildren = objectivePb.alignedWithChildren.map((o) => Objective()..readFromProtoBuf(o)).toList();
-    if (objectivePb.measures.isNotEmpty) this.measures = objectivePb.measures.map((u) => Measure()..readFromProtoBuf(u)).toList();
+    if (objectivePb.hasOrganization()) this.organization = cache.putIfAbsent('${Objective.organizationField}${objectivePb.organization.id}@${Organization.className}', () => Organization()..readFromProtoBuf(objectivePb.organization));
+    if (objectivePb.hasGroup()) this.group = cache.putIfAbsent('${Objective.groupField}${objectivePb.group.id}@${Group.className}', () => Group()..readFromProtoBuf(objectivePb.group));
+    if (objectivePb.hasLeader()) this.leader = cache.putIfAbsent('${Objective.leaderField}${objectivePb.leader.id}@${User.className}', () => User()..readFromProtoBuf(objectivePb.leader));
+    if (objectivePb.hasAlignedTo()) this.alignedTo = cache.putIfAbsent('${Objective.alignedToField}${objectivePb.alignedTo.id}@${Objective.className}', () => Objective()..readFromProtoBuf(objectivePb.alignedTo, cache));
+    if (objectivePb.alignedWithChildren.isNotEmpty) this.alignedWithChildren = objectivePb.alignedWithChildren.map((o) => cache.putIfAbsent('${Objective.alignedWithChildrenField}${o.id}@${Objective.className}', () => Objective()..readFromProtoBuf(o, cache))).toList();
+    if (objectivePb.measures.isNotEmpty) this.measures = objectivePb.measures.map((u) => Measure()..readFromProtoBuf(u, cache)).toList();
   }
 
   static Map<String, dynamic> fromProtoBufToModelMap(objective_measure_pb.Objective objectivePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {

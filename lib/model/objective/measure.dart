@@ -103,7 +103,7 @@ class Measure {
     return measurePb;
   }
 
-  readFromProtoBuf(objective_measure_pb.Measure measurePb) {
+  readFromProtoBuf(objective_measure_pb.Measure measurePb, Map<String, dynamic> cache) {
     if (measurePb.hasId()) this.id = measurePb.id;
     if (measurePb.hasVersion()) this.version = measurePb.version;
     if (measurePb.hasName()) this.name = measurePb.name;
@@ -115,8 +115,8 @@ class Measure {
     if (measurePb.hasEndValue()) this.endValue = measurePb.endValue;
     if (measurePb.hasCurrentValue()) this.currentValue = measurePb.currentValue;
     if (measurePb.hasMeasureUnit()) this.measureUnit = MeasureUnit()..readFromProtoBuf(measurePb.measureUnit);
-    if (measurePb.measureProgress.isNotEmpty) this.measureProgress = measurePb.measureProgress.map((u) => MeasureProgress()..readFromProtoBuf(u)).toList();
-    if (measurePb.hasObjective()) this.objective = Objective()..readFromProtoBuf(measurePb.objective);
+    if (measurePb.measureProgress.isNotEmpty) this.measureProgress = measurePb.measureProgress.map((u) => MeasureProgress()..readFromProtoBuf(u, cache)).toList();
+    if (measurePb.hasObjective()) this.objective = Objective()..readFromProtoBuf(measurePb.objective, cache);
   }
 
   static Map<String, dynamic> fromProtoBufToModelMap(objective_measure_pb.Measure measurePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
@@ -207,7 +207,7 @@ class MeasureProgress {
     return measureProgressPb;
   }
 
-  readFromProtoBuf(objective_measure_pb.MeasureProgress measureProgressPb) {
+  readFromProtoBuf(objective_measure_pb.MeasureProgress measureProgressPb, Map<String, dynamic> cache) {
     if (measureProgressPb.hasId()) this.id = measureProgressPb.id;
     if (measureProgressPb.hasVersion())
       this.version = measureProgressPb.version;
@@ -224,7 +224,7 @@ class MeasureProgress {
     if (measureProgressPb.hasComment())
       this.comment = measureProgressPb.comment;
     if (measureProgressPb.hasMeasure())
-      this.measure = Measure()..readFromProtoBuf(measureProgressPb.measure);
+      this.measure = Measure()..readFromProtoBuf(measureProgressPb.measure, cache);
   }
 
   static Map<String, dynamic> fromProtoBufToModelMap(objective_measure_pb.MeasureProgress measureProgressPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {

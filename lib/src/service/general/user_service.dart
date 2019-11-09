@@ -154,6 +154,7 @@ class UserService extends UserServiceBase {
   }
 
   static Future<User> querySelectUser(UserGetRequest request, /*String id,  {bool withProfile = false,*/ {Map<String, User> cache}) async {
+
     if (cache != null && cache.containsKey(request.id)) {
       return cache[request.id];
     } else {

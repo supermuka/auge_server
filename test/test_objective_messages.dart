@@ -54,8 +54,9 @@ void main() {
 
       test('Call readToProtoBuffer.', () async {
 
+        Map<String, dynamic> cache;
         model = objective_m.Objective();
-        model.readFromProtoBuf(proto);
+        model.readFromProtoBuf(proto, cache);
 
         callExcept();
       });
@@ -134,8 +135,9 @@ void main() {
 
       test('Call readToProtoBuffer.', () async {
 
+        Map<String, dynamic> cache;
         model = measure_m.Measure();
-        model.readFromProtoBuf(proto);
+        model.readFromProtoBuf(proto, cache);
 
         callExcept();
       });

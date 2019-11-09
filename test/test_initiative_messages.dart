@@ -117,16 +117,18 @@ void main() {
 
       test('Call readToProtoBuffer.', () async {
 
+        Map<String, dynamic> cache;
         model = work_m.Work();
-        model.readFromProtoBuf(proto);
+        model.readFromProtoBuf(proto, cache);
 
         callExcept();
       });
 
       test('Call readToProtoBuffer.', () async {
 
+        Map<String, dynamic> cache;
         model = work_m.Work();
-        model.readFromProtoBuf(proto);
+        model.readFromProtoBuf(proto, cache);
 
         callExcept();
       });
@@ -192,8 +194,9 @@ void main() {
 
       test('Call readToProtoBuffer.', () async {
 
+        Map<String, dynamic> cache;
         model = work_item_m.WorkItem();
-        model.readFromProtoBuf(proto);
+        model.readFromProtoBuf(proto, cache);
 
         callExcept();
       });

@@ -116,17 +116,17 @@ class Work  {
     return workPb;
   }
 
-  readFromProtoBuf(work_work_item_pb.Work workPb) {
+  readFromProtoBuf(work_work_item_pb.Work workPb, Map<String, dynamic> cache) {
     if (workPb.hasId()) this.id = workPb.id;
     if (workPb.hasVersion()) this.version = workPb.version;
     if (workPb.hasName()) this.name = workPb.name;
     if (workPb.hasDescription()) this.description = workPb.description;
-    if (workPb.hasObjective()) this.objective = Objective()..readFromProtoBuf(workPb.objective);
-    if (workPb.hasGroup()) this.group = Group()..readFromProtoBuf(workPb.group);
-    if (workPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(workPb.organization);
-    if (workPb.hasLeader()) this.leader = User()..readFromProtoBuf(workPb.leader);
-    if (workPb.workItems.isNotEmpty) this.workItems = workPb.workItems.map((u) => WorkItem()..readFromProtoBuf(u)).toList();
-    if (workPb.workStages.isNotEmpty) this.workStages = workPb.workStages.map((u) => WorkStage()..readFromProtoBuf(u)).toList();
+    if (workPb.hasObjective()) this.objective = cache.putIfAbsent('${Work.objectiveField}${workPb.objective.id}@${Objective.className}', () =>  Objective()..readFromProtoBuf(workPb.objective, cache));
+    if (workPb.hasGroup()) this.group = cache.putIfAbsent('${Work.groupField}${workPb.group.id}@${Group.className}', () => Group()..readFromProtoBuf(workPb.group));
+    if (workPb.hasOrganization()) this.organization = cache.putIfAbsent('${Work.organizationField}${workPb.organization.id}@${Organization.className}', () => Organization()..readFromProtoBuf(workPb.organization));
+    if (workPb.hasLeader()) this.leader = cache.putIfAbsent('${Work.leaderField}${workPb.leader.id}@${User.className}', () => User()..readFromProtoBuf(workPb.leader));
+    if (workPb.workItems.isNotEmpty) this.workItems = workPb.workItems.map((u) => WorkItem()..readFromProtoBuf(u, cache)).toList(); // Not need the cache, if a composite.
+    if (workPb.workStages.isNotEmpty) this.workStages = workPb.workStages.map((u) => WorkStage()..readFromProtoBuf(u)).toList();  // Not need the cache, if a composite.
   }
 
   static Map<String, dynamic> fromProtoBufToModelMap(work_work_item_pb.Work workPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {

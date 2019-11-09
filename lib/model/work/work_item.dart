@@ -86,7 +86,7 @@ class WorkItem {
     return workItemPb;
   }
 
-  readFromProtoBuf(work_work_item_pb.WorkItem workItemPb) {
+  readFromProtoBuf(work_work_item_pb.WorkItem workItemPb, Map<String, dynamic> cache) {
     if (workItemPb.hasId()) this.id = workItemPb.id;
     if (workItemPb.hasVersion()) this.version = workItemPb.version;
     if (workItemPb.hasName()) this.name = workItemPb.name;
@@ -102,7 +102,7 @@ class WorkItem {
     if (workItemPb.attachments.isNotEmpty) this.attachments = workItemPb.attachments.map((u) => WorkItemAttachment()..readFromProtoBuf(u)).toList();
     if (workItemPb.checkItems.isNotEmpty) this.checkItems = workItemPb.checkItems.map((u) => WorkItemCheckItem()..readFromProtoBuf(u)).toList();
     if (workItemPb.assignedTo.isNotEmpty) this.assignedTo = workItemPb.assignedTo.map((u) => User()..readFromProtoBuf(u)).toList();
-    if (workItemPb.hasWork()) this.work = Work()..readFromProtoBuf(workItemPb.work);
+    if (workItemPb.hasWork()) this.work = cache.putIfAbsent('${WorkItem.workField}${workItemPb.work.id}@${Work.className}', () => Work()..readFromProtoBuf(workItemPb.work, cache));
 
   }
 
