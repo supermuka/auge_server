@@ -70,7 +70,7 @@ class HistoryItem {
     return historyItemPb;
   }
 
-  readFromProtoBuf(history_item_pb.HistoryItem historyItemPb) {
+  readFromProtoBuf(history_item_pb.HistoryItem historyItemPb, Map<String, dynamic> cache) {
     if (historyItemPb.hasId()) this.id = historyItemPb.id;
     if (historyItemPb.hasObjectClassName()) this.objectClassName = historyItemPb.objectClassName;
     if (historyItemPb.hasObjectId()) this.objectId = historyItemPb.objectId;
@@ -82,8 +82,8 @@ class HistoryItem {
       // this.dateTime = CommonUtils.dateTimeFromTimestamp(historyItemPb.dateTime);
       this.dateTime = historyItemPb.dateTime.toDateTime();
     }
-    if (historyItemPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(historyItemPb.organization);
-    if (historyItemPb.hasUser()) this.user = User()..readFromProtoBuf(historyItemPb.user);
+    if (historyItemPb.hasOrganization()) this.organization = cache.putIfAbsent('${HistoryItem.organizationField}${historyItemPb.organization.id}@${Organization.className}', () => Organization()..readFromProtoBuf(historyItemPb.organization));
+    if (historyItemPb.hasUser()) this.user = cache.putIfAbsent('${HistoryItem.userField}${historyItemPb.user.id}@${User.className}', () => User()..readFromProtoBuf(historyItemPb.user, cache));
     if (historyItemPb.hasDescription()) this.description = historyItemPb.description;
     //if (historyItemPb.changedValues.isNotEmpty) this.changedValues = historyItemPb.changedValues;
     // Convert value from protobuf string to dart json

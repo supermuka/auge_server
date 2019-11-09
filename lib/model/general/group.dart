@@ -52,16 +52,16 @@ class Group {
     return groupPb;
   }
 
-  void readFromProtoBuf(group_pb.Group groupPb) {
+  void readFromProtoBuf(group_pb.Group groupPb, Map<String, dynamic> cache) {
     if (groupPb.hasId()) this.id = groupPb.id;
     if (groupPb.hasVersion()) this.version = groupPb.version;
     if (groupPb.hasName()) this.name = groupPb.name;
     if (groupPb.hasInactive()) this.inactive = groupPb.inactive;
-    if (groupPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(groupPb.organization);
+    if (groupPb.hasOrganization()) this.organization = cache.putIfAbsent('${Group.organizationField}${groupPb.organization.id}@${Organization.className}', () => Organization()..readFromProtoBuf(groupPb.organization));
     if (groupPb.hasGroupTypeIndex()) this.groupType = GroupType.values[groupPb.groupTypeIndex];
-    if (groupPb.hasSuperGroup()) this.superGroup = Group()..readFromProtoBuf(groupPb.superGroup);
-    if (groupPb.hasLeader()) this.leader = User()..readFromProtoBuf(groupPb.leader);
-    if (groupPb.members.isNotEmpty) this.members = groupPb.members.map((u) => User()..readFromProtoBuf(u)).toList();
+    if (groupPb.hasSuperGroup()) this.superGroup =  cache.putIfAbsent('${Group.superGroupField}${groupPb.superGroup.id}@${Group.className}', () => Group()..readFromProtoBuf(groupPb.superGroup, cache));
+    if (groupPb.hasLeader()) this.leader = cache.putIfAbsent('${Group.leaderField}${groupPb.leader.id}@${User.className}', () => User()..readFromProtoBuf(groupPb.leader, cache));
+    if (groupPb.members.isNotEmpty) this.members = groupPb.members.map((u) => cache.putIfAbsent('${Group.membersField}${u.id}@${User.className}', () => User()..readFromProtoBuf(u, cache))).toList().cast<User>();
   }
 
 

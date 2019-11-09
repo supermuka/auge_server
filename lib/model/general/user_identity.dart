@@ -66,7 +66,7 @@ class UserIdentity {
     return userIdentityPb;
   }
 
-  readFromProtoBuf(user_identity_pb.UserIdentity userIdentityPb) {
+  readFromProtoBuf(user_identity_pb.UserIdentity userIdentityPb, Map<String, dynamic> cache) {
 
     if (userIdentityPb.hasId()) this.id = userIdentityPb.id;
     if (userIdentityPb.hasVersion()) this.version = userIdentityPb.version;
@@ -75,7 +75,7 @@ class UserIdentity {
     if (userIdentityPb.hasPassword()) this.password = userIdentityPb.password;
     if (userIdentityPb.hasProvider()) this.provider = userIdentityPb.provider;
     if (userIdentityPb.hasProviderObjectId()) this.providerObjectId = userIdentityPb.providerObjectId;
-    if (userIdentityPb.hasUser()) this.user = User()..readFromProtoBuf(userIdentityPb.user);
+    if (userIdentityPb.hasUser()) this.user = cache.putIfAbsent('${UserIdentity.userField}${userIdentityPb.user.id}@${User.className}', () => User()..readFromProtoBuf(userIdentityPb.user, cache));
 
   }
 

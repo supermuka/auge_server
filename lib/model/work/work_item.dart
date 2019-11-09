@@ -99,11 +99,10 @@ class WorkItem {
     /*{
       this.dueDate = DateTime.fromMicrosecondsSinceEpoch(workItemPb.dueDate.seconds.toInt() * 1000000 + workItemPb.dueDate.nanos ~/ 1000 );
     }*/
-    if (workItemPb.attachments.isNotEmpty) this.attachments = workItemPb.attachments.map((u) => WorkItemAttachment()..readFromProtoBuf(u)).toList();
-    if (workItemPb.checkItems.isNotEmpty) this.checkItems = workItemPb.checkItems.map((u) => WorkItemCheckItem()..readFromProtoBuf(u)).toList();
-    if (workItemPb.assignedTo.isNotEmpty) this.assignedTo = workItemPb.assignedTo.map((u) => User()..readFromProtoBuf(u)).toList();
+    if (workItemPb.attachments.isNotEmpty) this.attachments = workItemPb.attachments.map((u) => WorkItemAttachment()..readFromProtoBuf(u)).toList(); // No need cache, it is a composite
+    if (workItemPb.checkItems.isNotEmpty) this.checkItems = workItemPb.checkItems.map((c) => WorkItemCheckItem()..readFromProtoBuf(c)).toList(); // No need cache, it is a composite
+    if (workItemPb.assignedTo.isNotEmpty) this.assignedTo = workItemPb.assignedTo.map((u) => cache.putIfAbsent('${WorkItem.assignedToField}${u.id}@${User.className}', () => User()..readFromProtoBuf(u, cache))).toList().cast<User>();
     if (workItemPb.hasWork()) this.work = cache.putIfAbsent('${WorkItem.workField}${workItemPb.work.id}@${Work.className}', () => Work()..readFromProtoBuf(workItemPb.work, cache));
-
   }
 
   static Map<String, dynamic> fromProtoBufToModelMap(work_work_item_pb.WorkItem workItemPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {

@@ -42,11 +42,11 @@ class UserAccess {
     return userAccessPb;
   }
 
-  readFromProtoBuf(user_access_pb.UserAccess userAccessPb) {
+  readFromProtoBuf(user_access_pb.UserAccess userAccessPb, Map<String, dynamic> cache) {
     if (userAccessPb.hasId()) this.id = userAccessPb.id;
     if (userAccessPb.hasVersion()) this.version = userAccessPb.version;
-    if (userAccessPb.hasUser()) this.user = User()..readFromProtoBuf(userAccessPb.user);
-    if (userAccessPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(userAccessPb.organization);
+    if (userAccessPb.hasUser()) this.user =  cache.putIfAbsent('${UserAccess.userField}${userAccessPb.user.id}@${User.className}', () => User()..readFromProtoBuf(userAccessPb.user, cache));
+    if (userAccessPb.hasOrganization()) this.organization = cache.putIfAbsent('${UserAccess.userField}${userAccessPb.organization.id}@${Organization.className}', () => Organization()..readFromProtoBuf(userAccessPb.organization));
     if (userAccessPb.hasAccessRole()) this.accessRole = userAccessPb.accessRole;
   }
   static Map<String, dynamic> fromProtoBufToModelMap(user_access_pb.UserAccess userAccessPb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {

@@ -139,7 +139,7 @@ void main() {
 
       test('UserProfileOrganization entity. Call readToProtoBuf.', () async {
         model = user_access_m.UserAccess();
-        model.readFromProtoBuf(proto);
+        model.readFromProtoBuf(proto, {});
         callExcept();
       });
 
@@ -194,7 +194,7 @@ void main() {
       test('Group entity. Call readToProtoBuf.', () async {
 
         model = group_m.Group();
-        model.readFromProtoBuf(proto);
+        model.readFromProtoBuf(proto, {});
 
         callExcept();
 

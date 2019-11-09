@@ -160,7 +160,7 @@ class OrganizationDirectoryService {
     if (organizationDirectoryServicePb.hasUserFirstNameAttribute()) this.userFirstNameAttribute = organizationDirectoryServicePb.userFirstNameAttribute;
     if (organizationDirectoryServicePb.hasUserLastNameAttribute()) this.userLastNameAttribute = organizationDirectoryServicePb.userLastNameAttribute;
     if (organizationDirectoryServicePb.hasUserEmailAttribute()) this.userEmailAttribute = organizationDirectoryServicePb.userEmailAttribute;
-    if (organizationDirectoryServicePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(organizationDirectoryServicePb.organization);
+    if (organizationDirectoryServicePb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(organizationDirectoryServicePb.organization); // No need cache, normally it has just one instance.
 
   }
 

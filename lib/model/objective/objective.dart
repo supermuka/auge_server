@@ -125,10 +125,10 @@ class Objective {
     }
 
     if (objectivePb.hasOrganization()) this.organization = cache.putIfAbsent('${Objective.organizationField}${objectivePb.organization.id}@${Organization.className}', () => Organization()..readFromProtoBuf(objectivePb.organization));
-    if (objectivePb.hasGroup()) this.group = cache.putIfAbsent('${Objective.groupField}${objectivePb.group.id}@${Group.className}', () => Group()..readFromProtoBuf(objectivePb.group));
-    if (objectivePb.hasLeader()) this.leader = cache.putIfAbsent('${Objective.leaderField}${objectivePb.leader.id}@${User.className}', () => User()..readFromProtoBuf(objectivePb.leader));
+    if (objectivePb.hasGroup()) this.group = cache.putIfAbsent('${Objective.groupField}${objectivePb.group.id}@${Group.className}', () => Group()..readFromProtoBuf(objectivePb.group, cache));
+    if (objectivePb.hasLeader()) this.leader = cache.putIfAbsent('${Objective.leaderField}${objectivePb.leader.id}@${User.className}', () => User()..readFromProtoBuf(objectivePb.leader, cache));
     if (objectivePb.hasAlignedTo()) this.alignedTo = cache.putIfAbsent('${Objective.alignedToField}${objectivePb.alignedTo.id}@${Objective.className}', () => Objective()..readFromProtoBuf(objectivePb.alignedTo, cache));
-    if (objectivePb.alignedWithChildren.isNotEmpty) this.alignedWithChildren = objectivePb.alignedWithChildren.map((o) => cache.putIfAbsent('${Objective.alignedWithChildrenField}${o.id}@${Objective.className}', () => Objective()..readFromProtoBuf(o, cache))).toList();
+    if (objectivePb.alignedWithChildren.isNotEmpty) this.alignedWithChildren = objectivePb.alignedWithChildren.map((o) => cache.putIfAbsent('${Objective.alignedWithChildrenField}${o.id}@${Objective.className}', () => Objective()..readFromProtoBuf(o, cache))).toList().cast<Objective>();
     if (objectivePb.measures.isNotEmpty) this.measures = objectivePb.measures.map((u) => Measure()..readFromProtoBuf(u, cache)).toList();
   }
 

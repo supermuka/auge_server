@@ -122,9 +122,9 @@ class Work  {
     if (workPb.hasName()) this.name = workPb.name;
     if (workPb.hasDescription()) this.description = workPb.description;
     if (workPb.hasObjective()) this.objective = cache.putIfAbsent('${Work.objectiveField}${workPb.objective.id}@${Objective.className}', () =>  Objective()..readFromProtoBuf(workPb.objective, cache));
-    if (workPb.hasGroup()) this.group = cache.putIfAbsent('${Work.groupField}${workPb.group.id}@${Group.className}', () => Group()..readFromProtoBuf(workPb.group));
+    if (workPb.hasGroup()) this.group = cache.putIfAbsent('${Work.groupField}${workPb.group.id}@${Group.className}', () => Group()..readFromProtoBuf(workPb.group, cache));
     if (workPb.hasOrganization()) this.organization = cache.putIfAbsent('${Work.organizationField}${workPb.organization.id}@${Organization.className}', () => Organization()..readFromProtoBuf(workPb.organization));
-    if (workPb.hasLeader()) this.leader = cache.putIfAbsent('${Work.leaderField}${workPb.leader.id}@${User.className}', () => User()..readFromProtoBuf(workPb.leader));
+    if (workPb.hasLeader()) this.leader = cache.putIfAbsent('${Work.leaderField}${workPb.leader.id}@${User.className}', () => User()..readFromProtoBuf(workPb.leader, cache));
     if (workPb.workItems.isNotEmpty) this.workItems = workPb.workItems.map((u) => WorkItem()..readFromProtoBuf(u, cache)).toList(); // Not need the cache, if a composite.
     if (workPb.workStages.isNotEmpty) this.workStages = workPb.workStages.map((u) => WorkStage()..readFromProtoBuf(u)).toList();  // Not need the cache, if a composite.
   }

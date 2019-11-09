@@ -44,7 +44,7 @@ class OrganizationConfiguration {
     if (organizationConfigurationPb.hasId()) this.id = organizationConfigurationPb.id;
     if (organizationConfigurationPb.hasVersion()) this.version = organizationConfigurationPb.version;
     if (organizationConfigurationPb.hasDomain()) this.domain = organizationConfigurationPb.domain;
-    if (organizationConfigurationPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(organizationConfigurationPb.organization);
+    if (organizationConfigurationPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(organizationConfigurationPb.organization); // No need cache, normally it has one instance
  //   if (organizationConfigurationPb.hasOrganization()) this.organization = Organization()..readFromProtoBuf(organizationConfigurationPb.organization);
   }
 

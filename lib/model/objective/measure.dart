@@ -114,9 +114,9 @@ class Measure {
     if (measurePb.hasStartValue()) this.startValue = measurePb.startValue;
     if (measurePb.hasEndValue()) this.endValue = measurePb.endValue;
     if (measurePb.hasCurrentValue()) this.currentValue = measurePb.currentValue;
-    if (measurePb.hasMeasureUnit()) this.measureUnit = MeasureUnit()..readFromProtoBuf(measurePb.measureUnit);
-    if (measurePb.measureProgress.isNotEmpty) this.measureProgress = measurePb.measureProgress.map((u) => MeasureProgress()..readFromProtoBuf(u, cache)).toList();
-    if (measurePb.hasObjective()) this.objective = Objective()..readFromProtoBuf(measurePb.objective, cache);
+    if (measurePb.hasMeasureUnit()) this.measureUnit = cache.putIfAbsent('${Measure.measureUnitField}${measurePb.measureUnit.id}@${MeasureUnit.className}', () => MeasureUnit()..readFromProtoBuf(measurePb.measureUnit));
+    if (measurePb.measureProgress.isNotEmpty) this.measureProgress = measurePb.measureProgress.map((u) => MeasureProgress()..readFromProtoBuf(u, cache)).toList(); // It is composite, no need cache
+    if (measurePb.hasObjective()) this.objective = cache.putIfAbsent('${Measure.objectiveField}${measurePb.objective.id}@${Objective.className}', () => Objective()..readFromProtoBuf(measurePb.objective, cache));
   }
 
   static Map<String, dynamic> fromProtoBufToModelMap(objective_measure_pb.Measure measurePb, [bool onlyIdAndSpecificationForDepthFields = false, bool isDeep = false]) {
