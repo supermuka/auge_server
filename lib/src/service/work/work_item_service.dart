@@ -145,7 +145,7 @@ class WorkItemService extends WorkItemServiceBase {
       if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4]);
 
       if (row[5] != null) workItem.completed = row[5];
-      if (workStage != null) workItem.workStage = workStage;
+      if (workStage != null) workItem.workStage = await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[6]);
       if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
       if (attachments.isNotEmpty) workItem.attachments.addAll(attachments);
       if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);

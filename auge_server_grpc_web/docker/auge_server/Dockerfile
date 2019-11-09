@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/dart:2.6.0-dev.8.0
+FROM google/dart:2.6.0
 
 # understand a way to inform a directory specific here or implementation. Today configuraion.yaml is read on current directory.
 COPY config/configuration.yaml /etc/auge_server/config/configuration.yaml

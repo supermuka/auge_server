@@ -138,14 +138,9 @@ class ObjectiveService extends ObjectiveServiceBase {
       Map<String, Objective> objectivesTreeMapAux = {};
 
       if (results != null && results.isNotEmpty) {
-        Organization organization; // = await _augeApi.getOrganizationById(organizationId);
 
-        List<Measure> measures;
-        User leaderUser;
-        Objective alignedToObjective;
 
         Objective objective;
-        Group group;
 
         if (!objectiveSelectRequest.hasAlignedToRecursive()) {
           objectiveSelectRequest.alignedToRecursive = 1;
@@ -153,44 +148,11 @@ class ObjectiveService extends ObjectiveServiceBase {
 
         for (var row in results) {
 
-            measures =
-            (objectiveSelectRequest.withMeasures) ? await MeasureService
-                .querySelectMeasures(MeasureGetRequest()
-              ..objectiveId = row[0]) : [];
-
-          if (row[7] != null) {
-            leaderUser = await UserService.querySelectUser(UserGetRequest()
-              ..id = row[7]
-              ..withUserProfile = objectiveSelectRequest.withUserProfile);
-          }
-
-          if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0) {
-            //--objectiveSelectRequest.alignedToRecursive;
-            alignedToObjective =
-            await ObjectiveService.querySelectObjective(ObjectiveGetRequest()
-              ..id = row[8]
-              ..alignedToRecursive = (objectiveSelectRequest.alignedToRecursive-1)
-              ..withArchived = objectiveSelectRequest.withArchived
-              ..withMeasures = objectiveSelectRequest.withMeasures
-              ..withUserProfile = objectiveSelectRequest.withUserProfile);
-          }
-
-          // Organization
-          if (row[9] != null) {
-            organization = await OrganizationService.querySelectOrganization(
-                OrganizationGetRequest()
-                  ..id = row[9]);
-          }
-
-          if (row[10] != null) {
-            group = await GroupService.querySelectGroup(GroupGetRequest()
-              ..id = row[10]);
-          }
-
-          objective = new Objective()
+          objective = Objective()
             ..id = row[0]
             ..version = row[1]
             ..name = row[2];
+
 
           if (row[3] != null) objective.description = row[3];
 
@@ -201,15 +163,37 @@ class ObjectiveService extends ObjectiveServiceBase {
             objective.endDate = CommonUtils.timestampFromDateTime(row[5].toUtc());
 
           if (row[6] != null) objective.archived = row[6];
-          if (organization != null) objective.organization = organization;
-          if (leaderUser != null) objective.leader = leaderUser;
-          if (measures.isNotEmpty) objective.measures.addAll(measures);
-          if (alignedToObjective != null)
-            objective.alignedTo = alignedToObjective;
-          if (group != null) objective.group = group;
 
+          objective.measures.addAll(
+          (objectiveSelectRequest.withMeasures) ? await MeasureService
+              .querySelectMeasures(MeasureGetRequest()
+            ..objectiveId = row[0]) : []);
 
-          if (objectiveSelectRequest.treeAlignedWithChildren) {
+          if (row[7] != null) objective.leader = await UserService.querySelectUser(UserGetRequest()
+              ..id = row[7]
+              ..withUserProfile = objectiveSelectRequest.withUserProfile);
+
+          if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0)
+            //--objectiveSelectRequest.alignedToRecursive;
+            objective.alignedTo =
+            await ObjectiveService.querySelectObjective(ObjectiveGetRequest()
+              ..id = row[8]
+              ..alignedToRecursive = (objectiveSelectRequest.alignedToRecursive-1)
+              ..withArchived = objectiveSelectRequest.withArchived
+              ..withMeasures = objectiveSelectRequest.withMeasures
+              ..withUserProfile = objectiveSelectRequest.withUserProfile);
+
+          // Organization
+            if (row[9] != null)
+              objective.organization = await OrganizationService.querySelectOrganization(
+                  OrganizationGetRequest()
+                    ..id = row[9]);
+
+            if (row[10] != null)
+              objective.group = await GroupService.querySelectGroup(GroupGetRequest()
+                ..id = row[10]);
+
+            if (objectiveSelectRequest.treeAlignedWithChildren) {
             objectivesTreeMapAux[objective.id] = objective;
             if (row[8] == null)
               // Parent must be present in the list (objectives);

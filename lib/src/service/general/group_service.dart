@@ -128,17 +128,23 @@ class GroupService extends GroupServiceBase {
         if (row[4] != null) {
             organization =
             await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[4], cache: organizationCache);
+        } else {
+          organization = null;
         }
 
         if (row[6] != null) {
             leader =
             await UserService.querySelectUser(UserGetRequest()..id = row[6], cache: userCache);
+        } else {
+          leader = null;
         }
 
         if (row[7] != null && request.alignedToRecursive > 0) {
             superGroup =
             await querySelectGroup(GroupGetRequest()..id = row[7]..alignedToRecursive = --request.alignedToRecursive, cache: groupCache);
-        }
+        } else {
+          superGroup = null;
+    }
 
         // No need of the cache. It´s doesn't persist on data base.
         //groupType = await GroupService.querySelectGroupType(GroupTypeGetRequest()..id = row[5]);

@@ -186,7 +186,6 @@ class MeasureService extends MeasureServiceBase {
     List<MeasureUnit> measureUnits;
 
     if (results != null && results.isNotEmpty) {
-      MeasureUnit measureUnit;
 
       for (var row in results) {
 
@@ -203,18 +202,12 @@ class MeasureService extends MeasureServiceBase {
         if (row[6] != null) measure.startValue = row[6];
         if (row[7] != null) measure.endValue = row[7];
         if (row[8] != null) measure.currentValue = row[8];
-
-
         if (row[9] != null)
           //  measureUnit = await getMeasureUnitById(row[8]);
           measureUnits = await querySelectMeasureUnits(id: row[9]);
         if (measureUnits != null && measureUnits.length != 0) {
-          measureUnit = measureUnits.first;
+          measure.measureUnit = measureUnits.first;
         }
-        else
-          measureUnit = null;
-
-        if (measureUnit != null) measure.measureUnit = measureUnit;
 
         if (request.hasWithObjective() && request.withObjective == true) measure.objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = row[10]);
 
