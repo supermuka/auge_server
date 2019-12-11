@@ -1,8 +1,8 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-import 'package:auge_server/model/general/user.dart';
-import 'package:auge_server/model/general/organization.dart';
+import 'package:auge_server/domain/general/user.dart';
+import 'package:auge_server/domain/general/organization.dart';
 
 // ignore_for_file: uri_has_not_been_generated
 import 'package:auge_server/src/protos/generated/general/user_access.pb.dart' as user_access_pb;

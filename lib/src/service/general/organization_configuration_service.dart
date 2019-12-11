@@ -11,9 +11,9 @@ import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dar
 
 import 'package:auge_server/src/protos/generated/general/organization_configuration.pbgrpc.dart';
 
-import 'package:auge_server/model/general/organization_configuration.dart' as organization_configuration_m;
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
-import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/domain/general/organization_configuration.dart' as organization_configuration_m;
+import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
+import 'package:auge_server/domain/general/authorization.dart' show SystemModule, SystemFunction;
 
 import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';

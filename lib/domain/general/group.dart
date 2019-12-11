@@ -1,8 +1,8 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-import 'package:auge_server/model/general/organization.dart';
-import 'package:auge_server/model/general/user.dart';
+import 'package:auge_server/domain/general/organization.dart';
+import 'package:auge_server/domain/general/user.dart';
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
@@ -12,28 +12,40 @@ enum GroupType {company, businessUnit, department, team}
 
 /// Domain model class to represent a group
 class Group {
-  static final String className = 'Group';
+  static String get className => 'Group';
 
   // Base fields
-  static final String idField = 'id';
+  static String get idField => 'id';
   String id;
-  static final String versionField = 'version';
+  static String get versionField => 'version';
   int version;
 
-  // Specific
-  static final String nameField = 'name';
+  // Specific  
+  static String nameField = 'name';
   String name;
-  static final String inactiveField = 'inactive';
+
+  static String inactiveField = 'inactive';
+  // static final String inactiveField = 'inactive';
   bool inactive;
-  static final String organizationField = 'organization';
+
+  static String organizationField = 'organization';
+  //static final String organizationField = 'organization';
   Organization organization;
-  static final String groupTypeField = 'groupType';
+
+  static String groupTypeField = 'groupType';
+  //static final String groupTypeField = 'groupType';
   GroupType groupType;
-  static final String superGroupField = 'superGroup';
+
+  static String superGroupField = 'superGroup';
+  //static final String superGroupField = 'superGroup';
   Group superGroup;
-  static final String leaderField = 'leader';
+
+  static String leaderField = 'leader';
+  //static final String leaderField = 'leader';
   User leader;
-  static final String membersField = 'members';
+
+  static String membersField = 'members';
+  //static final String membersField = 'members';
   List<User> members = [];
 
   group_pb.Group writeToProtoBuf() {

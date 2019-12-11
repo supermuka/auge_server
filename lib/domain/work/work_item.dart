@@ -3,9 +3,9 @@
 
 import 'package:auge_server/shared/common_utils.dart';
 
-import 'package:auge_server/model/work/work.dart';
-import 'package:auge_server/model/work/work_stage.dart';
-import 'package:auge_server/model/general/user.dart';
+import 'package:auge_server/domain/work/work.dart';
+import 'package:auge_server/domain/work/work_stage.dart';
+import 'package:auge_server/domain/general/user.dart';
 
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';

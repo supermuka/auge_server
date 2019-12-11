@@ -12,9 +12,9 @@ import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dar
 import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
-import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
-import 'package:auge_server/model/general/organization.dart' as organization_m;
+import 'package:auge_server/domain/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
+import 'package:auge_server/domain/general/organization.dart' as organization_m;
 
 import 'package:uuid/uuid.dart';
 

@@ -14,6 +14,6 @@ services:
       dockerfile:  ./docker/envoy/Dockerfile
     image: grpcweb/envoy
     ports:
-      - "8080:8080"
+      - "8443:8443"
     links:
       - auge-server

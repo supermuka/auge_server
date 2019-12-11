@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:auge_server/shared/common_utils.dart';
 import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart';
 import 'package:auge_server/shared/message/messages.dart';
-import 'package:auge_server/shared/message/model_messages.dart';
+import 'package:auge_server/shared/message/domain_messages.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/util/mail.dart';
@@ -15,13 +15,13 @@ import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dar
 import 'package:auge_server/src/protos/generated/objective/objective_measure.pbgrpc.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
-import 'package:auge_server/model/general/authorization.dart';
+import 'package:auge_server/domain/general/authorization.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
 
-import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
-import 'package:auge_server/model/objective/objective.dart' as objective_m;
-import 'package:auge_server/model/objective/measure.dart' as measure_m;
+import 'package:auge_server/domain/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
+import 'package:auge_server/domain/objective/objective.dart' as objective_m;
+import 'package:auge_server/domain/objective/measure.dart' as measure_m;
 
 import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
@@ -244,7 +244,7 @@ class MeasureService extends MeasureServiceBase {
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
             '${ClassNameMsg.label(className)}',
             description,
-            '${FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')}'));
+            '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));
 
     // SEND E-MAIL
     AugeMail().send(mailMessages);
@@ -554,7 +554,7 @@ class MeasureService extends MeasureServiceBase {
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
             '${ClassNameMsg.label(className)}',
             description,
-            '${FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')}'));
+            '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));
 
     // SEND E-MAIL
     AugeMail().send(mailMessages);

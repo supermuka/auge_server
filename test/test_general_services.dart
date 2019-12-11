@@ -1,4 +1,4 @@
-import 'package:auge_server/model/general/group.dart' as group_m;
+import 'package:auge_server/domain/general/group.dart' as group_m;
 import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
 import 'package:test/test.dart';
 
@@ -11,7 +11,7 @@ import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/user_access.pbgrpc.dart';
 import 'package:auge_server/src/protos/generated/general/group.pbgrpc.dart';
 
-import 'package:auge_server/model/general/authorization.dart';
+import 'package:auge_server/domain/general/authorization.dart';
 
 void main() {
 

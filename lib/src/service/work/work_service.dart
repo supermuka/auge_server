@@ -7,7 +7,7 @@ import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/util/mail.dart';
 
 import 'package:auge_server/shared/message/messages.dart';
-import 'package:auge_server/shared/message/model_messages.dart';
+import 'package:auge_server/shared/message/domain_messages.dart';
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
@@ -27,9 +27,9 @@ import 'package:auge_server/src/service/work/work_stage_service.dart';
 import 'package:auge_server/src/service/work/work_item_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
 
-import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
-import 'package:auge_server/model/work/work.dart' as work_m;
+import 'package:auge_server/domain/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
+import 'package:auge_server/domain/work/work.dart' as work_m;
 
 import 'package:auge_server/src/util/db_connection.dart';
 
@@ -220,7 +220,7 @@ class WorkService extends WorkServiceBase {
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
             '${ClassNameMsg.label(className)}',
             description,
-            '${FieldMsg.label('${work_m.Work.className}.${work_m.Work.leaderField}')}'));
+            '${WorkDomainMsg.fieldLabel(work_m.Work.leaderField)}'));
 
     // SEND E-MAIL
     AugeMail().send(mailMessages);

@@ -4,7 +4,7 @@
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
 
-import 'package:auge_server/model/general/organization.dart';
+import 'package:auge_server/domain/general/organization.dart';
 
 import 'package:auge_server/src/protos/generated/general/user.pb.dart' as user_pb;
 

@@ -17,7 +17,7 @@ class CommonService extends CommonServiceBase {
       DateTimeGetRequest dateTimeGetRequest) async {
     try {
 
-      return new DateTimeResponse()..dateTime = CommonUtils.timestampFromDateTime(dateTimeGetRequest.isUtc ? DateTime
+      return DateTimeResponse()..dateTime = CommonUtils.timestampFromDateTime(dateTimeGetRequest.isUtc ? DateTime
           .now()
           .toUtc() : DateTime
           .now() );

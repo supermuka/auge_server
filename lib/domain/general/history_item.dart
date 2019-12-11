@@ -5,8 +5,8 @@ import 'dart:convert';
 import 'package:auge_server/shared/common_utils.dart';
 import 'package:collection/collection.dart';
 
-import 'package:auge_server/model/general/organization.dart';
-import 'package:auge_server/model/general/user.dart';
+import 'package:auge_server/domain/general/organization.dart';
+import 'package:auge_server/domain/general/user.dart';
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated

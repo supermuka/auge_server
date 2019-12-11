@@ -52,6 +52,14 @@ Generate Certificate
 https://certbot.eff.org/lets-encrypt/debianstretch-apache
 
 
+OPENSSL
+openssl genrsa -out localhost.key 2048
+
+And the certificate:
+
+openssl req -new -x509 -key localhost.key -out localhost.cert -days 3650 -subj /CN=localhost
+
+
 ENCRYPT TRIPLE-DES
 https://www.browserling.com/tools/triple-des-encrypt
 

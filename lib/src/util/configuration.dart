@@ -11,7 +11,7 @@ class AugeConfiguration extends Configuration {
     super.fromFile(File(fileName));
 
   directory() {
-    print(Directory.current);
+    //print(Directory.current);
   }
 
   DatabaseConfiguration database;

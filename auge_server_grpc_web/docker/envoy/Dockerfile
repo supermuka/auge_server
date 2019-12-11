@@ -14,6 +14,8 @@
 
 FROM envoyproxy/envoy:latest
 
+COPY certificate/cert.pem /etc/auge_server/certificate/cert.pem
+COPY certificate/privkey.pem /etc/auge_server/certificate/privkey.pem
 COPY envoy/envoy.yaml /etc/envoy/envoy.yaml
 
 CMD /usr/local/bin/envoy -c /etc/envoy/envoy.yaml -l trace --log-path /tmp/envoy_info.log

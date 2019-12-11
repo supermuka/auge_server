@@ -1,10 +1,10 @@
 // Copyright (c) 2018, Levius Tecnologia Ltda. All rights reserved.
 // Author: Samuel C. Schwebel
 
-import 'package:auge_server/model/general/organization.dart';
-import 'package:auge_server/model/general/user.dart';
-import 'package:auge_server/model/objective/measure.dart';
-import 'package:auge_server/model/general/group.dart';
+import 'package:auge_server/domain/general/organization.dart';
+import 'package:auge_server/domain/general/user.dart';
+import 'package:auge_server/domain/objective/measure.dart';
+import 'package:auge_server/domain/general/group.dart';
 
 import 'package:auge_server/shared/common_utils.dart';
 
@@ -17,41 +17,60 @@ import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.
 
 /// Domain model class to represent an objective
 class Objective {
-  static final String className = 'Objective';
+  static String className = 'Objective';
 
   // Base
-  static final String idField = 'id';
+  static String idField = 'id';
   String id;
-  static final String versionField = 'version';
+  static String versionField = 'version';
   int version;
 
   // Transient
  // HistoryItem lastHistoryItem;
 
   // Specific
-  static final String nameField = 'name';
+  static String nameField = 'name';
   String name;
-  static final String descriptionField = 'description';
+
+  //static final String descriptionField = 'description';
+  static String descriptionField = 'description';
   String description;
-  static final String startDateField = 'startDate';
+
+  static String startDateField = 'startDate';
+  //static final String startDateField = 'startDate';
   DateTime startDate;
-  static final String endDateField = 'endDate';
+
+  static String endDateField = 'endDate';
+  //static final String endDateField = 'endDate';
   DateTime endDate;
-  static final String organizationField = 'organization';
+
+  static String organizationField = 'organization';
+  //static final String organizationField = 'organization';
   Organization organization;
-  static final String groupField = 'group';
+
+  static String groupField = 'group';
+  //static final String groupField = 'group';
   Group group;
-  static final String alignedToField = 'alignedTo';
+
+  static String alignedToField = 'alignedTo';
+  //static final String alignedToField = 'alignedTo';
   Objective alignedTo;
-  static final String leaderField = 'leader';
+
+  static String leaderField = 'leader';
+  //static final String leaderField = 'leader';
   User leader;
-  static final String archivedField = 'archived';
+
+  static String archivedField = 'archived';
+  //static final String archivedField = 'archived';
   bool archived;
 
   // Transients fields
-  static final String alignedWithChildrenField = 'alignedWithChildren';
+  static String alignedWithChildrenField = 'alignedWithChildren';
+  //static final String alignedWithChildrenField = 'alignedWithChildren';
   List<Objective> alignedWithChildren;
-  static final String measuresField = 'measures';
+
+  //static final String measuresField = 'measures';
+  static String measuresField = 'measures';
   List<Measure> measures;
 
   Objective() {

@@ -2,13 +2,13 @@
 // Author: Samuel C. Schwebel
 import "dart:collection";
 
-import 'package:auge_server/model/general/organization.dart';
-import 'package:auge_server/model/general/user.dart';
-import 'package:auge_server/model/work/work_stage.dart';
-import 'package:auge_server/model/work/work_item.dart';
-import 'package:auge_server/model/general/group.dart';
+import 'package:auge_server/domain/general/organization.dart';
+import 'package:auge_server/domain/general/user.dart';
+import 'package:auge_server/domain/work/work_stage.dart';
+import 'package:auge_server/domain/work/work_item.dart';
+import 'package:auge_server/domain/general/group.dart';
 
-import 'package:auge_server/model/objective/objective.dart';
+import 'package:auge_server/domain/objective/objective.dart';
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated

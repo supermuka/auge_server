@@ -9,7 +9,8 @@ environment:
 
 dependencies:
   #args: ^1.5.0
-  intl: ^0.15.7
+  intl: ^0.15.0
+  intl_translation: ^0.17.7
   #shelf: ^0.7.3+3
   #rpc: ^0.6.0
   fixnum: ^0.10.9

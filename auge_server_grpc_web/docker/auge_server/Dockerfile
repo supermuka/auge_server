@@ -15,6 +15,9 @@
 FROM google/dart:2.6.0
 
 # understand a way to inform a directory specific here or implementation. Today configuraion.yaml is read on current directory.
+COPY certificate/cert.pem /etc/auge_server/certificate/cert.pem
+COPY certificate/privkey.pem /etc/auge_server/certificate/privkey.pem
+
 COPY config/configuration.yaml /etc/auge_server/config/configuration.yaml
 COPY bin/auge_server.dart.snapshot /etc/auge_server/bin/auge_server.dart.snapshot
 

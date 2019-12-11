@@ -1,41 +1,64 @@
-import 'package:auge_server/model/general/organization_directory_service.dart';
 import 'package:intl/intl.dart';
 
-class CommonMsg {
+import 'package:auge_server/domain/general/authorization.dart';
+import 'package:auge_server/domain/general/organization_directory_service.dart';
+import 'package:auge_server/domain/general/user_identity.dart';
+import 'package:auge_server/domain/general/group.dart';
+import 'package:auge_server/domain/work/work_stage.dart';
 
+
+class CommonMsg {
   /// Commum Label
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'AUGE': 'AUGE',
-        'Objectives and Works': 'Objectives and Works',
-        'Search': 'Search',
-        'Filter': 'Filter',
-        'more': 'more',
-        'empty': 'empty',
-        'other': 'Not Defined'})}",
-      name: "label",
-      args: [label],
+  static const String augeLabel = 'auge';
+  static const String objectivesWorksLabel = 'Objectives and Works';
+  static const String searchLabel = 'Search';
+  static const String noCorrespondenceLabel = 'No correspondence';
+  static const String filterLabel = 'Filter';
+  static const String moreLabel = 'more';
+  static const String emptyLabel = 'empty';
+
+  static label(String label) => Intl.select(label, {
+    augeLabel: 'AUGE',
+    objectivesWorksLabel: 'Objectives and Works',
+    searchLabel: 'Search',
+    filterLabel: 'Filter',
+    moreLabel: 'more',
+    emptyLabel: 'empty',
+    'other': 'Not Defined'},
+      name: "CommonMsg_label",
+      args: <String>[label],
       // locale: "en",
       desc: "Common labels",
-      examples: const {"AUGE": "Auge"}
+      examples: const {"AUGE": "AUGE"}
   );
 
+  static const String applyButtonLabel = 'apply';
+  static const String editButtonLabel = 'edit';
+  static const String deleteButtonLabel = 'delete';
+  static const String saveButtonLabel = 'save';
+  static const String cancelButtonLabel = 'cancel';
+  static const String closeButtonLabel = 'close';
+  static const String uploadButtonLabel = 'upload';
+  static const String clearButtonLabel = 'clear';
+  static const String loginButtonLabel = 'login';
+  static const String logoutButtonLabel = 'logout';
+  static const String selectPhotoButtonLabel = 'selectPhoto';
+
   /// Label for edit button
-  static buttonLabel(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Apply': 'Apply',
-        'Edit': 'Edit',
-        'Delete': 'Delete',
-        'Save': 'Save',
-        'Cancel': 'Cancel',
-        'Close': 'Close',
-        'Upload': 'Upload',
-        'Clear': 'Clear',
-        'Login': 'Login',
-        'Logout': 'Logout',
-        'Select Photo': 'Select Photo',
-        'other': 'Not Defined'})}",
-      name: "buttonLabel",
+  static buttonLabel(String label) => Intl.select(label, {
+        applyButtonLabel: 'Apply',
+        editButtonLabel: 'Edit',
+        deleteButtonLabel: 'Delete',
+        saveButtonLabel: 'Save',
+        cancelButtonLabel: 'Cancel',
+        closeButtonLabel: 'Close',
+        uploadButtonLabel: 'Upload',
+        clearButtonLabel: 'Clear',
+        loginButtonLabel: 'Login',
+        logoutButtonLabel: 'Logout',
+        selectPhotoButtonLabel: 'Select Photo',
+        'other': 'Not Defined'},
+      name: "CommonMsg_buttonLabel",
       args: [label],
       // locale: "en",
       desc: "Label for buttons",
@@ -45,28 +68,36 @@ class CommonMsg {
   static requiredValueMsg() => Intl.message("Enter with a required value");
 }
 
-
 /// Specific messages and labels for [Authentication and Authorization]
 class AuthMsg {
 
+  static const String domainLabel = 'domain';
+  static const String identificationLabel = 'identification';
+  static const String passwordLabel = 'password';
+  static const String selectLabel = 'select';
+  static const String superAdminLabel = 'superAdmin';
+  static const String organizationLabel = 'organization';
+  static const String allOrganizationsLabel = 'allOrganizations';
+  static const String loginLabel = 'login';
+  static const String logoutLabel = 'logout';
+
   /// Label for [Auth]
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'name@domain.com': 'name@domain.com',
-        'Identification': 'Identification',
-        'Password': 'Password',
-        'Select': 'Select',
-        'Super Admin': 'Super Admin',
-        'Organization': 'Organization',
-        'All Organizations': 'All Organizations',
-        'Login': 'Login',
-        'Logout': 'Logout',
-        'other': 'Not Defined'})}",
-      name: "loginLabel",
+  static label(String label) => Intl.select(label, {
+        domainLabel: 'name@domain.com',
+        identificationLabel: 'Identification',
+        passwordLabel: 'Password',
+        selectLabel: 'Select',
+        superAdminLabel: 'Super Admin',
+        organizationLabel: 'Organization',
+        allOrganizationsLabel: 'All Organizations',
+        loginLabel: 'Login',
+        logoutLabel: 'Logout',
+        'other': 'Not Defined'},
+      name: "AuthMsg_label",
       args: [label],
       // locale: "en",
       desc: "Authentication and authorizations labels",
-      examples: const {"eMail": "e-mail"}
+
   );
 
   static informIdentificationPasswordCorrectlyMsg() => Intl.message("Inform an identification and password correctly.");
@@ -80,24 +111,38 @@ class AuthMsg {
 /// Specific messages and labels for [AppLayout]
 class AppLayoutMsg {
 
+  static const organizationLabel = 'organization';
+  static const organizationsLabel = 'organizations';
+  static const adminLabel = 'admin';
+  static const superAdminLabel = 'superAdmin';
+  static const userDetailLabel = 'userDetail';
+  static const logoutLabel = 'logout';
+  static const ingightsLabel = 'insights';
+  static const worksLabel = 'works';
+  static const objectivesLabel = 'objectives';
+  static const objectivesMapLabel = 'objectivesMap';
+  static const objectivesGanttLabel = 'objectivesGantt';
+  static const usersLabel = 'users';
+  static const groupsLabel = 'groups';
+  static const configurationLabel = 'configuration';
+
   /// Label for [AppLayout]
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Organization': 'Organization',
-        'Organizations': 'Organizations',
-        'Admin': 'Administration',
-        'SuperAdmin': 'Super Administration',
-        'User Detail': 'User Detail',
-        'Logout': 'Logout',
-        'Insights': 'Insights',
-        'Works': 'Works',
-        'Objectives': 'Objectives',
-        'Objectives Map': 'Objectives Map',
-        'Objectives Gantt': 'Objectives Gantt',
-        'Users': 'Users',
-        'Groups': 'Groups',
-        'Configuration': 'Configuration',
-        'other': 'Not Defined'})}",
+  static label(String label) => Intl.select(label, {
+        organizationLabel: 'Organization',
+        organizationsLabel: 'Organizations',
+        adminLabel: 'Administration',
+        superAdminLabel: 'Super Administration',
+        userDetailLabel: 'User Detail',
+        logoutLabel: 'Logout',
+        ingightsLabel: 'Insights',
+        worksLabel: 'Works',
+        objectivesLabel: 'Objectives',
+        objectivesMapLabel: 'Objectives Map',
+        objectivesGanttLabel: 'Objectives Gantt',
+        usersLabel: 'Users',
+        groupsLabel: 'Groups',
+        configurationLabel: 'Configuration',
+        'other': 'Not Defined'},
       name: "appLayoutLabel",
       args: [label],
       // locale: "en",
@@ -110,38 +155,50 @@ class AppLayoutMsg {
 /// Specific messages and label for [Organization]
 class OrganizationMsg {
 
+  static const organizationsLabel = 'organizations';
+  static const editOrganizationLabel = 'editOrganization';
+  static const addOrganizationLabel = 'addOrganizaation';
+  static const organizationDetailLabel = 'organizationDetail';
+
   /// Label for organization
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Organizations': 'Organizations',
-        'Edit Organization': 'Edit Organization',
-        'Add Organization': 'Add Organization',
-        'Organization Detail': 'Organization Detail',
-        'other': 'Not Defined'})}",
-      name: "organizationLabel",
-      args: [label],
-      // locale: "en",
-      desc: "Organization labels",
-      examples: const {"Name": "Name"}
+  static label(String label) => Intl.select(label, {
+    organizationsLabel: 'Organizations',
+    editOrganizationLabel: 'Edit Organization',
+    addOrganizationLabel: 'Add Organization',
+    organizationDetailLabel: 'Organization Detail',
+    'other': 'Not Defined'},
+    name: "OrganizationMsg_Label",
+    args: [label],
+    // locale: "en",
+    desc: "Organization labels",
+    examples: const {"Name": "Name"}
   );
 }
 
 /// Specific messages and label for [Configuration]
 class ConfigurationMsg {
 
+  static const configurationLabel = 'configuration';
+  static const serverAndAdminLabel = 'serverAndAdmin';
+  static const groupLabel = 'group';
+  static const synchronizationLabel = 'synchronization';
+  static const generalLabel = 'general';
+  static const directoryServiceLabel = 'directoryService';
+  static const testConnectionLabel = 'testConnection';
+  static const syncAndSaveLabel = 'syncAndSave';
+
   /// Label for configuration
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Configuration': 'Configuration',
-        'Server and Admin': 'Server and Admin',
-        'Group': 'Group',
-        'Synchronization': 'Synchronization',
-        'General': 'General',
-        'Directory Service': 'Directory Service',
-        'Test Connection': 'Test Connection',
-        'Sync and Save': 'Sync and Save',
-        'other': 'Not Defined'})}",
-      name: "configurationLabel",
+  static label(String label) => Intl.select(label, {
+    configurationLabel: 'Configuration',
+    serverAndAdminLabel: 'Server and Admin',
+    groupLabel: 'Group',
+    synchronizationLabel: 'Synchronization',
+    generalLabel: 'General',
+    directoryServiceLabel: 'Directory Service',
+    testConnectionLabel: 'Test Connection',
+    syncAndSaveLabel: 'Sync and Save',
+        'other': 'Not Defined'},
+      name: "ConfigurationMsg_label",
       args: [label],
       // locale: "en",
       desc: "Configuration labels",
@@ -149,8 +206,7 @@ class ConfigurationMsg {
   );
 
   /// Label for status configuration
-  static statusLabel(int indexLabel) => Intl.message(
-      "${Intl.select(indexLabel, {
+  static statusLabel(int indexLabel) => Intl.select(indexLabel, {
         DirectoryServiceStatus.finished.index: 'Finished.',
         DirectoryServiceStatus.errorException.index: 'An exception occured.',
         DirectoryServiceStatus.errorEmailAttributeNotFound.index: 'Email attribute not found.',
@@ -163,8 +219,8 @@ class ConfigurationMsg {
         DirectoryServiceStatus.errorNotBoundInvalidCredentials.index: 'Not binded. Invalid credentials.',
         DirectoryServiceStatus.errorNotConnected.index: 'Not connected.',
         DirectoryServiceStatus.errorUserNotFound.index: 'User not found.',
-        'other': 'Not Defined'})}",
-      name: "statusConfigurationLabel",
+        'other': 'Not Defined'},
+      name: "ConfigurationMsg_statusLabel",
       args: [label],
       // locale: "en",
       desc: "Status Configuration labels",
@@ -172,14 +228,13 @@ class ConfigurationMsg {
   );
 
   /// Label for ldap search scope level configuration
-  static searchScopeLabel(int indexLabel) => Intl.message(
-      "${Intl.select(indexLabel, {
+  static searchScopeLabel(int indexLabel) => Intl.select(indexLabel, {
         0: 'Base Level',
         1: 'One Level',
         2: 'Sub Level',
         3: 'Subordinate Subtree',
-        'other': 'Not Defined'})}",
-      name: "searchScopeLabel",
+        'other': 'Not Defined'},
+      name: "ConfigurationMsg_searchScopeLabel",
       args: [label],
       // locale: "en",
       desc: "Search Scope Configuration labels",
@@ -187,8 +242,7 @@ class ConfigurationMsg {
   );
 
   /// Label for status configuration
-  static eventSyncResultLabel(String label) => Intl.message(
-      "${Intl.select(label, {
+  static eventSyncResultLabel(String label) => Intl.select(label, {
         DirectoryServiceEvent
             .entry.toString(): 'Entry',
         DirectoryServiceEvent
@@ -211,8 +265,8 @@ class ConfigurationMsg {
             .userAccessUpdate.toString(): 'User Access Update',
         DirectoryServiceEvent
             .userAccessDelete.toString(): 'User Access Delete',
-        'other': 'Not Defined'})}",
-      name: "eventSyncResultConfigurationLabel",
+        'other': 'Not Defined'},
+      name: "ConfigurationMsg_eventSyncResultLabel",
       args: [label],
       // locale: "en",
       desc: "Event Sync Result Configuration labels",
@@ -224,22 +278,29 @@ class ConfigurationMsg {
 /// Specific messages and label for [User]
 class UserMsg {
 
+  static const usersLabel = 'users';
+  static const userLabel = 'user';
+  static const editUserLabel = 'editUser';
+  static const addUserLabel = 'addUser';
+  static const profileLabel = 'profile';
+  static const identityLabel = 'identify';
+  static const accessLabel = 'access';
+
   /// Label for user
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Users': 'Users',
-        'User': 'User',
-        'Edit User': 'Edit User',
-        'Add User': 'Add User',
-        'Profile': 'Profile',
-        'Identity': 'Identity',
-        'Access': 'Access',
-        'other': 'Not Defined'})}",
-      name: "userLabel",
-      args: [label],
-      // locale: "en",
-      desc: "User labels",
-      examples: const {"Name": "Name"}
+  static label(String label) => Intl.select(label, {
+    usersLabel: 'Users',
+    userLabel: 'User',
+    editUserLabel: 'Edit User',
+    addUserLabel: 'Add User',
+    profileLabel: 'Profile',
+    identityLabel: 'Identity',
+    accessLabel: 'Access',
+    'other': 'Not Defined'},
+    name: "UserMsg_label",
+    args: [label],
+    // locale: "en",
+    desc: "User labels",
+    examples: const {"Name": "Name"}
   );
 
   static domainOrganizationConfigurationRequiredMsg() => Intl.message("Domain on organization configuration is required.");
@@ -252,13 +313,11 @@ class UserMsg {
 class UserIdentityMsg {
 
   /// Label for user
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-
-        'UserIdentityProvider.internal': 'Internal',
-        'UserIdentityProvider.directoryService': 'Directory Service',
-        'other': 'Not Defined'})}",
-      name: "userLabel",
+  static label(String label) => Intl.select(label, {
+        UserIdentityProvider.internal: 'Internal',
+        UserIdentityProvider.directoryService: 'Directory Service',
+        'other': 'Not Defined'},
+      name: "UserIdentityMsg_label",
       args: [label],
       // locale: "en",
       desc: "User Identity labels",
@@ -270,13 +329,12 @@ class UserIdentityMsg {
 class UserAccessMsg {
 
   /// Label for user
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'SystemRole.superAdmin': 'Super Admin',
-        'SystemRole.admin': 'Admin',
-        'SystemRole.standard': 'Standard',
-        'other': 'Not Defined'})}",
-      name: "userAccessLabel",
+  static label(String label) => Intl.select(label, {
+        SystemRole.superAdmin: 'Super Admin',
+        SystemRole.admin: 'Admin',
+        SystemRole.standard: 'Standard',
+        'other': 'Not Defined'},
+      name: "UserAccessMsg_label",
       args: [label],
       // locale: "en",
       desc: "User Organization Access labels",
@@ -288,20 +346,29 @@ class UserAccessMsg {
 /// Specific messages and label for [Work]
 class WorkMsg {
 
+  static const String worksLabel = 'works';
+  static const String sortedByLabel = 'sortedBy';
+  static const String editWorkLabel = 'editWork';
+  static const String addWorkLabel = 'addWork';
+  static const String objectiveLabel = 'Objective';
+  static const String workItemsOverDueLabel = 'workItemsOverDue';
+  static const String noMatchLabel = 'No Match';
+  static const String selectLabel = 'Select';
+  static const String filterWorksLabel = 'Filter Works';
+
   /// Label for work
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Works': 'Works',
-        'Sorted By': 'Sorted By',
-        'Edit Work': 'Edit Work',
-        'Add Work': 'Add Work',
-        'Objective': 'Objective',
-        'Work Items Over Due': 'Work Items Over Due',
-        'No Match': 'No Match',
-        'Select': 'Select',
-        'Filter Works': 'Filter Works',
-        'other': 'Not Defined'})}",
-      name: "workLabel",
+  static label(String label) => Intl.select(label, {
+    worksLabel: 'Works',
+    sortedByLabel: 'Sorted By',
+    editWorkLabel: 'Edit Work',
+    addWorkLabel: 'Add Work',
+    objectiveLabel: 'Objective',
+    workItemsOverDueLabel: 'Work Items Over Due',
+    noMatchLabel: 'No Match',
+    selectLabel: 'Select',
+    filterWorksLabel: 'Filter Works',
+    'other': 'Not Defined'},
+      name: "WorkMsg_label",
       args: [label],
       // locale: "en",
       desc: "Work labels",
@@ -313,13 +380,16 @@ class WorkMsg {
 /// Specific messages and label for [Stage]
 class StageMsg {
 
+  static const workStagesLabel = 'Work Stages';
+  static const stageLabel = 'Stage';
+  static const selectLabel = 'Select';
+
   /// Label
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Work Stages': 'Work Stages',
-        'Stage': 'Stage',
-        'Select': 'Select',
-        'other': 'Not Defined'})}",
+  static label(String label) => Intl.select(label, {
+    workStagesLabel: 'Work Stages',
+    stageLabel: 'Stage',
+    selectLabel: 'Select',
+     'other': 'Not Defined'},
       name: "stageLabel",
       args: [label],
       // locale: "en",
@@ -334,13 +404,12 @@ class StageMsg {
 class StateMsg {
 
   /// Label
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'State.notStarted': 'Not Started',
-        'State.inProgress': 'In Progress',
-        'State.completed': 'Completed',
-        'other': 'Not Defined'})}",
-      name: "stateLabel",
+  static label(String label) => Intl.select(label, {
+        State.notStarted: 'Not Started',
+        State.inProgress: 'In Progress',
+        State.completed: 'Completed',
+        'other': 'Not Defined'},
+      name: "StateMsg_label",
       args: [label],
       // locale: "en",
       desc: "State labels"
@@ -351,25 +420,33 @@ class StateMsg {
 /// Specific messages and label for [WorkItem]
 class WorkItemMsg {
 
+  static const String workKanbanLabel = 'workKanban';
+  static const String workItemsLabel = 'workItems';
+  static const String editWorkItemLabel = 'editWorkItem';
+  static const String addWorkItemLabel = 'addWorkItem';
+  static const String selectAValueLabel = 'selectAValue';
+  static const String workItemsOverDueLabel = 'workItemsOverDue';
+  static const String checkItemLabel = 'checkItem';
+  static const String noMatchLabel = 'noMatch';
+  static const String dropFileHereLabel = 'dropFileHere';
+
   /// Label for workitem
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Work Kanban': 'Work Kanban',
-        'Work Items': 'Work Items',
-        'Edit Work Item': 'Edit Work Item',
-        'Add Work Item': 'Add Work Item',
-        'Select a value': 'Select a value',
-        'Work Items Over Due': 'Work Items Over Due',
-        'Check Item': 'Check Item',
-        'No Match': 'No Match',
-        'Select a value': 'Select a value',
-        'Drop File Here': 'Drop File Here',
-        'other': 'Not Defined'})}",
-      name: "workItemLabel",
-      args: [label],
-      // locale: "en",
-      desc: "Work Item labels",
-      examples: const {"Name": "Name"}
+  static label(String label) => Intl.select(label, {
+    workKanbanLabel: 'Work Kanban',
+    workItemsLabel: 'Work Items',
+    editWorkItemLabel: 'Edit Work Item',
+    addWorkItemLabel: 'Add Work Item',
+    selectAValueLabel: 'Select a value',
+    workItemsOverDueLabel: 'Work Items Over Due',
+    checkItemLabel: 'Check Item',
+    noMatchLabel: 'No Match',
+    dropFileHereLabel: 'Drop File Here',
+    'other': 'Not Defined'},
+    name: "WorkItemMsg_label",
+    args: [label],
+    // locale: "en",
+    desc: "Work Item labels",
+    examples: const {"Name": "Name"}
   );
 
   static valuePercentIntervalMsg() => Intl.message('The percentual value should be between 0 and 100');
@@ -380,39 +457,48 @@ class WorkItemMsg {
 /// Specific messages and label for [Objective]
 class ObjectiveMsg {
 
+  static const String objectiveLabel = 'objective';
+  static const String objectivesLabel = 'objectives';
+  static const String addObjectiveLabel = 'addObjective';
+  static const String editObjectiveLabel = 'editObjective';
+  static const String progressLabel = 'progress';
+  static const String noMatchLabel = 'noMatch';
+  static const String sortedByLabel = 'sortedBy';
+  static const String ultimateObjectiveLabel = 'ultimateObjective';
+
   /// Label for work
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Objective': 'Objective',
-        'Objectives': 'Objectives',
-        'Edit Objective': 'Edit Objective',
-        'Add Objective': 'Add Objective',
-        'Progress': 'Progress',
-        'No Match': 'No Match',
-        'Sorted By': 'Sorted By',
-        'Ultimate Objective': 'Ultimate Objective',
-        'other': 'Not Defined'})}",
-      name: "objectiveLabel",
-      args: [label],
-      // locale: "en",
-      desc: "Objective labels",
-      examples: const {"Name": "Name"}
+  static label(String label) => Intl.select(label, {
+    objectiveLabel: 'Objective',
+    objectivesLabel: 'Objectives',
+    addObjectiveLabel: 'Add Objective',
+    editObjectiveLabel: 'Edit Objective',
+    progressLabel: 'Progress',
+    noMatchLabel: 'No Match',
+    sortedByLabel: 'Sorted By',
+    ultimateObjectiveLabel: 'Ultimate Objective',
+    'other': 'Not Defined'},
+    name: "objectiveLabel",
+    args: [label],
+    // locale: "en",
+    desc: "Objective labels",
+    examples: const {"Name": "Name"}
   );
 }
 
 /// Specific messages and label for [Map]
 class MapMsg {
 
+  static const String objectivesMapLabel = 'objectivesMapLabel';
+
   /// Label for work
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Objectives Map': 'Objectives Map',
-        'other': 'Not Defined'})}",
-      name: "mapLabel",
-      args: [label],
-      // locale: "en",
-      desc: "Map labels",
-      examples: const {"Leader": "Leader"}
+  static label(String label) => Intl.select(label, {
+    objectivesMapLabel: 'Objectives Map',
+    'other': 'Not Defined'},
+    name: "MapMsg_label",
+    args: [label],
+    // locale: "en",
+    desc: "Map labels",
+    examples: const {"Leader": "Leader"}
   );
 
   static notInformedMsg() => Intl.message("Not Informed!");
@@ -421,12 +507,12 @@ class MapMsg {
 /// Specific messages and label for [Gantt]
 class GanttMsg {
 
+  static const String objectivesGanttLabel = 'objectivesGantt';
   /// Label for work
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Objectives Gantt': 'Objectives Gantt',
-        'other': 'Not Defined'})}",
-      name: "ganttLabel",
+  static label(String label) => Intl.select(label, {
+    objectivesGanttLabel: 'Objectives Gantt',
+        'other': 'Not Defined'},
+      name: "GanttMsg_label",
       args: [label],
       // locale: "en",
       desc: "Gantt labels",
@@ -437,28 +523,43 @@ class GanttMsg {
 /// Specific messages and label for [Measure]
 class MeasureMsg {
 
+  static const String measuresLabel = 'measures';
+  static const String editMeasureLabel ='editMeasure';
+  static const String addMeasureLabel = 'addMeasure';
+  static const String progressLabel = 'progress';
+  static final String startValueLabel =  'startValue';
+  static final String currentValueLabel =  'currentValue';
+  static final String endValueLabel =  'endValue';
+
   /// Label for Measure
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Measures': 'Measures',
-        'Edit Measure': 'Edit Measure',
-        'Add Measure': 'Add Measure',
-        'Progress': 'Progress',
-        'other': 'Not Defined'})}",
-      name: "measureLabel",
+  static label(String label) => Intl.select(label, {
+    measuresLabel: 'Measures',
+    editMeasureLabel: 'Edit Measure',
+    addMeasureLabel: 'Add Measure',
+    progressLabel: 'Progress',
+    startValueLabel: 'Start Value',
+    currentValueLabel: 'Current Value',
+    endValueLabel: 'End Value',
+        'other': 'Not Defined'},
+      name: "MeasureMsg_label",
       args: [label],
       // locale: "en",
       desc: "Measure labels"
   );
 
+  static const String percentLabel = 'percent';
+  static const String moneyLabel = 'money';
+  static const String indexLabel = 'index';
+  static const String unitaryLabel = 'unitary';
+
   /// Label for Measure Unit
   static measureUnitLabel(String label) => Intl.message(
       "${Intl.select(label, {
-        'Percent': 'Percent',
-        'Money': 'Money',
-        'Index': 'Index',
-        'Unitary': 'Unitary'})}",
-      name: "measureUnitLabel",
+        percentLabel: 'Percent',
+        moneyLabel: 'Money',
+        indexLabel: 'Index',
+        unitaryLabel: 'Unitary'})}",
+      name: "MeasureMsg_measureUnitLabel",
       args: [label],
       // locale: "en",
       desc: "Measure Unit labels"
@@ -473,71 +574,57 @@ class MeasureMsg {
 /// Specific messages and label for [MeasureProgress]
 class MeasureProgressMsg {
 
+  static const String measureProgressLabel = 'measureProgress';
+  static const String progressCurrentValuesLabel = 'progressCurrentValues';
+
   /// Label for Measure
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Measure Progress': 'Measure Progress',
-        'Progress Current Values': 'Progress Current Values',
-        'other': 'Not Defined'})}",
-      name: "measureProgressLabel",
-      args: [label],
-      // locale: "en",
-      desc: "Measure Progresslabels"
+  static label(String label) => Intl.select(label, {
+    measureProgressLabel: 'Measure Progress',
+    progressCurrentValuesLabel: 'Progress Current Values',
+    'other': 'Not Defined'},
+    name: "MeasureProgressMsg_label",
+    args: [label],
+    // locale: "en",
+    desc: "Measure Progresslabels"
   );
 
   static valueErrorMsg() => Intl.message("Current value should be between Start and End value.");
   static currentValueExistsAtDate() => Intl.message("Current value already exists at date informed.");
 }
 
-
-
-
-/// Specific messages and label for [ObjectiveHierarchy]
-/*
-class ObjectiveViewsMsg {
-
-  /// Label for work
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Objectives Map': 'Objectives Map',
-        'Objectives Gantt': 'Objectives Gantt',
-        'other': 'Not Defined'})}",
-      name: "objectiveMapLabel",
-      args: [label],
-      // locale: "en",
-      desc: "Objective Map labels"
-  );
-}
-*/
-
 /// Specific messages and label for [Group]
 class GroupMsg {
 
+  static const String groupsLabel = 'groups';
+  static const String editGroupLabel = 'editGroup';
+  static const String addGroupLabel = 'addGroup';
+  static const String noMatchLabel = 'noMatch';
+  static const String activeLabel = 'active';
+  static const String inactiveLabel = 'inactive';
+
   /// Label for Group
-  static label(String label) => Intl.message(
-      "${Intl.select(label, {
-        'Groups': 'Groups',
-        'Edit Group': 'Edit Group',
-        'Add Group': 'Add Group',
-        'No Match': 'No Match',
-        'Active': 'Active',
-        'Inactive': 'Inactive',
-        'other': 'Not Defined'})}",
-      name: "groupLabel",
-      args: [label],
-      // locale: "en",
-      desc: "Group labels",
+  static label(String label) => Intl.select(label, {
+    groupsLabel: 'Groups',
+    editGroupLabel: 'Edit Group',
+    addGroupLabel: 'Add Group',
+    noMatchLabel: 'No Match',
+    activeLabel: 'Active',
+    inactiveLabel: 'Inactive',
+    'other': 'Not Defined'},
+    name: "GroupMsg_label",
+    args: [label],
+    // locale: "en",
+    desc: "Group labels",
   );
 
   /// Label for Group Type
-  static groupTypeLabel(String label) => Intl.message(
-      "${Intl.select(label, {
-        'GroupType.company': 'Company',
-        'GroupType.businessUnit': 'Business Unit',
-        'GroupType.department': 'Department',
-        'GroupType.team': 'Team',
-        'other': 'Not Defined'})}",
-      name: "groupTypeLabel",
+  static groupTypeLabel(String label) => Intl.select(label, {
+        GroupType.company: 'Company',
+        GroupType.businessUnit: 'Business Unit',
+        GroupType.department: 'Department',
+        GroupType.team: 'Team',
+        'other': 'Not Defined'},
+      name: "GroupMsg_groupTypeLabel",
       args: [label],
       // locale: "en",
       desc: "Group type labels"
@@ -547,44 +634,72 @@ class GroupMsg {
 /// Specific messages and label for [Insight]
 class InsightMsg {
 
+  static const String insightsLabel = 'insights';
+  static const String groupLabel = 'group';
+  static const String leaderLabel = 'leader';
+  static const String objectivesOverallLabel = 'objectivesOverall';
+  static const String objectivesMeasuresLabel = 'objectivesAndMeasures';
+  static const String worksWorkItemsLabel = 'worksAndWorkItems';
+  static const String objectivesLabel = 'objectives';
+  static const String objectivesDescriptionLabel = 'objectivesDescription';
+
+  static const String objectivesAchievedLabel = 'objectivesAchieved';
+  static const String objectivesAchievedDescriptionLabel = 'objectivesAchievedDescription';
+  static const String objectivesRequiringAttentionLabel = 'objectivesRequiringAttention';
+  static const String objectivesRequiringAttentionDescriptionLabel = 'objectivesRequiringAttentionDescription';
+  static const String measuresLabel = 'measures';
+  static const String measuresDescriptionLabel = 'measuresDescription';
+  static const String measuresAchievedLabel = 'measuresAchieved';
+  static const String measuresAchievedDescriptionLabel = 'measuresArchievedDescription';
+  static const String measuresRequiringAttentionLabel = 'measuresRequiringAttention';
+  static const String measuresRequiringAttentionDescriptionLabel = 'measuresRequiringAttentionDescription';
+  static const String worksLabel = 'works';
+  static const String worksDescriptionLabel = 'worksDescription';
+  static const String worksCompletedLabel = 'worksCompleted';
+  static const String worksCompletedDescriptionLabel = 'worksCompletedDescription';
+  static const String worksRequiringAttentionLabel = 'worksRequiringAttention';
+  static const String worksRequiringAttentionDescriptionLabel = 'worksRequiringAttentionDescription';
+  static const String workItemsLabel = 'workItems';
+  static const String workItemsDescriptionLabel = 'workItemsDescription';
+  static const String workItemsCompletedLabel = 'workItemsCompleted';
+  static const String workItemsCompletedDescriptionLabel = 'workItemsCompletedDescription';
+  static const String workItemsRequiringAttentionLabel = 'workItemsRequiringAttention';
+  static const String workItemsRequiringAttentionDescriptionLabel = 'workItemsRequiringAttentionDescription';
+
   /// Label for Insight
-  static label(String label) => Intl.message(
-    "${Intl.select(label, {
-      'Group': 'Group',
-      'Leader': 'Leader',
-      'Objectives Overall': 'Objectives Overall',
-      'Objectives and Measures': 'Objectives and Measures',
-      'Works and Work Items': 'Works and Work Items',
-      'Objectives': 'Objectives',
-      'Objectives Achieved': 'Objectives Achieved',
-      'Objectives Requiring Attention': 'Objectives Requiring Attention',
-      'Number total of objectives': 'Number total of objectives',
-      'Objectives over 70% progress': 'Objectives over 70% progress',
-      'Objectives below 30% progress': 'Objectives below 30% progress',
-
-      'Measures': 'Measures',
-      'Measures Achieved': 'Measures Achieved',
-      'Measures Requiring Attention': 'Measures Requiring Attention',
-      'Number total of measures': 'Number total of measures',
-      'Measures over 70% progress': 'Measures over 70% progress',
-      'Measures below 30% progress': 'Measures below 30% progress',
-
-      'Works': 'Works',
-      'Number total of works': 'Number total of works',
-      'Works Completed': 'Works Completed',
-      'Works Requiring Attention': 'Works Requiring Attention',
-      'Works with 100% work items completed': 'Works with 100% work items completed',
-      'Works with over due work items':'Works with over due work items',
-
-      'Work Items': 'Work Items',
-      'Work Items Completed': 'Work Items Completed',
-      'Work Items Requiring Attention': 'Work Items Requiring Attention',
-      'Number total of work items': 'Number total of work items',
-      'Work items with 100% progress': 'Work items with 100% progress',
-      'Over due work items': 'Over due work items',
-
-      'other': 'Not Defined'})}",
-    name: "insightLabel",
+  static label(String label) => Intl.select(label, {
+    insightsLabel: 'Insights',
+    groupLabel: 'Group',
+    leaderLabel: 'Leader',
+    objectivesOverallLabel: 'Objectives Overall',
+    objectivesMeasuresLabel: 'Objectives and Measures',
+    worksWorkItemsLabel: 'Works and Work Items',
+    objectivesLabel: 'Objectives',
+    objectivesDescriptionLabel: 'Number total of objectives',
+    objectivesAchievedLabel: 'Objectives Achieved',
+    measuresAchievedDescriptionLabel: 'Objectives over 70% progress',
+    objectivesRequiringAttentionLabel: 'Objectives Requiring Attention',
+    measuresRequiringAttentionDescriptionLabel: 'Objectives below 30% progress',
+    measuresLabel: 'Measures',
+    measuresDescriptionLabel: 'Number total of measures',
+    measuresAchievedLabel: 'Measures Achieved',
+    measuresAchievedDescriptionLabel: 'Measures over 70% progress',
+    measuresRequiringAttentionLabel: 'Measures Requiring Attention',
+    measuresRequiringAttentionDescriptionLabel: 'Measures below 30% progress',
+    worksLabel: 'Works',
+    worksDescriptionLabel: 'Number total of works',
+    worksCompletedLabel: 'Works Completed',
+    worksCompletedDescriptionLabel: 'Works with 100% work items completed',
+    worksRequiringAttentionLabel: 'Works Requiring Attention',
+    worksRequiringAttentionDescriptionLabel: 'Works with over due work items',
+    workItemsLabel: 'Work Items',
+    workItemsDescriptionLabel: 'Number total of work items',
+    workItemsCompletedLabel: 'Work Items Completed',
+    workItemsCompletedDescriptionLabel: 'Work items with 100% progress',
+    workItemsRequiringAttentionLabel: 'Work Items Requiring Attention',
+    workItemsRequiringAttentionDescriptionLabel: 'Over due work items',
+    'other': 'Not Defined'},
+    name: "InsightMsg_label",
     args: [label],
     // locale: "en",
     desc: "Insight labels",
@@ -595,33 +710,13 @@ class InsightMsg {
 class SystemFunctionMsg {
 
   /// Label in past
-  static inPastLabel(String functionName) => Intl.message(
-    "${Intl.select(functionName, {
-      'SystemFunction.create': 'Created',
-      'SystemFunction.update': 'Updated',
-      'SystemFunction.delete': 'Deleted',
-      'SystemFunction.read': 'Read',
-      'other': 'Not Defined'})}",
-    name: "systemFunctionLabel",
-    args: [functionName],
-    // locale: "en",
-    desc: "System Function labels",
-  );
-}
-
-
-/// Specific messages and label for [SystemFunction]
-class SystemModulenMsg {
-
-  /// Label for Insight
-  static label(String functionName) => Intl.message(
-    "${Intl.select(functionName, {
-      'SystemModule.create': 'Created',
-      'SystemFunction.update': 'Updated',
-      'SystemFunction.delete': 'Deleted',
-      'SystemFunction.read': 'Read',
-      'other': 'Not Defined'})}",
-    name: "systemFunctionLabel",
+  static inPastLabel(String functionName) => Intl.select(functionName, {
+      SystemFunction.create: 'Created',
+      SystemFunction.update: 'Updated',
+      SystemFunction.delete: 'Deleted',
+      SystemFunction.read: 'Read',
+      'other': 'Not Defined'},
+    name: "SystemFunctionMsg_inPastLabel",
     args: [functionName],
     // locale: "en",
     desc: "System Function labels",
@@ -631,24 +726,37 @@ class SystemModulenMsg {
 /// Specific messages and label for [TimelineItem] class field
 class TimelineItemdMsg {
 
+  static const String timelineLabel = 'timeline';
+  static const String dayAgoLabel = 'dayAgo';
+  static const String daysAgoLabel = 'daysAgo';
+  static const String hourAgoLabel = 'hourAgo';
+  static const String hoursAgoLabel = 'hoursAgo';
+  static const String minuteAgoLabel = 'minutesAgo';
+  static const String minutesAgoLabel = 'minutesAgo';
+  static const String secondAgoLabel = 'secondAgo';
+  static const String secondsAgoLabel = 'secondsAgo';
+  static const String valueLabel = 'value';
+  static const String theLabel = 'the';
+  static const String changedFromLabel = 'changedFrom';
+  static const String wasLabel = 'was';
+
   /// Label for Insight
-  static label(String fieldName) => Intl.message(
-    "${Intl.select(fieldName, {
-      'Timeline': 'Timeline',
-      'day ago': 'day ago',
-      'days ago': 'days ago',
-      'hour ago': 'hour ago',
-      'hours ago': 'hours ago',
-      'minute ago': 'minutes ago',
-      'minutes ago': 'minutes ago',
-      'second ago': 'second ago',
-      'seconds ago': 'seconds ago',
-      'value': 'value',
-      'the': 'the',
-      'changed from': 'changed from',
-      'was': 'was',
-      'other': 'Not Defined'})}",
-    name: "labelLabel",
+  static label(String fieldName) => Intl.select(fieldName, {
+    timelineLabel: 'Timeline',
+    dayAgoLabel: 'day ago',
+    daysAgoLabel: 'days ago',
+    hourAgoLabel: 'hour ago',
+    hoursAgoLabel: 'hours ago',
+    minuteAgoLabel: 'minutes ago',
+    minutesAgoLabel: 'minutes ago',
+    secondAgoLabel: 'second ago',
+    secondsAgoLabel: 'seconds ago',
+    valueLabel: 'value',
+    theLabel: 'the',
+    changedFromLabel: 'changed from',
+    wasLabel: 'was',
+      'other': 'Not Defined'},
+    name: "TimelineItemdMsg_label",
     args: [fieldName],
     // locale: "en",
     desc: "TimelineItem labels",

@@ -1,10 +1,10 @@
-import 'package:auge_server/model/general/authorization.dart';
+import 'package:auge_server/domain/general/authorization.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
 import 'package:test/test.dart';
 
-import 'package:auge_server/model/objective/objective.dart' as objective_m;
+import 'package:auge_server/domain/objective/objective.dart' as objective_m;
 import 'package:auge_server/src/util/mail.dart';
-import 'package:auge_server/shared/message/model_messages.dart';
+import 'package:auge_server/shared/message/domain_messages.dart';
 import 'package:auge_server/shared/message/messages.dart';
 import 'package:auge_server/src/protos/generated/objective/objective_measure.pbgrpc.dart';
 
@@ -39,7 +39,7 @@ void main() {
               className,
               SystemFunctionMsg.inPastLabel(systemFunction.toString()),
               objective.name,
-              FieldMsg.label('${objective_m.Objective.className}.${objective_m.Objective.leaderField}')
+              ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)
           )
       );
 

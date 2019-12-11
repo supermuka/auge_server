@@ -14,7 +14,10 @@
 // limitations under the License.
 
 /// Dart implementation of the gRPC helloworld.Greeter server.
+///
+import 'dart:io';
 import 'dart:async';
+//import 'dart:html';
 
 import 'package:grpc/grpc.dart';
 
@@ -35,10 +38,26 @@ import 'package:auge_server/src/service/work/work_stage_service.dart';
 import 'package:auge_server/src/service/work/work_item_service.dart';
 
 Future<void> main(List<String> args) async {
+/*
+  ServerTlsCredentials serverTlsCredentials;
 
+  final String certificateFile = '/etc/auge_server/certificate/cert.pem';
+  final String privateKeyFile = '/etc/auge_server/certificate/privkey.pem';
 
+  if (await File(certificateFile).exists() && await File(privateKeyFile).exists()) {
+    final certificate = File(certificateFile).readAsBytesSync();
 
-  final server = new Server([
+    final privateKey = File(privateKeyFile).readAsBytesSync();
+
+    serverTlsCredentials = ServerTlsCredentials(
+        certificate: certificate, privateKey: privateKey);
+
+    print('Certificate and private key found.');
+  } else {
+    print('Certificate and/or private key not found.');
+  }
+*/
+  final server = Server([
     CommonService(),
     OrganizationService(),
     OrganizationConfigurationService(),
@@ -54,7 +73,7 @@ Future<void> main(List<String> args) async {
     WorkStageService(),
     WorkService(),
     WorkItemService()]);
-  await server.serve(port: 9091);
+  await server.serve(port: 9091 /*, security: serverTlsCredentials */);
 
   print('Server listening on port ${server.port}...');
 }

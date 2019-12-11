@@ -5,10 +5,10 @@ import 'package:auge_server/src/protos/generated/general/user.pb.dart' as user_p
 import 'package:auge_server/src/protos/generated/general/user_access.pb.dart' as user_access_pb;
 import 'package:auge_server/src/protos/generated/general/group.pb.dart' as group_pb;
 
-import 'package:auge_server/model/general/organization.dart' as organization_m;
-import 'package:auge_server/model/general/user.dart' as user_m;
-import 'package:auge_server/model/general/user_access.dart' as user_access_m;
-import 'package:auge_server/model/general/group.dart' as group_m;
+import 'package:auge_server/domain/general/organization.dart' as organization_m;
+import 'package:auge_server/domain/general/user.dart' as user_m;
+import 'package:auge_server/domain/general/user_access.dart' as user_access_m;
+import 'package:auge_server/domain/general/group.dart' as group_m;
 
 void main() {
 

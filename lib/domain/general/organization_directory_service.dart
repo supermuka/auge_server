@@ -2,7 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'package:auge_server/shared/common_utils.dart';
-import 'package:auge_server/model/general/organization.dart';
+import 'package:auge_server/domain/general/organization.dart';
 // ignore_for_file: uri_has_not_been_generated
 import 'package:auge_server/src/protos/generated/general/organization_directory_service.pb.dart' as organization_directory_service_pb;
 

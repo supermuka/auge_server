@@ -5,7 +5,7 @@ import 'package:auge_server/shared/common_utils.dart';
 
 // Proto buffer transport layer.
 // ignore_for_file: uri_has_not_been_generated
-import 'package:auge_server/model/objective/objective.dart';
+import 'package:auge_server/domain/objective/objective.dart';
 import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart' as objective_measure_pb;
 
 /// Domain model class to represent an measure

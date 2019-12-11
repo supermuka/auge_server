@@ -20,10 +20,10 @@ import 'package:auge_server/src/protos/generated/general/organization_directory_
 
 import 'package:auge_server/src/service/general/organization_service.dart';
 
-import 'package:auge_server/model/general/user_identity.dart' as user_identity_m;
-import 'package:auge_server/model/general/organization_directory_service.dart' as organization_directory_service_m;
-import 'package:auge_server/model/general/authorization.dart' show SystemRole, SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
+import 'package:auge_server/domain/general/user_identity.dart' as user_identity_m;
+import 'package:auge_server/domain/general/organization_directory_service.dart' as organization_directory_service_m;
+import 'package:auge_server/domain/general/authorization.dart' show SystemRole, SystemModule, SystemFunction;
+import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
 
 import 'package:auge_server/shared/common_utils.dart';
 

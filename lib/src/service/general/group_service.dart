@@ -17,9 +17,9 @@ import 'package:auge_server/src/service/general/user_service.dart';
 
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
-import 'package:auge_server/model/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/model/general/history_item.dart' as history_item_m;
-import 'package:auge_server/model/general/group.dart' as group_m;
+import 'package:auge_server/domain/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
+import 'package:auge_server/domain/general/group.dart' as group_m;
 
 import 'package:uuid/uuid.dart';
 
