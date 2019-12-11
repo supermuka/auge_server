@@ -125,3 +125,11 @@ BPM VS WORKFLOW.
 https://solutionsreview.com/business-process-management/understanding-the-difference-between-workflow-management-and-bpm/#targetText=Workflow%20Management%20vs.%20BPM,it%20in%20a%20different%20manner.&targetText=BPM%2C%20on%20the%20other%20hand,processes%20to%20improve%20their%20efficiency.
 http://blog.iprocess.com.br/2012/09/bpm-e-workflow-qual-a-diferenca/
 http://garysamuelson.com/blog/?p=1413
+
+
+TRANSLATE
+
+pub run intl_translation:extract_to_arb --output-dir=lib/shared/message/i18n --output-file=intl_domain_messages.arb lib/shared/message/domain_messages.dart
+pub run intl_translation:extract_to_arb --output-dir=lib/shared/message/i18n lib/shared/message/messages.dart
+
+pub run intl_translation:generate_from_arb --output-dir=lib/shared/message/i18n lib/shared/message/domain_messages.dart lib/shared/message/messages.dart lib/shared/message/i18n/intl_domain_messages_en.arb lib/shared/message/i18n/intl_domain_messages_pt_BR.arb  lib/shared/message/i18n/intl_messages_en.arb lib/shared/message/i18n/intl_messages_pt_BR.arb

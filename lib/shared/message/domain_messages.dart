@@ -13,7 +13,6 @@ import 'package:auge_server/domain/work/work.dart';
 import 'package:auge_server/domain/work/work_stage.dart';
 import 'package:auge_server/domain/work/work_item.dart';
 
-
 /// Specific messages and label for [User] class field
 
 class CommonFieldAndValuesMsg {
@@ -142,7 +141,7 @@ class MeasureDomainMsg {
        Measure.decimalsNumberField:'Decimals Number',
        Measure.measureUnitField:'Unit',
        Measure.metricField:'Metric'},
-      name: 'MeasurDomainMsg_fieldLabel',
+      name: 'MeasureDomainMsg_fieldLabel',
       args: [fieldName]);
 }
 
@@ -375,7 +374,7 @@ class UserProfileValueMsg {
       'en_US': 'English - USA',
       'es_ES': 'Espanhol - España',
       'other': 'Not Defined'},
-    name: "userProfileFieldLabel",
+    name: "UserProfileValueMsg_label",
     args: [valueName],
     // locale: "en",
     desc: "User Profile values labels",
