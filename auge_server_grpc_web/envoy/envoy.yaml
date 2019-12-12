@@ -5,28 +5,40 @@ admin:
 
 static_resources:
   listeners:
-  #- name: listener_http
-  #  address:
-  #    socket_address: { address: 0.0.0.0, port_value: 80 }
-  #  filter_chains:
-  #    - filters:
-  #        - name: envoy.http_connection_manager
-  #          config:
-  #            codec_type: auto
-  #            stat_prefix: ingress_http
-  #            route_config:
-  #              virtual_hosts:
-  #                - name: local_service
-  #                  domains: ["localhost","127.0.0.1","auge.levius.com.br"]
-  #                  routes:
-  #                    - match:
-  #                        prefix: "/"
-  #                      redirect:
-  #                        path_redirect: "/"
-  #                        https_redirect: true
-  #            http_filters:
-  #              - name: envoy.router
-  #                config: {}
+  - name: listener_http
+    address:
+      socket_address: { address: 0.0.0.0, port_value: 8440 }
+    filter_chains:
+      - filters:
+          - name: envoy.http_connection_manager
+            config:
+              codec_type: auto
+              stat_prefix: ingress_http
+              route_config:
+                virtual_hosts:
+                  - name: local_service
+                    domains: ["*"]
+                    routes:
+                    - match: { prefix: "/" }
+                      route:
+                        cluster: auge_service
+                        max_grpc_timeout: 30s
+                    cors:
+                      allow_origin: ["http://127.0.0.1:8083"]
+                      #- "https://127.0.0.1:8083"
+                      #- "https://127.0.0.1:8443"
+                      #- "http://127.0.0.1:8083"
+                      #- "https://auge.levius.com.br"
+                      #- "*"
+                      allow_methods: GET, PUT, DELETE, POST, OPTIONS
+                      allow_headers: keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout
+                      max_age: "1728000"
+                      expose_headers: custom-header-1,grpc-status,grpc-message
+                      enabled: true
+              http_filters:
+                - name: envoy.grpc_web
+                - name: envoy.cors
+                - name: envoy.router
   - name: listener_https
     address:
       socket_address: { address: 0.0.0.0, port_value: 8443 }
@@ -47,7 +59,7 @@ static_resources:
                   cluster: auge_service
                   max_grpc_timeout: 30s
               cors:
-                allow_origin: ["http://127.0.0.1:8083", "https://auge.levius.com.br"]
+                allow_origin: ["https://auge.levius.com.br"]
                 #- "https://127.0.0.1:8083"
                 #- "https://127.0.0.1:8443"
                 #- "http://127.0.0.1:8083"
