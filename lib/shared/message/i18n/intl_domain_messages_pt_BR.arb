@@ -1,0 +1,133 @@
+{
+  "@@last_modified": "2019-12-11T08:38:35.249602",
+  "@@locale": "pt_BR",
+  "CommonFieldAndValuesMsg_labelAndValue": "{fieldName,select, true{Sim}false{Não}other{Não Definido}}",
+  "@CommonFieldAndValuesMsg_labelAndValue": {
+    "description": "Common form field labels and values",
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "ClassNameMsg_label": "{className,select, className{Item de Trabalho}other{Não Definido}}",
+  "@ClassNameMsg_label": {
+    "description": "Model class name labels",
+    "type": "text",
+    "placeholders": {
+      "className": {}
+    }
+  },
+  "UserDomainMsg_fieldLabel": "{fieldName,select, nameField{Nome}inactiveField{Inativo}managedByOrganizationField{Gerenciado pela Organização}}",
+  "@UserDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "UserProfileDomainMsg_fieldLabel": "{fieldName,select, eMailField{e-Mail}eMailNotificationField{Notificação de e-Mail}imageField{Imagem}idiomLocaleField{Idioma}}",
+  "@UserProfileDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "UserIdentityDomainMsg_fieldLabel": "{fieldName,select, identificationField{Identificação}passwordField{Senha}providerField{Provedor}providerObjectIdField{Id do Objeto Provedor}}",
+  "@UserIdentityDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "UserAccessDomainMsg_fieldLabel": "{fieldName,select, organizationField{Organização}accessRoleField{Papel de Acesso}}",
+  "@UserAccessDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "GroupDomainMsg_fieldLabel": "{fieldName,select, nameField{Nome}inactiveField{Inativo}leaderField{Líder}groupTypeField{Tipo do Grupo}superGroupField{Super Grupo}membersField{Membros}}",
+  "@GroupDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "ObjectiveDomainMsg_fieldLabel": "{fieldName,select, nameField{Nome}descriptionField{Descrição}groupField{Grupo}alignedToField{Alinhado para}leaderField{Líder}startDateField{Data de Início}endDateField{Data de Término}archivedField{Arquivado}}",
+  "@ObjectiveDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "MeasureUnitDomainMsg_fieldLabel": "{fieldName,select, nameField{Nome}symbolField{Símbolo}}",
+  "@MeasureUnitDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "MeasureDomainMsg_fieldLabel": "{fieldName,select, nameField{Nome}descriptionField{Descrição}endValueField{Valor Final}startValueField{Valor Inicial}currentValueField{Valor Corrente}decimalsNumberField{Número de Decimais}measureUnitField{Unidade}metricField{Métrica}}",
+  "@MeasureDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "MeasureProgressDomainMsg_fieldLabel": "{fieldName,select, dateField{Data}currentValueField{Valor Corrente}commentField{Comentário}}",
+  "@MeasureProgressDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "OrganizationDomainMsg_fieldLabel": "{fieldName,select, nameField{Nome}codeField{CNPJ}}",
+  "@OrganizationDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "WorkDomainMsg_fieldLabel": "{fieldName,select, nameField{Nome}descriptionField{Descrição}groupField{Grupo}leaderField{Líder}workStagesField{Estágios}objectiveField{Objetivo}}",
+  "@WorkDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "WorkStageDomainMsg_fieldLabel": "{fieldName,select, nameField{Nome}stateField{Estado}}",
+  "@WorkStageDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "WorkItemDomainMsg_fieldLabel": "{fieldName,select, nameField{Nome}descriptionField{Descrição}dueDateField{Data Limite}completedField{Finalizado}workStageField{Estágio}assignedToField{Atribuído para}attachmentsField{Anexos}checkItemsField{Itens de Checagem}}",
+  "@WorkItemDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "OrganizationConfigurationDomainMsg_fieldLabel": "{fieldName,select, domainField{Domínio}}",
+  "@OrganizationConfigurationDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "OrganizationDirectoryServiceDomainMsg_fieldLabel": "{fieldName,select, directoryServiceEnabledField{Serviço de Diretório (LDAP) Habilitado}hostAddressField{Endereço Servidor (host)}portField{Porta}sslTlsField{SSL/TLS Habilitado}syncBindDnField{DN Bind - Sincronizar}syncBindPasswordField{Senha Bind (não salva) - Sincronizar}groupSearchDNField{DN de Busca do Grupo}groupSearchScopeField{Escopo de Busca do Grupo}groupSearchFilterField{Filtro de Busca do Grupo}groupMemberUserAttributeField{Attributo de Usuário Membro do Grupo}userSearchDNField{DN de Busca de Usuário}userSearchScopeField{Escopo de Busca de Usuário}userSearchFilterField{Filtro de Busca do Usuário}userProviderObjectIdAttributeField{Attributo (GUID/UUID) do ID de Objeto do Provedor para Usuário}userIdentificationAttributeField{Atributo Identificação (login) do Usuário}userFirstNameAttributeField{Attributo Primeiro Nome do Usuário}userLastNameAttributeField{Atributo Último Nome do Usuário}userEmailAttributeField{Atributo de e-Mail do Usuário}userAttributeForGroupRelationshipField{Atributo do Usuário para Relacionamento com o Grupo}syncIntervalField{Intervalo de Sincronização (horas)}syncLastDateTimeField{Última Data e Hora da Sincronização}syncLastResultField{Último Resultado da Sincronização}}",
+  "@OrganizationDirectoryServiceDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "UserProfileValueMsg_label": "{valueName,select, pt_BR{Português - Brasil}en_US{English - USA}es_ES{Espanhol - España}other{Não Definido}}",
+  "@UserProfileValueMsg_label": {
+    "description": "User Profile values labels",
+    "type": "text",
+    "placeholders": {
+      "valueName": {}
+    }
+  }
+}

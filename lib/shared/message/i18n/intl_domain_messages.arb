@@ -1,0 +1,132 @@
+{
+  "@@last_modified": "2019-12-16T07:15:57.467244",
+  "CommonFieldAndValuesMsg_labelAndValue": "{fieldName,select, true{Yes}false{No}other{Not Defined}}",
+  "@CommonFieldAndValuesMsg_labelAndValue": {
+    "description": "Common form field labels and values",
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "ClassNameMsg_label": "{className,select, className{Work Item}other{Not Defined}}",
+  "@ClassNameMsg_label": {
+    "description": "Model class name labels",
+    "type": "text",
+    "placeholders": {
+      "className": {}
+    }
+  },
+  "UserDomainMsg_fieldLabel": "{fieldNameSelect,select, nameField{Name}inactiveField{Inactive}managedByOrganizationField{Managed By Organization}other{Not Defined}}",
+  "@UserDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "UserProfileDomainMsg_fieldLabel": "{fieldName,select, eMailField{e-Mail}eMailNotificationField{e-Mail Notification}imageField{Image}idiomLocaleField{Idioma}other{Not Defined}}",
+  "@UserProfileDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "UserIdentityDomainMsg_fieldLabel": "{fieldName,select, identificationField{Identification}passwordField{Password}providerField{Provider}providerObjectIdField{Provider Object Id}other{Not Defined}}",
+  "@UserIdentityDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "UserAccessDomainMsg_fieldLabel": "{fieldName,select, organizationField{Organization}accessRoleField{Access Role}other{Not Defined}}",
+  "@UserAccessDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "GroupDomainMsg_fieldLabel": "{fieldName,select, nameField{Name}inactiveField{Inactive}leaderField{Leader}groupTypeField{Group Type}superGroupField{Super Group}membersField{Members}other{Not Defined}}",
+  "@GroupDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "ObjectiveDomainMsg_fieldLabel": "{fieldName,select, nameField{Name}descriptionField{Description}groupField{Group}alignedToField{Aligned To}leaderField{Leader}startDateField{Start Date}endDateField{End Date}archivedField{Archived}other{Not Defined}}",
+  "@ObjectiveDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "MeasureUnitDomainMsg_fieldLabel": "{fieldName,select, nameField{Name}symbolField{Symbol}other{Not Defined}}",
+  "@MeasureUnitDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "MeasureDomainMsg_fieldLabel": "{fieldName,select, nameField{Name}descriptionField{Description}endValueField{End Value}startValueField{Start Value}currentValueField{Current Value}decimalsNumberField{Decimals Number}measureUnitField{Unit}metricField{Metric}other{Not Defined}}",
+  "@MeasureDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "MeasureProgressDomainMsg_fieldLabel": "{fieldName,select, dateField{Date}currentValueField{Current Value}commentField{Comment}other{Not Defined}}",
+  "@MeasureProgressDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "OrganizationDomainMsg_fieldLabel": "{fieldName,select, nameField{Name}codeField{EIN}other{Not Defined}}",
+  "@OrganizationDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "WorkDomainMsg_fieldLabel": "{fieldName,select, nameField{Name}descriptionField{Description}groupField{Group}leaderField{Leader}workStagesField{Stages}objectiveField{Objective}other{Not Defined}}",
+  "@WorkDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "WorkStageDomainMsg_fieldLabel": "{fieldName,select, nameField{Name}stateField{State}other{Not Defined}}",
+  "@WorkStageDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "WorkItemDomainMsg_fieldLabel": "{fieldName,select, nameField{Name}descriptionField{Description}dueDateField{Due Date}completedField{Completed}workStageField{Stage}assignedToField{Assigned To}attachmentsField{Attachments}checkItemsField{Check Items}other{Not Defined}}",
+  "@WorkItemDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "OrganizationConfigurationDomainMsg_fieldLabel": "{fieldName,select, domainField{Domínio}other{Not Defined}}",
+  "@OrganizationConfigurationDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "OrganizationDirectoryServiceDomainMsg_fieldLabel": "{fieldName,select, directoryServiceEnabledField{Directory Service (LDAP) Enabled}hostAddressField{Host Address}portField{Port}sslTlsField{SSL/TLS Enabled}syncBindDnField{Sync Bind DN}syncBindPasswordField{Sync Bind Password (not saved)}groupSearchDNField{Group Search DN}groupSearchScopeField{Group Search Scope}groupSearchFilterField{Group Search Filter}groupMemberUserAttributeField{Group Member User Attribute}userSearchDNField{User Search DN}userSearchScopeField{User Search Scope}userSearchFilterField{User Search Filter}userProviderObjectIdAttributeField{User Provider Object Id (GUID/UUID) Attribute}userIdentificationAttributeField{User Identification (login) Attribute}userFirstNameAttributeField{User First Attribute}userLastNameAttributeField{User Last Attribute}userEmailAttributeField{User Email Attribute}userAttributeForGroupRelationshipField{User Attribute for Group Relationship}syncIntervalField{Sync Interval (hours)}syncLastDateTimeField{Sync Last Date Time}syncLastResultField{Sync Last Result}other{Not Defined}}",
+  "@OrganizationDirectoryServiceDomainMsg_fieldLabel": {
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "UserProfileValueMsg_label": "{valueName,select, pt_BR{Português - Brasil}en_US{English - USA}es_ES{Espanhol - España}other{Not Defined}}",
+  "@UserProfileValueMsg_label": {
+    "description": "User Profile values labels",
+    "type": "text",
+    "placeholders": {
+      "valueName": {}
+    }
+  }
+}

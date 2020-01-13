@@ -1,0 +1,320 @@
+{
+  "@@last_modified": "2019-12-11T09:32:29.322497",
+  "@@locale": "en",
+  "CommonMsg_label": "{label,select, headerTitleLabel{AUGE}headerSubtitleLabel{Objectives, Work and Performance}searchLabel{Search}filterLabel{Filter}moreLabel{more}emptyLabel{empty}other{Not Defined}}",
+  "@CommonMsg_label": {
+    "description": "Common labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "CommonMsg_buttonLabel": "{label,select, applyButtonLabel{Apply}editButtonLabel{Edit}deleteButtonLabel{Delete}saveButtonLabel{Save}cancelButtonLabel{Cancel}closeButtonLabel{Close}uploadButtonLabel{Upload}clearButtonLabel{Clear}loginButtonLabel{Login}logoutButtonLabel{Logout}selectPhotoButtonLabel{Select Photo}other{Not Defined}}",
+  "@CommonMsg_buttonLabel": {
+    "description": "Label for buttons",
+    "type": "text",
+    "placeholders": {
+      "label": {
+        "example": "Edit"
+      }
+    }
+  },
+  "CommonMsg_requiredValueMsg": "Enter with a required value",
+  "@CommonMsg_requiredValueMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_label": "{label,select, domainLabel{name@domain.com}identificationLabel{Identification}passwordLabel{Password}selectLabel{Select}superAdminLabel{Super Admin}organizationLabel{Organization}allOrganizationsLabel{All Organizations}loginLabel{Login}logoutLabel{Logout}other{Not Defined}}",
+  "@AuthMsg_label": {
+    "description": "Authentication and authorizations labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "AuthMsg_informIdentificationPasswordCorrectlyMsg": "Inform an identification and password correctly.",
+  "@AuthMsg_informIdentificationPasswordCorrectlyMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_userNotFoundMsg": "User account not found with the identification and password informed.",
+  "@AuthMsg_userNotFoundMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_organizationNotFoundMsg": "An organization to user account not found.",
+  "@AuthMsg_organizationNotFoundMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_serverApiErrorMsg": "Server not available.",
+  "@AuthMsg_serverApiErrorMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_browserCompatibleErrorMsg": "Browser Compatible: Chrome",
+  "@AuthMsg_browserCompatibleErrorMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AppLayoutMsg_label": "{label,select, organizationLabel{Organization}organizationsLabel{Organizations}adminLabel{Administration}superAdminLabel{Super Administration}userDetailLabel{User Detail}logoutLabel{Logout}ingightsLabel{Insights}worksLabel{Works}objectivesLabel{Objectives}objectivesMapLabel{Objectives Map}objectivesGanttLabel{Objectives Gantt}usersLabel{Users}groupsLabel{Groups}configurationLabel{Configuration}other{Not Defined}}",
+  "@AppLayoutMsg_label": {
+    "description": "Applayout labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "OrganizationMsg_label": "{label,select, organizationsLabel{Organizations}editOrganizationLabel{Edit Organization}addOrganizationLabel{Add Organization}organizationDetailLabel{Organization Detail}other{Not Defined}}",
+  "@OrganizationMsg_label": {
+    "description": "Organization labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "ConfigurationMsg_label": "{label,select, configurationLabel{Configuration}serverAndAdminLabel{Server and Admin}groupLabel{Group}synchronizationLabel{Synchronization}generalLabel{General}directoryServiceLabel{Directory Service}testConnectionLabel{Test Connection}syncAndSaveLabel{Sync and Save}other{Not Defined}}",
+  "@ConfigurationMsg_label": {
+    "description": "Configuration labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "ConfigurationMsg_statusLabel": "{label,select, finished{Finished.}errorException{An exception occured.}errorEmailAttributeNotFound{Email attribute not found.}errorFirstNameAttributeNotFound{First name attribute not found.}errorGroupOrGroupMemberNotFound{Group or group member not found.}errorGroupFilterInvalid{Group filter invalid.}errorLastNameAttributeNotFound{Last name attribute not found.}errorIdentificationAttributeNotFound{Identification (login) attribute not found.}errorUserAttributeForGroupRelationshipNotFound{User attribute for group relationship not found.}errorNotBoundInvalidCredentials{Not binded. Invalid credentials.}errorNotConnected{Not connected.}errorUserNotFound{User not found.}other{Not Defined}}",
+  "@ConfigurationMsg_statusLabel": {
+    "description": "Status Configuration labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "ConfigurationMsg_searchScopeLabel": "{label,select, baseLevel{Base Level}oneLevel{One Level}subLevel{Sub Level}subordinateSubtree{Subordinate Subtree}other{Not Defined}}",
+  "@ConfigurationMsg_searchScopeLabel": {
+    "description": "Search Scope Configuration labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "ConfigurationMsg_eventSyncResultLabel": "{label,select, entry{Entry}skipEntry{Skip Entry}userInsert{User Insert}userUpdate{User Update}userDelete{User Delete}userIdentityInsert{User Identity Insert}userIdentityUpdate{User Identity Update}userIdentityDelete{User Identity Delete}userAccessInsert{User Access Insert}userAccessUpdate{User Access Update}userAccessDelete{User Access Delete}other{Not Defined}}",
+  "@ConfigurationMsg_eventSyncResultLabel": {
+    "description": "Event Sync Result Configuration labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "UserMsg_label": "{label,select, usersLabel{Users}userLabel{User}editUserLabel{Edit User}addUserLabel{Add User}profileLabel{Profile}identityLabel{Identity}accessLabel{Access}other{Not Defined}}",
+  "@UserMsg_label": {
+    "description": "User labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "UserMsg_domainOrganizationConfigurationRequiredMsg": "Domain on organization configuration is required.",
+  "@UserMsg_domainOrganizationConfigurationRequiredMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "UserMsg_identificationRequiredMsg": "Identification is required.",
+  "@UserMsg_identificationRequiredMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "UserMsg_invalidIdentificationMsg": "Identification format invalid. Valid format example: id@domain.com",
+  "@UserMsg_invalidIdentificationMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "UserIdentityMsg_label": "{label,select, internal{Internal}directoryService{Directory Service}other{Not Defined}}",
+  "@UserIdentityMsg_label": {
+    "description": "User Identity labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "UserAccessMsg_label": "{label,select, superAdmin{Super Admin}admin{Admin}standard{Standard}other{Not Defined}}",
+  "@UserAccessMsg_label": {
+    "description": "User Organization Access labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "WorkMsg_label": "{label,select, worksLabel{Works}sortedByLabel{Sorted By}editWorkLabel{Edit Work}addWorkLabel{Add Work}objectiveLabel{Objective}workItemsOverDueLabel{Work Items Over Due}noMatchLabel{No Match}selectLabel{Select}filterWorksLabel{Filter Works}other{Not Defined}}",
+  "@WorkMsg_label": {
+    "description": "Work labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "StageMsg_label": "{label,select, workStagesLabel{Work Stages}stageLabel{Stage}selectLabel{Select}other{Not Defined}}",
+  "@StageMsg_label": {
+    "description": "Stage labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "StageMsg_stateNotInfomedMsg": "State not informed.",
+  "@StageMsg_stateNotInfomedMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "StateMsg_label": "{label,select, notStarted{Not Started}inProgress{In Progress}completed{Completed}other{Not Defined}}",
+  "@StateMsg_label": {
+    "description": "State labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "WorkItemMsg_label": "{label,select, workKanbanLabel{Work Kanban}workItemsLabel{Work Items}editWorkItemLabel{Edit Work Item}addWorkItemLabel{Add Work Item}selectAValueLabel{Select a value}workItemsOverDueLabel{Work Items Over Due}checkItemLabel{Check Item}noMatchLabel{No Match}dropFileHereLabel{Drop File Here}other{Not Defined}}",
+  "@WorkItemMsg_label": {
+    "description": "Work Item labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "WorkItemMsg_valuePercentIntervalMsg": "The percentual value should be between 0 and 100",
+  "@WorkItemMsg_valuePercentIntervalMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "ObjectiveMsg_label": "{label,select, objectiveLabel{Objective}objectivesLabel{Objectives}addObjectiveLabel{Add Objective}editObjectiveLabel{Edit Objective}progressLabel{Progress}noMatchLabel{No Match}sortedByLabel{Sorted By}ultimateObjectiveLabel{Ultimate Objective}other{Not Defined}}",
+  "@ObjectiveMsg_label": {
+    "description": "Objective labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "MapMsg_label": "{label,select, objectivesMapLabel{Objectives Map}other{Not Defined}}",
+  "@MapMsg_label": {
+    "description": "Map labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "MapMsg_notInformedMsg": "Not Informed!",
+  "@MapMsg_notInformedMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "GanttMsg_label": "{label,select, objectivesGanttLabel{Objectives Gantt}other{Not Defined}}",
+  "@GanttMsg_label": {
+    "description": "Gantt labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "MeasureMsg_label": "{label,select, measuresLabel{Measures}editMeasureLabel{Edit Measure}addMeasureLabel{Add Measure}progressLabel{Progress}startValueLabel{Start Value}currentValueLabel{Current Value}endValueLabel{End Value}other{Not Defined}}",
+  "@MeasureMsg_label": {
+    "description": "Measure labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "MeasureMsg_measureUnitLabel": "{label,select, percentLabel{Percent}moneyLabel{Money}indexLabel{Index}unitaryLabel{Unitary}}",
+  "@MeasureMsg_measureUnitLabel": {
+    "description": "Measure Unit labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "MeasureMsg_valueErrorMsg": "Incorret value. Possible reasons: a) Current value should be between Start and End Value. b) Start and End Value are equals.",
+  "@MeasureMsg_valueErrorMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MeasureMsg_currentDateNotBetweenStartEndDate": "Measure progress date should be between objective start date {startDateFormated} and objective end date {endDateFormated}.",
+  "@MeasureMsg_currentDateNotBetweenStartEndDate": {
+    "type": "text",
+    "placeholders": {
+      "startDateFormated": {},
+      "endDateFormated": {}
+    }
+  },
+  "MeasureMsg_decimalNumberErrorMsg": "Decimal number should be between 0 and 5.",
+  "@MeasureMsg_decimalNumberErrorMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MeasureProgressMsg_label": "{label,select, measureProgressLabel{Measure Progress}progressCurrentValuesLabel{Progress Current Values}other{Not Defined}}",
+  "@MeasureProgressMsg_label": {
+    "description": "Measure Progresslabels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "MeasureProgressMsg_valueErrorMsg": "Current value should be between Start and End value.",
+  "@MeasureProgressMsg_valueErrorMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MeasureProgressMsg_currentValueExistsAtDate": "Current value already exists at date informed.",
+  "@MeasureProgressMsg_currentValueExistsAtDate": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "GroupMsg_label": "{label,select, groupsLabel{Groups}editGroupLabel{Edit Group}addGroupLabel{Add Group}noMatchLabel{No Match}activeLabel{Active}inactiveLabel{Inactive}other{Not Defined}}",
+  "@GroupMsg_label": {
+    "description": "Group labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "GroupMsg_groupTypeLabel": "{label,select, company{Company}businessUnit{Business Unit}department{Department}team{Team}other{Not Defined}}",
+  "@GroupMsg_groupTypeLabel": {
+    "description": "Group type labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "InsightMsg_label": "{label,select, insightsLabel{Insights}groupLabel{Group}leaderLabel{Leader}objectivesOverallLabel{Objectives Overall}objectivesMeasuresLabel{Objectives and Measures}worksWorkItemsLabel{Works and Work Items}objectivesLabel{Objectives}objectivesDescriptionLabel{Number total of objectives}objectivesAchievedLabel{Objectives Achieved}measuresAchievedDescriptionLabel{Measures over 70% progress}objectivesRequiringAttentionLabel{Objectives Requiring Attention}measuresRequiringAttentionDescriptionLabel{Measures below 30% progress}measuresLabel{Measures}measuresDescriptionLabel{Number total of measures}measuresAchievedLabel{Measures Achieved}measuresRequiringAttentionLabel{Measures Requiring Attention}worksLabel{Works}worksDescriptionLabel{Number total of works}worksCompletedLabel{Works Completed}worksCompletedDescriptionLabel{Works with 100% work items completed}worksRequiringAttentionLabel{Works Requiring Attention}worksRequiringAttentionDescriptionLabel{Works with over due work items}workItemsLabel{Work Items}workItemsDescriptionLabel{Number total of work items}workItemsCompletedLabel{Work Items Completed}workItemsCompletedDescriptionLabel{Work items with 100% progress}workItemsRequiringAttentionLabel{Work Items Requiring Attention}workItemsRequiringAttentionDescriptionLabel{Over due work items}other{Not Defined}}",
+  "@InsightMsg_label": {
+    "description": "Insight labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "SystemFunctionMsg_inPastLabel": "{functionName,select, create{Created}update{Updated}delete{Deleted}read{Read}other{Not Defined}}",
+  "@SystemFunctionMsg_inPastLabel": {
+    "description": "System Function labels",
+    "type": "text",
+    "placeholders": {
+      "functionName": {}
+    }
+  },
+  "TimelineItemdMsg_label": "{fieldName,select, timelineLabel{Timeline}dayAgoLabel{day ago}daysAgoLabel{days ago}hourAgoLabel{hour ago}hoursAgoLabel{hours ago}minuteAgoLabel{minute ago}minutesAgoLabel{minutes ago}secondAgoLabel{second ago}secondsAgoLabel{seconds ago}valueLabel{value}theLabel{the}changedFromLabel{changed from}wasLabel{was}other{Not Defined}}",
+  "@TimelineItemdMsg_label": {
+    "description": "TimelineItem labels",
+    "type": "text",
+    "placeholders": {
+      "fieldName": {}
+    }
+  },
+  "MailMsg_youIsReceivingThisEMailBecauseYouIsThe": "You is receiving this e-mail because you is the",
+  "@MailMsg_youIsReceivingThisEMailBecauseYouIsThe": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MailMsg_viewOrReplyIt": "View or reply it on Auge",
+  "@MailMsg_viewOrReplyIt": {
+    "type": "text",
+    "placeholders": {}
+  }
+}
