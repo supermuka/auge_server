@@ -32,16 +32,16 @@ abstract class AuthorizationPolicy {
 
       // Find Function
       if (systemFunction != null && allowAuthorizationRoleObject != null) {
-        if (allowAuthorizationRoleObject.authorizationFunctionContraints
+        if (allowAuthorizationRoleObject.authorizationFunctionConstraints
             .containsKey(systemFunction)) {
           isFunctionAuthorized = true;
 
           // Find Constraints
           if (systemConstraint != null && allowAuthorizationRoleObject
-              .authorizationFunctionContraints[systemFunction] != null) {
+              .authorizationFunctionConstraints[systemFunction] != null) {
 
             if (allowAuthorizationRoleObject
-                .authorizationFunctionContraints[systemFunction]
+                .authorizationFunctionConstraints[systemFunction]
                 .indexWhere((allow) => allow == systemConstraint) !=
                 -1) {
               isConstraintAuthorized = true;
@@ -64,7 +64,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
     authorizations.add(new Authorization()
       ..authorizationRole = SystemRole.superAdmin
       ..authorizationModule = SystemModule.users
-      ..authorizationFunctionContraints =
+      ..authorizationFunctionConstraints =
       {SystemFunction.create: [SystemRole.superAdmin, SystemRole.admin, SystemRole.standard],
         SystemFunction.read: [SystemRole.superAdmin, SystemRole.admin, SystemRole.standard],
         SystemFunction.update: [SystemRole.superAdmin, SystemRole.admin, SystemRole.standard],
@@ -76,7 +76,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
     authorizations.add(new Authorization()
       ..authorizationRole = SystemRole.superAdmin
       ..authorizationModule = SystemModule.groups
-      ..authorizationFunctionContraints =
+      ..authorizationFunctionConstraints =
       {SystemFunction.create: [],
         SystemFunction.read: [],
         SystemFunction.update: [],
@@ -88,7 +88,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
     authorizations.add(new Authorization()
       ..authorizationRole = SystemRole.superAdmin
       ..authorizationModule = SystemModule.organization
-      ..authorizationFunctionContraints =
+      ..authorizationFunctionConstraints =
       {
         SystemFunction.read: [],
         SystemFunction.update: []
@@ -111,7 +111,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
     authorizations.add(new Authorization()
       ..authorizationRole = SystemRole.admin
       ..authorizationModule = SystemModule.users
-      ..authorizationFunctionContraints =
+      ..authorizationFunctionConstraints =
       {SystemFunction.create: [
         SystemRole.standard],
         SystemFunction.read: [],
@@ -125,7 +125,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
     authorizations.add(new Authorization()
       ..authorizationRole = SystemRole.admin
       ..authorizationModule = SystemModule.groups
-      ..authorizationFunctionContraints =
+      ..authorizationFunctionConstraints =
       {SystemFunction.create: [],
         SystemFunction.read: [],
         SystemFunction.update: [],
@@ -137,7 +137,7 @@ class GeneralAuthorizationPolicy extends AuthorizationPolicy {
     authorizations.add(new Authorization()
       ..authorizationRole = SystemRole.standard
       ..authorizationModule = SystemModule.user_profile
-      ..authorizationFunctionContraints = {SystemFunction.read: null, SystemFunction.update: null}
+      ..authorizationFunctionConstraints = {SystemFunction.read: null, SystemFunction.update: null}
     );
   }
 }

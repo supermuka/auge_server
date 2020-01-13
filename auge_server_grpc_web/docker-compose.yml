@@ -6,6 +6,8 @@ services:
     build:
       context: ./
       dockerfile: ./docker/auge_server/Dockerfile
+    expose:
+      - "9091"
     ports:
       - "9091:9091"
   envoy:
@@ -13,6 +15,9 @@ services:
       context: ./
       dockerfile:  ./docker/envoy/Dockerfile
     image: grpcweb/envoy
+    expose:
+      - "8440"
+      - "8443"
     ports:
       - "8440:8440"
       - "8443:8443"

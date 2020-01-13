@@ -30,9 +30,9 @@ class Authorization {
 
   // Key is the function
   // Value contain constraints, if exist.
-  Map<SystemFunction, List<dynamic>> authorizationFunctionContraints;
+  Map<SystemFunction, List<dynamic>> authorizationFunctionConstraints;
 
   Authorization() {
-    authorizationFunctionContraints = Map();
+    authorizationFunctionConstraints = Map();
   }
 }

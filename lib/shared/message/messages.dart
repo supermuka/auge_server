@@ -83,7 +83,7 @@ class AuthMsg {
   /// Label for [Auth]
   static label(String label) => Intl.select(label, {
     headerTitleLabel: 'AUGE',
-    headerSubtitleLabel: 'Objectives, Work and Performance Management',
+    headerSubtitleLabel: 'Objectives, Work and Performance',
     domainLabel: 'name@domain.com',
     identificationLabel: 'Identification',
     passwordLabel: 'Password',
@@ -559,12 +559,12 @@ class MeasureMsg {
   static const String unitaryLabel = 'unitaryLabel';
 
   /// Label for Measure Unit
-  static measureUnitLabel(String label) => Intl.message(
-      "${Intl.select(label, {
+  static measureUnitLabel(String label) => Intl.select(label, {
         percentLabel: 'Percent',
         moneyLabel: 'Money',
         indexLabel: 'Index',
-        unitaryLabel: 'Unitary'})}",
+        unitaryLabel: 'Unitary',
+      'other': 'Not Defined'},
       name: "MeasureMsg_measureUnitLabel",
       args: [label],
       // locale: "en",

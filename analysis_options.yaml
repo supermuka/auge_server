@@ -3,6 +3,14 @@
 #   exclude:
 #     - path/to/excluded/files/**
 
+analyzer:
+  exclude:
+    #- test/_data/p4/lib/lib1.dart
+    #- test/_data/p5/p5.dart
+    #- test/_data/bad*.dart
+    #- test/_brokendata/**
+    - db/**
+
 # Lint rules and documentation, see
 
 linter:

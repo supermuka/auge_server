@@ -9,8 +9,9 @@ environment:
 
 dependencies:
   #args: ^1.5.0
+  #analyzer: ^0.39.2+1
   intl: ^0.15.0
-  intl_translation: ^0.17.7
+  #intl_translation: ^0.17.7
   #shelf: ^0.7.3+3
   #rpc: ^0.6.0
   fixnum: ^0.10.9
@@ -48,6 +49,7 @@ dependencies:
 
 dev_dependencies:
   test: ^1.6.3
+  intl_translation: ^0.17.7
 
 dependency_overrides:
   #googleapis: 0.53.0

@@ -13,6 +13,9 @@ import 'package:auge_server/domain/work/work.dart';
 import 'package:auge_server/domain/work/work_stage.dart';
 import 'package:auge_server/domain/work/work_item.dart';
 
+const fieldSuffix = 'Field';
+const nameSuffix = 'Name';
+
 /// Specific messages and label for [User] class field
 
 class CommonFieldAndValuesMsg {
@@ -32,7 +35,10 @@ class CommonFieldAndValuesMsg {
 class ClassNameMsg {
 
   /// Label for Field User
-  static label(String className) => Intl.select(className, {
+  static label(String className) {
+    String classNameSelect = '${className}${nameSuffix}';
+
+    return Intl.select(classNameSelect, {
       User.className: 'User',
       UserProfile.className: 'User Profile',
       UserAccess.className: 'User and Profiles',
@@ -44,200 +50,296 @@ class ClassNameMsg {
       WorkStage.className: 'Stage',
       WorkItem.className: 'Work Item',
       'other': 'Not Defined'},
-    name: "ClassNameMsg_label",
-    args: [className],
-    // locale: "en",
-    desc: "Model class name labels",
-  );
+      name: "ClassNameMsg_label",
+      args: [className],
+      // locale: "en",
+      desc: "Model class name labels",
+    );
+  }
 }
+
+
 
 /// Specific messages and label for [User] class field
 class UserDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {User.nameField: 'Name',
-       User.inactiveField: 'Inactive',
-       User.managedByOrganizationField: 'Managed By Organization'},
-      name: 'UserDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    return Intl.select(fieldNameSelect,
+        {User.nameField: 'Name',
+          User.inactiveField: 'Inactive',
+          User.managedByOrganizationField: 'Managed By Organization',
+          'other': 'Not Defined'},
+        name: 'UserDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [UserProfile] class field
 class UserProfileDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {UserProfile.eMailField: 'e-Mail',
-        UserProfile.eMailNotificationField: 'e-Mail Notification',
-        UserProfile.imageField:'Image',
-        UserProfile.idiomLocaleField:'Idioma'},
-      name: 'UserProfileDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    return Intl.select(fieldNameSelect,
+        {UserProfile.eMailField: 'e-Mail',
+          UserProfile.eMailNotificationField: 'e-Mail Notification',
+          UserProfile.imageField: 'Image',
+          UserProfile.idiomLocaleField: 'Idioma',
+          'other': 'Not Defined'},
+        name: 'UserProfileDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [UserIdentity] class field
 class UserIdentityDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {UserIdentity.identificationField: 'Identification',
-        UserIdentity.passwordField: 'Password',
-        UserIdentity.providerField: 'Provider',
-        UserIdentity.providerObjectIdField: 'Provider Object Id',},
-      name: 'UserIdentityDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    return Intl.select(fieldNameSelect,
+        {UserIdentity.identificationField: 'Identification',
+          UserIdentity.passwordField: 'Password',
+          UserIdentity.providerField: 'Provider',
+          UserIdentity.providerObjectIdField: 'Provider Object Id',
+          'other': 'Not Defined'},
+        name: 'UserIdentityDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [UserAccess] class field
 class UserAccessDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {UserAccess.organizationField:'Organization',
-       UserAccess.accessRoleField:'Access Role',},
-      name: 'UserAccessDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    return Intl.select(fieldNameSelect,
+        {UserAccess.organizationField: 'Organization',
+          UserAccess.accessRoleField: 'Access Role',
+          'other': 'Not Defined'},
+        name: 'UserAccessDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [Group] class field
 class GroupDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {Group.nameField:'Name',
-       Group.inactiveField:'Inactive',
-       Group.leaderField:'Leader',
-       Group.groupTypeField:'Group Type',
-       Group.superGroupField:'Super Group',
-       Group.leaderField: 'Leader',
-       Group.membersField:'Members',},
-      name: 'GroupDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    return Intl.select(fieldNameSelect,
+        {Group.nameField: 'Name',
+          Group.inactiveField: 'Inactive',
+          Group.leaderField: 'Leader',
+          Group.groupTypeField: 'Group Type',
+          Group.superGroupField: 'Super Group',
+          Group.leaderField: 'Leader',
+          Group.membersField: 'Members',
+          'other': 'Not Defined'},
+        name: 'GroupDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [Objective] class field
 class ObjectiveDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {Objective.nameField:'Name',
-       Objective.descriptionField:'Description',
-       Objective.groupField:'Group',
-       Objective.alignedToField:'Aligned To',
-       Objective.leaderField:'Leader',
-       Objective.startDateField:'Start Date',
-       Objective.endDateField:'End Date',
-       Objective.archivedField:'Archived',},
-      name: 'ObjectiveDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    Intl.select(fieldNameSelect,
+        {Objective.nameField: 'Name',
+          Objective.descriptionField: 'Description',
+          Objective.groupField: 'Group',
+          Objective.alignedToField: 'Aligned To',
+          Objective.leaderField: 'Leader',
+          Objective.startDateField: 'Start Date',
+          Objective.endDateField: 'End Date',
+          Objective.archivedField: 'Archived',
+          'other': 'Not Defined'},
+        name: 'ObjectiveDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [MeasureUnit] class field
 class MeasureUnitDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {MeasureUnit.nameField: 'Name',
-       MeasureUnit.symbolField :'Symbol',},
-      name: 'MeasureUnitDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    Intl.select(fieldNameSelect,
+        {MeasureUnit.nameField: 'Name',
+          MeasureUnit.symbolField: 'Symbol',
+          'other': 'Not Defined'},
+        name: 'MeasureUnitDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [Measure] class field
 class MeasureDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {Measure.nameField:'Name',
-       Measure.descriptionField:'Description',
-       Measure.endValueField:'End Value',
-       Measure.startValueField:'Start Value',
-       Measure.currentValueField:'Current Value',
-       Measure.decimalsNumberField:'Decimals Number',
-       Measure.measureUnitField:'Unit',
-       Measure.metricField:'Metric'},
-      name: 'MeasureDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    Intl.select(fieldNameSelect,
+        {Measure.nameField: 'Name',
+          Measure.descriptionField: 'Description',
+          Measure.endValueField: 'End Value',
+          Measure.startValueField: 'Start Value',
+          Measure.currentValueField: 'Current Value',
+          Measure.decimalsNumberField: 'Decimals Number',
+          Measure.measureUnitField: 'Unit',
+          Measure.metricField: 'Metric',
+          'other': 'Not Defined'},
+        name: 'MeasureDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [MeasureProgress] class field
 class MeasureProgressDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {MeasureProgress.dateField:'Date',
-      MeasureProgress.currentValueField:'Current Value',
-      MeasureProgress.commentField:'Comment'},
-      name: 'MeasureProgressDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    Intl.select(fieldNameSelect,
+        {MeasureProgress.dateField: 'Date',
+          MeasureProgress.currentValueField: 'Current Value',
+          MeasureProgress.commentField: 'Comment',
+          'other': 'Not Defined'},
+        name: 'MeasureProgressDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [Organization] class field
 class OrganizationDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-  {Organization.nameField:'Name',
-   Organization.codeField:'EIN'},
-  name: 'OrganizationDomainMsg_fieldLabel',
-  args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    return Intl.select(fieldNameSelect,
+        {Organization.nameField: 'Name',
+          Organization.codeField: 'EIN',
+          'other': 'Not Defined'},
+        name: 'OrganizationDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [Work] class field
 class WorkDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {Work.nameField:'Name',
-       Work.descriptionField:'Description',
-       Work.groupField:'Group',
-       Work.leaderField:'Leader',
-       Work.workStagesField:'Stages',
-       Work.objectiveField:'Objective',},
-      name: 'WorkDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+   return Intl.select(fieldNameSelect,
+        {Work.nameField: 'Name',
+          Work.descriptionField: 'Description',
+          Work.groupField: 'Group',
+          Work.leaderField: 'Leader',
+          Work.workStagesField: 'Stages',
+          Work.objectiveField: 'Objective',
+          'other': 'Not Defined'},
+        name: 'WorkDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [WorkStage] class field
 class WorkStageDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {WorkStage.nameField:'Name',
-       WorkStage.stateField:'State',},
-      name: 'WorkStageDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+    Intl.select(fieldNameSelect,
+        {WorkStage.nameField: 'Name',
+          WorkStage.stateField: 'State',
+          'other': 'Not Defined'},
+        name: 'WorkStageDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [WorkItem] class field
 class WorkItemDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {WorkItem.nameField:'Name',
-       WorkItem.descriptionField:'Description',
-       WorkItem.dueDateField:'Due Date',
-       WorkItem.completedField:'Completed',
-       WorkItem.workStageField:'Stage',
-       WorkItem.assignedToField:'Assigned To',
-       WorkItem.attachmentsField:'Attachments',
-       WorkItem.checkItemsField:'Check Items',},
-      name: 'WorkItemDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+
+   return Intl.select(fieldNameSelect,
+        {WorkItem.nameField: 'Name',
+          WorkItem.descriptionField: 'Description',
+          WorkItem.dueDateField: 'Due Date',
+          WorkItem.completedField: 'Completed',
+          WorkItem.workStageField: 'Stage',
+          WorkItem.assignedToField: 'Assigned To',
+          WorkItem.attachmentsField: 'Attachments',
+          WorkItem.checkItemsField: 'Check Items',
+          'other': 'Not Defined'},
+        name: 'WorkItemDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [OrganizationConfiguration] class field
 class OrganizationConfigurationDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      {OrganizationConfiguration.domainField:'Domínio'},
-      name: 'OrganizationConfigurationDomainMsg_fieldLabel',
-      args: [fieldName]);
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    return Intl.select(fieldNameSelect,
+        {OrganizationConfiguration.domainField: 'Domínio',
+          'other': 'Not Defined'},
+        name: 'OrganizationConfigurationDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /// Specific messages and label for [OrganizationDirectoryService] class field
 class OrganizationDirectoryServiceDomainMsg {
-  static String fieldLabel(String fieldName) => Intl.select(fieldName,
-      { OrganizationDirectoryService.directoryServiceEnabledField:'Directory Service (LDAP) Enabled',
-        OrganizationDirectoryService.hostAddressField:'Host Address',
-        OrganizationDirectoryService.portField:'Port',
-        OrganizationDirectoryService.sslTlsField:'SSL/TLS Enabled',
-        OrganizationDirectoryService.syncBindDnField:'Sync Bind DN',
-        OrganizationDirectoryService.syncBindPasswordField:'Sync Bind Password (not saved)',
+  static String fieldLabel(String fieldName) {
+    String fieldNameSelect = '${fieldName}${fieldSuffix}';
 
-        OrganizationDirectoryService.groupSearchDNField:'Group Search DN',
-        OrganizationDirectoryService.groupSearchScopeField:'Group Search Scope',
-        OrganizationDirectoryService.groupSearchFilterField:'Group Search Filter',
-        OrganizationDirectoryService.groupMemberUserAttributeField:'Group Member User Attribute',
+    return Intl.select(fieldNameSelect,
+        {
+          OrganizationDirectoryService
+              .directoryServiceEnabledField: 'Directory Service (LDAP) Enabled',
+          OrganizationDirectoryService.hostAddressField: 'Host Address',
+          OrganizationDirectoryService.portField: 'Port',
+          OrganizationDirectoryService.sslTlsField: 'SSL/TLS Enabled',
+          OrganizationDirectoryService.syncBindDnField: 'Sync Bind DN',
+          OrganizationDirectoryService
+              .syncBindPasswordField: 'Sync Bind Password (not saved)',
 
-        OrganizationDirectoryService.userSearchDNField:'User Search DN',
-        OrganizationDirectoryService.userSearchScopeField:'User Search Scope',
-        OrganizationDirectoryService.userSearchFilterField:'User Search Filter',
-        OrganizationDirectoryService.userProviderObjectIdAttributeField:'User Provider Object Id (GUID/UUID) Attribute',
-        OrganizationDirectoryService.userIdentificationAttributeField:'User Identification (login) Attribute',
-        OrganizationDirectoryService.userFirstNameAttributeField:'User First Attribute',
-        OrganizationDirectoryService.userLastNameAttributeField:'User Last Attribute',
-        OrganizationDirectoryService.userEmailAttributeField:'User Email Attribute',
-        OrganizationDirectoryService.userAttributeForGroupRelationshipField:'User Attribute for Group Relationship',
-        OrganizationDirectoryService.syncIntervalField:'Sync Interval (hours)',
-        OrganizationDirectoryService.syncLastDateTimeField:'Sync Last Date Time',
-        OrganizationDirectoryService.syncLastResultField:'Sync Last Result',},
-      name: 'OrganizationDirectoryServiceDomainMsg_fieldLabel',
-      args: [fieldName]);
+          OrganizationDirectoryService.groupSearchDNField: 'Group Search DN',
+          OrganizationDirectoryService
+              .groupSearchScopeField: 'Group Search Scope',
+          OrganizationDirectoryService
+              .groupSearchFilterField: 'Group Search Filter',
+          OrganizationDirectoryService
+              .groupMemberUserAttributeField: 'Group Member User Attribute',
+
+          OrganizationDirectoryService.userSearchDNField: 'User Search DN',
+          OrganizationDirectoryService
+              .userSearchScopeField: 'User Search Scope',
+          OrganizationDirectoryService
+              .userSearchFilterField: 'User Search Filter',
+          OrganizationDirectoryService
+              .userProviderObjectIdAttributeField: 'User Provider Object Id (GUID/UUID) Attribute',
+          OrganizationDirectoryService
+              .userIdentificationAttributeField: 'User Identification (login) Attribute',
+          OrganizationDirectoryService
+              .userFirstNameAttributeField: 'User First Attribute',
+          OrganizationDirectoryService
+              .userLastNameAttributeField: 'User Last Attribute',
+          OrganizationDirectoryService
+              .userEmailAttributeField: 'User Email Attribute',
+          OrganizationDirectoryService
+              .userAttributeForGroupRelationshipField: 'User Attribute for Group Relationship',
+          OrganizationDirectoryService
+              .syncIntervalField: 'Sync Interval (hours)',
+          OrganizationDirectoryService
+              .syncLastDateTimeField: 'Sync Last Date Time',
+          OrganizationDirectoryService.syncLastResultField: 'Sync Last Result',
+          'other': 'Not Defined'
+        },
+        name: 'OrganizationDirectoryServiceDomainMsg_fieldLabel',
+        args: [fieldName]);
+  }
 }
 
 /*
