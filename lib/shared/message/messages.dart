@@ -9,6 +9,8 @@ import 'package:auge_server/domain/work/work_stage.dart';
 
 class CommonMsg {
   /// Commum Label
+  static const String headerTitleLabel = 'headerTitleLabel';
+  static const String headerSubtitleLabel = 'headerSubtitleLabel';
   static const String searchLabel = 'searchLabel';
   static const String noCorrespondenceLabel = 'noCorrespondenceLabel';
   static const String filterLabel = 'filterLabel';
@@ -16,7 +18,8 @@ class CommonMsg {
   static const String emptyLabel = 'emptyLabel';
 
   static label(String label) => Intl.select(label, {
-
+    headerTitleLabel: 'AUGE',
+    headerSubtitleLabel: 'Objectives, Work and Performance',
     searchLabel: 'Search',
     filterLabel: 'Filter',
     moreLabel: 'more',
@@ -68,8 +71,6 @@ class CommonMsg {
 /// Specific messages and labels for [Authentication and Authorization]
 class AuthMsg {
 
-  static const String headerTitleLabel = 'headerTitleLabel';
-  static const String headerSubtitleLabel = 'headerSubtitleLabel';
   static const String domainLabel = 'domainLabel';
   static const String identificationLabel = 'identificationLabel';
   static const String passwordLabel = 'passwordLabel';
@@ -80,10 +81,13 @@ class AuthMsg {
   static const String loginLabel = 'loginLabel';
   static const String logoutLabel = 'logoutLabel';
 
+  static const String passwordCodeLabel = 'passwordCodeLabel';
+  static const String newPasswordLabel = 'newPasswordLabel';
+  static const String repeatNewPasswordLabel = 'repeatNewPasswordLabel';
+
   /// Label for [Auth]
   static label(String label) => Intl.select(label, {
-    headerTitleLabel: 'AUGE',
-    headerSubtitleLabel: 'Objectives, Work and Performance',
+
     domainLabel: 'name@domain.com',
     identificationLabel: 'Identification',
     passwordLabel: 'Password',
@@ -93,10 +97,13 @@ class AuthMsg {
     allOrganizationsLabel: 'All Organizations',
     loginLabel: 'Login',
     logoutLabel: 'Logout',
+    passwordCodeLabel: 'Code',
+    newPasswordLabel: 'New Password',
+    repeatNewPasswordLabel: 'Repeat New Password',
     'other': 'Not Defined'},
       name: "AuthMsg_label",
       args: [label],
-      // locale: "en",
+      locale: "en",
       desc: "Authentication and authorizations labels",
 
   );
@@ -106,6 +113,13 @@ class AuthMsg {
   static organizationNotFoundMsg() => Intl.message("An organization to user account not found.", name: "AuthMsg_organizationNotFoundMsg");
   static serverApiErrorMsg() => Intl.message("Server not available.", name: "AuthMsg_serverApiErrorMsg");
   static browserCompatibleErrorMsg() => Intl.message("Browser Compatible: Chrome", name: "AuthMsg_browserCompatibleErrorMsg");
+
+  // New Password
+  static informIdentificationCorrectlyMsg() => Intl.message("Inform an identification correctly.", name: "AuthMsg_informIdentificationCorrectlyMsg");
+  static codeNotGeneratedMsg() => Intl.message("Code not generated.", name: "AuthMsg_codeNotGeneratedMsg");
+  static informBelowTheCodeSentToEMailMsg() => Intl.message("Inform below the code sent to e-mail", name: "AuthMsg_informBelowTheCodeSentToEMailMsg");
+  static codeValidateMsg() => Intl.message("Code validate.", name: "AuthMsg_codeValidateMsg");
+  static passwordNotSavedMsg() => Intl.message("Password not saved.", name: "AuthMsg_passwordNotSavedMsg");
 
 }
 
@@ -771,11 +785,19 @@ class TimelineItemdMsg {
   );
 }
 
-/// Specific messages and label for [TimelineItem] class field
+/// Specific messages and label for [MailMsg] class field
 class MailMsg {
 
-  /// Message
-  static youIsReceivingThisEMailBecauseYouIsThe() => Intl.message('You is receiving this e-mail because you is the', name: "MailMsg_youIsReceivingThisEMailBecauseYouIsThe");
+  /// Message to Notification
+  static youIsReceivingThisEMailBecauseYouIsThe() => Intl.message('You are receiving this e-mail because you is the', name: "MailMsg_youIsReceivingThisEMailBecauseYouIsThe");
   static viewOrReplyIt() => Intl.message('View or reply it on Auge', name: "MailMsg_viewOrReplyIt");
+
+  /// Message to New Password
+  static toDefineNewPasswordInformTheCode() => Intl.message("To define new password inform the code", name: "MailMsg_youIsReceivingThisEMailBecauseNewPasswordWasRequired");
+
+  static youIsReceivingThisEMailBecauseNewPasswordWasRequired() => Intl.message("You are receiving this e-mail because new password was required. Ignore this e-mail if you didn't request new password.", name: "MailMsg_youIsReceivingThisEMailBecauseNewPasswordWasRequired");
+  static subjectNewPasswordRequired() => Intl.message('New Password Required', name: "MailMsg_subjectNewPasswordRequired");
+  static InformIt() => Intl.message('Inform it on Auge', name: "MailMsg_InformIt");
+
 
 }

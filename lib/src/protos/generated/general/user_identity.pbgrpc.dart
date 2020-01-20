@@ -42,6 +42,17 @@ class UserIdentityServiceClient extends $grpc.Client {
           '/auge.protobuf.UserIdentityService/DeleteUserIdentity',
           ($4.UserIdentityDeleteRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) => $2.Empty.fromBuffer(value));
+  static final _$generateNewPasswordCodeAndSendEmail = $grpc.ClientMethod<
+          $4.NewPasswordCodeRequest, $4.NewPasswordCodeResponse>(
+      '/auge.protobuf.UserIdentityService/GenerateNewPasswordCodeAndSendEmail',
+      ($4.NewPasswordCodeRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $4.NewPasswordCodeResponse.fromBuffer(value));
+  static final _$updateUserIdentityPassword =
+      $grpc.ClientMethod<$4.UserIdentityPasswordRequest, $2.Empty>(
+          '/auge.protobuf.UserIdentityService/UpdateUserIdentityPassword',
+          ($4.UserIdentityPasswordRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) => $2.Empty.fromBuffer(value));
 
   UserIdentityServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions options})
@@ -88,6 +99,24 @@ class UserIdentityServiceClient extends $grpc.Client {
       {$grpc.CallOptions options}) {
     final call = $createCall(
         _$deleteUserIdentity, $async.Stream.fromIterable([request]),
+        options: options);
+    return $grpc.ResponseFuture(call);
+  }
+
+  $grpc.ResponseFuture<$4.NewPasswordCodeResponse>
+      generateNewPasswordCodeAndSendEmail($4.NewPasswordCodeRequest request,
+          {$grpc.CallOptions options}) {
+    final call = $createCall(_$generateNewPasswordCodeAndSendEmail,
+        $async.Stream.fromIterable([request]),
+        options: options);
+    return $grpc.ResponseFuture(call);
+  }
+
+  $grpc.ResponseFuture<$2.Empty> updateUserIdentityPassword(
+      $4.UserIdentityPasswordRequest request,
+      {$grpc.CallOptions options}) {
+    final call = $createCall(
+        _$updateUserIdentityPassword, $async.Stream.fromIterable([request]),
         options: options);
     return $grpc.ResponseFuture(call);
   }
@@ -138,6 +167,23 @@ abstract class UserIdentityServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $4.UserIdentityDeleteRequest.fromBuffer(value),
         ($2.Empty value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$4.NewPasswordCodeRequest,
+            $4.NewPasswordCodeResponse>(
+        'GenerateNewPasswordCodeAndSendEmail',
+        generateNewPasswordCodeAndSendEmail_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $4.NewPasswordCodeRequest.fromBuffer(value),
+        ($4.NewPasswordCodeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$4.UserIdentityPasswordRequest, $2.Empty>(
+        'UpdateUserIdentityPassword',
+        updateUserIdentityPassword_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $4.UserIdentityPasswordRequest.fromBuffer(value),
+        ($2.Empty value) => value.writeToBuffer()));
   }
 
   $async.Future<$4.UserIdentitiesResponse> getUserIdentities_Pre(
@@ -166,6 +212,17 @@ abstract class UserIdentityServiceBase extends $grpc.Service {
     return deleteUserIdentity(call, await request);
   }
 
+  $async.Future<$4.NewPasswordCodeResponse>
+      generateNewPasswordCodeAndSendEmail_Pre($grpc.ServiceCall call,
+          $async.Future<$4.NewPasswordCodeRequest> request) async {
+    return generateNewPasswordCodeAndSendEmail(call, await request);
+  }
+
+  $async.Future<$2.Empty> updateUserIdentityPassword_Pre($grpc.ServiceCall call,
+      $async.Future<$4.UserIdentityPasswordRequest> request) async {
+    return updateUserIdentityPassword(call, await request);
+  }
+
   $async.Future<$4.UserIdentitiesResponse> getUserIdentities(
       $grpc.ServiceCall call, $4.UserIdentityGetRequest request);
   $async.Future<$4.UserIdentity> getUserIdentity(
@@ -176,4 +233,8 @@ abstract class UserIdentityServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $4.UserIdentityRequest request);
   $async.Future<$2.Empty> deleteUserIdentity(
       $grpc.ServiceCall call, $4.UserIdentityDeleteRequest request);
+  $async.Future<$4.NewPasswordCodeResponse> generateNewPasswordCodeAndSendEmail(
+      $grpc.ServiceCall call, $4.NewPasswordCodeRequest request);
+  $async.Future<$2.Empty> updateUserIdentityPassword(
+      $grpc.ServiceCall call, $4.UserIdentityPasswordRequest request);
 }

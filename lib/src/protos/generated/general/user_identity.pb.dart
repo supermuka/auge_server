@@ -329,6 +329,78 @@ class UserIdentityGetRequest extends $pb.GeneratedMessage {
   void clearWithUserProfile() => clearField(6);
 }
 
+class NewPasswordCodeRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('NewPasswordCodeRequest', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
+    ..aOS(1, 'identification')
+    ..hasRequiredFields = false
+  ;
+
+  NewPasswordCodeRequest._() : super();
+  factory NewPasswordCodeRequest() => create();
+  factory NewPasswordCodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory NewPasswordCodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  NewPasswordCodeRequest clone() => NewPasswordCodeRequest()..mergeFromMessage(this);
+  NewPasswordCodeRequest copyWith(void Function(NewPasswordCodeRequest) updates) => super.copyWith((message) => updates(message as NewPasswordCodeRequest));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static NewPasswordCodeRequest create() => NewPasswordCodeRequest._();
+  NewPasswordCodeRequest createEmptyInstance() => create();
+  static $pb.PbList<NewPasswordCodeRequest> createRepeated() => $pb.PbList<NewPasswordCodeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static NewPasswordCodeRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NewPasswordCodeRequest>(create);
+  static NewPasswordCodeRequest _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get identification => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set identification($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasIdentification() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIdentification() => clearField(1);
+}
+
+class UserIdentityPasswordRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('UserIdentityPasswordRequest', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
+    ..aOS(1, 'identification')
+    ..aOS(2, 'password')
+    ..hasRequiredFields = false
+  ;
+
+  UserIdentityPasswordRequest._() : super();
+  factory UserIdentityPasswordRequest() => create();
+  factory UserIdentityPasswordRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UserIdentityPasswordRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  UserIdentityPasswordRequest clone() => UserIdentityPasswordRequest()..mergeFromMessage(this);
+  UserIdentityPasswordRequest copyWith(void Function(UserIdentityPasswordRequest) updates) => super.copyWith((message) => updates(message as UserIdentityPasswordRequest));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UserIdentityPasswordRequest create() => UserIdentityPasswordRequest._();
+  UserIdentityPasswordRequest createEmptyInstance() => create();
+  static $pb.PbList<UserIdentityPasswordRequest> createRepeated() => $pb.PbList<UserIdentityPasswordRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UserIdentityPasswordRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UserIdentityPasswordRequest>(create);
+  static UserIdentityPasswordRequest _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get identification => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set identification($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasIdentification() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIdentification() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get password => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set password($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPassword() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPassword() => clearField(2);
+}
+
 class UserIdentitiesResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('UserIdentitiesResponse', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
     ..pc<UserIdentity>(1, 'userIdentities', $pb.PbFieldType.PM, protoName: 'userIdentities', subBuilder: UserIdentity.create)
@@ -352,5 +424,46 @@ class UserIdentitiesResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $core.List<UserIdentity> get userIdentities => $_getList(0);
+}
+
+class NewPasswordCodeResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('NewPasswordCodeResponse', package: const $pb.PackageName('auge.protobuf'), createEmptyInstance: create)
+    ..aOS(1, 'code')
+    ..aOS(2, 'eMail')
+    ..hasRequiredFields = false
+  ;
+
+  NewPasswordCodeResponse._() : super();
+  factory NewPasswordCodeResponse() => create();
+  factory NewPasswordCodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory NewPasswordCodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  NewPasswordCodeResponse clone() => NewPasswordCodeResponse()..mergeFromMessage(this);
+  NewPasswordCodeResponse copyWith(void Function(NewPasswordCodeResponse) updates) => super.copyWith((message) => updates(message as NewPasswordCodeResponse));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static NewPasswordCodeResponse create() => NewPasswordCodeResponse._();
+  NewPasswordCodeResponse createEmptyInstance() => create();
+  static $pb.PbList<NewPasswordCodeResponse> createRepeated() => $pb.PbList<NewPasswordCodeResponse>();
+  @$core.pragma('dart2js:noInline')
+  static NewPasswordCodeResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NewPasswordCodeResponse>(create);
+  static NewPasswordCodeResponse _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get code => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set code($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCode() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get eMail => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set eMail($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasEMail() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearEMail() => clearField(2);
 }
 

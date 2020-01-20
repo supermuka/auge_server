@@ -19,7 +19,7 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'pt_BR';
 
-  static m0(label) => "${Intl.select(label, {'organizationLabel': 'Organização', 'organizationsLabel': 'Organizações', 'adminLabel': 'Administrador', 'superAdminLabel': 'Super Administrador', 'userDetailLabel': 'Detalhe do Usuário', 'logoutLabel': 'Sair', 'ingightsLabel': 'Insights', 'worksLabel': 'Trabalhos', 'objectivesLabel': 'Objectivos', 'objectivesMapLabel': 'Mapa de Objetivos', 'objectivesGanttLabel': 'Gantt de Objetivos', 'usersLabel': 'Usuários', 'groupsLabel': 'Grupos', 'configurationLabel': 'Configuração', 'other': 'Não Definido', })}";
+  static m0(label) => "${Intl.select(label, {'organizationLabel': 'Organização', 'organizationsLabel': 'Organizações', 'adminLabel': 'Administrador', 'superAdminLabel': 'Super Administrador', 'userDetailLabel': 'Detalhe do Usuário', 'logoutLabel': 'Sair', 'ingightsLabel': 'Insights', 'worksLabel': 'Trabalhos', 'objectivesLabel': 'Objetivos', 'objectivesMapLabel': 'Mapa de Objetivos', 'objectivesGanttLabel': 'Gantt de Objetivos', 'usersLabel': 'Usuários', 'groupsLabel': 'Grupos', 'configurationLabel': 'Configuração', 'other': 'Não Definido', })}";
 
   static m1(label) => "${Intl.select(label, {'domainLabel': 'nome@dominio.com', 'identificationLabel': 'Identificação', 'passwordLabel': 'Senha', 'selectLabel': 'Selecionar', 'superAdminLabel': 'Super Admin', 'organizationLabel': 'Organização', 'allOrganizationsLabel': 'Todas Organizações', 'loginLabel': 'Logar', 'logoutLabel': 'Sair', 'other': 'Não Definido', })}";
 
@@ -65,7 +65,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m22(fieldName) => "${Intl.select(fieldName, {'nameField': 'Nome', 'symbolField': 'Símbolo', })}";
 
-  static m23(fieldName) => "${Intl.select(fieldName, {'nameField': 'Nome', 'descriptionField': 'Descrição', 'groupField': 'Grupo', 'alignedToField': 'Alinhado para', 'leaderField': 'Líder', 'startDateField': 'Data de Início', 'endDateField': 'Data de Término', 'archivedField': 'Arquivado', })}";
+  static m23(fieldName) => "${Intl.select(fieldName, {'nameField': 'Nome', 'descriptionField': 'Descrição', 'groupField': 'Grupo', 'alignedToField': 'Alinhado para', 'leaderField': 'Líder', 'startDateField': 'Data de Início', 'endDateField': 'Data de Término', 'archivedField': 'Arquivado', 'other': 'Não Definido', })}";
 
   static m24(label) => "${Intl.select(label, {'objectiveLabel': 'Objetivo', 'objectivesLabel': 'Objetivos', 'addObjectiveLabel': 'Adicionar Objetivo', 'editObjectiveLabel': 'Editar Objetivo', 'progressLabel': 'Progresso', 'noMatchLabel': 'Sem Correspondência', 'sortedByLabel': 'Ordenado Por', 'ultimateObjectiveLabel': 'Objetivo Final', 'other': 'Não Definido', })}";
 
@@ -89,15 +89,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m34(label) => "${Intl.select(label, {'superAdmin': 'Super Admin', 'admin': 'Admin', 'standard': 'Padrão', 'other': 'Não Definido', })}";
 
-  static m35(fieldName) => "${Intl.select(fieldName, {'nameField': 'Nome', 'inactiveField': 'Inativo', 'managedByOrganizationField': 'Gerenciado pela Organização', })}";
+  static m35(fieldName) => "${Intl.select(fieldName, {'nameField': 'Nome', 'inactiveField': 'Inativo', 'managedByOrganizationField': 'Gerenciado pela Organização', 'other': 'Não Definido', })}";
 
-  static m36(fieldName) => "${Intl.select(fieldName, {'identificationField': 'Identificação', 'passwordField': 'Senha', 'providerField': 'Provedor', 'providerObjectIdField': 'Id do Objeto Provedor', })}";
+  static m36(fieldName) => "${Intl.select(fieldName, {'identificationField': 'Identificação', 'passwordField': 'Senha', 'providerField': 'Provedor', 'providerObjectIdField': 'Id do Objeto Provedor', 'other': 'Não Definido', })}";
 
   static m37(label) => "${Intl.select(label, {'internal': 'Interno', 'directoryService': 'Serviço de Diretório', 'other': 'Não Definido', })}";
 
   static m38(label) => "${Intl.select(label, {'usersLabel': 'Usuários', 'userLabel': 'Usuário', 'editUserLabel': 'Editar Usuário', 'addUserLabel': 'Adicionar Usuário', 'profileLabel': 'Perfil', 'identityLabel': 'Identidade', 'accessLabel': 'Acesso', 'other': 'Não Definido', })}";
 
-  static m39(fieldName) => "${Intl.select(fieldName, {'eMailField': 'e-Mail', 'eMailNotificationField': 'Notificação de e-Mail', 'imageField': 'Imagem', 'idiomLocaleField': 'Idioma', })}";
+  static m39(fieldName) => "${Intl.select(fieldName, {'eMailField': 'e-Mail', 'eMailNotificationField': 'Notificação de e-Mail', 'imageField': 'Imagem', 'idiomLocaleField': 'Idioma', 'other': 'Não Definido',  })}";
 
   static m40(valueName) => "${Intl.select(valueName, {'pt_BR': 'Português - Brasil', 'en_US': 'English - USA', 'es_ES': 'Espanhol - España', 'other': 'Não Definido', })}";
 

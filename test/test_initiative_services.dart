@@ -30,7 +30,6 @@ void main() {
     String organizationId;
     String userId;
     String workId;
-    String stateId;
     String stageId;
     String groupId;
     String workItemId;

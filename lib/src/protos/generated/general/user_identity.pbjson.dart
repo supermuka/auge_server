@@ -52,10 +52,33 @@ const UserIdentityGetRequest$json = const {
   ],
 };
 
+const NewPasswordCodeRequest$json = const {
+  '1': 'NewPasswordCodeRequest',
+  '2': const [
+    const {'1': 'identification', '3': 1, '4': 1, '5': 9, '10': 'identification'},
+  ],
+};
+
+const UserIdentityPasswordRequest$json = const {
+  '1': 'UserIdentityPasswordRequest',
+  '2': const [
+    const {'1': 'identification', '3': 1, '4': 1, '5': 9, '10': 'identification'},
+    const {'1': 'password', '3': 2, '4': 1, '5': 9, '10': 'password'},
+  ],
+};
+
 const UserIdentitiesResponse$json = const {
   '1': 'UserIdentitiesResponse',
   '2': const [
     const {'1': 'userIdentities', '3': 1, '4': 3, '5': 11, '6': '.auge.protobuf.UserIdentity', '10': 'userIdentities'},
+  ],
+};
+
+const NewPasswordCodeResponse$json = const {
+  '1': 'NewPasswordCodeResponse',
+  '2': const [
+    const {'1': 'code', '3': 1, '4': 1, '5': 9, '10': 'code'},
+    const {'1': 'e_mail', '3': 2, '4': 1, '5': 9, '10': 'eMail'},
   ],
 };
 

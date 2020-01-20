@@ -18,6 +18,9 @@ service UserIdentityService {
     rpc CreateUserIdentity (UserIdentityRequest) returns (google.protobuf.StringValue) {}
     rpc UpdateUserIdentity (UserIdentityRequest) returns (google.protobuf.Empty) {}
     rpc DeleteUserIdentity (UserIdentityDeleteRequest) returns (google.protobuf.Empty) {}
+
+    rpc GenerateNewPasswordCodeAndSendEmail(NewPasswordCodeRequest) returns (NewPasswordCodeResponse) {}
+    rpc UpdateUserIdentityPassword(UserIdentityPasswordRequest) returns (google.protobuf.Empty) {}
 }
 
 // Message to respective domain object.
@@ -58,7 +61,21 @@ message UserIdentityGetRequest {
     bool with_user_profile = 6;
 }
 
+message NewPasswordCodeRequest {
+    string identification = 1;
+}
+
+message UserIdentityPasswordRequest {
+    string identification = 1;
+    string password = 2;
+}
+
 // Response list of the organization
 message UserIdentitiesResponse {
     repeated UserIdentity userIdentities = 1;
+}
+
+message NewPasswordCodeResponse {
+    string code = 1;
+    string e_mail = 2;
 }

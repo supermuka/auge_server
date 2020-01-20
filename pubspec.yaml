@@ -1,5 +1,5 @@
 name: auge_server
-description: A web server built using the shelf package.
+description: A web server built using the grpc package.
 version: 0.0.1
 # homepage: https://www.example.com
 # author: Samuel <email@example.com>

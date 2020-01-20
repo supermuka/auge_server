@@ -146,6 +146,10 @@ class ObjectiveService extends ObjectiveServiceBase {
           objectiveSelectRequest.alignedToRecursive = 1;
         }
 
+        Map<String, User> usersCache = {};
+        Map<String, Objective> objectivesCache = {};
+        Map<String, Organization> organizationsCache = {};
+        Map<String, Group> groupsCache = {};
         for (var row in results) {
 
           objective = Objective()
@@ -171,7 +175,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
           if (row[7] != null) objective.leader = await UserService.querySelectUser(UserGetRequest()
               ..id = row[7]
-              ..withUserProfile = objectiveSelectRequest.withUserProfile);
+              ..withUserProfile = objectiveSelectRequest.withUserProfile, cache: usersCache);
 
           if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0)
             //--objectiveSelectRequest.alignedToRecursive;
@@ -181,17 +185,17 @@ class ObjectiveService extends ObjectiveServiceBase {
               ..alignedToRecursive = (objectiveSelectRequest.alignedToRecursive-1)
               ..withArchived = objectiveSelectRequest.withArchived
               ..withMeasures = objectiveSelectRequest.withMeasures
-              ..withUserProfile = objectiveSelectRequest.withUserProfile);
+              ..withUserProfile = objectiveSelectRequest.withUserProfile, cache: objectivesCache);
 
           // Organization
             if (row[9] != null)
               objective.organization = await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
-                    ..id = row[9]);
+                    ..id = row[9], cache: organizationsCache);
 
             if (row[10] != null)
               objective.group = await GroupService.querySelectGroup(GroupGetRequest()
-                ..id = row[10]);
+                ..id = row[10], cache: groupsCache);
 
             if (objectiveSelectRequest.treeAlignedWithChildren) {
             objectivesTreeMapAux[objective.id] = objective;
@@ -219,16 +223,38 @@ class ObjectiveService extends ObjectiveServiceBase {
     }
   }
 
-  static Future<Objective> querySelectObjective(ObjectiveGetRequest request) async {
-
-    List<Objective> objectives = await querySelectObjectives(request);
-
-    if (objectives.isNotEmpty) {
-      return objectives.first;
+  static Future<Objective> querySelectObjective(ObjectiveGetRequest request, {Map<String, Objective> cache}) async {
+    if (cache != null && cache.containsKey(request.id)) {
+      return cache[request.id];
     } else {
-      return null;
+      List<Objective> objectives = await querySelectObjectives(request);
+
+      if (objectives.isNotEmpty) {
+        if (cache != null) cache[request.id] = objectives.first;
+        return objectives.first;
+      } else {
+        return null;
+      }
     }
   }
+
+  /*
+    static Future<User> querySelectUser(UserGetRequest request, /*String id,  {bool withProfile = false,*/ {Map<String, User> cache}) async {
+
+    if (cache != null && cache.containsKey(request.id)) {
+      return cache[request.id];
+    } else {
+
+      List<User> users = await querySelectUsers(request /* id: id, withProfile: withProfile */);
+      if (users.isNotEmpty) {
+        if (cache != null) cache[request.id] = users.first;
+        return users.first;
+      } else {
+        return null;
+      }
+    }
+  }
+   */
 
   /// Objective Notification User
   static void objectiveNotification(Objective objective, String className, int systemFunctionIndex, String description) {
@@ -251,7 +277,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));
 
     // SEND E-MAIL
-    AugeMail().send(mailMessages);
+    AugeMail().sendNotification(mailMessages);
 
   }
 

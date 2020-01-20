@@ -223,7 +223,7 @@ class WorkService extends WorkServiceBase {
             '${WorkDomainMsg.fieldLabel(work_m.Work.leaderField)}'));
 
     // SEND E-MAIL
-    AugeMail().send(mailMessages);
+    AugeMail().sendNotification(mailMessages);
 
   }
 

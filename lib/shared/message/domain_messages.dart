@@ -64,9 +64,9 @@ class ClassNameMsg {
 class UserDomainMsg {
   static String fieldLabel(String fieldName) {
 
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-    return Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {User.nameField: 'Name',
           User.inactiveField: 'Inactive',
           User.managedByOrganizationField: 'Managed By Organization',
@@ -79,9 +79,9 @@ class UserDomainMsg {
 /// Specific messages and label for [UserProfile] class field
 class UserProfileDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-    return Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {UserProfile.eMailField: 'e-Mail',
           UserProfile.eMailNotificationField: 'e-Mail Notification',
           UserProfile.imageField: 'Image',
@@ -95,9 +95,9 @@ class UserProfileDomainMsg {
 /// Specific messages and label for [UserIdentity] class field
 class UserIdentityDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-    return Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {UserIdentity.identificationField: 'Identification',
           UserIdentity.passwordField: 'Password',
           UserIdentity.providerField: 'Provider',
@@ -111,9 +111,9 @@ class UserIdentityDomainMsg {
 /// Specific messages and label for [UserAccess] class field
 class UserAccessDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-    return Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {UserAccess.organizationField: 'Organization',
           UserAccess.accessRoleField: 'Access Role',
           'other': 'Not Defined'},
@@ -125,9 +125,10 @@ class UserAccessDomainMsg {
 /// Specific messages and label for [Group] class field
 class GroupDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
+    //String fieldNameSuffix = fieldName;
 
-    return Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {Group.nameField: 'Name',
           Group.inactiveField: 'Inactive',
           Group.leaderField: 'Leader',
@@ -144,18 +145,19 @@ class GroupDomainMsg {
 /// Specific messages and label for [Objective] class field
 class ObjectiveDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
 
-    Intl.select(fieldNameSelect,
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
+
+    return Intl.select(fieldNameSuffix,
         {Objective.nameField: 'Name',
-          Objective.descriptionField: 'Description',
-          Objective.groupField: 'Group',
-          Objective.alignedToField: 'Aligned To',
-          Objective.leaderField: 'Leader',
-          Objective.startDateField: 'Start Date',
-          Objective.endDateField: 'End Date',
-          Objective.archivedField: 'Archived',
-          'other': 'Not Defined'},
+         Objective.descriptionField: 'Description',
+         Objective.groupField: 'Group',
+         Objective.alignedToField: 'Aligned To',
+         Objective.leaderField: 'Leader',
+         Objective.startDateField: 'Start Date',
+         Objective.endDateField: 'End Date',
+         Objective.archivedField: 'Archived',
+        'other': 'Not Defined'},
         name: 'ObjectiveDomainMsg_fieldLabel',
         args: [fieldName]);
   }
@@ -164,9 +166,9 @@ class ObjectiveDomainMsg {
 /// Specific messages and label for [MeasureUnit] class field
 class MeasureUnitDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-    Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {MeasureUnit.nameField: 'Name',
           MeasureUnit.symbolField: 'Symbol',
           'other': 'Not Defined'},
@@ -178,9 +180,9 @@ class MeasureUnitDomainMsg {
 /// Specific messages and label for [Measure] class field
 class MeasureDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-    Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {Measure.nameField: 'Name',
           Measure.descriptionField: 'Description',
           Measure.endValueField: 'End Value',
@@ -198,9 +200,9 @@ class MeasureDomainMsg {
 /// Specific messages and label for [MeasureProgress] class field
 class MeasureProgressDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-    Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {MeasureProgress.dateField: 'Date',
           MeasureProgress.currentValueField: 'Current Value',
           MeasureProgress.commentField: 'Comment',
@@ -214,9 +216,9 @@ class MeasureProgressDomainMsg {
 class OrganizationDomainMsg {
   static String fieldLabel(String fieldName) {
 
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-    return Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {Organization.nameField: 'Name',
           Organization.codeField: 'EIN',
           'other': 'Not Defined'},
@@ -228,9 +230,9 @@ class OrganizationDomainMsg {
 /// Specific messages and label for [Work] class field
 class WorkDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-   return Intl.select(fieldNameSelect,
+   return Intl.select(fieldNameSuffix,
         {Work.nameField: 'Name',
           Work.descriptionField: 'Description',
           Work.groupField: 'Group',
@@ -246,9 +248,9 @@ class WorkDomainMsg {
 /// Specific messages and label for [WorkStage] class field
 class WorkStageDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-    Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {WorkStage.nameField: 'Name',
           WorkStage.stateField: 'State',
           'other': 'Not Defined'},
@@ -260,9 +262,9 @@ class WorkStageDomainMsg {
 /// Specific messages and label for [WorkItem] class field
 class WorkItemDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-   return Intl.select(fieldNameSelect,
+   return Intl.select(fieldNameSuffix,
         {WorkItem.nameField: 'Name',
           WorkItem.descriptionField: 'Description',
           WorkItem.dueDateField: 'Due Date',
@@ -280,8 +282,8 @@ class WorkItemDomainMsg {
 /// Specific messages and label for [OrganizationConfiguration] class field
 class OrganizationConfigurationDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
-    return Intl.select(fieldNameSelect,
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
+    return Intl.select(fieldNameSuffix,
         {OrganizationConfiguration.domainField: 'Domínio',
           'other': 'Not Defined'},
         name: 'OrganizationConfigurationDomainMsg_fieldLabel',
@@ -292,9 +294,9 @@ class OrganizationConfigurationDomainMsg {
 /// Specific messages and label for [OrganizationDirectoryService] class field
 class OrganizationDirectoryServiceDomainMsg {
   static String fieldLabel(String fieldName) {
-    String fieldNameSelect = '${fieldName}${fieldSuffix}';
+    String fieldNameSuffix = '${fieldName}${fieldSuffix}';
 
-    return Intl.select(fieldNameSelect,
+    return Intl.select(fieldNameSuffix,
         {
           OrganizationDirectoryService
               .directoryServiceEnabledField: 'Directory Service (LDAP) Enabled',

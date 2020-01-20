@@ -65,7 +65,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m22(fieldName) => "${Intl.select(fieldName, {'nameField': 'Name', 'symbolField': 'Symbol', })}";
 
-  static m23(fieldName) => "${Intl.select(fieldName, {'nameField': 'Name', 'descriptionField': 'Description', 'groupField': 'Group', 'alignedToField': 'Aligned To', 'leaderField': 'Leader', 'startDateField': 'Start Date', 'endDateField': 'End Date', 'archivedField': 'Archived', })}";
+  static m23(fieldName) => "${Intl.select(fieldName, {'nameField': 'Name', 'descriptionField': 'Description', 'groupField': 'Group', 'alignedToField': 'Aligned To', 'leaderField': 'Leader', 'startDateField': 'Start Date', 'endDateField': 'End Date', 'archivedField': 'Archived', 'other': 'Not Defined',  })}";
 
   static m24(label) => "${Intl.select(label, {'objectiveLabel': 'Objective', 'objectivesLabel': 'Objectives', 'addObjectiveLabel': 'Add Objective', 'editObjectiveLabel': 'Edit Objective', 'progressLabel': 'Progress', 'noMatchLabel': 'No Match', 'sortedByLabel': 'Sorted By', 'ultimateObjectiveLabel': 'Ultimate Objective', 'other': 'Not Defined', })}";
 
@@ -97,7 +97,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static m38(label) => "${Intl.select(label, {'usersLabel': 'Users', 'userLabel': 'User', 'editUserLabel': 'Edit User', 'addUserLabel': 'Add User', 'profileLabel': 'Profile', 'identityLabel': 'Identity', 'accessLabel': 'Access', 'other': 'Not Defined', })}";
 
-  static m39(fieldName) => "${Intl.select(fieldName, {'eMailField': 'e-Mail', 'eMailNotificationField': 'e-Mail Notification', 'imageField': 'Image', 'idiomLocaleField': 'Idioma', })}";
+  static m39(fieldName) => "${Intl.select(fieldName, {'eMailField': 'e-Mail', 'eMailNotificationField': 'e-Mail Notification', 'imageField': 'Image', 'idiomLocaleField': 'Idioma', 'other': 'Not Defined',  })}";
 
   static m40(valueName) => "${Intl.select(valueName, {'pt_BR': 'Português - Brasil', 'en_US': 'English - USA', 'es_ES': 'Espanhol - España', 'other': 'Not Defined', })}";
 

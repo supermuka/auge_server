@@ -247,7 +247,7 @@ class MeasureService extends MeasureServiceBase {
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));
 
     // SEND E-MAIL
-    AugeMail().send(mailMessages);
+    AugeMail().sendNotification(mailMessages);
 
   }
 
@@ -557,7 +557,7 @@ class MeasureService extends MeasureServiceBase {
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));
 
     // SEND E-MAIL
-    AugeMail().send(mailMessages);
+    AugeMail().sendNotification(mailMessages);
 
   }
 

@@ -2,8 +2,10 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'dart:math';
 
 import 'dart:convert' show base64;
+import 'package:auge_server/shared/message/messages.dart';
 import 'package:crypto/crypto.dart' show sha256;
 
 import 'package:grpc/grpc.dart';
@@ -27,6 +29,8 @@ import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
 import 'package:auge_server/domain/general/organization_directory_service.dart' as organization_directory_service_m;
 
 import 'package:auge_server/domain/general/authorization.dart' show SystemModule, SystemFunction;
+
+import 'package:auge_server/src/util/mail.dart';
 
 class UserIdentityService extends UserIdentityServiceBase {
 
@@ -62,6 +66,18 @@ class UserIdentityService extends UserIdentityServiceBase {
   Future<Empty> deleteUserIdentity(ServiceCall call,
       UserIdentityDeleteRequest request) async {
     return queryDeleteUserIdentity(request);
+  }
+
+  @override
+  Future<NewPasswordCodeResponse> generateNewPasswordCodeAndSendEmail(ServiceCall call,
+      NewPasswordCodeRequest request) async {
+    return queryGenerateNewPasswordCodeAndSendEmail(request);
+  }
+
+  @override
+  Future<Empty> updateUserIdentityPassword(ServiceCall call,
+      UserIdentityPasswordRequest request) async {
+    return queryUpdateUserIdentityPassword(request);
   }
 
   // Query
@@ -326,6 +342,21 @@ class UserIdentityService extends UserIdentityServiceBase {
     return Empty();
   }
 
+  static Future<Empty> queryUpdateUserIdentityPassword(UserIdentityPasswordRequest request) async {
+
+    UserIdentityRequest userIdentityRequest = UserIdentityRequest();
+    userIdentityRequest.userIdentity = await querySelectUserIdentity(UserIdentityGetRequest()..identification = request.identification..withUserProfile = true);
+    userIdentityRequest.userIdentity.password = request.password;
+
+    // Get organization and user related to UserIdentity
+    userIdentityRequest.authUserId = userIdentityRequest.userIdentity.user.id;
+    userIdentityRequest.authOrganizationId = userIdentityRequest.userIdentity.user.managedByOrganization.id;
+
+    queryUpdateUserIdentity(userIdentityRequest);
+
+    return Empty();
+  }
+
   static Future<Empty> queryDeleteUserIdentity(UserIdentityDeleteRequest request) async {
 
     UserIdentity previousUserIdentity = await querySelectUserIdentity(UserIdentityGetRequest()..id = request.userIdentityId);
@@ -365,5 +396,92 @@ class UserIdentityService extends UserIdentityServiceBase {
       }
     });
     return Empty();
+  }
+
+  /// Send email with code used to define the new password.
+  static Future<NewPasswordCodeResponse> queryGenerateNewPasswordCodeAndSendEmail(NewPasswordCodeRequest newPasswordCodeRequest) async {
+
+    List<List> results;
+
+    String queryStatement = '';
+
+    queryStatement = "SELECT "
+        "u.name, "
+        "user_identity.provider, "
+        "user_profile.email "
+        "FROM general.user_profiles user_profile "
+        "JOIN general.users u ON u.id = user_profile.user_id "
+        "JOIN general.user_identities user_identity ON user_identity.user_id = user_profile.user_id "
+        "WHERE u.inactive = false ";
+    
+    Map<String, dynamic> _substitutionValues = {};
+    
+    if (newPasswordCodeRequest.hasIdentification()) {
+      queryStatement = queryStatement + 'AND user_identity.identification = @identification';
+      _substitutionValues.putIfAbsent("identification", () => newPasswordCodeRequest.identification);
+    } else {
+        throw new GrpcError.failedPrecondition('Identification address not informed.');
+    }
+    /*
+    if (request != null && request.password_hash != null && request.password_hash.isNotEmpty) {
+      queryStatement = queryStatement +
+          " ${whereAnd} ui.password_hash = @password_hash";
+      _substitutionValues.putIfAbsent("password_hash", () => request.password);
+      //The last whereAnd = "AND";
+    }
+    */
+
+    String eMail;
+    String code;
+    try {
+      results = await (await AugeConnection.getConnection()).query(
+          queryStatement, substitutionValues: _substitutionValues);
+
+      if (results.isEmpty) {
+        throw new GrpcError.notFound('User with eMail address infomed not found.');
+      } else {
+        var row = results.first;
+
+        // Just define new passward when user is managed by internal provider (auge)
+        if (row[1] != 0) {
+          throw new GrpcError.notFound('User with identification infomed have external provider to authenticate. Then the password should be defined in external provider.');
+        } else {
+          code = Random().nextInt(9999).toString().padLeft(4, '0');
+          eMail = row[2];
+
+          String subject = MailMsg.subjectNewPasswordRequired();
+          String html = '<p>'
+              '${row[0]}, '
+              '</p>'
+              '<p>'
+              '${MailMsg
+              .toDefineNewPasswordInformTheCode()}: <strong>${code}</storng>'
+              '</p>'
+              '<p style="font-size:small;color:#666;">'
+              '<span>__</span>'
+              '<br/>'
+              '${MailMsg
+              .youIsReceivingThisEMailBecauseNewPasswordWasRequired()}'
+              '<br/>'
+              '<a href="http://auge.levius.com.br/">${MailMsg
+              .InformIt()}</a>.'
+              '</p>';
+
+          bool result = await AugeMail().sendMessage(List<String>()
+            ..add(row[2]), subject, html);
+
+          if (!result) {
+            throw new GrpcError.unknown('E-Mail not sent.');
+          }
+        }
+      }
+    } catch (e) {
+
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+
+    return NewPasswordCodeResponse()..code = code..eMail = eMail;
+
   }
 }
