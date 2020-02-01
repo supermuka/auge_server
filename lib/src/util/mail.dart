@@ -77,7 +77,7 @@ class AugeMail {
     // Sending multiple messages with the same connection
     //
     // Create a smtp client that will persist the connection
-    var connection = PersistentConnection(smtpServer);
+  //  var connection = PersistentConnection(smtpServer);
 
 
     bool result = false;

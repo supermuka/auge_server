@@ -1,6 +1,6 @@
 {
-  "@@last_modified": "2019-12-11T09:32:29.322497",
-  "CommonMsg_label": "{label,select, augeLabel{AUGE}objectivesWorksLabel{Objectives, Work and Performance}searchLabel{Search}filterLabel{Filter}moreLabel{more}emptyLabel{empty}other{Not Defined}}",
+  "@@last_modified": "2020-01-31T10:26:40.299910",
+  "CommonMsg_label": "{label,select, headerTitleLabel{AUGE}headerSubtitleLabel{Objectives, Work and Performance}searchLabel{Search}filterLabel{Filter}moreLabel{more}emptyLabel{empty}other{Not Defined}}",
   "@CommonMsg_label": {
     "description": "Common labels",
     "type": "text",
@@ -23,7 +23,7 @@
     "type": "text",
     "placeholders": {}
   },
-  "AuthMsg_label": "{label,select, domainLabel{name@domain.com}identificationLabel{Identification}passwordLabel{Password}selectLabel{Select}superAdminLabel{Super Admin}organizationLabel{Organization}allOrganizationsLabel{All Organizations}loginLabel{Login}logoutLabel{Logout}other{Not Defined}}",
+  "AuthMsg_label": "{label,select, domainLabel{name@domain.com}identificationLabel{Identification}passwordLabel{Password}selectLabel{Select}superAdminLabel{Super Admin}organizationLabel{Organization}allOrganizationsLabel{All Organizations}loginLabel{Login}logoutLabel{Logout}requestCodeToNewPasswordLabel{Request Code to New Password}informCodeLabel{Inform the Code}defineNewPasswordLabel{Define New Password}passwordCodeLabel{Code}newPasswordLabel{New Password}repeatNewPasswordLabel{Repeat New Password}saveLabel{Save}other{Not Defined}}",
   "@AuthMsg_label": {
     "description": "Authentication and authorizations labels",
     "type": "text",
@@ -56,7 +56,37 @@
     "type": "text",
     "placeholders": {}
   },
-  "AppLayoutMsg_label": "{label,select, organizationLabel{Organization}organizationsLabel{Organizations}adminLabel{Administration}superAdminLabel{Super Administration}userDetailLabel{User Detail}logoutLabel{Logout}ingightsLabel{Insights}worksLabel{Works}objectivesLabel{Objectives}objectivesMapLabel{Objectives Map}objectivesGanttLabel{Objectives Gantt}usersLabel{Users}groupsLabel{Groups}configurationLabel{Configuration}other{Not Defined}}",
+  "AuthMsg_informIdentificationCorrectlyMsg": "Inform an identification correctly.",
+  "@AuthMsg_informIdentificationCorrectlyMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_codeNotGeneratedMsg": "Code not generated.",
+  "@AuthMsg_codeNotGeneratedMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_informBelowTheCodeSentToEMailMsg": "Inform below the code sent to e-mail",
+  "@AuthMsg_informBelowTheCodeSentToEMailMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_codeValidateMsg": "Code validate.",
+  "@AuthMsg_codeValidateMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_newPasswordSavedMsg": "New Password Saved.",
+  "@AuthMsg_newPasswordSavedMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_passwordNotSavedMsg": "Password not saved.",
+  "@AuthMsg_passwordNotSavedMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AppLayoutMsg_label": "{label,select, organizationLabel{Organization}organizationsLabel{Organizations}adminLabel{Administrator}superAdminLabel{Super Administrator}userDetailLabel{User Detail}logoutLabel{Logout}ingightsLabel{Insights}worksLabel{Works}objectivesLabel{Objectives}objectivesMapLabel{Objectives Map}objectivesGanttLabel{Objectives Gantt}usersLabel{Users}groupsLabel{Groups}configurationLabel{Configuration}other{Not Defined}}",
   "@AppLayoutMsg_label": {
     "description": "Applayout labels",
     "type": "text",
@@ -222,7 +252,7 @@
       "label": {}
     }
   },
-  "MeasureMsg_measureUnitLabel": "{label,select, percentLabel{Percent}moneyLabel{Money}indexLabel{Index}unitaryLabel{Unitary}}",
+  "MeasureMsg_measureUnitLabel": "{label,select, percentLabel{Percent}moneyLabel{Money}indexLabel{Index}unitaryLabel{Unitary}other{Not Defined}}",
   "@MeasureMsg_measureUnitLabel": {
     "description": "Measure Unit labels",
     "type": "text",
@@ -306,13 +336,33 @@
       "fieldName": {}
     }
   },
-  "MailMsg_youIsReceivingThisEMailBecauseYouIsThe": "You is receiving this e-mail because you is the",
+  "MailMsg_youIsReceivingThisEMailBecauseYouIsThe": "You are receiving this e-mail because you is the",
   "@MailMsg_youIsReceivingThisEMailBecauseYouIsThe": {
     "type": "text",
     "placeholders": {}
   },
   "MailMsg_viewOrReplyIt": "View or reply it on Auge",
   "@MailMsg_viewOrReplyIt": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MailMsg_toDefineNewPasswordInformTheCode": "To define new password inform the code",
+  "@MailMsg_toDefineNewPasswordInformTheCode": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MailMsg_youIsReceivingThisEMailBecauseNewPasswordWasRequired": "You are receiving this e-mail because new password was required. Ignore this e-mail if you didn't request new password.",
+  "@MailMsg_youIsReceivingThisEMailBecauseNewPasswordWasRequired": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MailMsg_subjectNewPasswordRequired": "New Password Required",
+  "@MailMsg_subjectNewPasswordRequired": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MailMsg_InformIt": "Inform it on Auge",
+  "@MailMsg_InformIt": {
     "type": "text",
     "placeholders": {}
   }

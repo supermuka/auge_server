@@ -133,3 +133,7 @@ pub run intl_translation:extract_to_arb --output-dir=lib/shared/message/i18n --o
 pub run intl_translation:extract_to_arb --output-dir=lib/shared/message/i18n lib/shared/message/messages.dart
 
 pub run intl_translation:generate_from_arb --output-dir=lib/shared/message/i18n lib/shared/message/domain_messages.dart lib/shared/message/messages.dart lib/shared/message/i18n/intl_domain_messages_en.arb lib/shared/message/i18n/intl_domain_messages_pt_BR.arb  lib/shared/message/i18n/intl_messages_en.arb lib/shared/message/i18n/intl_messages_pt_BR.arb
+
+
+pub run intl_translation:generate_from_arb --output-dir=lib/shared/message/i18n lib/shared/message/domain_messages.dart lib/shared/message/i18n/intl_domain_messages_en.arb lib/shared/message/i18n/intl_domain_messages_pt_BR.arb
+pub run intl_translation:generate_from_arb --output-dir=lib/shared/message/i18n lib/shared/message/messages.dart lib/shared/message/i18n/intl_messages_en.arb lib/shared/message/i18n/intl_messages_pt_BR.arb

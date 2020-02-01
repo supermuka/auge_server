@@ -81,9 +81,13 @@ class AuthMsg {
   static const String loginLabel = 'loginLabel';
   static const String logoutLabel = 'logoutLabel';
 
+  static const String requestCodeToNewPasswordLabel = 'requestCodeToNewPasswordLabel';
+  static const String informCodeLabel = 'informCodeLabel';
+  static const String defineNewPasswordLabel = 'defineNewPasswordLabel';
   static const String passwordCodeLabel = 'passwordCodeLabel';
   static const String newPasswordLabel = 'newPasswordLabel';
   static const String repeatNewPasswordLabel = 'repeatNewPasswordLabel';
+  static const String saveLabel = 'saveLabel';
 
   /// Label for [Auth]
   static label(String label) => Intl.select(label, {
@@ -97,13 +101,17 @@ class AuthMsg {
     allOrganizationsLabel: 'All Organizations',
     loginLabel: 'Login',
     logoutLabel: 'Logout',
+    requestCodeToNewPasswordLabel: 'Request Code to New Password',
+    informCodeLabel: 'Inform the Code',
+    defineNewPasswordLabel: 'Define New Password',
     passwordCodeLabel: 'Code',
     newPasswordLabel: 'New Password',
     repeatNewPasswordLabel: 'Repeat New Password',
+    saveLabel: 'Save',
     'other': 'Not Defined'},
       name: "AuthMsg_label",
       args: [label],
-      locale: "en",
+     // locale: "en",
       desc: "Authentication and authorizations labels",
 
   );
@@ -119,6 +127,7 @@ class AuthMsg {
   static codeNotGeneratedMsg() => Intl.message("Code not generated.", name: "AuthMsg_codeNotGeneratedMsg");
   static informBelowTheCodeSentToEMailMsg() => Intl.message("Inform below the code sent to e-mail", name: "AuthMsg_informBelowTheCodeSentToEMailMsg");
   static codeValidateMsg() => Intl.message("Code validate.", name: "AuthMsg_codeValidateMsg");
+  static newPasswordSavedMsg() => Intl.message("New Password Saved.", name: "AuthMsg_newPasswordSavedMsg");
   static passwordNotSavedMsg() => Intl.message("Password not saved.", name: "AuthMsg_passwordNotSavedMsg");
 
 }
@@ -160,7 +169,7 @@ class AppLayoutMsg {
         'other': 'Not Defined'},
       name: "AppLayoutMsg_label",
       args: [label],
-      // locale: "en",
+    //  locale: "en",
       desc: "Applayout labels",
       examples: const {"Select": "Select"}
   );
@@ -758,7 +767,6 @@ class TimelineItemdMsg {
   static const String secondAgoLabel = 'secondAgoLabel';
   static const String secondsAgoLabel = 'secondsAgoLabel';
   static const String valueLabel = 'valueLabel';
-  static const String theLabel = 'theLabel';
   static const String changedFromLabel = 'changedFromLabel';
   static const String wasLabel = 'wasLabel';
 
@@ -774,7 +782,6 @@ class TimelineItemdMsg {
     secondAgoLabel: 'second ago',
     secondsAgoLabel: 'seconds ago',
     valueLabel: 'value',
-    theLabel: 'the',
     changedFromLabel: 'changed from',
     wasLabel: 'was',
       'other': 'Not Defined'},
@@ -793,7 +800,7 @@ class MailMsg {
   static viewOrReplyIt() => Intl.message('View or reply it on Auge', name: "MailMsg_viewOrReplyIt");
 
   /// Message to New Password
-  static toDefineNewPasswordInformTheCode() => Intl.message("To define new password inform the code", name: "MailMsg_youIsReceivingThisEMailBecauseNewPasswordWasRequired");
+  static toDefineNewPasswordInformTheCode() => Intl.message("To define new password inform the code", name: "MailMsg_toDefineNewPasswordInformTheCode");
 
   static youIsReceivingThisEMailBecauseNewPasswordWasRequired() => Intl.message("You are receiving this e-mail because new password was required. Ignore this e-mail if you didn't request new password.", name: "MailMsg_youIsReceivingThisEMailBecauseNewPasswordWasRequired");
   static subjectNewPasswordRequired() => Intl.message('New Password Required', name: "MailMsg_subjectNewPasswordRequired");

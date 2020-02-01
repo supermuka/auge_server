@@ -1,7 +1,7 @@
 {
   "@@last_modified": "2019-12-11T09:32:29.322497",
   "@@locale": "pt_BR",
-  "CommonMsg_label": "{label,select, augeLabel{AUGE}objectivesWorksLabel{Objetivos, Trabalho e Desempenho}searchLabel{Busca}filterLabel{Filtro}moreLabel{mais}emptyLabel{vazio}other{Não Definido}}",
+  "CommonMsg_label": "{label,select, headerTitleLabel{AUGE}headerSubtitleLabel{Objetivos, Trabalho e Desempenho}searchLabel{Busca}filterLabel{Filtro}moreLabel{mais}emptyLabel{vazio}other{Não Definido}}",
   "@CommonMsg_label": {
     "description": "Common labels",
     "type": "text",
@@ -24,7 +24,7 @@
     "type": "text",
     "placeholders": {}
   },
-  "AuthMsg_label": "{label,select, domainLabel{nome@dominio.com}identificationLabel{Identificação}passwordLabel{Senha}selectLabel{Selecionar}superAdminLabel{Super Admin}organizationLabel{Organização}allOrganizationsLabel{Todas Organizações}loginLabel{Logar}logoutLabel{Sair}other{Não Definido}}",
+  "AuthMsg_label": "{label,select, domainLabel{nome@dominio.com}identificationLabel{Identificação}passwordLabel{Senha}selectLabel{Selecionar}superAdminLabel{Super Admin}organizationLabel{Organização}allOrganizationsLabel{Todas Organizações}loginLabel{Logar}logoutLabel{Sair}requestCodeToNewPasswordLabel{Soliciar Código para Nova Senha}informCodeLabel{Inserir Código}defineNewPasswordLabel{Defina Nova Senha}passwordCodeLabel{Código}newPasswordLabel{Nova Senha}repeatNewPasswordLabel{Repedir Nova Senha}saveLabel{Salvar}other{Não Definido}}",
   "@AuthMsg_label": {
     "description": "Authentication and authorizations labels",
     "type": "text",
@@ -57,7 +57,37 @@
     "type": "text",
     "placeholders": {}
   },
-  "AppLayoutMsg_label": "{label,select, organizationLabel{Organização}organizationsLabel{Organizações}adminLabel{Administrador}superAdminLabel{Super Administrador}userDetailLabel{Detalhe do Usuário}logoutLabel{Sair}ingightsLabel{Insights}worksLabel{Trabalhos}objectivesLabel{Objectivos}objectivesMapLabel{Mapa de Objetivos}objectivesGanttLabel{Gantt de Objetivos}usersLabel{Usuários}groupsLabel{Grupos}configurationLabel{Configuração}other{Não Definido}}",
+  "AuthMsg_informIdentificationCorrectlyMsg": "Informe uma identificação corretamente.",
+  "@AuthMsg_informIdentificationCorrectlyMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_codeNotGeneratedMsg": "Código não gerado.",
+  "@AuthMsg_codeNotGeneratedMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_informBelowTheCodeSentToEMailMsg": "Informe abaixo o código enviado para o e-mail.",
+  "@AuthMsg_informBelowTheCodeSentToEMailMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_codeValidateMsg": "Código validado.",
+  "@AuthMsg_codeValidateMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_newPasswordSavedMsg": "Nova senha salva.",
+  "@AuthMsg_newPasswordSavedMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AuthMsg_passwordNotSavedMsg": "Senha não salva.",
+  "@AuthMsg_passwordNotSavedMsg": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "AppLayoutMsg_label": "{label,select, organizationLabel{Organização}organizationsLabel{Organizações}adminLabel{Administrador}superAdminLabel{Super Administrador}userDetailLabel{Detalhes do Usuário}logoutLabel{Sair}ingightsLabel{Insights}worksLabel{Trabalhos}objectivesLabel{Objetivos}objectivesMapLabel{Mapa de Objetivos}objectivesGanttLabel{Gantt de Objetivos}usersLabel{Usuários}groupsLabel{Grupos}configurationLabel{Configuração}other{Não Definido}}",
   "@AppLayoutMsg_label": {
     "description": "Applayout labels",
     "type": "text",
@@ -81,7 +111,7 @@
       "label": {}
     }
   },
-  "ConfigurationMsg_statusLabel": "{label,select, finished{Finalizado.}errorException{Uma exceção ocorreu.}errorEmailAttributeNotFound{Atributo de email não encontrado.}errorFirstNameAttributeNotFound{Atributo de primeiro nome não encontrado.}errorGroupOrGroupMemberNotFound{Grupo ou membro do grupo não econtrado.}errorGroupFilterInvalid{Filtro do grupo inválido.}errorLastNameAttributeNotFound{Atributo do último nome não encontrado.}errorIdentificationAttributeNotFound{Atributo de identificação (logar) não encontrado.}errorUserAttributeForGroupRelationshipNotFound{Atributo de usuário para relacionamento com o grupo não encontrado.}errorNotBoundInvalidCredentials{Não associado. Credencial inválida.}errorNotConnected{Não conectado.}errorUserNotFound{Usuário não encontrado.}other{Não Definido}}",
+  "ConfigurationMsg_statusLabel": "{label,select, finished{Concluído.}errorException{Uma exceção ocorreu.}errorEmailAttributeNotFound{Atributo de email não encontrado.}errorFirstNameAttributeNotFound{Atributo de primeiro nome não encontrado.}errorGroupOrGroupMemberNotFound{Grupo ou membro do grupo não econtrado.}errorGroupFilterInvalid{Filtro do grupo inválido.}errorLastNameAttributeNotFound{Atributo do último nome não encontrado.}errorIdentificationAttributeNotFound{Atributo de identificação (logar) não encontrado.}errorUserAttributeForGroupRelationshipNotFound{Atributo de usuário para relacionamento com o grupo não encontrado.}errorNotBoundInvalidCredentials{Não associado. Credencial inválida.}errorNotConnected{Não conectado.}errorUserNotFound{Usuário não encontrado.}other{Não Definido}}",
   "@ConfigurationMsg_statusLabel": {
     "description": "Status Configuration labels",
     "type": "text",
@@ -165,7 +195,7 @@
     "type": "text",
     "placeholders": {}
   },
-  "StateMsg_label": "{label,select, notStarted{Não Iniciado}inProgress{Em Progresso}completed{Finalizado}other{Não Definido}}",
+  "StateMsg_label": "{label,select, notStarted{Não Iniciado}inProgress{Em Progresso}completed{Concluído}other{Não Definido}}",
   "@StateMsg_label": {
     "description": "State labels",
     "type": "text",
@@ -283,7 +313,7 @@
       "label": {}
     }
   },
-  "InsightMsg_label": "{label,select, insightsLabel{Insights}groupLabel{Grupo}leaderLabel{Lider}objectivesOverallLabel{Objetivos no Geral}objectivesMeasuresLabel{Objetivos e Medidas}worksWorkItemsLabel{Trabalhos e Itens de Trabalho}objectivesLabel{Objetivos}objectivesDescriptionLabel{Número total de objetivos}objectivesAchievedLabel{Objetivos Alcançados}measuresAchievedDescriptionLabel{Medidas acima de 70% de progresso}objectivesRequiringAttentionLabel{Objetivos Requerendo Atenção}measuresRequiringAttentionDescriptionLabel{Medidas abaixo de 30% de progresso}measuresLabel{Medidas}measuresDescriptionLabel{Número total de medidas}measuresAchievedLabel{Medidas Alcançadas}measuresRequiringAttentionLabel{Medidas Requerendo Atenção}worksLabel{Trabalhos}worksDescriptionLabel{Número total de trabalhos}worksCompletedLabel{Trabalhos Finalizados}worksCompletedDescriptionLabel{Trabalhos com 100% dos itens de trabalho finalizados}worksRequiringAttentionLabel{Trabalhos Requerendo Atenção}worksRequiringAttentionDescriptionLabel{Trabalhos com itens de trabalho atrasados}workItemsLabel{Itens de Trabalho}workItemsDescriptionLabel{Número total de items de trabalho}workItemsCompletedLabel{Items de Trabalho Finalizados}workItemsCompletedDescriptionLabel{Itens de Trabalho com 100% de progresso}workItemsRequiringAttentionLabel{Itens de Trabalho Requerendo Atenção}workItemsRequiringAttentionDescriptionLabel{Itens de trabalho atrasados}other{Não Definido}}",
+  "InsightMsg_label": "{label,select, insightsLabel{Insights}groupLabel{Grupo}leaderLabel{Lider}objectivesOverallLabel{Objetivos no Geral}objectivesMeasuresLabel{Objetivos e Medidas}worksWorkItemsLabel{Trabalhos e Itens de Trabalho}objectivesLabel{Objetivos}objectivesDescriptionLabel{Número total de objetivos}objectivesAchievedLabel{Objetivos Alcançados}measuresAchievedDescriptionLabel{Medidas acima de 70% de progresso}objectivesRequiringAttentionLabel{Objetivos Requerendo Atenção}measuresRequiringAttentionDescriptionLabel{Medidas abaixo de 30% de progresso}measuresLabel{Medidas}measuresDescriptionLabel{Número total de medidas}measuresAchievedLabel{Medidas Alcançadas}measuresRequiringAttentionLabel{Medidas Requerendo Atenção}worksLabel{Trabalhos}worksDescriptionLabel{Número total de trabalhos}worksCompletedLabel{Trabalhos Concluídos}worksCompletedDescriptionLabel{Trabalhos com 100% dos itens de trabalho concluídos}worksRequiringAttentionLabel{Trabalhos Requerendo Atenção}worksRequiringAttentionDescriptionLabel{Trabalhos com itens de trabalho atrasados}workItemsLabel{Itens de Trabalho}workItemsDescriptionLabel{Número total de items de trabalho}workItemsCompletedLabel{Items de Trabalho Concluídos}workItemsCompletedDescriptionLabel{Itens de Trabalho com 100% de progresso}workItemsRequiringAttentionLabel{Itens de Trabalho Requerendo Atenção}workItemsRequiringAttentionDescriptionLabel{Itens de trabalho atrasados}other{Não Definido}}",
   "@InsightMsg_label": {
     "description": "Insight labels",
     "type": "text",
@@ -291,7 +321,7 @@
       "label": {}
     }
   },
-  "SystemFunctionMsg_inPastLabel": "{functionName,select, create{Criado}update{Atualizado}delete{Deletado}read{Lido}other{Não Definido}}",
+  "SystemFunctionMsg_inPastLabel": "{functionName,select, create{Criado(a)}update{Atualizado(a)}delete{Deletado(a)}read{Lido(a)}other{Não Definido}}",
   "@SystemFunctionMsg_inPastLabel": {
     "description": "System Function labels",
     "type": "text",
@@ -314,6 +344,26 @@
   },
   "MailMsg_viewOrReplyIt": "Veja ou responda ele no Auge",
   "@MailMsg_viewOrReplyIt": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MailMsg_toDefineNewPasswordInformTheCode": "Para definir a nova senha informe o código",
+  "@MailMsg_toDefineNewPasswordInformTheCode": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MailMsg_youIsReceivingThisEMailBecauseNewPasswordWasRequired": "Você está recebendo este e-mail porque uma nova senha foi solicitada. Ignore este e-mail se você não solicitou uma nova senha.",
+  "@MailMsg_youIsReceivingThisEMailBecauseNewPasswordWasRequired": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MailMsg_subjectNewPasswordRequired": "Nova Senha Solicitada.",
+  "@MailMsg_subjectNewPasswordRequired": {
+    "type": "text",
+    "placeholders": {}
+  },
+  "MailMsg_InformIt": "Informe ela no Auge",
+  "@MailMsg_InformIt": {
     "type": "text",
     "placeholders": {}
   }
