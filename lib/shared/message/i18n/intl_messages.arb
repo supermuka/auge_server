@@ -1,5 +1,5 @@
 {
-  "@@last_modified": "2020-01-31T10:26:40.299910",
+  "@@last_modified": "2020-02-03T10:38:48.823591",
   "CommonMsg_label": "{label,select, headerTitleLabel{AUGE}headerSubtitleLabel{Objectives, Work and Performance}searchLabel{Search}filterLabel{Filter}moreLabel{more}emptyLabel{empty}other{Not Defined}}",
   "@CommonMsg_label": {
     "description": "Common labels",
@@ -328,7 +328,7 @@
       "functionName": {}
     }
   },
-  "TimelineItemdMsg_label": "{fieldName,select, timelineLabel{Timeline}dayAgoLabel{day ago}daysAgoLabel{days ago}hourAgoLabel{hour ago}hoursAgoLabel{hours ago}minuteAgoLabel{minute ago}minutesAgoLabel{minutes ago}secondAgoLabel{second ago}secondsAgoLabel{seconds ago}valueLabel{value}theLabel{the}changedFromLabel{changed from}wasLabel{was}other{Not Defined}}",
+  "TimelineItemdMsg_label": "{fieldName,select, timelineLabel{Timeline}dayAgoLabel{day ago}daysAgoLabel{days ago}hourAgoLabel{hour ago}hoursAgoLabel{hours ago}minuteAgoLabel{minute ago}minutesAgoLabel{minutes ago}secondAgoLabel{second ago}secondsAgoLabel{seconds ago}valueLabel{value}changedFromLabel{changed from}wasLabel{was}other{Not Defined}}",
   "@TimelineItemdMsg_label": {
     "description": "TimelineItem labels",
     "type": "text",
@@ -336,8 +336,16 @@
       "fieldName": {}
     }
   },
-  "MailMsg_youIsReceivingThisEMailBecauseYouIsThe": "You are receiving this e-mail because you is the",
-  "@MailMsg_youIsReceivingThisEMailBecauseYouIsThe": {
+  "MailMsg_label": "{label,select, thisLabel{this}other{Not Defined}}",
+  "@MailMsg_label": {
+    "description": "MailMsg labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "MailMsg_youIsReceivingThisEMailBecauseYouAreThe": "You are receiving this e-mail because you are the",
+  "@MailMsg_youIsReceivingThisEMailBecauseYouAreThe": {
     "type": "text",
     "placeholders": {}
   },

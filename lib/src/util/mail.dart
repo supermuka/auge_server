@@ -12,9 +12,9 @@ class AugeMail {
   String username = 'samuel.schwebel@levius.com.br';
   String password = 'xavuxgpvbkrywqcn'; // google app password ;
 
-  void sendNotification(List<AugeMailMessageTo> augeMailMessagesTo) async {
+  Future<bool> sendNotification(List<AugeMailMessageTo> augeMailMessagesTo) async {
 
-    if (augeMailMessagesTo.length == 0) return;
+    if (augeMailMessagesTo.length == 0) return false;
 
     final smtpServer = gmail(username, password);
     // Use the SmtpServer class to configure an SMTP server:
@@ -44,7 +44,7 @@ class AugeMail {
                   '<p style="font-size:small;color:#666;">'
                   '<span>__</span>'
                   '<br/>'
-                  '${MailMsg.youIsReceivingThisEMailBecauseYouIsThe()} ${augeMailMessageTo.classNameDescription} ${augeMailMessageTo.assignmentDescription}.'
+                  '${MailMsg.youIsReceivingThisEMailBecauseYouAreThe()} ${augeMailMessageTo.assignmentDescription} ${MailMsg.label(MailMsg.thisLabel)} ${augeMailMessageTo.classNameDescription}.'
                   '<br/>'
                   '<a href="http://auge.levius.com.br/">${MailMsg.viewOrReplyIt()}</a>.'
                   '</p>';
@@ -53,14 +53,19 @@ class AugeMail {
         //var sendReport = await connection.send(message);
         await connection.send(message);
         //print('Message sent: ' + sendReport.toString());
+        return true;
       }
     } on MailerException catch (e) {
       print('e-mail message not sent. ${e.toString()}');
       for (var p in e.problems) {
         print('Problem: ${p.code}: ${p.msg}');
       }
-
-    } finally {
+      return false;
+    } catch(ee) {
+      print(ee);
+      return false;
+    }
+    finally {
       // close the connection
       await connection.close();
     }

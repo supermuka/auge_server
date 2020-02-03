@@ -217,7 +217,7 @@ class WorkService extends WorkServiceBase {
     mailMessages.add(
         AugeMailMessageTo(
             [work.leader.userProfile.eMail],
-            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
             '${WorkDomainMsg.fieldLabel(work_m.Work.leaderField)}'));

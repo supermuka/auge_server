@@ -294,7 +294,7 @@ class WorkItemService extends WorkItemServiceBase {
     mailMessages.add(
         AugeMailMessageTo(
             [workItem.work.leader.userProfile.eMail],
-            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(work_m.Work.leaderField)}'));

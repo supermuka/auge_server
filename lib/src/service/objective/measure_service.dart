@@ -241,7 +241,7 @@ class MeasureService extends MeasureServiceBase {
     mailMessages.add(
         AugeMailMessageTo(
             [measure.objective.leader.userProfile.eMail],
-            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));
@@ -551,7 +551,7 @@ class MeasureService extends MeasureServiceBase {
     mailMessages.add(
         AugeMailMessageTo(
             [measureProgress.measure.objective.leader.userProfile.eMail],
-            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));

@@ -3,7 +3,11 @@
 
 import 'dart:math';
 import 'package:fixnum/fixnum.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
 import 'package:auge_server/src/protos/generated/google/protobuf/timestamp.pb.dart';
+import 'package:auge_server/shared/message/i18n/messages_all.dart';
 
 class CommonUtils {
 
@@ -38,6 +42,12 @@ class CommonUtils {
 
     return String.fromCharCodes(values);
 
+  }
+
+  static void setDefaultLocale(String defaultLocale) async {
+    Intl.defaultLocale = defaultLocale;
+    initializeDateFormatting(Intl.defaultLocale);
+    await initializeMessages(Intl.defaultLocale);
   }
 
 }

@@ -770,7 +770,7 @@ class TimelineItemdMsg {
   static const String changedFromLabel = 'changedFromLabel';
   static const String wasLabel = 'wasLabel';
 
-  /// Label for Insight
+  /// Label
   static label(String fieldName) => Intl.select(fieldName, {
     timelineLabel: 'Timeline',
     dayAgoLabel: 'day ago',
@@ -795,8 +795,20 @@ class TimelineItemdMsg {
 /// Specific messages and label for [MailMsg] class field
 class MailMsg {
 
+  static const String thisLabel = 'thisLabel';
+
+  /// Label
+  static label(String label) => Intl.select(label, {
+    thisLabel: 'this',
+    'other': 'Not Defined'},
+    name: "MailMsg_label",
+    args: [label],
+    // locale: "en",
+    desc: "MailMsg labels",
+  );
+
   /// Message to Notification
-  static youIsReceivingThisEMailBecauseYouIsThe() => Intl.message('You are receiving this e-mail because you is the', name: "MailMsg_youIsReceivingThisEMailBecauseYouIsThe");
+  static youIsReceivingThisEMailBecauseYouAreThe() => Intl.message('You are receiving this e-mail because you are the', name: "MailMsg_youIsReceivingThisEMailBecauseYouAreThe");
   static viewOrReplyIt() => Intl.message('View or reply it on Auge', name: "MailMsg_viewOrReplyIt");
 
   /// Message to New Password

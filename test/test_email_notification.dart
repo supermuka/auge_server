@@ -1,6 +1,10 @@
 import 'package:auge_server/domain/general/authorization.dart';
 import 'package:auge_server/src/protos/generated/general/user.pb.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:test/test.dart';
+
+import 'package:auge_server/shared/message/i18n/messages_all.dart';
 
 import 'package:auge_server/domain/objective/objective.dart' as objective_m;
 import 'package:auge_server/src/util/mail.dart';
@@ -10,7 +14,6 @@ import 'package:auge_server/src/protos/generated/objective/objective_measure.pbg
 
 void main() {
 
-
   setUp(() {
   });
 
@@ -18,7 +21,7 @@ void main() {
   // Object: users
   group('Test eMail', () {
 
-    test('Send Auge e-mail notifications.', () {
+    test('Send Auge e-mail notifications.', () async {
       // expect(AugeMail.sendEMail(), isTrue);
 
       List<AugeMailMessageTo> eMails = [];
@@ -28,6 +31,15 @@ void main() {
       objective.leader = User();
       objective.leader.userProfile = UserProfile();
       objective.leader.userProfile.eMail = 'samuel.schwebel@levius.com.br';
+      objective.leader.userProfile.idiomLocale = 'pt_BR';
+
+      if (objective.leader.userProfile.idiomLocale != null) {
+        Intl.defaultLocale = objective.leader.userProfile.idiomLocale;
+        initializeDateFormatting(Intl.defaultLocale);
+        await initializeMessages(Intl.defaultLocale);
+      }
+
+      print('Intl ${Intl.defaultLocale}');
 
       String className = 'Objective';
 
@@ -36,16 +48,17 @@ void main() {
       // Leader
       eMails.add(
           AugeMailMessageTo([objective.leader.userProfile.eMail],
-              className,
-              SystemFunctionMsg.inPastLabel(systemFunction.toString()),
+              ClassNameMsg.label(className),
+              SystemFunctionMsg.inPastLabel(systemFunction.toString().split('.').last),
               objective.name,
               ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)
           )
       );
 
       // SEND E-MAIL
-      AugeMail().sendNotification(eMails);
-    //expect(() => AugeMail().send(eMails), returnsNormally);
+      bool eMailOk = await AugeMail().sendNotification(eMails);
+      expect(eMailOk, isTrue);
+      // expect(true, isTrue);
     });
   });
 }

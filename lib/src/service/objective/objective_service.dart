@@ -3,13 +3,14 @@
 
 import 'dart:async';
 
-
+import 'package:auge_server/shared/common_utils.dart';
 import 'package:auge_server/src/protos/generated/objective/objective_measure.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/util/mail.dart';
 import 'package:auge_server/shared/message/messages.dart';
 import 'package:auge_server/shared/message/domain_messages.dart';
+
 
 import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
@@ -22,7 +23,6 @@ import 'package:auge_server/domain/general/authorization.dart' show SystemModule
 import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
 import 'package:auge_server/domain/objective/objective.dart' as objective_m;
 
-import 'package:auge_server/shared/common_utils.dart';
 import 'package:auge_server/shared/rpc_error_message.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
@@ -268,10 +268,13 @@ class ObjectiveService extends ObjectiveServiceBase {
     // Leader - eMail
     if (objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
+    if (objective.leader.userProfile.idiomLocale != null)
+      CommonUtils.setDefaultLocale(objective.leader.userProfile.idiomLocale);
+
     mailMessages.add(
         AugeMailMessageTo(
             [objective.leader.userProfile.eMail],
-            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString())}',
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));

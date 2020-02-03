@@ -1,7 +1,7 @@
 {
   "@@last_modified": "2019-12-11T09:32:29.322497",
   "@@locale": "pt_BR",
-  "CommonMsg_label": "{label,select, headerTitleLabel{AUGE}headerSubtitleLabel{Objetivos, Trabalho e Desempenho}searchLabel{Busca}filterLabel{Filtro}moreLabel{mais}emptyLabel{vazio}other{Não Definido}}",
+  "CommonMsg_label": "{label,select, headerTitleLabel{AUGE}headerSubtitleLabel{Objetivos, Trabalho e Desempenho}searchLabel{Busca}filterLabel{Filtro}moreLabel{mais}emptyLabel{vazio}ofLabel{de}other{Não Definido}}",
   "@CommonMsg_label": {
     "description": "Common labels",
     "type": "text",
@@ -337,8 +337,16 @@
       "fieldName": {}
     }
   },
-  "MailMsg_youIsReceivingThisEMailBecauseYouIsThe": "Você está recebendo este e-mail porque você é",
-  "@MailMsg_youIsReceivingThisEMailBecauseYouIsThe": {
+  "MailMsg_label": "{label,select, thisLabel{deste(a)}other{Not Defined}}",
+  "@MailMsg_label": {
+    "description": "MailMsg labels",
+    "type": "text",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "MailMsg_youIsReceivingThisEMailBecauseYouAreThe": "Você está recebendo este e-mail porque você é o(a)",
+  "@MailMsg_youIsReceivingThisEMailBecauseYouAreThe": {
     "type": "text",
     "placeholders": {}
   },
