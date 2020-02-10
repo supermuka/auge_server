@@ -3,27 +3,27 @@
 
 import 'dart:async';
 
-import 'package:auge_server/shared/common_utils.dart';
-import 'package:auge_server/src/protos/generated/objective/objective_measure.pbgrpc.dart';
+import 'package:auge_shared/src/util/common_utils.dart';
+import 'package:auge_shared/protos/generated/objective/objective_measure.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/util/mail.dart';
-import 'package:auge_server/shared/message/messages.dart';
-import 'package:auge_server/shared/message/domain_messages.dart';
+import 'package:auge_shared/message/messages.dart';
+import 'package:auge_shared/message/domain_messages.dart';
+import 'package:auge_shared/route/app_routes_definition.dart';
 
+import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
+import 'package:auge_shared/protos/generated/general/user.pb.dart';
+import 'package:auge_shared/protos/generated/general/organization.pb.dart';
+import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart';
+import 'package:auge_shared/protos/generated/general/group.pb.dart';
 
-import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
-import 'package:auge_server/src/protos/generated/general/user.pb.dart';
-import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
-import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart';
-import 'package:auge_server/src/protos/generated/general/group.pb.dart';
+import 'package:auge_shared/domain/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
+import 'package:auge_shared/domain/objective/objective.dart' as objective_m;
 
-import 'package:auge_server/domain/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
-import 'package:auge_server/domain/objective/objective.dart' as objective_m;
-
-import 'package:auge_server/shared/rpc_error_message.dart';
+import 'package:auge_shared/message/rpc_error_message.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/src/service/objective/measure_service.dart';
@@ -54,25 +54,24 @@ class ObjectiveService extends ObjectiveServiceBase {
     Objective objective = await querySelectObjective(request);
     if (objective == null) throw new GrpcError.notFound("Objective not found.");
     return objective;
-
   }
 
   @override
   Future<StringValue> createObjective(ServiceCall call,
       ObjectiveRequest request) async {
-    return queryInsertObjective(request);
+    return queryInsertObjective(request, call.clientMetadata['origin']);
   }
 
   @override
   Future<Empty> updateObjective(ServiceCall call,
       ObjectiveRequest request) async {
-    return queryUpdateObjective(request);
+    return queryUpdateObjective(request, call.clientMetadata['origin']);
   }
 
   @override
   Future<Empty> deleteObjective(ServiceCall call,
       ObjectiveDeleteRequest request) async {
-    return queryDeleteObjective(request);
+    return queryDeleteObjective(request, call.clientMetadata['origin']);
   }
 
   // QUERY
@@ -257,7 +256,7 @@ class ObjectiveService extends ObjectiveServiceBase {
    */
 
   /// Objective Notification User
-  static void objectiveNotification(Objective objective, String className, int systemFunctionIndex, String description) {
+  static void objectiveNotification(Objective objective, String className, int systemFunctionIndex, String description, String urlOrigin) async {
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -268,8 +267,7 @@ class ObjectiveService extends ObjectiveServiceBase {
     // Leader - eMail
     if (objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
-    if (objective.leader.userProfile.idiomLocale != null)
-      CommonUtils.setDefaultLocale(objective.leader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(objective.leader.userProfile.idiomLocale);
 
     mailMessages.add(
         AugeMailMessageTo(
@@ -277,15 +275,16 @@ class ObjectiveService extends ObjectiveServiceBase {
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
-            '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));
+            '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}',
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.objectivesRoutePath}?${AppRoutesQueryParam.objectiveIdQueryParameter}=${objective.id}',
+            ));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
-
   }
 
   /// Create (insert) a new objective
-  static Future<StringValue> queryInsertObjective(ObjectiveRequest request) async {
+  static Future<StringValue> queryInsertObjective(ObjectiveRequest request, String urlOrigin) async {
     if (!request.objective.hasId()) {
       request.objective.id = new Uuid().v4();
     }
@@ -341,10 +340,9 @@ class ObjectiveService extends ObjectiveServiceBase {
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: historyItemNotificationValues);
 
-
       });
 
-      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -354,7 +352,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
 
   /// Update an initiative passing an instance of [Objective]
-  static Future<Empty> queryUpdateObjective(ObjectiveRequest request) async {
+  static Future<Empty> queryUpdateObjective(ObjectiveRequest request, String urlOrigin) async {
 
     // Recovery to log to history
     Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objective.id..withUserProfile = true);
@@ -419,7 +417,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
       });
 
-      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -430,7 +428,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   /// Delete an objective by [id]
-  static Future<Empty> queryDeleteObjective(ObjectiveDeleteRequest request) async {
+  static Future<Empty> queryDeleteObjective(ObjectiveDeleteRequest request, String urlOrigin) async {
 
     // Recovery to log to history
     Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
@@ -475,7 +473,7 @@ class ObjectiveService extends ObjectiveServiceBase {
         }
       });
 
-      objectiveNotification(previousObjective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      objectiveNotification(previousObjective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

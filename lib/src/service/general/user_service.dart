@@ -6,18 +6,18 @@ import 'dart:async';
 import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:grpc/grpc.dart';
 
-import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
-import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
+import 'package:auge_shared/protos/generated/general/organization.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/general/user.pbgrpc.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
-import 'package:auge_server/domain/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/domain/general/user.dart' as user_m;
-import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
+import 'package:auge_shared/domain/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_shared/domain/general/user.dart' as user_m;
+import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
 
 import 'package:uuid/uuid.dart';
 

@@ -2,12 +2,12 @@ import 'package:test/test.dart';
 
 import 'package:grpc/grpc.dart';
 
-import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
-import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
-import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
+import 'package:auge_shared/protos/generated/general/organization.pb.dart';
+import 'package:auge_shared/protos/generated/general/organization.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/general/user.pbgrpc.dart';
 
-import 'package:auge_server/src/protos/generated/objective/objective_measure.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/objective/objective_measure.pbgrpc.dart';
 
 void main() {
 

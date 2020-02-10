@@ -5,16 +5,19 @@ version: 0.0.1
 # author: Samuel <email@example.com>
 
 environment:
-  sdk: '>=2.2.0 <3.0.0'
+  sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
   #args: ^1.5.0
   #analyzer: ^0.39.2+1
-  intl: ^0.15.0
+  auge_shared:
+    path: ../auge_shared/
+
+  #intl: ^0.15.0
   #intl_translation: ^0.17.7
   #shelf: ^0.7.3+3
   #rpc: ^0.6.0
-  fixnum: ^0.10.9
+  #fixnum: ^0.10.9
   #rpc:
   #  git:
   #    url: git://github.com/dart-archive/rpc.git
@@ -36,6 +39,7 @@ dependencies:
   protobuf: ^1.0.0
   grpc: ^2.1.2
   dartdap: ^0.4.2
+
   #grpc:
   #  git:
   #    url: git://github.com/grpc/grpc-dart.git
@@ -49,7 +53,7 @@ dependencies:
 
 dev_dependencies:
   test: ^1.6.3
-  intl_translation: ^0.17.7
+  #intl_translation: ^0.17.7
 
 dependency_overrides:
   #googleapis: 0.53.0

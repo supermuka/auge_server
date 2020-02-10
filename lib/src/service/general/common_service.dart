@@ -4,10 +4,10 @@
 import 'dart:async';
 
 import 'package:grpc/grpc.dart';
-import 'package:auge_server/shared/common_utils.dart';
+import 'package:auge_shared/src/util/common_utils.dart';
 
-import 'package:auge_server/src/protos/generated/general/common.pb.dart';
-import 'package:auge_server/src/protos/generated/general/common.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/general/common.pb.dart';
+import 'package:auge_shared/protos/generated/general/common.pbgrpc.dart';
 
 class CommonService extends CommonServiceBase {
 

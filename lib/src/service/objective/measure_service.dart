@@ -2,26 +2,26 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-import 'package:auge_server/shared/common_utils.dart';
-import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart';
-import 'package:auge_server/shared/message/messages.dart';
-import 'package:auge_server/shared/message/domain_messages.dart';
+import 'package:auge_shared/src/util/common_utils.dart';
+import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart';
+import 'package:auge_shared/message/messages.dart';
+import 'package:auge_shared/message/domain_messages.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/util/mail.dart';
 
-import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
-import 'package:auge_server/src/protos/generated/objective/objective_measure.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
+import 'package:auge_shared/protos/generated/objective/objective_measure.pbgrpc.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
-import 'package:auge_server/domain/general/authorization.dart';
-import 'package:auge_server/shared/rpc_error_message.dart';
+import 'package:auge_shared/domain/general/authorization.dart';
+import 'package:auge_shared/message/rpc_error_message.dart';
 
-import 'package:auge_server/domain/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
-import 'package:auge_server/domain/objective/objective.dart' as objective_m;
-import 'package:auge_server/domain/objective/measure.dart' as measure_m;
+import 'package:auge_shared/domain/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
+import 'package:auge_shared/domain/objective/objective.dart' as objective_m;
+import 'package:auge_shared/domain/objective/measure.dart' as measure_m;
 
 import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
@@ -63,19 +63,19 @@ class MeasureService extends MeasureServiceBase {
   @override
   Future<StringValue> createMeasure(ServiceCall call,
       MeasureRequest request) async {
-    return queryInsertMeasure(request);
+    return queryInsertMeasure(request, call.clientMetadata['origin']);
   }
 
   @override
   Future<Empty> updateMeasure(ServiceCall call,
       MeasureRequest request) async {
-    return queryUpdateMeasure(request);
+    return queryUpdateMeasure(request, call.clientMetadata['origin']);
   }
 
   @override
   Future<Empty> deleteMeasure(ServiceCall call,
       MeasureDeleteRequest request) async {
-    return queryDeleteMeasure(request);
+    return queryDeleteMeasure(request, call.clientMetadata['origin']);
   }
 
 
@@ -99,19 +99,19 @@ class MeasureService extends MeasureServiceBase {
   @override
   Future<StringValue> createMeasureProgress(ServiceCall call,
       MeasureProgressRequest request) async {
-    return queryInsertMeasureProgress(request);
+    return queryInsertMeasureProgress(request, call.clientMetadata['origin']);
   }
 
   @override
   Future<Empty> updateMeasureProgress(ServiceCall call,
       MeasureProgressRequest request) async {
-    return queryUpdateMeasureProgress(request);
+    return queryUpdateMeasureProgress(request, call.clientMetadata['origin']);
   }
 
   @override
   Future<Empty> deleteMeasureProgress(ServiceCall call,
       MeasureProgressDeleteRequest request) async {
-    return queryDeleteMeasureProgress(request);
+    return queryDeleteMeasureProgress(request, call.clientMetadata['origin']);
   }
 
   // QUERY
@@ -227,7 +227,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Objective Measure Notification User
-  static void measureNotification(Measure measure, String className, int systemFunctionIndex, String description) {
+  static void measureNotification(Measure measure, String className, int systemFunctionIndex, String description, String urlOrigin) {
 
     // Leader - Verify if send e-mail
     if (!measure.objective.leader.userProfile.eMailNotification) return;
@@ -244,7 +244,8 @@ class MeasureService extends MeasureServiceBase {
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
-            '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));
+            '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}',
+            urlOrigin));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -253,7 +254,7 @@ class MeasureService extends MeasureServiceBase {
 
   /// Create (insert) a new measures
   static Future<StringValue> queryInsertMeasure(
-      MeasureRequest request) async {
+      MeasureRequest request, String urlOrigin) async {
     if (!request.measure.hasId()) {
       request.measure.id = new Uuid().v4();
     }
@@ -319,7 +320,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(request.measure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      measureNotification(request.measure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -330,7 +331,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Update [Measure]
-  Future<Empty> queryUpdateMeasure(MeasureRequest request) async {
+  Future<Empty> queryUpdateMeasure(MeasureRequest request, String urlOrigin) async {
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -398,7 +399,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(request.measure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      measureNotification(request.measure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -408,7 +409,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Delete a [Measure] by id
-  Future<Empty> queryDeleteMeasure(MeasureDeleteRequest request) async {
+  Future<Empty> queryDeleteMeasure(MeasureDeleteRequest request, String urlOrigin) async {
 
     Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId..withObjective = true);
     Map<String, dynamic> historyItemNotificationValues;
@@ -451,7 +452,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(previousMeasure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      measureNotification(previousMeasure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -537,7 +538,7 @@ class MeasureService extends MeasureServiceBase {
 
 
   /// Objective Measure Progress Notification User
-  static void measureProgressNotification(MeasureProgress measureProgress, String className, int systemFunctionIndex, String description) {
+  static void measureProgressNotification(MeasureProgress measureProgress, String className, int systemFunctionIndex, String description, String urlOrigin) {
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -554,7 +555,8 @@ class MeasureService extends MeasureServiceBase {
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
-            '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}'));
+            '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}',
+            urlOrigin));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -565,7 +567,7 @@ class MeasureService extends MeasureServiceBase {
 
   /// Create current value of the [MeasureProgress]
   static Future<StringValue> queryInsertMeasureProgress(
-      MeasureProgressRequest request) async {
+      MeasureProgressRequest request, String urlOrigin) async {
     Map<String, dynamic> historyItemNotificationValues;
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -617,7 +619,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureProgressNotification(request.measureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      measureProgressNotification(request.measureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -628,7 +630,7 @@ class MeasureService extends MeasureServiceBase {
 
   /// Create current value of the [MeasureProgress]
   Future<Empty> queryUpdateMeasureProgress(
-      MeasureProgressRequest request) async {
+      MeasureProgressRequest request, String urlOrigin) async {
     // Recovery to log to history
     MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgress.id);
 
@@ -690,7 +692,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureProgressNotification(request.measureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      measureProgressNotification(request.measureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -700,7 +702,7 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Delete a [MeasureProgress] by id
-  Future<Empty> queryDeleteMeasureProgress(MeasureProgressDeleteRequest request) async {
+  Future<Empty> queryDeleteMeasureProgress(MeasureProgressDeleteRequest request, String urlOrigin) async {
 
     MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgressId);
 
@@ -745,7 +747,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureProgressNotification(previousMeasureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      measureProgressNotification(previousMeasureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

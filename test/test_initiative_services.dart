@@ -3,16 +3,16 @@ import 'package:test/test.dart';
 import 'package:grpc/grpc.dart';
 
 
-import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
-import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
-import 'package:auge_server/src/protos/generated/general/organization.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/user.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
+import 'package:auge_shared/protos/generated/general/organization.pb.dart';
+import 'package:auge_shared/protos/generated/general/organization.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/general/user.pbgrpc.dart';
 
-import 'package:auge_server/src/protos/generated/work/work_work_item.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/work/work_stage.pbgrpc.dart';
-import 'package:auge_server/src/protos/generated/general/group.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/work/work_work_item.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/work/work_stage.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/general/group.pbgrpc.dart';
 
-import 'package:auge_server/domain/general/group.dart' as group_m;
+import 'package:auge_shared/domain/general/group.dart' as group_m;
 
 void main() {
 

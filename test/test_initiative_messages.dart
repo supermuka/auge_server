@@ -1,15 +1,15 @@
 import 'package:test/test.dart';
 
-import 'package:auge_server/src/protos/generated/work/work_work_item.pb.dart' as work_work_item_pb;
-import 'package:auge_server/src/protos/generated/work/work_stage.pb.dart' as work_stage_pb;
+import 'package:auge_shared/protos/generated/work/work_work_item.pb.dart' as work_work_item_pb;
+import 'package:auge_shared/protos/generated/work/work_stage.pb.dart' as work_stage_pb;
 
-import 'package:auge_server/domain/general/organization.dart' as organization_m;
-import 'package:auge_server/domain/general/group.dart' as group_m;
-import 'package:auge_server/domain/general/user.dart' as user_m;
-import 'package:auge_server/domain/work/work.dart' as work_m;
-import 'package:auge_server/domain/work/work_item.dart' as work_item_m;
-import 'package:auge_server/domain/work/work_stage.dart' as stage_m;
-import 'package:auge_server/domain/objective/objective.dart' as objective_m;
+import 'package:auge_shared/domain/general/organization.dart' as organization_m;
+import 'package:auge_shared/domain/general/group.dart' as group_m;
+import 'package:auge_shared/domain/general/user.dart' as user_m;
+import 'package:auge_shared/domain/work/work.dart' as work_m;
+import 'package:auge_shared/domain/work/work_item.dart' as work_item_m;
+import 'package:auge_shared/domain/work/work_stage.dart' as stage_m;
+import 'package:auge_shared/domain/objective/objective.dart' as objective_m;
 
 void main() {
 

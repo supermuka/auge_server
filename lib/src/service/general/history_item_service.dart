@@ -2,11 +2,11 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-import 'package:auge_server/shared/common_utils.dart';
+import 'package:auge_shared/src/util/common_utils.dart';
 
 import 'package:grpc/grpc.dart';
-import 'package:auge_server/src/protos/generated/general/user.pb.dart';
-import 'package:auge_server/src/protos/generated/general/history_item.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/general/user.pb.dart';
+import 'package:auge_shared/protos/generated/general/history_item.pbgrpc.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/src/service/general/user_service.dart';

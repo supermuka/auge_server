@@ -17,7 +17,6 @@
 ///
 
 import 'dart:async';
-//import 'dart:html';
 
 import 'package:grpc/grpc.dart';
 
@@ -36,6 +35,17 @@ import 'package:auge_server/src/service/work/work_service.dart';
 import 'package:auge_server/src/service/work/state_service.dart';
 import 'package:auge_server/src/service/work/work_stage_service.dart';
 import 'package:auge_server/src/service/work/work_item_service.dart';
+
+/*
+final Interceptor interceptor = (call, method) {
+
+  if (method.name == "Unary") {
+    return null;
+  }
+  return GrpcError.unauthenticated('Request is unauthenticated');
+};
+
+ */
 
 Future<void> main(List<String> args) async {
 /*

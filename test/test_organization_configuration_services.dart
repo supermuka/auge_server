@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import 'package:auge_server/domain/general/organization_directory_service.dart';
+import 'package:auge_shared/domain/general/organization_directory_service.dart';
 import 'package:auge_server/src/service/general/organization_directory_service_service.dart';
 
 void main() {

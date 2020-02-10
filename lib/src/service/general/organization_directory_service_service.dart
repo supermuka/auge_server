@@ -5,27 +5,27 @@ import 'dart:async';
 
 import 'dart:convert' show json;
 
-import 'package:auge_server/src/protos/generated/general/organization_configuration.pb.dart';
+import 'package:auge_shared/protos/generated/general/organization_configuration.pb.dart';
 import 'package:grpc/grpc.dart';
 import 'package:dartdap/dartdap.dart' as dartdap;
 
-import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
-import 'package:auge_server/src/protos/generated/general/organization.pb.dart';
-import 'package:auge_server/src/protos/generated/general/user.pb.dart';
-import 'package:auge_server/src/protos/generated/general/user_identity.pb.dart';
-import 'package:auge_server/src/protos/generated/general/user_access.pb.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
+import 'package:auge_shared/protos/generated/general/organization.pb.dart';
+import 'package:auge_shared/protos/generated/general/user.pb.dart';
+import 'package:auge_shared/protos/generated/general/user_identity.pb.dart';
+import 'package:auge_shared/protos/generated/general/user_access.pb.dart';
 
-import 'package:auge_server/src/protos/generated/general/organization_directory_service.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/general/organization_directory_service.pbgrpc.dart';
 
 import 'package:auge_server/src/service/general/organization_service.dart';
 
-import 'package:auge_server/domain/general/user_identity.dart' as user_identity_m;
-import 'package:auge_server/domain/general/organization_directory_service.dart' as organization_directory_service_m;
-import 'package:auge_server/domain/general/authorization.dart' show SystemRole, SystemModule, SystemFunction;
-import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
+import 'package:auge_shared/domain/general/user_identity.dart' as user_identity_m;
+import 'package:auge_shared/domain/general/organization_directory_service.dart' as organization_directory_service_m;
+import 'package:auge_shared/domain/general/authorization.dart' show SystemRole, SystemModule, SystemFunction;
+import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
 
-import 'package:auge_server/shared/common_utils.dart';
+import 'package:auge_shared/src/util/common_utils.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 

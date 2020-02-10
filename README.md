@@ -137,3 +137,45 @@ pub run intl_translation:generate_from_arb --output-dir=lib/shared/message/i18n 
 
 pub run intl_translation:generate_from_arb --output-dir=lib/shared/message/i18n lib/shared/message/domain_messages.dart lib/shared/message/i18n/intl_domain_messages_en.arb lib/shared/message/i18n/intl_domain_messages_pt_BR.arb
 pub run intl_translation:generate_from_arb --output-dir=lib/shared/message/i18n lib/shared/message/messages.dart lib/shared/message/i18n/intl_messages_en.arb lib/shared/message/i18n/intl_messages_pt_BR.arb
+
+
+IIS REWRITE - ANGULAR PUSH PATH
+https://angulardart.dev/guide/router/1#base-href
+
+https://www.stefanoscerra.it/iis-rewrite-rules-configuration-angular-web-config/
+
+<?xml version="1.0" encoding="utf-8"?>
+
+<configuration>
+  <system.web>
+  </system.web>
+  <system.webServer>
+    <rewrite>
+      <rules>
+        <rule name="SpaRewriteRule" stopProcessing="true">
+          <match url=".*"/>
+          <conditions logicalGrouping="MatchAll">
+            <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true"/>
+            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true"/>
+            <add input="{REQUEST_URI}" pattern="^/(api)" negate="true"/>
+          </conditions>
+          <action type="Rewrite" url="/index.html"/>
+        </rule>
+        <rule name="ApiProxyRule" stopProcessing="true">
+          <match url="api/(.*)"/>
+          <action type="Rewrite" url="http://api.angularapp.com/api/{R:1}"/>
+        </rule>
+      </rules>
+    </rewrite>
+
+    <handlers>
+      <clear/>
+      <add name="StaticFile" path="*" verb="*" modules="StaticFileModule,DefaultDocumentModule,DirectoryListingModule" resourceType="Either"
+         requireAccess="Read"/>
+    </handlers>
+
+    <staticContent>
+      <mimeMap fileExtension=".*" mimeType="application/octet-stream"/>
+    </staticContent>
+  </system.webServer>
+</configuration>

@@ -1,9 +1,9 @@
 import 'package:test/test.dart';
 
-import 'package:auge_server/src/protos/generated/objective/objective_measure.pb.dart' as objective_measure_pb;
+import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart' as objective_measure_pb;
 
-import 'package:auge_server/domain/objective/objective.dart' as objective_m;
-import 'package:auge_server/domain/objective/measure.dart' as measure_m;
+import 'package:auge_shared/domain/objective/objective.dart' as objective_m;
+import 'package:auge_shared/domain/objective/measure.dart' as measure_m;
 
 void main() {
 

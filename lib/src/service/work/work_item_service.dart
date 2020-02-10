@@ -6,26 +6,26 @@ import 'dart:async';
 import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/util/mail.dart';
 
-import 'package:auge_server/shared/message/messages.dart';
-import 'package:auge_server/shared/message/domain_messages.dart';
+import 'package:auge_shared/message/messages.dart';
+import 'package:auge_shared/message/domain_messages.dart';
 
-import 'package:auge_server/src/protos/generated/google/protobuf/empty.pb.dart';
-import 'package:auge_server/src/protos/generated/google/protobuf/wrappers.pb.dart';
-import 'package:auge_server/src/protos/generated/general/user.pb.dart';
-import 'package:auge_server/src/protos/generated/work/work_stage.pb.dart';
-import 'package:auge_server/src/protos/generated/work/work_work_item.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
+import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
+import 'package:auge_shared/protos/generated/general/user.pb.dart';
+import 'package:auge_shared/protos/generated/work/work_stage.pb.dart';
+import 'package:auge_shared/protos/generated/work/work_work_item.pbgrpc.dart';
 
-import 'package:auge_server/shared/rpc_error_message.dart';
-import 'package:auge_server/shared/common_utils.dart';
+import 'package:auge_shared/message/rpc_error_message.dart';
+import 'package:auge_shared/src/util/common_utils.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/work/work_stage_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/work/work_service.dart';
 
-import 'package:auge_server/domain/general/authorization.dart' show SystemModule, SystemFunction;
-import 'package:auge_server/domain/general/history_item.dart' as history_item_m;
-import 'package:auge_server/domain/work/work.dart' as work_m;
-import 'package:auge_server/domain/work/work_item.dart' as work_item_m;
+import 'package:auge_shared/domain/general/authorization.dart' show SystemModule, SystemFunction;
+import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
+import 'package:auge_shared/domain/work/work.dart' as work_m;
+import 'package:auge_shared/domain/work/work_item.dart' as work_item_m;
 
 import 'package:auge_server/src/util/db_connection.dart';
 
@@ -56,19 +56,19 @@ class WorkItemService extends WorkItemServiceBase {
   @override
   Future<StringValue> createWorkItem(ServiceCall call,
       WorkItemRequest request) async {
-    return queryInsertWorkItem(request);
+    return queryInsertWorkItem(request, call.clientMetadata['origin']);
   }
 
   @override
   Future<Empty> updateWorkItem(ServiceCall call,
       WorkItemRequest request) async {
-    return queryUpdateWorkItem(request);
+    return queryUpdateWorkItem(request, call.clientMetadata['origin']);
   }
 
   @override
   Future<Empty> deleteWorkItem(ServiceCall call,
       WorkItemDeleteRequest request) async {
-    return queryDeleteWorkItem(request);
+    return queryDeleteWorkItem(request, call.clientMetadata['origin']);
   }
 
   @override
@@ -280,7 +280,7 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Workitem Notification User
-  static void workItemNotification(WorkItem workItem, String className, int systemFunctionIndex, String description) {
+  static void workItemNotification(WorkItem workItem, String className, int systemFunctionIndex, String description, String urlOrigin) {
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -297,7 +297,8 @@ class WorkItemService extends WorkItemServiceBase {
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
-            '${ObjectiveDomainMsg.fieldLabel(work_m.Work.leaderField)}'));
+            '${ObjectiveDomainMsg.fieldLabel(work_m.Work.leaderField)}',
+            urlOrigin));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -305,7 +306,7 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Create (insert) a new instance of [WorkItem]
-  static Future<StringValue> queryInsertWorkItem(WorkItemRequest request) async {
+  static Future<StringValue> queryInsertWorkItem(WorkItemRequest request, String urlOrigin) async {
 
     if (!request.workItem.hasId()) {
       request.workItem.id = Uuid().v4();
@@ -428,7 +429,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(request.workItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      workItemNotification(request.workItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -439,7 +440,7 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Update an work passing an instance of [WorkItem]
-  static Future<Empty> queryUpdateWorkItem(WorkItemRequest request) async {
+  static Future<Empty> queryUpdateWorkItem(WorkItemRequest request, String urlOrigin) async {
 
     // Recovery to log to history
     WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id);
@@ -651,7 +652,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(request.workItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      workItemNotification(request.workItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -661,7 +662,7 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Delete a WorkItem by [id]
-  static Future<Empty> queryDeleteWorkItem(WorkItemDeleteRequest request) async {
+  static Future<Empty> queryDeleteWorkItem(WorkItemDeleteRequest request, String urlOrigin) async {
 
     WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..withWork = true);
 
@@ -714,7 +715,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(previousWorkItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description']);
+      workItemNotification(previousWorkItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
