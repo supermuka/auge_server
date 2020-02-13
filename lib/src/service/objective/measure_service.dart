@@ -9,6 +9,7 @@ import 'package:auge_shared/message/domain_messages.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/util/mail.dart';
+import 'package:auge_shared/route/app_routes_definition.dart';
 
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
@@ -227,13 +228,15 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Objective Measure Notification User
-  static void measureNotification(Measure measure, String className, int systemFunctionIndex, String description, String urlOrigin) {
+  static void measureNotification(Measure measure, String className, int systemFunctionIndex, String description, String urlOrigin) async {
 
     // Leader - Verify if send e-mail
     if (!measure.objective.leader.userProfile.eMailNotification) return;
 
     // Leader - eMail
     if (measure.objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
+
+    await CommonUtils.setDefaultLocale(measure.objective.leader.userProfile.idiomLocale);
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -245,7 +248,7 @@ class MeasureService extends MeasureServiceBase {
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}',
-            urlOrigin));
+          '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.objectivesRoutePath}?${AppRoutesQueryParam.objectiveIdQueryParameter}=${measure.objective.id}',));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);

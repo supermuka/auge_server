@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/util/mail.dart';
+import 'package:auge_shared/route/app_routes_definition.dart';
 
 import 'package:auge_shared/message/messages.dart';
 import 'package:auge_shared/message/domain_messages.dart';
@@ -280,7 +281,7 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Workitem Notification User
-  static void workItemNotification(WorkItem workItem, String className, int systemFunctionIndex, String description, String urlOrigin) {
+  static void workItemNotification(WorkItem workItem, String className, int systemFunctionIndex, String description, String urlOrigin) async {
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -291,6 +292,8 @@ class WorkItemService extends WorkItemServiceBase {
     // Leader - eMail
     if (workItem.work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
 
+    await CommonUtils.setDefaultLocale(workItem.work.leader.userProfile.idiomLocale);
+
     mailMessages.add(
         AugeMailMessageTo(
             [workItem.work.leader.userProfile.eMail],
@@ -298,7 +301,7 @@ class WorkItemService extends WorkItemServiceBase {
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(work_m.Work.leaderField)}',
-            urlOrigin));
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${workItem.work.id}'));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);

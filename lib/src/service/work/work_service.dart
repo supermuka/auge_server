@@ -8,6 +8,7 @@ import 'package:auge_server/src/util/mail.dart';
 
 import 'package:auge_shared/message/messages.dart';
 import 'package:auge_shared/message/domain_messages.dart';
+import 'package:auge_shared/route/app_routes_definition.dart';
 
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
@@ -18,6 +19,7 @@ import 'package:auge_shared/protos/generated/work/work_stage.pb.dart';
 import 'package:auge_shared/protos/generated/work/work_work_item.pbgrpc.dart';
 import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart';
 
+import 'package:auge_shared/src/util/common_utils.dart';
 import 'package:auge_shared/message/rpc_error_message.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
@@ -203,13 +205,15 @@ class WorkService extends WorkServiceBase {
   }
 
   /// Work Notification User
-  static void workNotification(Work work, String className, int systemFunctionIndex, String description, String urlOrigin) {
+  static void workNotification(Work work, String className, int systemFunctionIndex, String description, String urlOrigin) async {
 
     // Leader - Verify if send e-mail
     if (!work.leader.userProfile.eMailNotification) return;
 
     // Leader - eMail
     if (work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
+
+    await CommonUtils.setDefaultLocale(work.leader.userProfile.idiomLocale);
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -221,7 +225,7 @@ class WorkService extends WorkServiceBase {
             '${ClassNameMsg.label(className)}',
             description,
             '${WorkDomainMsg.fieldLabel(work_m.Work.leaderField)}',
-            urlOrigin));
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${work.id}'));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
