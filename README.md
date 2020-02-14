@@ -14,6 +14,8 @@ cd bin
 
 dart --snapshot=..\auge_server_grpc_web\bin\auge_server.dart.snapshot server.dart
 
+dart2native server.dart -o \auge_server_grpc_web\bin\auge_server.exe
+
 https://cloud.google.com/apis/design/standard_methods
 
 SERVER INSTALLATION
@@ -179,3 +181,9 @@ https://www.stefanoscerra.it/iis-rewrite-rules-configuration-angular-web-config/
     </staticContent>
   </system.webServer>
 </configuration>
+
+ENVOY / TLS / NEW / RENEW CERTIFICATE
+
+https://certbot.eff.org/lets-encrypt/debianstretch-other
+https://www.envoyproxy.io/learn/ssl
+

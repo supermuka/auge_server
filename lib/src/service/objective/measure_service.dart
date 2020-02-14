@@ -120,27 +120,27 @@ class MeasureService extends MeasureServiceBase {
   static Future<List<MeasureUnit>> querySelectMeasureUnits({String id}) async {
     List<MeasureUnit> mesuareUnits = new List();
 
-    mesuareUnits.add(new MeasureUnit()
+    mesuareUnits.add(MeasureUnit()
       ..id = 'f748d3ad-b533-4a2d-b4ae-0ae1e255cf81'
       ..symbol = '%'
-      ..name = 'Percent' // MeasureMessage.measureUnitLabel('Percent')
+      ..name = 'percent' // MeasureMessage.measureUnitLabel('Percent')
     );
-    mesuareUnits.add(new MeasureUnit()
+    mesuareUnits.add(MeasureUnit()
       ..id = 'fad0dc86-0124-4caa-9954-7526814efc3a'
       ..symbol = '\$'
-      ..name = 'Money' // MeasureMessage.measureUnitLabel('Money')
+      ..name = 'money' // MeasureMessage.measureUnitLabel('Money')
     );
 
-    mesuareUnits.add(new MeasureUnit()
+    mesuareUnits.add(MeasureUnit()
       ..id = 'fad0dc86-0124-4caa-9954-7526814efc3a'
       ..symbol = ''
-      ..name = 'Index' // MeasureMessage.measureUnitLabel('Index')
+      ..name = 'index' // MeasureMessage.measureUnitLabel('Index')
     );
 
-    mesuareUnits.add(new MeasureUnit()
+    mesuareUnits.add(MeasureUnit()
       ..id = '723f1387-d5da-44f7-8373-17de31921cae'
       ..symbol = ''
-      ..name = 'Unitary' // MeasureMessage.measureUnitLabel('Unitary')
+      ..name = 'unitary' // MeasureMessage.measureUnitLabel('Unitary')
     );
 
     return mesuareUnits;

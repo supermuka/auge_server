@@ -40,7 +40,7 @@ class AugeMail {
           ..subject = '${augeMailMessageTo.classNameDescription} ${augeMailMessageTo.description}'
         // ..text = 'This is the plain text.\nThis is line 2 of the text part.'
           ..html = '<p>'
-                  '${augeMailMessageTo.systemFunctionInPastDescription} ${augeMailMessageTo.classNameDescription} <a href="${augeMailMessageTo.urlOrigin ?? 'https://auge.levius.com.br/'}">${augeMailMessageTo.description}</a>.'
+                  '${augeMailMessageTo.systemFunctionInPastDescription} ${augeMailMessageTo.classNameDescription} <strong>${augeMailMessageTo.description}</strong>.'
                   '</p>'
                   '<p style="font-size:small;color:#666;">'
                   '<span>__</span>'
