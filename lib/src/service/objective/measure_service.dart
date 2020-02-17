@@ -210,7 +210,7 @@ class MeasureService extends MeasureServiceBase {
           measure.measureUnit = measureUnits.first;
         }
 
-        if (request.hasWithObjective() && request.withObjective == true) measure.objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = row[10]);
+        if (request.hasWithObjective() && request.withObjective == true) measure.objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = row[10]..withUserProfile = request.hasWithUserProfile() && request.withUserProfile == true);
 
         measures.add(measure);
       }
@@ -270,7 +270,7 @@ class MeasureService extends MeasureServiceBase {
     try {
 
       // Create a history item
-      Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
+      request.measure.objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
@@ -310,7 +310,7 @@ class MeasureService extends MeasureServiceBase {
           "system_module_index": SystemModule.objectives.index,
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
-          "description": '${request.measure.name} @ ${objective.name}',
+          "description": '${request.measure.name} @ ${request.measure.objective.name}',
           "changed_values": history_item_m.HistoryItem
               .changedValuesJson({},
               measure_m.Measure
@@ -344,7 +344,7 @@ class MeasureService extends MeasureServiceBase {
       Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measure.id);
 
       // TODO (this is made just to get a objective name, found a way to improve the performance)
-      Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = false);
+      request.measure.objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         List<List<dynamic>> result;
@@ -393,7 +393,7 @@ class MeasureService extends MeasureServiceBase {
             "system_module_index": SystemModule.objectives.index,
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
-            "description": '${request.measure.name} @ ${objective.name}',
+            "description": '${request.measure.name} @ ${request.measure.objective.name}',
             "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.Measure.fromProtoBufToModelMap(previousMeasure, true), measure_m.Measure.fromProtoBufToModelMap(request.measure, true))};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -414,7 +414,7 @@ class MeasureService extends MeasureServiceBase {
   /// Delete a [Measure] by id
   Future<Empty> queryDeleteMeasure(MeasureDeleteRequest request, String urlOrigin) async {
 
-    Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId..withObjective = true);
+    Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId..withObjective = true..withUserProfile = true);
     Map<String, dynamic> historyItemNotificationValues;
 
     try {
@@ -443,7 +443,7 @@ class MeasureService extends MeasureServiceBase {
             "system_module_index": SystemModule.objectives.index,
             "system_function_index": SystemFunction.delete.index,
             "date_time": DateTime.now().toUtc(),
-            "description": previousMeasure.name,
+            "description": '${previousMeasure.name} @ ${previousMeasure.objective.name}', // previousMeasure.name,
             "changed_values": history_item_m.HistoryItem.changedValuesJson(
                 measure_m.Measure.fromProtoBufToModelMap(
                     previousMeasure, true), {})};
