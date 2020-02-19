@@ -248,7 +248,8 @@ class MeasureService extends MeasureServiceBase {
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}',
-          '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.objectivesRoutePath}?${AppRoutesQueryParam.objectiveIdQueryParameter}=${measure.objective.id}',));
+            '${ClassNameMsg.label(objective_m.Objective.className)} ${measure.objective.name}',
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.objectivesRoutePath}?${AppRoutesQueryParam.objectiveIdQueryParameter}=${measure.objective.id}',));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -269,7 +270,7 @@ class MeasureService extends MeasureServiceBase {
 
     try {
 
-      // Create a history item
+      // TODO (this is made just to get a objective name, found a way to improve the performance)
       request.measure.objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -298,7 +299,6 @@ class MeasureService extends MeasureServiceBase {
           "measure_unit_id": request.measure.hasMeasureUnit() ? request.measure.measureUnit.id : null,
           "objective_id": request.hasObjectiveId() ? request.objectiveId : null,
         });
-
 
         historyItemNotificationValues =  {"id": Uuid().v4(),
           "user_id": request.authUserId,
@@ -520,7 +520,7 @@ class MeasureService extends MeasureServiceBase {
           }
 
           if (request.withMeasure && request.withMeasure == true && row[5] != null) {
-            measureProgress.measure = await MeasureService.querySelectMeasure(MeasureGetRequest()..id = row[5]);
+            measureProgress.measure = await MeasureService.querySelectMeasure(MeasureGetRequest()..id = row[5]..withObjective = request.withObjective..withUserProfile = request.withUserProfile);
           }
 
         measureProgresses.add(measureProgress);
@@ -541,7 +541,7 @@ class MeasureService extends MeasureServiceBase {
 
 
   /// Objective Measure Progress Notification User
-  static void measureProgressNotification(MeasureProgress measureProgress, String className, int systemFunctionIndex, String description, String urlOrigin) {
+  static void measureProgressNotification(MeasureProgress measureProgress, String className, int systemFunctionIndex, String description, String urlOrigin) async {
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -552,6 +552,8 @@ class MeasureService extends MeasureServiceBase {
     // Leader - eMail
     if (measureProgress.measure.objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
+    await CommonUtils.setDefaultLocale(measureProgress.measure.objective.leader.userProfile.idiomLocale);
+
     mailMessages.add(
         AugeMailMessageTo(
             [measureProgress.measure.objective.leader.userProfile.eMail],
@@ -559,6 +561,7 @@ class MeasureService extends MeasureServiceBase {
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}',
+            '${ClassNameMsg.label(objective_m.Objective.className)} ${measureProgress.measure.objective.name}',
             urlOrigin));
 
     // SEND E-MAIL
@@ -573,12 +576,16 @@ class MeasureService extends MeasureServiceBase {
       MeasureProgressRequest request, String urlOrigin) async {
     Map<String, dynamic> historyItemNotificationValues;
     try {
+
+      // This is made just to recovery email leader from objective, used to notification
+      request.measureProgress.measure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId..withObjective = true..withUserProfile = true);
+
+      request.measureProgress.version = 0;
+
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         if (!request.measureProgress.hasId()) {
           request.measureProgress.id = new Uuid().v4();
         }
-
-        request.measureProgress.version = 0;
 
         await ctx.query(
             "INSERT INTO objective.measure_progress(id, version, date, current_value, comment, measure_id) VALUES"
@@ -634,8 +641,13 @@ class MeasureService extends MeasureServiceBase {
   /// Create current value of the [MeasureProgress]
   Future<Empty> queryUpdateMeasureProgress(
       MeasureProgressRequest request, String urlOrigin) async {
+
     // Recovery to log to history
-    MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgress.id);
+    MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgress.id..withMeasure = true..withObjective = true..withUserProfile = true);
+
+    request.measureProgress.measure = previousMeasureProgress.measure;
+    // This is made just to recovery email leader from objective, used to notification
+    //request.measureProgress.measure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId..withObjective = true..withUserProfile = true);
 
     Map<String, dynamic> historyItemNotificationValues;
     try {
@@ -707,7 +719,7 @@ class MeasureService extends MeasureServiceBase {
   /// Delete a [MeasureProgress] by id
   Future<Empty> queryDeleteMeasureProgress(MeasureProgressDeleteRequest request, String urlOrigin) async {
 
-    MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgressId);
+    MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgressId..withMeasure = true..withObjective = true..withUserProfile = true);
 
     try {
 
@@ -738,7 +750,7 @@ class MeasureService extends MeasureServiceBase {
               "system_module_index": SystemModule.objectives.index,
               "system_function_index": SystemFunction.delete.index,
               "date_time": DateTime.now().toUtc(),
-              "description": null, //'# ${previousMeasureProgress.currentValue}',
+              "description": '${previousMeasureProgress.currentValue} @ ${previousMeasureProgress.measure.name}',
               "changed_values": history_item_m.HistoryItem
                   .changedValuesJson(
                   measure_m.MeasureProgress.fromProtoBufToModelMap(

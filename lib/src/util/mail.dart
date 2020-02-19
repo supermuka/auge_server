@@ -30,7 +30,6 @@ class AugeMail {
     try {
       for (AugeMailMessageTo augeMailMessageTo in augeMailMessagesTo) {
 
-
         // Create our message.
         Message message = Message()
           ..from = Address(username, from)
@@ -45,7 +44,7 @@ class AugeMail {
                   '<p style="font-size:small;color:#666;">'
                   '<span>__</span>'
                   '<br/>'
-                  '${MailMsg.youIsReceivingThisEMailBecauseYouAreThe()} ${augeMailMessageTo.assignmentDescription} ${MailMsg.label(MailMsg.thisLabel)} ${augeMailMessageTo.classNameDescription}.'
+                  '${MailMsg.youIsReceivingThisEMailBecauseYouAreThe()} ${augeMailMessageTo.assignmentDescription} ${MailMsg.label(MailMsg.ofTheLabel)} ${augeMailMessageTo.classNameAssignmentDescription}.'
                   '<br/>'
                   '<a href="${augeMailMessageTo.urlOrigin ?? 'https://auge.levius.com.br/'}">${MailMsg.viewOrReplyIt()}</a>.'
                   '</p>';
@@ -121,6 +120,7 @@ class AugeMailMessageTo {
   final String classNameDescription;
   final String description;
   final String assignmentDescription;
+  final String classNameAssignmentDescription;
   final String urlOrigin;
 
   // list e-mail recipients
@@ -129,6 +129,6 @@ class AugeMailMessageTo {
   // description
   // attribution
 
-  AugeMailMessageTo(this.recipients, this.systemFunctionInPastDescription, this.classNameDescription, this.description, this.assignmentDescription, this.urlOrigin);
+  AugeMailMessageTo(this.recipients, this.systemFunctionInPastDescription, this.classNameDescription, this.description, this.assignmentDescription, this.classNameAssignmentDescription, this.urlOrigin);
 
 }

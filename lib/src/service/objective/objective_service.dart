@@ -276,6 +276,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}',
+            '${ClassNameMsg.label(objective_m.Objective.className)} ${objective.name}',
             '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.objectivesRoutePath}?${AppRoutesQueryParam.objectiveIdQueryParameter}=${objective.id}',
             ));
 

@@ -225,6 +225,7 @@ class WorkService extends WorkServiceBase {
             '${ClassNameMsg.label(className)}',
             description,
             '${WorkDomainMsg.fieldLabel(work_m.Work.leaderField)}',
+            '${ClassNameMsg.label(work_m.Work.className)} ${work.name}',
             '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${work.id}'));
 
     // SEND E-MAIL

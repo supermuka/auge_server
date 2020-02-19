@@ -30,13 +30,7 @@ void main() {
       objective.leader.userProfile = UserProfile();
       objective.leader.userProfile.eMail = 'samuel.schwebel@levius.com.br';
       objective.leader.userProfile.idiomLocale = 'pt_BR';
-/*
-      if (objective.leader.userProfile.idiomLocale != null) {
-        Intl.defaultLocale = objective.leader.userProfile.idiomLocale;
-        initializeDateFormatting(Intl.defaultLocale);
-        await initializeMessages(Intl.defaultLocale);
-      }
-*/
+
       await CommonUtils.setDefaultLocale(objective.leader.userProfile.idiomLocale);
 
       String className = 'Objective';
@@ -50,6 +44,7 @@ void main() {
               SystemFunctionMsg.inPastLabel(systemFunction.toString().split('.').last),
               objective.name,
               ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField),
+              '${ClassNameMsg.label(objective_m.Objective.className)}',
               'https://auge.levius.com.br/'
           )
       );

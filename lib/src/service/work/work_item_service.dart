@@ -301,6 +301,7 @@ class WorkItemService extends WorkItemServiceBase {
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(work_m.Work.leaderField)}',
+            '${ClassNameMsg.label(work_m.Work.className)} ${workItem.work.name}',
             '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${workItem.work.id}'));
 
     // SEND E-MAIL
