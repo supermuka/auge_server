@@ -1,7 +1,6 @@
 import 'package:test/test.dart';
 
 import 'package:auge_shared/protos/generated/work/work_work_item.pb.dart' as work_work_item_pb;
-import 'package:auge_shared/protos/generated/work/work_stage.pb.dart' as work_stage_pb;
 
 import 'package:auge_shared/domain/general/organization.dart' as organization_m;
 import 'package:auge_shared/domain/general/group.dart' as group_m;
@@ -26,7 +25,7 @@ void main() {
     group('Stage entity.', () {
 
       stage_m.WorkStage model = stage_m.WorkStage();
-      work_stage_pb.WorkStage proto;
+      work_work_item_pb.WorkStage proto;
 
       setUp(() {
         model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
@@ -54,8 +53,9 @@ void main() {
 
       test('Call readToProtoBuffer.', () async {
 
+        Map cache  = {};
         model = stage_m.WorkStage();
-        model.readFromProtoBuf(proto);
+        model.readFromProtoBuf(proto, cache);
 
         callExcept();
       });

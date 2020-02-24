@@ -15,7 +15,6 @@ import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_shared/protos/generated/general/organization.pb.dart';
 import 'package:auge_shared/protos/generated/general/user.pb.dart';
 import 'package:auge_shared/protos/generated/general/group.pb.dart';
-import 'package:auge_shared/protos/generated/work/work_stage.pb.dart';
 import 'package:auge_shared/protos/generated/work/work_work_item.pbgrpc.dart';
 import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart';
 

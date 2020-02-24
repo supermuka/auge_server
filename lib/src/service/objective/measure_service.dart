@@ -228,28 +228,28 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Objective Measure Notification User
-  static void measureNotification(Measure measure, String className, int systemFunctionIndex, String description, String urlOrigin) async {
+  static void measureNotification(Objective relatedObjective, String className, int systemFunctionIndex, String description, String urlOrigin) async {
 
     // Leader - Verify if send e-mail
-    if (!measure.objective.leader.userProfile.eMailNotification) return;
+    if (!relatedObjective.leader.userProfile.eMailNotification) return;
 
     // Leader - eMail
-    if (measure.objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
+    if (relatedObjective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
-    await CommonUtils.setDefaultLocale(measure.objective.leader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(relatedObjective.leader.userProfile.idiomLocale);
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
     mailMessages.add(
         AugeMailMessageTo(
-            [measure.objective.leader.userProfile.eMail],
+            [relatedObjective.leader.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}',
-            '${ClassNameMsg.label(objective_m.Objective.className)} ${measure.objective.name}',
-            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.objectivesRoutePath}?${AppRoutesQueryParam.objectiveIdQueryParameter}=${measure.objective.id}',));
+            '${ClassNameMsg.label(objective_m.Objective.className)} ${relatedObjective.name}',
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.objectivesRoutePath}?${AppRoutesQueryParam.objectiveIdQueryParameter}=${relatedObjective.id}',));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -270,8 +270,8 @@ class MeasureService extends MeasureServiceBase {
 
     try {
 
-      // TODO (this is made just to get a objective name, found a way to improve the performance)
-      request.measure.objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
+      // TODO (this is made just to get a objective name and email, found a way to improve the performance)
+      Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
@@ -323,7 +323,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(request.measure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      measureNotification(objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -341,10 +341,10 @@ class MeasureService extends MeasureServiceBase {
     try {
 
       // Recovery to log to history
-      Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measure.id);
+      Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measure.id..withObjective..withUserProfile = true);
 
       // TODO (this is made just to get a objective name, found a way to improve the performance)
-      request.measure.objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
+      Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..withUserProfile = true);
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         List<List<dynamic>> result;
@@ -402,7 +402,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(request.measure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      measureNotification(objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -455,7 +455,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(previousMeasure, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      measureNotification(previousMeasure.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

@@ -13,7 +13,6 @@ import 'package:auge_shared/message/domain_messages.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_shared/protos/generated/general/user.pb.dart';
-import 'package:auge_shared/protos/generated/work/work_stage.pb.dart';
 import 'package:auge_shared/protos/generated/work/work_work_item.pbgrpc.dart';
 
 import 'package:auge_shared/message/rpc_error_message.dart';
@@ -153,7 +152,7 @@ class WorkItemService extends WorkItemServiceBase {
 
       if (workItemGetRequest.hasWithWork() && workItemGetRequest.withWork == true && row[7] != null) {
 
-        workItem.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[7]);
+        workItem.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[7]..withUserProfile = workItemGetRequest.withUserProfile);
       }
 
       workItems.add(workItem);
@@ -281,28 +280,28 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Workitem Notification User
-  static void workItemNotification(WorkItem workItem, String className, int systemFunctionIndex, String description, String urlOrigin) async {
+  static void workItemNotification(Work relatedWork, String className, int systemFunctionIndex, String description, String urlOrigin) async {
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
     // Leader  - Verify if send e-mail
-    if (!workItem.work.leader.userProfile.eMailNotification) return;
+    if (!relatedWork.leader.userProfile.eMailNotification) return;
 
     // Leader - eMail
-    if (workItem.work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
+    if (relatedWork.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
 
-    await CommonUtils.setDefaultLocale(workItem.work.leader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(relatedWork.leader.userProfile.idiomLocale);
 
     mailMessages.add(
         AugeMailMessageTo(
-            [workItem.work.leader.userProfile.eMail],
+            [relatedWork.leader.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(work_m.Work.leaderField)}',
-            '${ClassNameMsg.label(work_m.Work.className)} ${workItem.work.name}',
-            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${workItem.work.id}'));
+            '${ClassNameMsg.label(work_m.Work.className)} ${relatedWork.name}',
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${relatedWork.id}'));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -320,6 +319,9 @@ class WorkItemService extends WorkItemServiceBase {
     Map<String, dynamic> historyItemNotificationValues;
 
     try {
+
+      // TODO (this is made just to get a work leader email, found a way to improve the performance)
+      Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId..withUserProfile = true);
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
@@ -433,7 +435,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(request.workItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workItemNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -447,7 +449,10 @@ class WorkItemService extends WorkItemServiceBase {
   static Future<Empty> queryUpdateWorkItem(WorkItemRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id);
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id..withWork = true);
+
+    // TODO (this is made just to get a user profile email, it needs to find to a way to improve the performance)
+    Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId..withUserProfile = true);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -656,7 +661,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(request.workItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workItemNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -668,7 +673,7 @@ class WorkItemService extends WorkItemServiceBase {
   /// Delete a WorkItem by [id]
   static Future<Empty> queryDeleteWorkItem(WorkItemDeleteRequest request, String urlOrigin) async {
 
-    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..withWork = true);
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..withWork = true..withUserProfile = true);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -719,7 +724,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(previousWorkItem, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workItemNotification(previousWorkItem.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
