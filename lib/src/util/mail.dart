@@ -2,21 +2,24 @@
 // Author: Samuel C. Schwebel.
 
 import 'package:auge_shared/message/messages.dart';
+import 'package:auge_server/src/util/configuration.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
 /// Class to send e-mail
 class AugeMail {
 
-  String from = 'Auge | Levius';
-  String username = 'samuel.schwebel@levius.com.br';
-  String password = 'xavuxgpvbkrywqcn'; // google app password ;
+  String from = 'Auge | ${MailMsg.label(MailMsg.notificationLabel)}';
+  // String envelopeFrom = 'auge_notification@levius.com.br';
+ // String password = 'kegtbariprhileon'; // google app password ;
 
   Future<bool> sendNotification(List<AugeMailMessageTo> augeMailMessagesTo) async {
 
     if (augeMailMessagesTo.length == 0) return false;
 
-    final smtpServer = gmail(username, password);
+    AugeConfiguration augeConfiguration = AugeConfiguration('config/configuration.yaml');
+
+    final smtpServer = gmail(augeConfiguration.mail.clientID, augeConfiguration.mail.clientSecret);
     // Use the SmtpServer class to configure an SMTP server:
     // final smtpServer = SmtpServer('smtp.domain.com');
     // See the named arguments of SmtpServer for further configuration
@@ -30,9 +33,10 @@ class AugeMail {
     try {
       for (AugeMailMessageTo augeMailMessageTo in augeMailMessagesTo) {
 
+       // Map<String, dynamic> m = {'MAIL FROM': envelopFrom, 'From': envelopFrom};
         // Create our message.
         Message message = Message()
-          ..from = Address(username, from)
+          ..from = Address(augeConfiguration.mail.clientID, from)
           ..recipients.addAll(augeMailMessageTo.recipients)
         //   ..ccRecipients.addAll(['destCc1@example.com', 'destCc2@example.com'])
         //   ..bccRecipients.add(Address('bccAddress@example.com'))
@@ -51,6 +55,7 @@ class AugeMail {
 
         // Send the message
         //var sendReport = await connection.send(message);
+
         await connection.send(message);
         //print('Message sent: ' + sendReport.toString());
       }
@@ -73,7 +78,11 @@ class AugeMail {
 
   Future<bool> sendMessage(List<String> recipients, String subject, String html) async {
 
-    final smtpServer = gmail(username, password);
+    AugeConfiguration augeConfiguration = AugeConfiguration('config/configuration.yaml');
+
+    final smtpServer = gmail(augeConfiguration.mail.clientID, augeConfiguration.mail.clientSecret);
+   // final smtpServer = gmail(username, password);
+
     // Use the SmtpServer class to configure an SMTP server:
     // final smtpServer = SmtpServer('smtp.domain.com');
     // See the named arguments of SmtpServer for further configuration
@@ -89,16 +98,19 @@ class AugeMail {
     try {
         // Create our message.
         Message message = Message()
-          ..from = Address(username, from)
+          //..envelopeFrom = 'Group:${envelopeFrom}'
+          //..headers = {'MAIL FROM': 'Group:${envelopeFrom}', 'From': 'Group:${envelopeFrom}'}
+          ..from = Address(augeConfiguration.mail.clientID, from)
           ..recipients.addAll(recipients)
         //   ..ccRecipients.addAll(['destCc1@example.com', 'destCc2@example.com'])
         //   ..bccRecipients.add(Address('bccAddress@example.com'))
-          ..subject = subject
+          ..subject = '${subject} ${DateTime.now()}'
         // ..text = 'This is the plain text.\nThis is line 2 of the text part.'
           ..html = html;
 
         // Send the message
         //var sendReport = await connection.send(message);
+
         await send(message, smtpServer);
         //print('Message sent: ' + sendReport.toString());
         result = true;

@@ -4,3 +4,7 @@ database:
   databaseName: 'auge'
   username: 'postgres'
   password: 'admin@levius#2018'
+mail:
+  baseURL: ''
+  clientID: 'levius@levius.com.br'
+  clientSecret: 'kegtbariprhileon'

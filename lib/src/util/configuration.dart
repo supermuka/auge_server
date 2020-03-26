@@ -16,4 +16,6 @@ class AugeConfiguration extends Configuration {
 
   DatabaseConfiguration database;
 
+  APIConfiguration mail;
+
 }
