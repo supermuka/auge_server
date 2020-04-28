@@ -88,10 +88,11 @@ class WorkService extends WorkServiceBase {
         "work.version," //1
         "work.name, " //2
         "work.description, " //3
-        "work.organization_id, " //4
-        "work.leader_user_id, " //5
-        "work.objective_id, " //6
-        "work.group_id " //7
+        "work.archived, " //4 +
+        "work.organization_id, " //5
+        "work.leader_user_id, " //6
+        "work.objective_id, " //7
+        "work.group_id " //8
         "FROM work.works work";
 
     Map<String, dynamic> substitutionValues;
@@ -126,19 +127,19 @@ class WorkService extends WorkServiceBase {
       // Work Items
       workItems = (workGetRequest.withWorkItems) ? await WorkItemService.querySelectWorkItems(WorkItemGetRequest()..workId = row[0]) : [];
 
-      if (row[4] != null && (organization == null || organization.id != row[4])) {
+      if (row[5] != null && (organization == null || organization.id != row[5])) {
 
         // organization = await _augeApi.getOrganizationById(row[3]);
 
-        organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[4]);
+        organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[5]);
 
       } else {
         organization = null;
       }
 
       // user = (await _augeApi.getUsers(id: row[4])).first;
-      if (row[5] != null) {
-        user = await UserService.querySelectUser(UserGetRequest()..id = row[5]..withUserProfile = workGetRequest.withUserProfile);
+      if (row[6] != null) {
+        user = await UserService.querySelectUser(UserGetRequest()..id = row[6]..withUserProfile = workGetRequest.withUserProfile);
       } else {
         user = null;
       }
@@ -147,26 +148,30 @@ class WorkService extends WorkServiceBase {
       workStages = await WorkStageService.querySelectWorkStages(WorkStageGetRequest()..workId = row[0]);
 
       // objective = row[5] == null ? null : await _objectiveAugeApi.getObjectiveById(row[5]);
-      if (row[6] != null) {
+      if (row[7] != null) {
         objective =
-        row[6] == null ? null : await ObjectiveService.querySelectObjective(
+        row[7] == null ? null : await ObjectiveService.querySelectObjective(
             ObjectiveGetRequest()
-              ..id = row[6]);
+              ..id = row[7]);
       } else {
         objective = null;
       }
 
       // group =  row[6] == null ? null : await _augeApi.getGroupById(row[6]);
-      if (row[7] != null) {
-        group = row[7] == null ? null : await GroupService.querySelectGroup(
+      if (row[8] != null) {
+        group = row[8] == null ? null : await GroupService.querySelectGroup(
             GroupGetRequest()
-              ..id = row[7]);
+              ..id = row[8]);
       } else {
         group = null;
       }
 
       Work work =
-      Work()..id = row[0]..version = row[1]..name = row[2]..description = row[3];
+      Work()..id = row[0]..version = row[1]..name = row[2];
+
+      if (row[5] != null) work.description = row[3];
+
+      if (row[4] != null) work.archived = row[4];
       if (workItems.isNotEmpty) {
         work.workItems.addAll(workItems);
       }
@@ -246,11 +251,12 @@ class WorkService extends WorkServiceBase {
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query(
-            "INSERT INTO work.works(id, version, name, description, organization_id, leader_user_id, objective_id, group_id) VALUES"
+            "INSERT INTO work.works(id, version, name, description, archived, organization_id, leader_user_id, objective_id, group_id) VALUES"
                 "(@id,"
                 "@version,"
                 "@name,"
                 "@description,"
+                "@archived,"
                 "@organization_id,"
                 "@leader_user_id,"
                 "@objective_id,"
@@ -260,6 +266,7 @@ class WorkService extends WorkServiceBase {
           "version": request.work.version,
           "name": request.work.name,
           "description": request.work.description,
+          "archived": request.work.hasArchived() ? request.work.archived : false,
           "organization_id": request.work.organization.id,
           "leader_user_id": request.work.hasLeader() ? request.work.leader.id : null,
           "objective_id": request.work.hasObjective() ? request.work.objective.id : null,
@@ -312,6 +319,7 @@ class WorkService extends WorkServiceBase {
             " SET version = @version,"
             " name = @name,"
             " description = @description,"
+            " archived = @archived,"
             " organization_id = @organization_id,"
             " leader_user_id = @leader_user_id,"
             " objective_id = @objective_id,"
@@ -323,6 +331,7 @@ class WorkService extends WorkServiceBase {
               "version": ++request.work.version,
               "name": request.work.name,
               "description": request.work.description,
+              "archived": request.work.hasArchived() ? request.work.archived : false,
               "organization_id": request.work.hasOrganization() ? request.work.organization.id : null,
               "leader_user_id": request.work.hasLeader() ? request.work.leader.id : null,
               "objective_id": request.work.hasObjective() ? request.work.objective.id : null,

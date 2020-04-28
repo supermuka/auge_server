@@ -2,6 +2,7 @@ import 'package:test/test.dart';
 
 import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart' as objective_measure_pb;
 
+import 'package:auge_shared/domain/general/unit_of_measurement.dart' as unit_of_measurement_m;
 import 'package:auge_shared/domain/objective/objective.dart' as objective_m;
 import 'package:auge_shared/domain/objective/measure.dart' as measure_m;
 
@@ -90,14 +91,13 @@ void main() {
         model.endValue = 10;
         model.startValue = 0;
         model.decimalsNumber = 2;
-        model.measureUnit = measure_m.MeasureUnit()
+        model.unitOfMeasurement = unit_of_measurement_m.UnitOfMeasurement()
           ..id = '5033aefd-d440-4422-80ef-4d97bae9a06e'
           ..name = 'Description test'
           ..symbol = 'Kg';
         model.measureProgress.add(measure_m.MeasureProgress()
           ..id = '5033aefd-d440-4422-80ef-4d97bae9a06e'
           ..version = 0
-          ..isDeleted = false
           ..currentValue = 1
           ..date = DateTime.now()
           ..comment = 'Comment Test');
@@ -113,9 +113,9 @@ void main() {
         expect(model.endValue, equals(proto.endValue));
         expect(model.startValue, equals(proto.startValue));
         expect(model.decimalsNumber, equals(proto.decimalsNumber));
-        expect(model.measureUnit.id, equals(proto.measureUnit.id));
-        expect(model.measureUnit.name, equals(proto.measureUnit.name));
-        expect(model.measureUnit.symbol, equals(proto.measureUnit.symbol));
+        expect(model.unitOfMeasurement.id, equals(proto.unitOfMeasurement.id));
+        expect(model.unitOfMeasurement.name, equals(proto.unitOfMeasurement.name));
+        expect(model.unitOfMeasurement.symbol, equals(proto.unitOfMeasurement.symbol));
         expect(model.measureProgress.first.id, equals(proto.measureProgress.first.id));
         expect(model.measureProgress.first.version, equals(proto.measureProgress.first.version));
         expect(model.measureProgress.first.currentValue, equals(proto.measureProgress.first.currentValue));
@@ -154,9 +154,9 @@ void main() {
         expect(m[measure_m.Measure.endValueField], equals(proto.endValue));
         expect(m[measure_m.Measure.startValueField], equals(proto.startValue));
         expect(m[measure_m.Measure.decimalsNumberField], equals(proto.decimalsNumber));
-        expect(m[measure_m.Measure.measureUnitField][measure_m.MeasureUnit.idField], equals(proto.measureUnit.id));
-        expect(m[measure_m.Measure.measureUnitField][measure_m.MeasureUnit.nameField], equals(proto.measureUnit.name));
-        expect(m[measure_m.Measure.measureUnitField][measure_m.MeasureUnit.symbolField], equals(proto.measureUnit.symbol));
+        expect(m[measure_m.Measure.unitOfMeasurementField][unit_of_measurement_m.UnitOfMeasurement.idField], equals(proto.unitOfMeasurement.id));
+        expect(m[measure_m.Measure.unitOfMeasurementField][unit_of_measurement_m.UnitOfMeasurement.nameField], equals(proto.unitOfMeasurement.name));
+        expect(m[measure_m.Measure.unitOfMeasurementField][unit_of_measurement_m.UnitOfMeasurement.symbolField], equals(proto.unitOfMeasurement.symbol));
         expect(m[measure_m.Measure.measureProgressField].first[measure_m.MeasureProgress.idField], equals(proto.measureProgress.first.id));
         expect(m[measure_m.Measure.measureProgressField].first[measure_m.MeasureProgress.versionField], equals(proto.measureProgress.first.version));
         expect(m[measure_m.Measure.measureProgressField].first[measure_m.MeasureProgress.currentValueField], equals(proto.measureProgress.first.currentValue));

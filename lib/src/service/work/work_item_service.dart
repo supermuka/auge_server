@@ -13,10 +13,13 @@ import 'package:auge_shared/message/domain_messages.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_shared/protos/generated/general/user.pb.dart';
+import 'package:auge_shared/protos/generated/general/unit_of_measurement.pb.dart';
 import 'package:auge_shared/protos/generated/work/work_work_item.pbgrpc.dart';
 
 import 'package:auge_shared/message/rpc_error_message.dart';
 import 'package:auge_shared/src/util/common_utils.dart';
+
+import 'package:auge_server/src/service/general/unit_of_measurement_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/work/work_stage_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
@@ -103,9 +106,11 @@ class WorkItemService extends WorkItemServiceBase {
         " work_item.name," //2
         " work_item.description," //3
         " work_item.due_date," //4
-        " work_item.completed," //5
-        " work_item.stage_id," //6
-        " work_item.work_id" //7
+        " work_item.planned_value," //5
+        " work_item.actual_value," //6 +
+        " work_item.stage_id," // 7
+        " work_item.work_id, " // 8
+        " work_item.unit_of_measurement_id " // 9
         " FROM work.work_items work_item";
       //  " JOIN work.work_stages work_stage ON stage.id = work_item.stage_id";
 
@@ -121,42 +126,56 @@ class WorkItemService extends WorkItemServiceBase {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workItemInvalidArgument );
     }
 
+    List<WorkItem> workItems = List();
+    List<UnitOfMeasurement> unitsOfMeasurement;
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+    try {
+      results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
-    List<WorkItem> workItems = new List();
-    WorkStage workStage;
-    List<User> assignedToUsers;
-    List<WorkItemAttachment> attachments;
-    List<WorkItemCheckItem> checkItems;
-    WorkItem workItem;
-    for (var row in results) {
+      WorkStage workStage;
+      List<User> assignedToUsers;
+      List<WorkItemAttachment> attachments;
+      List<WorkItemCheckItem> checkItems;
+      WorkItem workItem;
+      for (var row in results) {
 
-      workStage = await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[6]);
+        workStage = await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[7]);
 
-      assignedToUsers = await querySelectWorkItemAssignedToUsers(row[0]);
+        assignedToUsers = await querySelectWorkItemAssignedToUsers(row[0]);
 
-      attachments = await querySelectWorkItemAttachments(WorkItemAttachmentGetRequest()..workItemId = row[0]..withContent = false);
+        attachments = await querySelectWorkItemAttachments(WorkItemAttachmentGetRequest()..workItemId = row[0]..withContent = false);
 
-      checkItems = await querySelectWorkItemCheckItems(WorkItemCheckItemGetRequest()..workItemId = row[0]);
+        checkItems = await querySelectWorkItemCheckItems(WorkItemCheckItemGetRequest()..workItemId = row[0]);
 
-      workItem = WorkItem()..id = row[0]..version = row[1]..name = row[2];
-      if (row[3] != null) workItem.description = row[3];
-      if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4]);
+        workItem = WorkItem()..id = row[0]..version = row[1]..name = row[2];
+        if (row[3] != null) workItem.description = row[3];
+        if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4]);
 
-      if (row[5] != null) workItem.completed = row[5];
-      if (workStage != null) workItem.workStage = await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[6]);
-      if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
-      if (attachments.isNotEmpty) workItem.attachments.addAll(attachments);
-      if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
+        if (row[5] != null) workItem.plannedValue = row[5];
+        if (row[6] != null) workItem.actualValue = row[6];
+        if (workStage != null) workItem.workStage = workStage; //await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[7]);
+        if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
+        if (attachments.isNotEmpty) workItem.attachments.addAll(attachments);
+        if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
 
-      if (workItemGetRequest.hasWithWork() && workItemGetRequest.withWork == true && row[7] != null) {
+        if (workItemGetRequest.hasWithWork() && workItemGetRequest.withWork == true && row[8] != null) {
 
-        workItem.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[7]..withUserProfile = workItemGetRequest.withUserProfile);
+          workItem.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[8]..withUserProfile = workItemGetRequest.withUserProfile);
+        }
+
+        if (row[9] != null)
+          //  measureUnit = await getMeasureUnitById(row[8]);
+          unitsOfMeasurement = await UnitOfMeasurementService.querySelectUnitsOfMeasurement(id: row[9]);
+        if (unitsOfMeasurement != null && unitsOfMeasurement.length != 0) {
+          workItem.unitOfMeasurement = unitsOfMeasurement.first;
+        }
+
+        workItems.add(workItem);
+
       }
-
-      workItems.add(workItem);
-
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
     }
     return workItems;
   }
@@ -331,8 +350,11 @@ class WorkItemService extends WorkItemServiceBase {
             "name,"
             "description,"
             "due_date,"
-            "completed,"
+            "planned_value,"
+            "actual_value,"
+            "archived,"
             "work_id,"
+            "unit_of_measurement_id,"
             "stage_id)"
             "VALUES"
             "(@id,"
@@ -340,8 +362,11 @@ class WorkItemService extends WorkItemServiceBase {
             "@name,"
             "@description,"
             "@due_date,"
-            "@completed,"
+            "@planned_value,"
+            "@actual_value,"
+            "@archived,"
             "@work_id,"
+            "@unit_of_measurement_id,"
             "@stage_id)"
             , substitutionValues: {
               "id": request.workItem.id,
@@ -349,8 +374,11 @@ class WorkItemService extends WorkItemServiceBase {
               "name": request.workItem.name,
               "description": request.workItem.hasDescription() ? request.workItem.description : null,
               "due_date": request.workItem.hasDueDate() ? /* CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) */ request.workItem.dueDate.toDateTime() : null,
-              "completed": request.workItem.hasCompleted() ? request.workItem.completed : null,
+              "planned_value": request.workItem.hasPlannedValue() ? request.workItem.plannedValue : null,
+              "actual_value": request.workItem.hasActualValue() ? request.workItem.actualValue : null,
+              "archived": request.workItem.hasArchived() ? request.workItem.archived : null,
               "work_id": request.hasWorkId() ? request.workId : null,
+              "unit_of_measurement": request.workItem.hasUnitOfMeasurement() ? request.workItem.unitOfMeasurement.id : null,
               "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null});
 
         // Assigned Members Users
@@ -466,9 +494,11 @@ class WorkItemService extends WorkItemServiceBase {
             " name = @name,"
             " description = @description,"
             " due_date = @due_date,"
-            " completed = @completed,"
+            " planned_value = @planned_value,"
+            " actual_value = @actual_value,"
             " work_id = @work_id,"
-            " stage_id = @stage_id"
+            " stage_id = @stage_id,"
+            " unit_of_measurement_id = @unit_of_measurement_id"
             " WHERE id = @id AND version = @version - 1"
             " RETURNING true"
             , substitutionValues: {
@@ -479,11 +509,15 @@ class WorkItemService extends WorkItemServiceBase {
                   ? request.workItem.description
                   : null,
               "due_date": request.workItem.hasDueDate() ? /* CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) */ request.workItem.dueDate.toDateTime() : null,
-              "completed": request.workItem.hasCompleted()
-                  ? request.workItem.completed
+              "planned_value": request.workItem.hasPlannedValue()
+                  ? request.workItem.plannedValue
+                  : null,
+              "actual_value": request.workItem.hasActualValue()
+                  ? request.workItem.actualValue
                   : null,
               "work_id": request.workId,
-              "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null});
+              "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null,
+              "unit_of_measurement_id": request.workItem.hasUnitOfMeasurement () ? request.workItem.unitOfMeasurement.id : null});
 
         // Assigned Members Users
         StringBuffer assignedToUsersId = new StringBuffer();

@@ -18,6 +18,7 @@
 
 import 'dart:async';
 
+import 'package:auge_server/src/service/general/unit_of_measurement_service.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_server/src/service/general/common_service.dart';
@@ -77,6 +78,7 @@ Future<void> main(List<String> args) async {
     UserIdentityService(),
     UserAccessService(),
     GroupService(),
+    UnitOfMeasurementService(),
     ObjectiveService(),
     MeasureService(),
     StateService(),

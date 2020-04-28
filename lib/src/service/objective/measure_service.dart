@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+//import 'package:auge_shared/domain/general/unit_of_measurement.dart';
 import 'package:auge_shared/src/util/common_utils.dart';
 import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart';
 import 'package:auge_shared/message/messages.dart';
@@ -13,6 +14,7 @@ import 'package:auge_shared/route/app_routes_definition.dart';
 
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
+import 'package:auge_shared/protos/generated/general/unit_of_measurement.pb.dart';
 import 'package:auge_shared/protos/generated/objective/objective_measure.pbgrpc.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
@@ -24,6 +26,7 @@ import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
 import 'package:auge_shared/domain/objective/objective.dart' as objective_m;
 import 'package:auge_shared/domain/objective/measure.dart' as measure_m;
 
+import 'package:auge_server/src/service/general/unit_of_measurement_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
 
@@ -32,16 +35,6 @@ import 'package:uuid/uuid.dart';
 class MeasureService extends MeasureServiceBase {
 
   // API
-  @override
-  Future<MeasureUnitsResponse> getMeasureUnits(ServiceCall call,
-      Empty) async {
-    MeasureUnitsResponse measureUnitsResponse;
-    measureUnitsResponse = MeasureUnitsResponse()/*..webWorkAround = true*/
-      ..measureUnits.addAll(
-          await querySelectMeasureUnits());
-    return measureUnitsResponse;
-  }
-
   @override
   Future<MeasuresResponse> getMeasures(ServiceCall call,
       MeasureGetRequest request) async {
@@ -116,35 +109,52 @@ class MeasureService extends MeasureServiceBase {
   }
 
   // QUERY
+
   // *** MEASURE UNITS ***
+  /*
   static Future<List<MeasureUnit>> querySelectMeasureUnits({String id}) async {
-    List<MeasureUnit> mesuareUnits = new List();
+    List<MeasureUnit> mesuareUnits = List();
 
     mesuareUnits.add(MeasureUnit()
-      ..id = 'f748d3ad-b533-4a2d-b4ae-0ae1e255cf81'
-      ..symbol = '%'
-      ..name = 'percent' // MeasureMessage.measureUnitLabel('Percent')
+      ..id = '819692ec-3640-4209-915a-4f3aee6d798e'
+      ..symbol = 'd'
+      ..name = 'day' // MeasureMessage.measureUnitLabel('Unitary')
+    );
+    mesuareUnits.add(MeasureUnit()
+      ..id = '3ad31a95-bd08-48e0-80ab-0a9ee3c5e912'
+      ..symbol = 'h'
+      ..name = 'hour' // MeasureMessage.measureUnitLabel('Unitary')
+    );
+    mesuareUnits.add(MeasureUnit()
+      ..id = 'fad0dc86-0124-4caa-9954-7526814efc3a'
+      ..symbol = ''
+      ..name = 'index' // MeasureMessage.measureUnitLabel('Index')
     );
     mesuareUnits.add(MeasureUnit()
       ..id = 'fad0dc86-0124-4caa-9954-7526814efc3a'
       ..symbol = '\$'
       ..name = 'money' // MeasureMessage.measureUnitLabel('Money')
     );
-
     mesuareUnits.add(MeasureUnit()
-      ..id = 'fad0dc86-0124-4caa-9954-7526814efc3a'
-      ..symbol = ''
-      ..name = 'index' // MeasureMessage.measureUnitLabel('Index')
+      ..id = 'f748d3ad-b533-4a2d-b4ae-0ae1e255cf81'
+      ..symbol = '%'
+      ..name = 'percent' // MeasureMessage.measureUnitLabel('Percent')
     );
-
     mesuareUnits.add(MeasureUnit()
       ..id = '723f1387-d5da-44f7-8373-17de31921cae'
       ..symbol = ''
       ..name = 'unitary' // MeasureMessage.measureUnitLabel('Unitary')
     );
 
+    mesuareUnits.add(MeasureUnit()
+      ..id = '723f1387-d5da-44f7-8373-17de31921cae'
+      ..symbol = 'h'
+      ..name = 'hour' // MeasureMessage.measureUnitLabel('Unitary')
+    );
+
     return mesuareUnits;
   }
+   */
 
   // *** MEASURES ***
   static Future<List<Measure>> querySelectMeasures(MeasureGetRequest request) async {
@@ -161,7 +171,7 @@ class MeasureService extends MeasureServiceBase {
         " start_value::REAL," //6
         " end_value::REAL," //7
         " (select current_value from objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //8
-        " measure_unit_id," //9
+        " unit_of_measurement_id," //9
         " objective_id" //10
         " FROM objective.measures measure ";
 
@@ -184,7 +194,7 @@ class MeasureService extends MeasureServiceBase {
         queryStatement, substitutionValues: substitutionValues);
 
     List<Measure> measures = new List();
-    List<MeasureUnit> measureUnits;
+    List<UnitOfMeasurement> unitsOfMeasurement;
 
     if (results != null && results.isNotEmpty) {
 
@@ -205,9 +215,9 @@ class MeasureService extends MeasureServiceBase {
         if (row[8] != null) measure.currentValue = row[8];
         if (row[9] != null)
           //  measureUnit = await getMeasureUnitById(row[8]);
-          measureUnits = await querySelectMeasureUnits(id: row[9]);
-        if (measureUnits != null && measureUnits.length != 0) {
-          measure.measureUnit = measureUnits.first;
+          unitsOfMeasurement = await UnitOfMeasurementService.querySelectUnitsOfMeasurement(id: row[9]);
+        if (unitsOfMeasurement != null && unitsOfMeasurement.length != 0) {
+          measure.unitOfMeasurement = unitsOfMeasurement.first;
         }
 
         if (request.hasWithObjective() && request.withObjective == true) measure.objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = row[10]..withUserProfile = request.hasWithUserProfile() && request.withUserProfile == true);
@@ -276,7 +286,7 @@ class MeasureService extends MeasureServiceBase {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
-            "INSERT INTO objective.measures(id, version, name, description, metric, decimals_number, start_value, end_value, measure_unit_id, objective_id) VALUES"
+            "INSERT INTO objective.measures(id, version, name, description, metric, decimals_number, start_value, end_value, unit_of_measurement_id, objective_id) VALUES"
                 "(@id,"
                 "@version,"
                 "@name,"
@@ -285,7 +295,7 @@ class MeasureService extends MeasureServiceBase {
                 "@decimals_number,"
                 "@start_value,"
                 "@end_value,"
-                "@measure_unit_id,"
+                "@unit_of_measurement_id,"
                 "@objective_id)"
             , substitutionValues: {
           "id": request.measure.id,
@@ -296,7 +306,7 @@ class MeasureService extends MeasureServiceBase {
           "decimals_number": request.measure.hasDecimalsNumber() ? request.measure.decimalsNumber : null,
           "start_value": request.measure.hasStartValue() ? request.measure.startValue : null,
           "end_value": request.measure.hasEndValue() ? request.measure.endValue : null,
-          "measure_unit_id": request.measure.hasMeasureUnit() ? request.measure.measureUnit.id : null,
+          "unit_of_measurement_id": request.measure.hasUnitOfMeasurement() ? request.measure.unitOfMeasurement.id : null,
           "objective_id": request.hasObjectiveId() ? request.objectiveId : null,
         });
 
@@ -359,7 +369,7 @@ class MeasureService extends MeasureServiceBase {
               " end_value = @end_value,"
              // " current_value = @current_value,"
               " objective_id = @objective_id,"
-              " measure_unit_id = @measure_unit_id"
+              " unit_of_measurement_id = @unit_of_measurement_id"
               " WHERE id = @id AND version = @version - 1"
               " RETURNING true"
               , substitutionValues: {
@@ -372,7 +382,7 @@ class MeasureService extends MeasureServiceBase {
                 "start_value": request.measure.hasStartValue() ? request.measure.startValue : null,
                 "end_value": request.measure.hasEndValue() ? request.measure.endValue : null,
                 //"current_value": measureRequest.currentValue,
-                "measure_unit_id": request.measure.hasMeasureUnit() ? request.measure.measureUnit.id : null,
+                "unit_of_measurement_id": request.measure.hasUnitOfMeasurement() ? request.measure.unitOfMeasurement.id : null,
                 "objective_id": request.hasObjectiveId() ? request.objectiveId : null,
               });
 

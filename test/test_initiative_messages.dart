@@ -158,7 +158,8 @@ void main() {
         model.version = 0;
         model.name = 'Name test';
         model.description = 'Description test';
-        model.completed = 50;
+        model.plannedValue = 50;
+        model.actualValue = 20;
         model.dueDate = DateTime.now();
         model.checkItems.add(work_item_m.WorkItemCheckItem()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e');
         model.assignedTo.add(user_m.User()..id = '7f8b226c-ee2d-4533-9e19-606bfc098d0e' );
@@ -171,7 +172,8 @@ void main() {
         expect(model.name, equals(proto.name));
         expect(model.description, equals(proto.description));
 
-        expect(model.completed, equals(proto.completed));
+        expect(model.plannedValue, equals(proto.plannedValue));
+        expect(model.actualValue, equals(proto.actualValue));
 
         expect(model.dueDate, equals(DateTime.fromMicrosecondsSinceEpoch(
                 proto.dueDate.seconds.toInt() * 1000000 +
@@ -208,7 +210,8 @@ void main() {
         expect(m[work_item_m.WorkItem.versionField], equals(proto.version));
         expect(m[work_item_m.WorkItem.nameField], equals(proto.name));
         expect(m[work_item_m.WorkItem.descriptionField], equals(proto.description));
-        expect(m[work_item_m.WorkItem.completedField], equals(proto.completed));
+        expect(m[work_item_m.WorkItem.plannedValueField], equals(proto.plannedValue));
+        expect(m[work_item_m.WorkItem.actualValueField], equals(proto.actualValue));
         expect(m[work_item_m.WorkItem.dueDateField], equals(proto.dueDate));
         expect(m[work_item_m.WorkItem.checkItemsField].first[work_item_m.WorkItemCheckItem.idField], equals(proto.checkItems.first.id));
         expect(m[work_item_m.WorkItem.assignedToField].first[user_m.User.idField], equals(proto.assignedTo.first.id));
