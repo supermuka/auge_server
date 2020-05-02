@@ -93,6 +93,42 @@ class WorkItemService extends WorkItemServiceBase {
     return workItemAttachment;
   }
 
+  @override
+  Future<WorkItemValuesResponse> getWorkItemValues(ServiceCall call,
+      WorkItemValueGetRequest request) async {
+    return
+      WorkItemValuesResponse()/*..webWorkAround = true*/..workItemValues.addAll(await querySelectWorkItemValues(request));
+  }
+
+  @override
+  Future<WorkItemValue> getWorkItemValue(ServiceCall call,
+      WorkItemValueGetRequest request) async {
+    WorkItemValue workItemValue = await querySelectWorkItemValue(
+        request);
+    if (workItemValue == null) throw new GrpcError.notFound(
+        RpcErrorDetailMessage.workItemValueDataNotFoundReason);
+    return workItemValue;
+  }
+
+  @override
+  Future<StringValue> createWorkItemValue(ServiceCall call,
+      WorkItemValueRequest request) async {
+    return queryInsertWorkItemValue(request, call.clientMetadata['origin']);
+  }
+
+  @override
+  Future<Empty> updateWorkItemValue(ServiceCall call,
+      WorkItemValueRequest request) async {
+    return queryUpdateWorkItemValue(request, call.clientMetadata['origin']);
+  }
+
+  @override
+  Future<Empty> deleteWorkItemValue(ServiceCall call,
+      WorkItemValueDeleteRequest request) async {
+    return queryDeleteWorkItemValue(request, call.clientMetadata['origin']);
+  }
+
+
   // QUERY
   // *** INITIATIVE WORK ITEMS ***
   static Future<List<WorkItem>> querySelectWorkItems(WorkItemGetRequest workItemGetRequest) async {
@@ -100,14 +136,13 @@ class WorkItemService extends WorkItemServiceBase {
     List<List<dynamic>> results;
 
     String queryStatement;
-
     queryStatement = "SELECT work_item.id," //0
         " work_item.version," //1
         " work_item.name," //2
         " work_item.description," //3
         " work_item.due_date," //4
         " work_item.planned_value," //5
-        " work_item.actual_value," //6 +
+        " (select sum(actual_value) from work.work_item_values work_item_value where work_item_value.work_item_id = work_item.id)::REAL as actual_value," //6 +
         " work_item.stage_id," // 7
         " work_item.work_id, " // 8
         " work_item.unit_of_measurement_id " // 9
@@ -351,7 +386,7 @@ class WorkItemService extends WorkItemServiceBase {
             "description,"
             "due_date,"
             "planned_value,"
-            "actual_value,"
+        //    "actual_value,"
             "archived,"
             "work_id,"
             "unit_of_measurement_id,"
@@ -363,7 +398,7 @@ class WorkItemService extends WorkItemServiceBase {
             "@description,"
             "@due_date,"
             "@planned_value,"
-            "@actual_value,"
+           // "@actual_value,"
             "@archived,"
             "@work_id,"
             "@unit_of_measurement_id,"
@@ -375,7 +410,7 @@ class WorkItemService extends WorkItemServiceBase {
               "description": request.workItem.hasDescription() ? request.workItem.description : null,
               "due_date": request.workItem.hasDueDate() ? /* CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) */ request.workItem.dueDate.toDateTime() : null,
               "planned_value": request.workItem.hasPlannedValue() ? request.workItem.plannedValue : null,
-              "actual_value": request.workItem.hasActualValue() ? request.workItem.actualValue : null,
+            //  "actual_value": request.workItem.hasActualValue() ? request.workItem.actualValue : null,
               "archived": request.workItem.hasArchived() ? request.workItem.archived : null,
               "work_id": request.hasWorkId() ? request.workId : null,
               "unit_of_measurement": request.workItem.hasUnitOfMeasurement() ? request.workItem.unitOfMeasurement.id : null,
@@ -396,7 +431,7 @@ class WorkItemService extends WorkItemServiceBase {
 
         // Attachment list
         for (WorkItemAttachment attachment in request.workItem.attachments) {
-          attachment.id = new Uuid().v4();
+          attachment.id = Uuid().v4();
 
           await ctx.query("INSERT INTO work.work_item_attachments"
               " (id,"
@@ -420,7 +455,7 @@ class WorkItemService extends WorkItemServiceBase {
 
         // Check item list
         for (WorkItemCheckItem checkItem in request.workItem.checkItems) {
-          checkItem.id = new Uuid().v4();
+          checkItem.id = Uuid().v4();
 
           await ctx.query("INSERT INTO work.work_item_check_items"
               " (id,"
@@ -488,14 +523,13 @@ class WorkItemService extends WorkItemServiceBase {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         List<List<dynamic>> result;
-
         result = await ctx.query("UPDATE work.work_items"
             " SET version = @version, "
             " name = @name,"
             " description = @description,"
             " due_date = @due_date,"
             " planned_value = @planned_value,"
-            " actual_value = @actual_value,"
+          //  " actual_value = @actual_value,"
             " work_id = @work_id,"
             " stage_id = @stage_id,"
             " unit_of_measurement_id = @unit_of_measurement_id"
@@ -512,9 +546,9 @@ class WorkItemService extends WorkItemServiceBase {
               "planned_value": request.workItem.hasPlannedValue()
                   ? request.workItem.plannedValue
                   : null,
-              "actual_value": request.workItem.hasActualValue()
-                  ? request.workItem.actualValue
-                  : null,
+          //    "actual_value": request.workItem.hasActualValue()
+          //        ? request.workItem.actualValue
+           //       : null,
               "work_id": request.workId,
               "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null,
               "unit_of_measurement_id": request.workItem.hasUnitOfMeasurement () ? request.workItem.unitOfMeasurement.id : null});
@@ -759,6 +793,315 @@ class WorkItemService extends WorkItemServiceBase {
 
       // Notification
       workItemNotification(previousWorkItem.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+    return Empty()/*..webWorkAround = true*/;
+  }
+
+  // *** WORK ITEM VALUE  ***
+  static Future<List<WorkItemValue>> querySelectWorkItemValues(WorkItemValueGetRequest request) async {
+    List<List> results;
+
+    String queryStatement;
+
+    queryStatement = "SELECT id," // 0
+        " version," //1
+        " date," //2
+        " actual_value," //3
+        " comment," //4
+        " work_item_id" //5
+        " FROM work.work_item_values ";
+
+    Map<String, dynamic> substitutionValues = {};
+
+    if (request.hasId()) {
+      queryStatement +=
+      " WHERE id = @id";
+      substitutionValues['id'] = request.id;
+    } else if (request.hasWorkItemId()) {
+      queryStatement +=
+      " WHERE work_item_id = @work_item_id";
+      substitutionValues['work_item_id'] = request.workItemId;
+    }
+
+    queryStatement += " ORDER BY date DESC";
+
+    List<WorkItemValue> workItemValues = List();
+    try {
+      results = await (await AugeConnection.getConnection()).query(
+          queryStatement, substitutionValues: substitutionValues);
+
+      if (results != null && results.isNotEmpty) {
+        for (var row in results) {
+          WorkItemValue workItemValue = WorkItemValue()
+            ..id = row[0]
+            ..version = row[1];
+
+          //  measureProgress.date = row[3]
+          if (row[2] != null) workItemValue.date = CommonUtils.timestampFromDateTime(row[2]); /*{
+              Timestamp t = Timestamp();
+              int microsecondsSinceEpoch = row[2].toUtc().microsecondsSinceEpoch;
+              t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
+              t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
+              measureProgress.date = t;
+            }*/
+
+          if (row[3] != null) {
+            workItemValue.actualValue = row[3];
+          }
+          if (row[4] != null) {
+            workItemValue.comment = row[4];
+          }
+
+          if (request.withWorkItem && request.withWorkItem == true && row[5] != null) {
+            workItemValue.workItem = await WorkItemService.querySelectWorkItem(WorkItemGetRequest()..id = row[5]..withWork = request.withWork..withUserProfile = request.withUserProfile);
+          }
+
+          workItemValues.add(workItemValue);
+        }
+      }
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+    return workItemValues;
+  }
+
+  static Future<WorkItemValue> querySelectWorkItemValue(WorkItemValueGetRequest request) async {
+    List<WorkItemValue> workItemValues = await querySelectWorkItemValues(request);
+
+    if (workItemValues.isNotEmpty) {
+      return workItemValues.first;
+    } else {
+      return null;
+    }
+  }
+
+
+  /// Objective Work Item Value Notification User
+  static void workItemValueNotification(WorkItemValue workItemValue, String className, int systemFunctionIndex, String description, String urlOrigin) async {
+
+    // MODEL
+    List<AugeMailMessageTo> mailMessages = [];
+
+    // Leader  - Verify if send e-mail
+    if (!workItemValue.workItem.work.leader.userProfile.eMailNotification) return;
+
+    // Leader - eMail
+    if (workItemValue.workItem.work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
+
+    await CommonUtils.setDefaultLocale(workItemValue.workItem.work.leader.userProfile.idiomLocale);
+
+    mailMessages.add(
+        AugeMailMessageTo(
+            [workItemValue.workItem.work.leader.userProfile.eMail],
+            '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
+            '${ClassNameMsg.label(className)}',
+            description,
+            '${ObjectiveDomainMsg.fieldLabel(work_m.Work.leaderField)}',
+            '${ClassNameMsg.label(work_m.Work.className)} ${workItemValue.workItem.work.name}',
+            urlOrigin));
+
+    // SEND E-MAIL
+    AugeMail().sendNotification(mailMessages);
+
+  }
+
+  /// Create value of the [WorkItemValue]
+  static Future<StringValue> queryInsertWorkItemValue(
+      WorkItemValueRequest request, String urlOrigin) async {
+    Map<String, dynamic> historyItemNotificationValues;
+    try {
+
+      // This is made just to recovery email leader from objective, used to notification
+      request.workItemValue.workItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..withWork = true..withUserProfile = true);
+
+      request.workItemValue.version = 0;
+
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
+        if (!request.workItemValue.hasId()) {
+          request.workItemValue.id = Uuid().v4();
+        }
+
+        await ctx.query(
+            "INSERT INTO work.work_item_values(id, version, date, actual_value, comment, work_item_id) VALUES"
+                "(@id,"
+                "@version,"
+                "@date,"
+                "@actual_value,"
+                "@comment,"
+                "@work_item_id)"
+            , substitutionValues: {
+          "id": request.workItemValue.id,
+          "version": request.workItemValue.version,
+          "date": request.workItemValue.hasDate() ? /* CommonUtils.dateTimeFromTimestamp(request.measureProgress.date) */ request.workItemValue.date.toDateTime() : DateTime.now().toUtc(),
+          "actual_value": request.workItemValue.hasActualValue() ? request.workItemValue.actualValue : null,
+          "comment": request.workItemValue.hasComment() ? request.workItemValue.comment : null,
+          "work_item_id": request.hasWorkItemId() ? request.workItemId : null,
+        });
+
+        // Create a history item
+        historyItemNotificationValues =  {"id": Uuid().v4(),
+          "user_id": request.authUserId,
+          "organization_id": request.authOrganizationId,
+          "object_id": request.workItemValue.id,
+          "object_version": request.workItemValue.version,
+          "object_class_name": work_item_m
+              .WorkItemValue.className,
+          "system_module_index": SystemModule.objectives.index,
+          "system_function_index": SystemFunction.create.index,
+          "date_time": DateTime.now().toUtc(),
+          "description": '${request.workItemValue.actualValue} @ ${request.workItemValue.workItem.name}',
+          "changed_values": history_item_m.HistoryItem
+              .changedValuesJson({},
+              work_item_m.WorkItemValue
+                  .fromProtoBufToModelMap(
+                  request.workItemValue))};
+
+
+        await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+            substitutionValues: historyItemNotificationValues);
+
+      });
+
+      // Notification
+      workItemValueNotification(request.workItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+    return StringValue()..value = request.workItemValue.id;
+  }
+
+  /// Create value of the [WorkItemValue]
+  Future<Empty> queryUpdateWorkItemValue(
+      WorkItemValueRequest request, String urlOrigin) async {
+
+    // Recovery to log to history
+    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValue.id..withWorkItem = true..withWork = true..withUserProfile = true);
+
+    request.workItemValue.workItem = previousWorkItemValue.workItem;
+    // This is made just to recovery email leader from objective, used to notification
+    //request.measureProgress.measure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId..withObjective = true..withUserProfile = true);
+
+    Map<String, dynamic> historyItemNotificationValues;
+    try {
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
+        DateTime dateTimeNow = DateTime.now().toUtc();
+
+        List<List<dynamic>> result;
+
+        if (!request.workItemValue.hasId()) {
+          request.workItemValue.id = Uuid().v4();
+        }
+
+        result = await ctx.query(
+            "UPDATE work.work_item_values "
+                "SET date = @date, "
+                "actual_value = @actual_value, "
+                "comment = @comment, "
+                "work_item_id = @work_item_id, "
+                "version = @version "
+                "WHERE id = @id AND version = @version - 1 "
+                "RETURNING true"
+            , substitutionValues: {
+          "id": request.workItemValue.id,
+          "version": ++request.workItemValue.version,
+          "date": request.workItemValue.date == null
+              ? dateTimeNow
+              : request.workItemValue.date.toDateTime(),
+          "actual_value": request.workItemValue.hasActualValue() ? request.workItemValue.actualValue : null,
+          "comment": request.workItemValue.hasComment() ? request.workItemValue.comment : null,
+          "work_item_id": request.hasWorkItemId() ? request.workItemId : null,
+
+        });
+
+        // Optimistic concurrency control
+        if (result.length == 0) {
+          throw new GrpcError.failedPrecondition(
+              RpcErrorDetailMessage.workItemPreconditionFailed);
+        } else {
+          // Create a history item
+          historyItemNotificationValues = {"id": Uuid().v4(),
+            "user_id": request.authUserId,
+            "organization_id": request.authOrganizationId,
+            "object_id": request.workItemValue.id,
+            "object_version": request.workItemValue.version,
+            "object_class_name": work_item_m
+                .WorkItemValue.className,
+            "system_module_index": SystemModule.objectives.index,
+            "system_function_index": SystemFunction.update.index,
+            "date_time": DateTime.now().toUtc(),
+            "description": '${request.workItemValue.actualValue} @ ${request.workItemValue.workItem.name}',
+            "changed_values": history_item_m.HistoryItem.changedValuesJson(work_item_m.WorkItemValue.fromProtoBufToModelMap(previousWorkItemValue), work_item_m.WorkItemValue.fromProtoBufToModelMap(request.workItemValue))};
+
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: historyItemNotificationValues);
+        }
+
+      });
+
+      // Notification
+      workItemValueNotification(request.workItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+    return Empty()/*..webWorkAround = true*/;
+  }
+
+  /// Delete a [WorkItemValue] by id
+  Future<Empty> queryDeleteWorkItemValue(WorkItemValueDeleteRequest request, String urlOrigin) async {
+
+    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValueId..withWorkItem = true..withWork = true..withUserProfile = true);
+
+    try {
+
+      Map<String, dynamic> historyItemNotificationValues;
+
+      await (await AugeConnection.getConnection()).transaction((ctx) async {
+
+        List<List<dynamic>> result = await ctx.query(
+            "DELETE FROM work.work_item_values work_item_value"
+                " WHERE work_item_value.id = @id AND work_item_value.version = @version"
+                " RETURNING true"
+            , substitutionValues: {
+          "id": request.workItemValueId,
+          "version": request.workItemValueVersion});
+
+        // Optimistic concurrency control
+        if (result.length == 0) {
+          throw new GrpcError.failedPrecondition(
+              RpcErrorDetailMessage.workItemPreconditionFailed);
+        } else {
+          // Create a history item
+          historyItemNotificationValues = {"id": Uuid().v4(),
+            "user_id": request.authUserId,
+            "organization_id": request.authOrganizationId,
+            "object_id": request.workItemValueId,
+            "object_version": request.workItemValueVersion,
+            "object_class_name": work_item_m.WorkItemValue.className,
+            "system_module_index": SystemModule.objectives.index,
+            "system_function_index": SystemFunction.delete.index,
+            "date_time": DateTime.now().toUtc(),
+            "description": '${previousWorkItemValue.actualValue} @ ${previousWorkItemValue.workItem.name}',
+            "changed_values": history_item_m.HistoryItem
+                .changedValuesJson(
+                work_item_m.WorkItemValue.fromProtoBufToModelMap(
+                    previousWorkItemValue, true), {})};
+
+          await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
+              substitutionValues: historyItemNotificationValues);
+        }
+      });
+
+      // Notification
+      workItemValueNotification(previousWorkItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
