@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM envoyproxy/envoy:latest
+FROM envoyproxy/envoy:v1.14.1
 
 COPY certificate/cert.pem /etc/auge_server/certificate/cert.pem
 COPY certificate/privkey.pem /etc/auge_server/certificate/privkey.pem

@@ -59,6 +59,7 @@ class HistoryItemService extends HistoryItemServiceBase {
     List<List> results;
     List<HistoryItem> history = new List();
 
+
     String queryStatement = "SELECT history_item.id, " //0
         "history_item.user_id, " //1
         "history_item.object_id, " //2
@@ -70,13 +71,18 @@ class HistoryItemService extends HistoryItemServiceBase {
         "history_item.description, " //8
         "history_item.changed_values " //9
         "FROM general.history history_item "
-        "WHERE history_item.organization_id = @organization_id "
-        "AND history_item.system_module_index = @system_module_index "
-        "ORDER BY history_item.date_time DESC ";
+        "WHERE history_item.organization_id = @organization_id ";
 
     Map<String, dynamic> substitutionValues;
 
-    substitutionValues = {"organization_id": historyItemGetRequest.organizationId, "system_module_index": historyItemGetRequest.systemModuleIndex};
+    substitutionValues = {"organization_id": historyItemGetRequest.organizationId};
+
+    if (historyItemGetRequest.hasSystemModuleIndex() && historyItemGetRequest.systemModuleIndex != null) {
+      substitutionValues["system_module_index"] = historyItemGetRequest.systemModuleIndex;
+      queryStatement = queryStatement + "AND history_item.system_module_index = @system_module_index ";
+    }
+
+    queryStatement = queryStatement + "ORDER BY history_item.date_time DESC ";
 
     try {
       results = await (await AugeConnection.getConnection()).query(
