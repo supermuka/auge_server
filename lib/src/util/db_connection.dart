@@ -29,9 +29,7 @@ class AugeConnection {
   static Future<PostgreSQLConnection> getConnection() async {
     if (_connection == null || _connection.isClosed) {
 
-
       AugeConfiguration augeConfiguration = AugeConfiguration('config/configuration.yaml');
-
       _connection = new PostgreSQLConnection(
 
            // cloud internal ip - when deploy
@@ -58,7 +56,6 @@ class AugeConnection {
         // >>> FOI UTILIZADO PARA DEFINIR O RANGE NO /etc/postgresql/9.6/main/pg_hba.conf <<<
 
        //   "172.17.0.1", 5432, "auge", username: "postgres",
-
       await _connection.open();
     }
     return _connection;

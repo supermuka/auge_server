@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:auge_shared/src/util/common_utils.dart';
 import 'package:auge_shared/protos/generated/objective/objective_measure.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:auge_server/src/util/mail.dart';
 import 'package:auge_shared/message/messages.dart';
@@ -32,7 +33,7 @@ import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/group_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
-import 'package:uuid/uuid.dart';
+
 
 class ObjectiveService extends ObjectiveServiceBase {
 
@@ -40,11 +41,8 @@ class ObjectiveService extends ObjectiveServiceBase {
   @override
   Future<ObjectivesResponse> getObjectives(ServiceCall call,
       ObjectiveGetRequest request) async {
-
-    //return ObjectivesResponse();
-    return ObjectivesResponse()..objectives.addAll(await querySelectObjectives(request));
-
-    /*return ObjectivesResponse()/*..webWorkAround = true*/..objectives.addAll(await querySelectObjectives(request));*/
+     ObjectivesResponse or = ObjectivesResponse()..objectives.addAll(await querySelectObjectives(request));
+     return or;
   }
 
   @override
@@ -77,7 +75,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   // QUERY
   // *** OBJECTIVES ***
   // alignedToRecursiveDeep: 0 not call; 1 call once; 2 call two, etc...
-  static Future<List<Objective>> querySelectObjectives(ObjectiveGetRequest objectiveSelectRequest) async {
+  static Future<List<Objective>> querySelectObjectives(ObjectiveGetRequest objectiveGetRequest) async {
 
     List<List> results;
     // String queryStatementColumns = "objective.id::VARCHAR, objective.name, objective.description, objective.start_date, objective.end_date, objective.leader_user_id, objective.aligned_to_objective_id";
@@ -95,22 +93,33 @@ class ObjectiveService extends ObjectiveServiceBase {
 
     String queryStatementWhere = "";
     Map<String, dynamic> substitutionValues;
-    if (objectiveSelectRequest.hasId() && objectiveSelectRequest.id.isNotEmpty) {
+    if (objectiveGetRequest.hasId() && objectiveGetRequest.id.isNotEmpty) {
       queryStatementWhere = " objective.id = @id";
-      substitutionValues = {"id": objectiveSelectRequest.id};
-
-    } else if (objectiveSelectRequest.hasOrganizationId() && objectiveSelectRequest.organizationId.isNotEmpty) {
+      substitutionValues = {"id": objectiveGetRequest.id};
+    } else if (objectiveGetRequest.hasOrganizationId() && objectiveGetRequest.organizationId.isNotEmpty) {
       queryStatementWhere = " objective.organization_id = @organization_id";
-      substitutionValues = {"organization_id": objectiveSelectRequest.organizationId};
-
+      substitutionValues = {"organization_id": objectiveGetRequest.organizationId};
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.objectiveInvalidArgument );
     }
-    if (objectiveSelectRequest.hasWithArchived() && !objectiveSelectRequest.withArchived) {
+
+    if (objectiveGetRequest.hasWithArchived() && !objectiveGetRequest.withArchived) {
       queryStatementWhere = queryStatementWhere + " AND objective.archived <> true";
     }
+
+    //String ids;
+    if (objectiveGetRequest.groupIds != null && objectiveGetRequest.groupIds.isNotEmpty) {
+      queryStatementWhere = queryStatementWhere + " AND objective.group_id in ${objectiveGetRequest.groupIds.map((f) => "'${f}'")}";
+      //ids = objectiveGetRequest.groupIds.toString();
+      // queryStatementWhere = queryStatementWhere + " AND objective.group_id in (${ids.toString().substring(1, ids.length-1)})";
+    }
+    if (objectiveGetRequest.leaderUserIds != null && objectiveGetRequest.leaderUserIds.isNotEmpty) {
+      queryStatementWhere = queryStatementWhere + " AND objective.leader_user_id in ${objectiveGetRequest.leaderUserIds.map((f) => "'${f}'")}";
+      //ids = objectiveGetRequest.leaderUserIds.toString();
+      // queryStatementWhere = queryStatementWhere + " AND objective.leader_user_id in (${ids.toString().substring(1, ids.length-1)})";
+    }
     String queryStatement;
-    if (objectiveSelectRequest.hasTreeAlignedWithChildren() && objectiveSelectRequest.treeAlignedWithChildren) {
+    if (objectiveGetRequest.hasTreeAlignedWithChildren() && objectiveGetRequest.treeAlignedWithChildren) {
       queryStatement =
           "WITH RECURSIVE nodes(" + queryStatementColumns.replaceAll("objective.", "") + ") AS ("
               " SELECT " + queryStatementColumns +
@@ -132,17 +141,17 @@ class ObjectiveService extends ObjectiveServiceBase {
     try {
       results = await (await AugeConnection.getConnection()).query(
           queryStatement, substitutionValues: substitutionValues);
-      List<Objective> objectives = new List();
-      List<Objective> objectivesTree = new List();
+
+      List<Objective> objectives = List();
+      List<Objective> objectivesTree = List();
       Map<String, Objective> objectivesTreeMapAux = {};
 
       if (results != null && results.isNotEmpty) {
 
-
         Objective objective;
 
-        if (!objectiveSelectRequest.hasAlignedToRecursive()) {
-          objectiveSelectRequest.alignedToRecursive = 1;
+        if (!objectiveGetRequest.hasAlignedToRecursive()) {
+          objectiveGetRequest.alignedToRecursive = 1;
         }
 
         Map<String, User> usersCache = {};
@@ -156,7 +165,6 @@ class ObjectiveService extends ObjectiveServiceBase {
             ..version = row[1]
             ..name = row[2];
 
-
           if (row[3] != null) objective.description = row[3];
 
           if (row[4] != null)
@@ -168,23 +176,24 @@ class ObjectiveService extends ObjectiveServiceBase {
           if (row[6] != null) objective.archived = row[6];
 
           objective.measures.addAll(
-          (objectiveSelectRequest.withMeasures) ? await MeasureService
+          (objectiveGetRequest.withMeasures) ? await MeasureService
               .querySelectMeasures(MeasureGetRequest()
             ..objectiveId = row[0]) : []);
 
           if (row[7] != null) objective.leader = await UserService.querySelectUser(UserGetRequest()
               ..id = row[7]
-              ..withUserProfile = objectiveSelectRequest.withUserProfile, cache: usersCache);
+              ..withUserProfile = objectiveGetRequest.withUserProfile, cache: usersCache);
 
-          if (row[8] != null && objectiveSelectRequest.alignedToRecursive > 0)
+          if (row[8] != null && objectiveGetRequest.alignedToRecursive > 0)
             //--objectiveSelectRequest.alignedToRecursive;
             objective.alignedTo =
             await ObjectiveService.querySelectObjective(ObjectiveGetRequest()
               ..id = row[8]
-              ..alignedToRecursive = (objectiveSelectRequest.alignedToRecursive-1)
-              ..withArchived = objectiveSelectRequest.withArchived
-              ..withMeasures = objectiveSelectRequest.withMeasures
-              ..withUserProfile = objectiveSelectRequest.withUserProfile, cache: objectivesCache);
+              /*..alignedToRecursive = (objectiveGetRequest.alignedToRecursive-1)
+              ..withArchived = objectiveGetRequest.withArchived
+              ..withMeasures = objectiveGetRequest.withMeasures
+              ..withUserProfile = objectiveGetRequest.withUserProfile
+              ..groupIds.addAll(objectiveGetRequest.groupIds), cache: objectivesCache */);
 
           // Organization
             if (row[9] != null)
@@ -196,7 +205,7 @@ class ObjectiveService extends ObjectiveServiceBase {
               objective.group = await GroupService.querySelectGroup(GroupGetRequest()
                 ..id = row[10], cache: groupsCache);
 
-            if (objectiveSelectRequest.treeAlignedWithChildren) {
+            if (objectiveGetRequest.treeAlignedWithChildren) {
             objectivesTreeMapAux[objective.id] = objective;
             if (row[8] == null)
               // Parent must be present in the list (objectives);
@@ -208,11 +217,10 @@ class ObjectiveService extends ObjectiveServiceBase {
           } else {
             objectives.add(objective);
           }
-
         }
       }
 
-      return (objectiveSelectRequest.treeAlignedWithChildren)
+      return (objectiveGetRequest.treeAlignedWithChildren)
           ? objectivesTree ?? []
           : objectives ?? [];
 
