@@ -112,6 +112,22 @@ class WorkService extends WorkServiceBase {
       substitutionValues.putIfAbsent("objective_id", () => workGetRequest.objectiveId);
     }
 
+    if (workGetRequest.hasWithArchived() && !workGetRequest.withArchived) {
+      queryStatement = queryStatement + " AND work.archived <> true";
+    }
+
+    //String ids;
+    if (workGetRequest.groupIds != null && workGetRequest.groupIds.isNotEmpty) {
+      queryStatement = queryStatement + " AND work.group_id in ${workGetRequest.groupIds.map((f) => "'${f}'")}";
+      //ids = objectiveGetRequest.groupIds.toString();
+      // queryStatementWhere = queryStatementWhere + " AND objective.group_id in (${ids.toString().substring(1, ids.length-1)})";
+    }
+    if (workGetRequest.leaderUserIds != null && workGetRequest.leaderUserIds.isNotEmpty) {
+      queryStatement = queryStatement + " AND work.leader_user_id in ${workGetRequest.leaderUserIds.map((f) => "'${f}'")}";
+      //ids = objectiveGetRequest.leaderUserIds.toString();
+      // queryStatementWhere = queryStatementWhere + " AND objective.leader_user_id in (${ids.toString().substring(1, ids.length-1)})";
+    }
+
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
     List<Work> works = List<Work>();

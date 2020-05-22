@@ -33,8 +33,6 @@ import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/group_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
-
-
 class ObjectiveService extends ObjectiveServiceBase {
 
   // API
@@ -155,7 +153,7 @@ class ObjectiveService extends ObjectiveServiceBase {
         }
 
         Map<String, User> usersCache = {};
-        Map<String, Objective> objectivesCache = {};
+       // Map<String, Objective> objectivesCache = {};
         Map<String, Organization> organizationsCache = {};
         Map<String, Group> groupsCache = {};
         for (var row in results) {

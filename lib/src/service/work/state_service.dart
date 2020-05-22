@@ -63,6 +63,7 @@ class StateService extends StateServiceBase {
       rethrow;
     }
     */
+    return null;
   }
 
   static Future<State> querySelectState(StateGetRequest stateGetRequest) async {
