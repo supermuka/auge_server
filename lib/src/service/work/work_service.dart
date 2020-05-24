@@ -141,7 +141,18 @@ class WorkService extends WorkServiceBase {
 
     for (var row in results) {
       // Work Items
-      workItems = (workGetRequest.withWorkItems) ? await WorkItemService.querySelectWorkItems(WorkItemGetRequest()..workId = row[0]) : [];
+
+      if (workGetRequest.withWorkItems) {
+        WorkItemGetRequest workItemGetRequest = WorkItemGetRequest();
+        workItemGetRequest.workId = row[0];
+        if (workGetRequest.hasWorkItemWithArchived()) workItemGetRequest.withArchived = workGetRequest.workItemWithArchived;
+        if (workGetRequest.workItemAssignedToIds != null && workGetRequest.workItemAssignedToIds.isNotEmpty) {
+          workItemGetRequest.assignedToIds.addAll(workGetRequest.workItemAssignedToIds);
+        }
+        workItems = await WorkItemService.querySelectWorkItems(workItemGetRequest);
+      } else {
+        workItems = [];
+      }
 
       if (row[5] != null && (organization == null || organization.id != row[5])) {
 

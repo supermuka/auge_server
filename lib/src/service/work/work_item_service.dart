@@ -161,6 +161,17 @@ class WorkItemService extends WorkItemServiceBase {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workItemInvalidArgument );
     }
 
+    if (workItemGetRequest.hasWithArchived() && !workItemGetRequest.withArchived) {
+      queryStatement = queryStatement + " AND work_item.archived <> true";
+    }
+
+    //String ids;
+    if (workItemGetRequest.assignedToIds != null && workItemGetRequest.assignedToIds.isNotEmpty) {
+      queryStatement = queryStatement + " AND exists(SELECT null FROM work.work_item_assigned_users work_item_assigned_user WHERE work_item_assigned_user.work_item_id = work_item.id AND work_item_assigned_user.user_id in ${workItemGetRequest.assignedToIds.map((f) => "'${f}'")})";
+      //ids = objectiveGetRequest.groupIds.toString();
+      // queryStatementWhere = queryStatementWhere + " AND objective.group_id in (${ids.toString().substring(1, ids.length-1)})";
+    }
+
     List<WorkItem> workItems = List();
     List<UnitOfMeasurement> unitsOfMeasurement;
 
