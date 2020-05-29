@@ -145,7 +145,8 @@ class WorkItemService extends WorkItemServiceBase {
         " (select sum(actual_value) from work.work_item_values work_item_value where work_item_value.work_item_id = work_item.id)::REAL as actual_value," //6 +
         " work_item.stage_id," // 7
         " work_item.work_id, " // 8
-        " work_item.unit_of_measurement_id " // 9
+        " work_item.unit_of_measurement_id, " // 9
+        " work_item.archived " // 10
         " FROM work.work_items work_item";
       //  " JOIN work.work_stages work_stage ON stage.id = work_item.stage_id";
 
@@ -215,6 +216,8 @@ class WorkItemService extends WorkItemServiceBase {
         if (unitsOfMeasurement != null && unitsOfMeasurement.length != 0) {
           workItem.unitOfMeasurement = unitsOfMeasurement.first;
         }
+
+        workItem.archived = row[10];
 
         workItems.add(workItem);
 
@@ -401,7 +404,8 @@ class WorkItemService extends WorkItemServiceBase {
             "archived,"
             "work_id,"
             "unit_of_measurement_id,"
-            "stage_id)"
+            "stage_id,"
+            "archived) "
             "VALUES"
             "(@id,"
             "@version,"
@@ -413,7 +417,8 @@ class WorkItemService extends WorkItemServiceBase {
             "@archived,"
             "@work_id,"
             "@unit_of_measurement_id,"
-            "@stage_id)"
+            "@stage_id,"
+            "@archived)"
             , substitutionValues: {
               "id": request.workItem.id,
               "version": request.workItem.version,
@@ -422,10 +427,11 @@ class WorkItemService extends WorkItemServiceBase {
               "due_date": request.workItem.hasDueDate() ? /* CommonUtils.dateTimeFromTimestamp(request.workItem.dueDate) */ request.workItem.dueDate.toDateTime() : null,
               "planned_value": request.workItem.hasPlannedValue() ? request.workItem.plannedValue : null,
             //  "actual_value": request.workItem.hasActualValue() ? request.workItem.actualValue : null,
-              "archived": request.workItem.hasArchived() ? request.workItem.archived : null,
+              "archived": request.workItem.hasArchived() ? request.workItem.archived : false,
               "work_id": request.hasWorkId() ? request.workId : null,
-              "unit_of_measurement": request.workItem.hasUnitOfMeasurement() ? request.workItem.unitOfMeasurement.id : null,
-              "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null});
+              "unit_of_measurement_id": request.workItem.hasUnitOfMeasurement() ? request.workItem.unitOfMeasurement.id : null,
+              "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null,
+              "archived": request.workItem.archived});
 
         // Assigned Members Users
         for (User user in request.workItem.assignedTo) {
@@ -543,7 +549,8 @@ class WorkItemService extends WorkItemServiceBase {
           //  " actual_value = @actual_value,"
             " work_id = @work_id,"
             " stage_id = @stage_id,"
-            " unit_of_measurement_id = @unit_of_measurement_id"
+            " unit_of_measurement_id = @unit_of_measurement_id, "
+            " archived = @archived"
             " WHERE id = @id AND version = @version - 1"
             " RETURNING true"
             , substitutionValues: {
@@ -562,7 +569,8 @@ class WorkItemService extends WorkItemServiceBase {
            //       : null,
               "work_id": request.workId,
               "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null,
-              "unit_of_measurement_id": request.workItem.hasUnitOfMeasurement () ? request.workItem.unitOfMeasurement.id : null});
+              "unit_of_measurement_id": request.workItem.hasUnitOfMeasurement () ? request.workItem.unitOfMeasurement.id : null,
+              "archived": request.workItem.archived});
 
         // Assigned Members Users
         StringBuffer assignedToUsersId = new StringBuffer();
@@ -578,7 +586,6 @@ class WorkItemService extends WorkItemServiceBase {
               , substitutionValues: {
             "id": request.workItem.id,
             "user_id": user.id});
-
 
           if (assignedToUsersId.isNotEmpty)
             assignedToUsersId.write(',');

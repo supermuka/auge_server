@@ -37,22 +37,6 @@ class HistoryItemService extends HistoryItemServiceBase {
       "@description,"
       "@changed_values)";
 
-  /*
-  static Map<String, dynamic> querySubstitutionValuesCreateHistoryItem(HistoryItem request) {
-
-    return {"id": request.id,
-      "user_id": request.hasUser() ? request.user.id : null,
-      "object_id": request.hasObjectId() ? request.objectId : null,
-      "object_version": request.hasObjectVersion() ? request.objectVersion : null,
-      "object_class_name": request.hasObjectClassName() ? request.objectClassName : null,
-      "system_module_index": request.systemModuleIndex,
-      "system_function_index": request.systemFunctionIndex,
-      "date_time": DateTime.now().toUtc(),
-      "description": request.hasDescription() ? request.description : null,
-      "changed_values": request.hasChangedValuesJson() ? request.changedValuesJson : null};
-  }
-   */
-
   // *** HISTORY TO OBJECTIVE SCHEMA ***
   static Future<List<HistoryItem>> querySelectHistory(HistoryItemGetRequest historyItemGetRequest  /* {String id, int systemModuleIndex} */) async {
     Map<String, User> userCache;
@@ -82,7 +66,21 @@ class HistoryItemService extends HistoryItemServiceBase {
       queryStatement = queryStatement + "AND history_item.system_module_index = @system_module_index ";
     }
 
+    if (historyItemGetRequest.hasSystemModuleIndex() && historyItemGetRequest.systemModuleIndex != null) {
+      substitutionValues["system_module_index"] = historyItemGetRequest.systemModuleIndex;
+      queryStatement = queryStatement + "AND history_item.system_module_index = @system_module_index ";
+    }
+
+    if (historyItemGetRequest.hasFromDateTime() && historyItemGetRequest.fromDateTime != null) {
+      substitutionValues["from_date_time"] = historyItemGetRequest.fromDateTime.toDateTime();
+      queryStatement = queryStatement + "AND history_item.date_time >= @from_date_time ";
+    }
+
     queryStatement = queryStatement + "ORDER BY history_item.date_time DESC ";
+
+    if (historyItemGetRequest.hasRowsLimit() && historyItemGetRequest.rowsLimit > 0) {
+      queryStatement = queryStatement + "LIMIT ${historyItemGetRequest.rowsLimit} ";
+    }
 
     try {
       results = await (await AugeConnection.getConnection()).query(
@@ -96,14 +94,6 @@ class HistoryItemService extends HistoryItemServiceBase {
             ..id = row[1]
             ..withUserProfile = true, cache: userCache);
 
-          /*
-        Map changedDataMap = json.decode(row[8]);
-
-        if (historyItemGetRequest.withIdRemoved)
-          changedDataMap.keys.where((k) =>  (k == 'id' || changedDataMap[k] is Map && changedDataMap[k].keys.where((kk) => (kk == 'id') ))
-          ).toList().forEach(changedDataMap.remove);
-*/
-
           HistoryItem historyItem = HistoryItem()..id = row[0]
             ..user = user
             ..objectId = row[2]
@@ -113,17 +103,6 @@ class HistoryItemService extends HistoryItemServiceBase {
             ..systemFunctionIndex = row[6];
 
           if (row[7] != null) historyItem.dateTime = CommonUtils.timestampFromDateTime(row[7]);
-
-          /*{
-            Timestamp timestamp = Timestamp();
-            int microsecondsSinceEpoch = row[7]
-                .toUtc()
-                .microsecondsSinceEpoch;
-            timestamp.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
-            timestamp.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
-            historyItem.dateTime = timestamp;
-          } */
-
           if (row[8] != null) historyItem.description = row[8];
           if (row[9] != null) historyItem.changedValuesJson = row[9];
 

@@ -58,13 +58,13 @@ class UserService extends UserServiceBase {
   }
 
   // Query
-  static Future<List<User>> querySelectUsers([UserGetRequest request] /* {String id, String eMail, String password, String organizationId, bool withProfile = false} */) async {
+  static Future<List<User>> querySelectUsers(UserGetRequest request) async {
 
     List<List> results;
 
     String queryStatement = '';
-    if (request != null && request.withUserProfile == false) {
-      queryStatement = "SELECT DISTINCT "
+    if (request.withUserProfile == false) {
+      queryStatement = "SELECT "
           " u.id, " //0
           " u.version, " //1
           " u.name, " //2
@@ -74,7 +74,7 @@ class UserService extends UserServiceBase {
           " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
     }
     else {
-      queryStatement = "SELECT DISTINCT "
+      queryStatement = "SELECT "
           " u.id, " //0
           " u.version, " //1
           " u.name, " //2
@@ -101,10 +101,9 @@ class UserService extends UserServiceBase {
       _substitutionValues.putIfAbsent("organization_id", () => request.accessedByOrganizationId);
       whereAnd = "AND";
     }
-    //TODO statement DISTINCT is used because this instruction.
     if (request != null && request.managedByOrganizationIdOrAccessedByOrganizationId != null  && request.managedByOrganizationIdOrAccessedByOrganizationId.isNotEmpty) {
-      queryStatement = queryStatement + " LEFT OUTER JOIN general.user_accesses user_access ON user_access.user_id = u.id";
-      queryStatement = queryStatement + " ${whereAnd} (u.managed_by_organization_id = @organization_id OR user_access.organization_id = @organization_id)";
+      queryStatement = queryStatement + " LEFT OUTER JOIN general.user_accesses user_access ON user_access.user_id = u.id ";
+      queryStatement = queryStatement + " ${whereAnd} ((u.managed_by_organization_id = @organization_id AND user_access.organization_id IS NULL) OR user_access.organization_id = @organization_id ) ";
       _substitutionValues.putIfAbsent("organization_id", () => request.managedByOrganizationIdOrAccessedByOrganizationId);
       whereAnd = "AND";
     }

@@ -29,6 +29,7 @@ import 'package:auge_server/src/service/general/organization_directory_service_s
 import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/user_identity_service.dart';
 import 'package:auge_server/src/service/general/user_access_service.dart';
+import 'package:auge_server/src/service/general/user_control_service.dart';
 import 'package:auge_server/src/service/general/group_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
 import 'package:auge_server/src/service/objective/measure_service.dart';
@@ -77,6 +78,7 @@ Future<void> main(List<String> args) async {
     UserService(),
     UserIdentityService(),
     UserAccessService(),
+    UserControlService(),
     GroupService(),
     UnitOfMeasurementService(),
     ObjectiveService(),

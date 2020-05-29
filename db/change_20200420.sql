@@ -61,3 +61,25 @@ SELECT uuid_generate_v4(), 0, now(), completed, null, id FROM work.work_items wh
 
 ALTER TABLE work.work_items
 DROP completed;
+
+-- Table: general.user_controls
+
+-- DROP TABLE general.user_controls;
+
+CREATE TABLE general.user_controls
+(
+    user_id uuid NOT NULL,
+    date_time_last_notification timestamp without time zone,
+    CONSTRAINT user_controls_pkey PRIMARY KEY (user_id),
+    CONSTRAINT user_controls_user_id_fkey FOREIGN KEY (user_id)
+        REFERENCES general.users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+ALTER TABLE general.user_controls
+    OWNER to postgres;

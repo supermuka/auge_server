@@ -243,25 +243,6 @@ class ObjectiveService extends ObjectiveServiceBase {
     }
   }
 
-
-  /*
-    static Future<User> querySelectUser(UserGetRequest request, /*String id,  {bool withProfile = false,*/ {Map<String, User> cache}) async {
-
-    if (cache != null && cache.containsKey(request.id)) {
-      return cache[request.id];
-    } else {
-
-      List<User> users = await querySelectUsers(request /* id: id, withProfile: withProfile */);
-      if (users.isNotEmpty) {
-        if (cache != null) cache[request.id] = users.first;
-        return users.first;
-      } else {
-        return null;
-      }
-    }
-  }
-   */
-
   /// Objective Notification User
   static void objectiveNotification(Objective objective, String className, int systemFunctionIndex, String description, String urlOrigin) async {
 
