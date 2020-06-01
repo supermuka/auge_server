@@ -238,9 +238,12 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Objective Measure Notification User
-  static void measureNotification(Objective relatedObjective, String className, int systemFunctionIndex, String description, String urlOrigin) async {
+  static void measureNotification(Objective relatedObjective, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
 
-    // Leader - Verify if send e-mail
+    // Not send to your-self
+    if (relatedObjective.leader.id == authUserId) return;
+
+    // Leader
     if (!relatedObjective.leader.userProfile.eMailNotification) return;
 
     // Leader - eMail
@@ -333,7 +336,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      measureNotification(objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -412,7 +415,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      measureNotification(objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -465,7 +468,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(previousMeasure.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      measureNotification(previousMeasure.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -551,12 +554,15 @@ class MeasureService extends MeasureServiceBase {
 
 
   /// Objective Measure Progress Notification User
-  static void measureProgressNotification(MeasureProgress measureProgress, String className, int systemFunctionIndex, String description, String urlOrigin) async {
+  static void measureProgressNotification(MeasureProgress measureProgress, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+
+    // Not send to your-self
+    if (measureProgress.measure.objective.leader.id == authUserId) return;
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
-    // Leader  - Verify if send e-mail
+    // Not send to your-self
     if (!measureProgress.measure.objective.leader.userProfile.eMailNotification) return;
 
     // Leader - eMail
@@ -639,7 +645,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureProgressNotification(request.measureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      measureProgressNotification(request.measureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -717,7 +723,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureProgressNotification(request.measureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      measureProgressNotification(request.measureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -772,7 +778,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureProgressNotification(previousMeasureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      measureProgressNotification(previousMeasureProgress, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

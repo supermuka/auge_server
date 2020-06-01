@@ -348,16 +348,20 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Workitem Notification User
-  static void workItemNotification(Work relatedWork, String className, int systemFunctionIndex, String description, String urlOrigin) async {
+  static void workItemNotification(Work relatedWork, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
 
-    // MODEL
-    List<AugeMailMessageTo> mailMessages = [];
+    // Not send to your-self
+    if (relatedWork.leader.id == authUserId) return;
 
     // Leader  - Verify if send e-mail
     if (!relatedWork.leader.userProfile.eMailNotification) return;
 
     // Leader - eMail
     if (relatedWork.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
+
+    // MODEL
+    List<AugeMailMessageTo> mailMessages = [];
+
 
     await CommonUtils.setDefaultLocale(relatedWork.leader.userProfile.idiomLocale);
 
@@ -515,7 +519,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workItemNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -747,7 +751,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workItemNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -810,7 +814,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemNotification(previousWorkItem.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workItemNotification(previousWorkItem.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -900,13 +904,16 @@ class WorkItemService extends WorkItemServiceBase {
 
 
   /// Objective Work Item Value Notification User
-  static void workItemValueNotification(WorkItemValue workItemValue, String className, int systemFunctionIndex, String description, String urlOrigin) async {
+  static void workItemValueNotification(WorkItemValue workItemValue, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
 
-    // MODEL
-    List<AugeMailMessageTo> mailMessages = [];
+    // Not send to your-self
+    if (workItemValue.workItem.work.leader.id == authUserId) return;
 
     // Leader  - Verify if send e-mail
     if (!workItemValue.workItem.work.leader.userProfile.eMailNotification) return;
+
+    // MODEL
+    List<AugeMailMessageTo> mailMessages = [];
 
     // Leader - eMail
     if (workItemValue.workItem.work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
@@ -986,7 +993,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemValueNotification(request.workItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workItemValueNotification(request.workItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -1064,7 +1071,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemValueNotification(request.workItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workItemValueNotification(request.workItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -1119,7 +1126,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemValueNotification(previousWorkItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workItemValueNotification(previousWorkItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

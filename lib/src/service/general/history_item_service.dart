@@ -2,6 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
+import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_shared/src/util/common_utils.dart';
 
 import 'package:grpc/grpc.dart';
@@ -20,6 +21,14 @@ class HistoryItemService extends HistoryItemServiceBase {
 
     HistoryResponse historyResponse = HistoryResponse()..history.addAll(await querySelectHistory(historyItemGetRequest))/*..webListWorkAround = true*/;
     return historyResponse;
+  }
+
+  @override
+  Future<Int32Value> getHistoryCount(ServiceCall call,
+      HistoryCountGetRequest historyCountGetRequest) async {
+
+    Int32Value count = await querySelectHistoryCount(historyCountGetRequest);
+    return count;
   }
 
   // QUERY
@@ -73,7 +82,7 @@ class HistoryItemService extends HistoryItemServiceBase {
 
     if (historyItemGetRequest.hasFromDateTime() && historyItemGetRequest.fromDateTime != null) {
       substitutionValues["from_date_time"] = historyItemGetRequest.fromDateTime.toDateTime();
-      queryStatement = queryStatement + "AND history_item.date_time >= @from_date_time ";
+      queryStatement = queryStatement + "AND history_item.date_time > @from_date_time ";
     }
 
     queryStatement = queryStatement + "ORDER BY history_item.date_time DESC ";
@@ -130,4 +139,33 @@ class HistoryItemService extends HistoryItemServiceBase {
       }
     }
   }
+
+  static Future<Int32Value> querySelectHistoryCount(HistoryCountGetRequest historyCountGetRequest) async {
+    List<List> results;
+
+    int count;
+    try {
+      results = await (await AugeConnection.getConnection()).query(
+          "SELECT count(*) "
+              "FROM general.history history_item "
+              "LEFT OUTER JOIN general.users u ON u.id = history_item.user_id "
+              "LEFT OUTER JOIN general.user_controls user_control ON user_control.user_id = u.id "
+              "WHERE history_item.organization_id = @organization_id "
+              "AND history_item.user_id = @user_id "
+              "AND history_item.date_time > user_control.date_time_last_notification"
+               , substitutionValues: {
+            "organization_id": historyCountGetRequest.authOrganizationId,
+            "user_id": historyCountGetRequest.authUserId});
+
+      var row  = results.first;
+
+      count = row[0];
+
+    } catch (e) {
+      print('${e.runtimeType}, ${e}');
+      rethrow;
+    }
+    return count != null ? (Int32Value()..value = count) : null;
+  }
+
 }

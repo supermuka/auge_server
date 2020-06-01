@@ -244,13 +244,19 @@ class ObjectiveService extends ObjectiveServiceBase {
   }
 
   /// Objective Notification User
-  static void objectiveNotification(Objective objective, String className, int systemFunctionIndex, String description, String urlOrigin) async {
+  static void objectiveNotification(Objective objective, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+
+    // Not send to your-self
+    if (objective.leader.id == authUserId) return;
+
+    // Leader  - Verify if send e-mail
+    if (!objective.leader.userProfile.eMailNotification) return;
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
-    // Leader  - Verify if send e-mail
-    if (!objective.leader.userProfile.eMailNotification) return;
+
+
 
     // Leader - eMail
     if (objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
@@ -331,7 +337,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
       });
 
-      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -406,7 +412,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
       });
 
-      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -462,7 +468,7 @@ class ObjectiveService extends ObjectiveServiceBase {
         }
       });
 
-      objectiveNotification(previousObjective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      objectiveNotification(previousObjective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

@@ -138,16 +138,19 @@ class WorkStageService extends WorkStageServiceBase {
   }
 
   /// Work Stage Notification User
-  static void workStageNotification(Work relatedWork, String className, int systemFunctionIndex, String description, String urlOrigin) async {
+  static void workStageNotification(Work relatedWork, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
 
-    // MODEL
-    List<AugeMailMessageTo> mailMessages = [];
+    // Not send to your-self
+    if (relatedWork.leader.id == authUserId) return;
 
     // Leader  - Verify if send e-mail
     if (!relatedWork.leader.userProfile.eMailNotification) return;
 
     // Leader - eMail
     if (relatedWork.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Stage Leader is null.');
+
+    // MODEL
+    List<AugeMailMessageTo> mailMessages = [];
 
     await CommonUtils.setDefaultLocale(relatedWork.leader.userProfile.idiomLocale);
 
@@ -217,7 +220,7 @@ class WorkStageService extends WorkStageServiceBase {
       });
 
       // Notification
-      workStageNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workStageNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
 
     } catch (e) {
@@ -294,7 +297,7 @@ class WorkStageService extends WorkStageServiceBase {
       });
 
       // Notification
-      workStageNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workStageNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
 
     } catch (e) {
@@ -347,7 +350,7 @@ class WorkStageService extends WorkStageServiceBase {
       });
 
       // Notification
-      workStageNotification(previousStage.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workStageNotification(previousStage.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

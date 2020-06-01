@@ -236,7 +236,10 @@ class WorkService extends WorkServiceBase {
   }
 
   /// Work Notification User
-  static void workNotification(Work work, String className, int systemFunctionIndex, String description, String urlOrigin) async {
+  static void workNotification(Work work, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+
+    // Not send to your-self
+    if (work.leader.id == authUserId) return;
 
     // Leader - Verify if send e-mail
     if (!work.leader.userProfile.eMailNotification) return;
@@ -315,7 +318,7 @@ class WorkService extends WorkServiceBase {
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
       });
 
-      workNotification(request.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workNotification(request.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -396,7 +399,7 @@ class WorkService extends WorkServiceBase {
 
       });
 
-      workNotification(request.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workNotification(request.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -448,7 +451,7 @@ class WorkService extends WorkServiceBase {
         }
       });
 
-      workNotification(previousWork, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin);
+      workNotification(previousWork, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
