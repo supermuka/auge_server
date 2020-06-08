@@ -101,7 +101,7 @@ class ObjectiveService extends ObjectiveServiceBase {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.objectiveInvalidArgument );
     }
 
-    if (objectiveGetRequest.hasWithArchived() && !objectiveGetRequest.withArchived) {
+    if (!objectiveGetRequest.hasWithArchived() || !objectiveGetRequest.withArchived) {
       queryStatementWhere = queryStatementWhere + " AND objective.archived <> true";
     }
 

@@ -112,7 +112,7 @@ class WorkService extends WorkServiceBase {
       substitutionValues.putIfAbsent("objective_id", () => workGetRequest.objectiveId);
     }
 
-    if (workGetRequest.hasWithArchived() && !workGetRequest.withArchived) {
+    if (!workGetRequest.hasWithArchived() || !workGetRequest.withArchived) {
       queryStatement = queryStatement + " AND work.archived <> true";
     }
 

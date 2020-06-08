@@ -142,7 +142,7 @@ class WorkItemService extends WorkItemServiceBase {
         " work_item.description," //3
         " work_item.due_date," //4
         " work_item.planned_value," //5
-        " (select sum(actual_value) from work.work_item_values work_item_value where work_item_value.work_item_id = work_item.id)::REAL as actual_value," //6 +
+        " (SELECT sum(actual_value) FROM work.work_item_values work_item_value WHERE work_item_value.work_item_id = work_item.id)::REAL AS actual_value," //6 +
         " work_item.stage_id," // 7
         " work_item.work_id, " // 8
         " work_item.unit_of_measurement_id, " // 9
@@ -151,18 +151,19 @@ class WorkItemService extends WorkItemServiceBase {
       //  " JOIN work.work_stages work_stage ON stage.id = work_item.stage_id";
 
     Map<String, dynamic> substitutionValues;
-
     if (workItemGetRequest.hasId()) {
       queryStatement += " WHERE work_item.id = @id";
       substitutionValues = {"id": workItemGetRequest.id};
     } else if (workItemGetRequest.hasWorkId() ) {
       queryStatement += " WHERE work_item.work_id = @work_id";
       substitutionValues = {"work_id": workItemGetRequest.workId};
+    } else if (workItemGetRequest.hasOrganizationId() ) {
+      queryStatement += " WHERE work_item.work_id IN (SELECT work.id FROM work.works work WHERE work.organization_id = @organization_id)";
+      substitutionValues = {"organization_id": workItemGetRequest.organizationId};
     } else {
-      throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workItemInvalidArgument );
+      throw GrpcError.invalidArgument( RpcErrorDetailMessage.workItemInvalidArgument );
     }
-
-    if (workItemGetRequest.hasWithArchived() && !workItemGetRequest.withArchived) {
+    if (!workItemGetRequest.hasWithArchived() || !workItemGetRequest.withArchived) {
       queryStatement = queryStatement + " AND work_item.archived <> true";
     }
 
@@ -172,7 +173,6 @@ class WorkItemService extends WorkItemServiceBase {
       //ids = objectiveGetRequest.groupIds.toString();
       // queryStatementWhere = queryStatementWhere + " AND objective.group_id in (${ids.toString().substring(1, ids.length-1)})";
     }
-
     List<WorkItem> workItems = List();
     List<UnitOfMeasurement> unitsOfMeasurement;
 
@@ -185,7 +185,6 @@ class WorkItemService extends WorkItemServiceBase {
       List<WorkItemCheckItem> checkItems;
       WorkItem workItem;
       for (var row in results) {
-
         workStage = await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[7]);
 
         assignedToUsers = await querySelectWorkItemAssignedToUsers(row[0]);
@@ -206,7 +205,6 @@ class WorkItemService extends WorkItemServiceBase {
         if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
 
         if (workItemGetRequest.hasWithWork() && workItemGetRequest.withWork == true && row[8] != null) {
-
           workItem.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[8]..withUserProfile = workItemGetRequest.withUserProfile);
         }
 
@@ -218,7 +216,6 @@ class WorkItemService extends WorkItemServiceBase {
         }
 
         workItem.archived = row[10];
-
         workItems.add(workItem);
 
       }
@@ -405,7 +402,6 @@ class WorkItemService extends WorkItemServiceBase {
             "due_date,"
             "planned_value,"
         //    "actual_value,"
-            "archived,"
             "work_id,"
             "unit_of_measurement_id,"
             "stage_id,"
@@ -418,7 +414,6 @@ class WorkItemService extends WorkItemServiceBase {
             "@due_date,"
             "@planned_value,"
            // "@actual_value,"
-            "@archived,"
             "@work_id,"
             "@unit_of_measurement_id,"
             "@stage_id,"
@@ -435,7 +430,7 @@ class WorkItemService extends WorkItemServiceBase {
               "work_id": request.hasWorkId() ? request.workId : null,
               "unit_of_measurement_id": request.workItem.hasUnitOfMeasurement() ? request.workItem.unitOfMeasurement.id : null,
               "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null,
-              "archived": request.workItem.archived});
+              });
 
         // Assigned Members Users
         for (User user in request.workItem.assignedTo) {
