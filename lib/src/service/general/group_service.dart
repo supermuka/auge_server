@@ -12,9 +12,9 @@ import 'package:auge_shared/protos/generated/general/organization.pb.dart';
 import 'package:auge_shared/protos/generated/general/group.pbgrpc.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
-import 'package:auge_server/src/service/general/organization_service.dart';
+// import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
-
+import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:auge_shared/domain/general/authorization.dart' show SystemModule, SystemFunction;
@@ -82,22 +82,27 @@ class GroupService extends GroupServiceBase {
   // Query
   static Future<List<Group>> querySelectGroups( GroupGetRequest request /* {String id, String organizationId, int alignedToRecursive = 1} */ ) async {
     List<List> results;
-    Map<String, Organization> organizationCache = {};
+  //   Map<String, Organization> organizationCache = {};
     Map<String, User> userCache = {};
     Map<String, Group> groupCache = {};
-
     String queryStatement = '';
 
+    bool allColumns = !(request.hasOnlyIdAndName() && request.onlyIdAndName);
+
     queryStatement = "SELECT"
-        " g.id,"              //0
-        " g.version, "        //1
-        " g.name,"            //2
-        " g.inactive,"          //3
-        " g.organization_id," //4
-        " g.group_type_index,"   //5
-        " g.leader_user_id,"  //6
-        " g.super_group_id "  //7
-        " FROM general.groups g ";
+        " g.id" //0
+        ",g.name" ; //1
+
+    if (allColumns) {
+      queryStatement = queryStatement +
+        ",g.version" //2
+        ",g.inactive" //3
+        ",g.organization_id" //4
+        ",g.group_type_index" //5
+        ",g.leader_user_id" //6
+        ",g.super_group_id"; //7
+    }
+    queryStatement = queryStatement + " FROM general.groups g ";
 
     Map<String, dynamic> substitutionValues;
 
@@ -112,71 +117,83 @@ class GroupService extends GroupServiceBase {
       substitutionValues = {
         "organization_id": request.organizationId,
       };
+    } else {
+      throw Exception('id or organization id does not informed.');
     }
 
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
     List<Group> groups = [];
-    User leader;
-    Group superGroup;
-    List<User> members;
-
     if (results.length > 0) {
+
+      User leader;
+      Group superGroup;
+      List<User> members;
       Organization organization;
-
+      Map<String, Organization> organizationCache = {};
       for (var row in results) {
-
-        if (row[4] != null) {
-            organization =
-            await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[4], cache: organizationCache);
-        } else {
-          organization = null;
-        }
-
-        if (row[6] != null) {
-            leader =
-            await UserService.querySelectUser(UserGetRequest()..id = row[6], cache: userCache);
-        } else {
-          leader = null;
-        }
-
-        if (row[7] != null && request.alignedToRecursive > 0) {
-            superGroup =
-            await querySelectGroup(GroupGetRequest()..id = row[7]..alignedToRecursive = --request.alignedToRecursive, cache: groupCache);
-        } else {
-          superGroup = null;
-    }
-
-        // No need of the cache. It´s doesn't persist on data base.
-        //groupType = await GroupService.querySelectGroupType(GroupTypeGetRequest()..id = row[5]);
-        //sleep(Duration(seconds: 1));
-
-        members = await querySelectGroupMembers(row[0]);
 
         Group group = Group()
           ..id = row[0]
-          ..version = row[1]
-          ..name = row[2]
-          ..inactive = row[3]
-          ..organization = organization
-          ..groupTypeIndex = row[5];
+          ..name = row[1];
 
-        if (superGroup != null) {
-          group.superGroup = superGroup;
+        if (allColumns) {
+          group.version = row[2];
+          group.inactive = row[3];
+          group.groupTypeIndex = row[5];
+          if (request.hasWithOrganization() && request.withOrganization) {
+            if (row[4] != null) {
+              organization =
+              await OrganizationService.querySelectOrganization(
+                  OrganizationGetRequest()
+                    ..id = row[4]..onlyIdAndName = true, cache: organizationCache);
+            } else {
+              organization = null;
+            }
+          }
+          if (row[6] != null) {
+            leader =
+            await UserService.querySelectUser(UserGetRequest()
+              ..onlyIdAndName = true
+              ..withUserProfile = true
+              ..id = row[6], cache: userCache);
+          } else {
+            leader = null;
+          }
+          if (row[7] != null && request.alignedToRecursive > 0) {
+            superGroup =
+            await querySelectGroup(GroupGetRequest()
+              ..id = row[7]
+              ..onlyIdAndName = true
+              ..alignedToRecursive = --request.alignedToRecursive,
+                cache: groupCache);
+          } else {
+            superGroup = null;
+          }
+
+          // No need of the cache. It´s doesn't persist on data base.
+          //groupType = await GroupService.querySelectGroupType(GroupTypeGetRequest()..id = row[5]);
+          //sleep(Duration(seconds: 1));
+          members = await querySelectGroupMembers(row[0]);
+
+          if (organization != null) {
+            group.organization = organization;
+          }
+
+          if (superGroup != null) {
+            group.superGroup = superGroup;
+          }
+
+          if (leader != null) {
+            group.leader = leader;
+          }
+
+          if (members.isNotEmpty) {
+            group.members.addAll(members);
+          }
         }
-
-        if (leader != null) {
-          group.leader = leader;
-        }
-
-        if (members.isNotEmpty) {
-          group.members.addAll(members);
-        }
-
         groups.add(group);
-
       }
     }
-
     return groups;
   }
 
@@ -251,7 +268,7 @@ class GroupService extends GroupServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.group.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, group_m.Group.fromProtoBufToModelMap(request.group, true))});
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.group.toProto3Json())});
 
       });
 
@@ -287,7 +304,7 @@ class GroupService extends GroupServiceBase {
           "version": ++request.group.version,
           "name": request.group.name,
           "inactive": request.group.inactive,
-          "organization_id": request.group.hasOrganization() ? request.group.organization.id : null,
+          "organization_id": request.authOrganizationId,
           "group_type_index": request.group.hasGroupTypeIndex() ?  request.group.groupTypeIndex : null,
           "super_group_id": request.group.hasSuperGroup() ? request.group.superGroup.id : null,
           "leader_user_id": request.group.hasLeader() ? request.group.leader.id : null}
@@ -341,7 +358,7 @@ class GroupService extends GroupServiceBase {
           "system_function_index": SystemFunction.update.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.group.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson(group_m.Group.fromProtoBufToModelMap(previousGroup, true), group_m.Group.fromProtoBufToModelMap(request.group, true))});
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousGroup.toProto3Json(), request.group.toProto3Json())});
 
       });
     } catch (e) {
@@ -389,8 +406,8 @@ class GroupService extends GroupServiceBase {
                 "system_function_index": SystemFunction.update.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": previousGroup.name,
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                    group_m.Group.fromProtoBufToModelMap(previousGroup, true),
+                "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                    previousGroup.toProto3Json(),
                     {})});
         }
 
@@ -465,7 +482,7 @@ class GroupService extends GroupServiceBase {
 
     for (var row in results) {
 
-      users = await UserService.querySelectUsers(UserGetRequest()..id = row[0]..withUserProfile = true);
+      users = await UserService.querySelectUsers(UserGetRequest()..id = row[0]..onlyIdAndName = true..withUserProfile = true);
 
       if (users != null && users.length != 0) {
         user = users.first;

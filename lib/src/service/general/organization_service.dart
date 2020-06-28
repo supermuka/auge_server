@@ -61,11 +61,19 @@ class OrganizationService extends OrganizationServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT organization.id," //0
-    " organization.version," //1
-    " organization.name," //2
-    " organization.code" //3
-    " FROM general.organizations organization";
+    bool allColumns = !(request.hasOnlyIdAndName() && request.onlyIdAndName);
+
+    queryStatement = "SELECT"
+        " organization.id" //0
+        ",organization.name"; //1
+
+    if (allColumns) {
+      queryStatement = queryStatement +
+          ",organization.version" //2
+          ",organization.code"; //3
+    }
+
+    queryStatement = queryStatement + " FROM general.organizations organization";
 
     Map<String, dynamic> substitutionValues;
 
@@ -76,16 +84,26 @@ class OrganizationService extends OrganizationServiceBase {
       };
     }
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+    List<Organization> organizations = [];
+    try {
 
-    List<Organization> organizations = new List();
-    for (var row in results) {
-      Organization organization = new Organization()
-        ..id = row[0]
-        ..version = row[1]
-        ..name = row[2]
-        ..code = row[3];
-      organizations.add(organization);
+      results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+
+      for (var row in results) {
+        Organization organization = Organization()
+          ..id = row[0]
+          ..name = row[1];
+
+        if (allColumns) {
+          organization.version = row[2];
+          organization.code = row[3];
+        }
+
+        organizations.add(organization);
+      }
+    } catch (e) {
+      print('querySelectOrganizations ${e.runtimeType}, ${e}');
+      rethrow;
     }
     return organizations;
   }
@@ -136,7 +154,7 @@ class OrganizationService extends OrganizationServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.organization.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, organization_m.Organization.fromProtoBufToModelMap(request.organization, true))});
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.organization.toProto3Json())});
 
 
       });
@@ -180,11 +198,9 @@ class OrganizationService extends OrganizationServiceBase {
                 "system_function_index": SystemFunction.update.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": request.organization.name,
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                    organization_m.Organization.fromProtoBufToModelMap(
-                        previousOrganization, true),
-                    organization_m.Organization.fromProtoBufToModelMap(
-                        request.organization, true))});
+                "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                        previousOrganization.toProto3Json(),
+                        request.organization.toProto3Json())});
         }
       });
 
@@ -226,9 +242,8 @@ class OrganizationService extends OrganizationServiceBase {
                 "system_function_index": SystemFunction.delete.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": previousOrganization.name,
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(
-              organization_m.Organization.fromProtoBufToModelMap(
-              previousOrganization, true), {})});
+                "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+              previousOrganization.toProto3Json(), {})});
         }
       });
     } catch (e) {

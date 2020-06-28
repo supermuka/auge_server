@@ -214,7 +214,7 @@ class WorkStageService extends WorkStageServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.workStage.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, work_stage_m.WorkStage.fromProtoBufToModelMap(request.workStage))};
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.workStage.toProto3Json() )};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
       });
@@ -281,14 +281,10 @@ class WorkStageService extends WorkStageServiceBase {
                 "system_function_index": SystemFunction.update.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": request.workStage.name,
-                "changed_values": history_item_m.HistoryItem
+                "changed_values": history_item_m.HistoryItemHelper
                     .changedValuesJson(
-                    work_stage_m.WorkStage
-                        .fromProtoBufToModelMap(
-                        previousStage),
-                    work_stage_m.WorkStage
-                        .fromProtoBufToModelMap(
-                        request.workStage)
+                        previousStage.toProto3Json(),
+                        request.workStage.toProto3Json()
                 )
               };
 
@@ -342,9 +338,8 @@ class WorkStageService extends WorkStageServiceBase {
                 "system_function_index": SystemFunction.delete.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": previousStage.name,
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                    work_stage_m.WorkStage.fromProtoBufToModelMap(
-                        previousStage, true), {})};
+                "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                        previousStage.toProto3Json(), {})};
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
         }
       });

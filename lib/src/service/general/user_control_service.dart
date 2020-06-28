@@ -47,7 +47,7 @@ class UserControlService extends UserControlServiceBase {
 
     String queryStatement = '';
     queryStatement = "SELECT "
-        " user_control.user_id, " //0
+        " user_control.user_id, "   //0
         " user_control.date_time_last_notification " //1
         " FROM general.user_controls user_control "
         " WHERE user_control.user_id = @user_id"; // [user_id] is primary key
@@ -68,15 +68,17 @@ class UserControlService extends UserControlServiceBase {
           if (request.hasWithUser() && request.withUser) {
             userControl.user =
             await UserService.querySelectUser(UserGetRequest()
+              ..onlyIdAndName = true
               ..id = row[0]);
           }
+
           userControl.dateTimeLastNotification =
               CommonUtils.timestampFromDateTime(row[1]);
         }
       }
 
     } catch (e) {
-      print('${e.runtimeType}, ${e}');
+      print('querySelectUserControl ${e.runtimeType}, ${e}');
       rethrow;
     }
 

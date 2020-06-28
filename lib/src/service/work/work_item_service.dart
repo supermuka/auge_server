@@ -336,7 +336,7 @@ class WorkItemService extends WorkItemServiceBase {
 
     for (var row in results) {
 
-      user = await UserService.querySelectUser(UserGetRequest()..id = row[0]..withUserProfile = true);
+      user = await UserService.querySelectUser(UserGetRequest()..id = row[0]..onlyIdAndName = true..withUserProfile = true);
 
       assignedToUsers.add(user);
     }
@@ -502,11 +502,9 @@ class WorkItemService extends WorkItemServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now(),
           "description": request.workItem.name,
-          "changed_values": history_item_m.HistoryItem
+          "changed_values": history_item_m.HistoryItemHelper
               .changedValuesJson({},
-              work_item_m.WorkItem
-                  .fromProtoBufToModelMap(
-                  request.workItem))};
+                  request.workItem.toProto3Json() )};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: historyItemNotificationValues);
@@ -730,14 +728,10 @@ class WorkItemService extends WorkItemServiceBase {
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now(),
             "description": request.workItem.name,
-            "changed_values": history_item_m.HistoryItem
+            "changed_values": history_item_m.HistoryItemHelper
                 .changedValuesJson(
-                work_item_m.WorkItem
-                    .fromProtoBufToModelMap(
-                    previousWorkItem),
-                work_item_m.WorkItem
-                    .fromProtoBufToModelMap(
-                    request.workItem))};
+                    previousWorkItem.toProto3Json(),
+                    request.workItem.toProto3Json() )};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -799,9 +793,8 @@ class WorkItemService extends WorkItemServiceBase {
               "system_function_index": SystemFunction.delete.index,
               "date_time": DateTime.now(),
               "description": previousWorkItem.name,
-              "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                  work_item_m.WorkItem.fromProtoBufToModelMap(
-                      previousWorkItem, true), {})};
+              "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                      previousWorkItem.toProto3Json(), {})};
 
             await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
                 substitutionValues: historyItemNotificationValues);
@@ -975,11 +968,9 @@ class WorkItemService extends WorkItemServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": '${request.workItemValue.actualValue} @ ${request.workItemValue.workItem.name}',
-          "changed_values": history_item_m.HistoryItem
+          "changed_values": history_item_m.HistoryItemHelper
               .changedValuesJson({},
-              work_item_m.WorkItemValue
-                  .fromProtoBufToModelMap(
-                  request.workItemValue))};
+                  request.workItemValue.toProto3Json())};
 
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -1057,7 +1048,7 @@ class WorkItemService extends WorkItemServiceBase {
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
             "description": '${request.workItemValue.actualValue} @ ${request.workItemValue.workItem.name}',
-            "changed_values": history_item_m.HistoryItem.changedValuesJson(work_item_m.WorkItemValue.fromProtoBufToModelMap(previousWorkItemValue), work_item_m.WorkItemValue.fromProtoBufToModelMap(request.workItemValue))};
+            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousWorkItemValue.toProto3Json(), request.workItemValue.toProto3Json())};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -1110,10 +1101,8 @@ class WorkItemService extends WorkItemServiceBase {
             "system_function_index": SystemFunction.delete.index,
             "date_time": DateTime.now().toUtc(),
             "description": '${previousWorkItemValue.actualValue} @ ${previousWorkItemValue.workItem.name}',
-            "changed_values": history_item_m.HistoryItem
-                .changedValuesJson(
-                work_item_m.WorkItemValue.fromProtoBufToModelMap(
-                    previousWorkItemValue, true), {})};
+            "changed_values": history_item_m.HistoryItemHelper
+                .changedValuesJson(previousWorkItemValue.toProto3Json(), {})};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);

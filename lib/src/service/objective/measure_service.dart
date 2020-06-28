@@ -324,11 +324,9 @@ class MeasureService extends MeasureServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": '${request.measure.name} @ ${request.measure.objective.name}',
-          "changed_values": history_item_m.HistoryItem
+          "changed_values": history_item_m.HistoryItemHelper
               .changedValuesJson({},
-              measure_m.Measure
-                  .fromProtoBufToModelMap(
-                  request.measure))};
+                  request.measure.toProto3Json())};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: historyItemNotificationValues);
@@ -407,7 +405,7 @@ class MeasureService extends MeasureServiceBase {
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
             "description": '${request.measure.name} @ ${request.measure.objective.name}',
-            "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.Measure.fromProtoBufToModelMap(previousMeasure, true), measure_m.Measure.fromProtoBufToModelMap(request.measure, true))};
+            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousMeasure.toProto3Json(), request.measure.toProto3Json())};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -457,9 +455,8 @@ class MeasureService extends MeasureServiceBase {
             "system_function_index": SystemFunction.delete.index,
             "date_time": DateTime.now().toUtc(),
             "description": '${previousMeasure.name} @ ${previousMeasure.objective.name}', // previousMeasure.name,
-            "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                measure_m.Measure.fromProtoBufToModelMap(
-                    previousMeasure, true), {})};
+            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                    previousMeasure.toProto3Json(), {})};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -632,11 +629,9 @@ class MeasureService extends MeasureServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": '${request.measureProgress.currentValue} @ ${request.measureProgress.measure.name}',
-          "changed_values": history_item_m.HistoryItem
+          "changed_values": history_item_m.HistoryItemHelper
               .changedValuesJson({},
-              measure_m.MeasureProgress
-                  .fromProtoBufToModelMap(
-                  request.measureProgress))};
+                  request.measureProgress.toProto3Json())};
 
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -714,7 +709,7 @@ class MeasureService extends MeasureServiceBase {
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
             "description": '${request.measureProgress.currentValue} @ ${request.measureProgress.measure.name}',
-            "changed_values": history_item_m.HistoryItem.changedValuesJson(measure_m.MeasureProgress.fromProtoBufToModelMap(previousMeasureProgress), measure_m.MeasureProgress.fromProtoBufToModelMap(request.measureProgress))};
+            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousMeasureProgress.toProto3Json(), request.measureProgress.toProto3Json())};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -767,10 +762,9 @@ class MeasureService extends MeasureServiceBase {
               "system_function_index": SystemFunction.delete.index,
               "date_time": DateTime.now().toUtc(),
               "description": '${previousMeasureProgress.currentValue} @ ${previousMeasureProgress.measure.name}',
-              "changed_values": history_item_m.HistoryItem
+              "changed_values": history_item_m.HistoryItemHelper
                   .changedValuesJson(
-                  measure_m.MeasureProgress.fromProtoBufToModelMap(
-                      previousMeasureProgress, true), {})};
+                      previousMeasureProgress.toProto3Json(), {})};
 
             await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
                 substitutionValues: historyItemNotificationValues);

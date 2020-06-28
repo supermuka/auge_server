@@ -131,7 +131,9 @@ class UserAccessService extends UserAccessServiceBase {
               user =
               await UserService.querySelectUser(UserGetRequest()
                 ..id = row[2]
+                ..onlyIdAndName = true
                 ..withUserProfile = true);
+
               if (user != null) _userCache[row[2]] = user;
             }
           }
@@ -142,7 +144,8 @@ class UserAccessService extends UserAccessServiceBase {
               organization =
               await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
-                    ..id = row[3]);
+                    ..id = row[3]..onlyIdAndName = true);
+
               if (organization != null)
                 _organizationCache[row[3]] = organization;
             }
@@ -159,9 +162,10 @@ class UserAccessService extends UserAccessServiceBase {
         }
       }
     } catch (e) {
-      print('${e.runtimeType}, ${e}, ${e}');
+      print('querySelectUserAccesses ${e.runtimeType}, ${e}, ${e}');
       rethrow;
     }
+
     return userAccesses;
   }
 
@@ -253,7 +257,7 @@ class UserAccessService extends UserAccessServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.userAccess.user.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, user_access_m.UserAccess.fromProtoBufToModelMap(request.userAccess))});
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.userAccess.toProto3Json() )});
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -338,16 +342,11 @@ class UserAccessService extends UserAccessServiceBase {
                   "system_function_index": SystemFunction.update.index,
                   "date_time": DateTime.now().toUtc(),
                   "description": request.userAccess.user.name,
-                  "changed_values": history_item_m.HistoryItem
+                  "changed_values": history_item_m.HistoryItemHelper
                       .changedValuesJson(
-                      user_access_m.UserAccess
-                          .fromProtoBufToModelMap(
-                          previousUserAccess),
-                      user_access_m.UserAccess
-                          .fromProtoBufToModelMap(
-                          request.userAccess))});
+                      previousUserAccess.toProto3Json(),
+                      request.userAccess.toProto3Json())});
           }
-
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -392,9 +391,8 @@ class UserAccessService extends UserAccessServiceBase {
                 "system_function_index": SystemFunction.delete.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": previousUserAccess.user.name,
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                    user_access_m.UserAccess.fromProtoBufToModelMap(
-                        previousUserAccess, true), {})});
+                "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                        previousUserAccess.toProto3Json(), {})});
         }
       });
     } catch (e) {

@@ -1,5 +1,5 @@
-    ALTER TABLE work.works
-        ADD COLUMN archived boolean;
+ALTER TABLE work.works
+    ADD COLUMN archived boolean;
 
 UPDATE work.works SET archived = false;
 
@@ -8,10 +8,11 @@ ALTER TABLE work.works
 
 ALTER TABLE work.work_items
     ADD COLUMN archived boolean;
+
 UPDATE work.work_items SET archived = false;
+
 ALTER TABLE work.work_items
     ALTER COLUMN archived SET NOT NULL;
-
 
 
 ALTER TABLE work.work_items

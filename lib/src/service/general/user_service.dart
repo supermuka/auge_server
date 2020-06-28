@@ -60,35 +60,33 @@ class UserService extends UserServiceBase {
   // Query
   static Future<List<User>> querySelectUsers(UserGetRequest request) async {
 
+    bool allColumns = !(request.hasOnlyIdAndName() && request.onlyIdAndName);
+
     List<List> results;
 
-    String queryStatement = '';
-    if (request.withUserProfile == false) {
-      queryStatement = "SELECT "
-          " u.id, " //0
-          " u.version, " //1
-          " u.name, " //2
-          " u.inactive, " //3
-          " u.managed_by_organization_id " //4
-          " FROM general.users u";
-          " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
-    }
-    else {
-      queryStatement = "SELECT "
-          " u.id, " //0
-          " u.version, " //1
-          " u.name, " //2
-          " u.inactive, " //3
-          " u.managed_by_organization_id, " //4
-          " user_profile.email, " //5
-          " user_profile.email_notification, " //6
-          " user_profile.image, " //7
-          " user_profile.idiom_locale " //8
+
+    String queryStatement = "SELECT"
+        " u.id" //0
+        ",u.name" //1
+        ",u.version" //2
+        ",u.inactive" //3
+        ",u.managed_by_organization_id"; //4
+
+    if (request.withUserProfile) {
+
+      queryStatement = queryStatement +
+          " ,user_profile.email" //5
+          " ,user_profile.email_notification" //6
+          " ,user_profile.image" //7
+          " ,user_profile.idiom_locale" //8
           " FROM general.users u "
           " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
+    } else {
+      queryStatement = queryStatement +
+        " FROM general.users u ";
     }
 
-    String whereAnd = "WHERE";
+    String whereAnd = " WHERE";
     Map<String, dynamic> _substitutionValues = Map();
     if (request != null && request.managedByOrganizationId != null  && request.managedByOrganizationId.isNotEmpty) {
       queryStatement = queryStatement + " ${whereAnd} user.managed_by_organization_id = @organization_id";
@@ -118,23 +116,30 @@ class UserService extends UserServiceBase {
       results = await (await AugeConnection.getConnection()).query(
           queryStatement, substitutionValues: _substitutionValues);
       Organization organization;
+
       for (var row in results) {
 
+        User user = User()
+          ..id = row[0]
+          ..name = row[1];
 
-        if (row[4] != null) {
-          if (organization == null || row[4] != organization.id) {
-            organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[4]);
+        if (allColumns) {
+          if (row[4] != null) {
+
+            if (organization == null || row[4] != organization.id) {
+              organization = await OrganizationService.querySelectOrganization(
+                  OrganizationGetRequest()
+                    ..id = row[4]
+                    ..onlyIdAndName = true);
+            }
+
           }
+          user.version = row[2];
+          user.inactive = row[3];
+          user.managedByOrganization = organization;
         }
 
-        User user = new User()
-          ..id = row[0]
-          ..version = row[1]
-          ..name = row[2]
-          ..inactive = row[3]
-          ..managedByOrganization = organization;
-
-        if (request != null && request.withUserProfile) {
+        if (request.withUserProfile) {
           user.userProfile = UserProfile();
           if (row[5] != null) user.userProfile.eMail = row[5];
           if (row[6] != null) user.userProfile.eMailNotification = row[6];
@@ -145,7 +150,7 @@ class UserService extends UserServiceBase {
         users.add(user);
       }
     } catch (e) {
-      print('${e.runtimeType}, ${e}');
+      print('querySelectUsers ${e.runtimeType}, ${e}');
       rethrow;
     }
 
@@ -219,7 +224,7 @@ class UserService extends UserServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.user.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, user_m.User.fromProtoBufToModelMap(request.user))});
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.user.toProto3Json())});
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -286,14 +291,10 @@ class UserService extends UserServiceBase {
                 "system_function_index": SystemFunction.update.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": request.user.name,
-                "changed_values": history_item_m.HistoryItem
+                "changed_values": history_item_m.HistoryItemHelper
                     .changedValuesJson(
-                    user_m.User
-                        .fromProtoBufToModelMap(
-                        previousUser),
-                    user_m.User
-                        .fromProtoBufToModelMap(
-                        request.user))});
+                        previousUser.toProto3Json(),
+                        request.user.toProto3Json())});
         }
 
         // Send mail notification
@@ -340,9 +341,8 @@ class UserService extends UserServiceBase {
                 "system_function_index": SystemFunction.delete.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": previousUser.name,
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                    user_m.User.fromProtoBufToModelMap(
-                        previousUser, true), {})});
+                "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                        previousUser.toProto3Json(), {})});
         }
       } catch (e) {
         print('${e.runtimeType}, ${e}');

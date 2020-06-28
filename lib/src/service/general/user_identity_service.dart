@@ -84,7 +84,6 @@ class UserIdentityService extends UserIdentityServiceBase {
   static Future<List<UserIdentity>> querySelectUserIdentities([UserIdentityGetRequest request] /* {String id, String eMail, String password, String organizationId, bool withProfile = false} */) async {
 
     List<List> results;
-
     String queryStatement = '';
     if (request != null) {
       queryStatement = "SELECT "
@@ -131,7 +130,7 @@ class UserIdentityService extends UserIdentityServiceBase {
     }
     */
 
-    if (request != null && request.userId != null && request.userId.isNotEmpty) {
+    if (request.hasUserId() && request.userId != null && request.userId.isNotEmpty) {
       queryStatement = queryStatement +
           " ${whereAnd} ui.user_id = @user_id";
 
@@ -155,7 +154,7 @@ class UserIdentityService extends UserIdentityServiceBase {
         if (row[5] != null) userIdentity.provider = row[5];
         if (row[6] != null) userIdentity.providerObjectId = row[6];
 
-        userIdentity.user = await UserService.querySelectUser(UserGetRequest()..id = row[7]..withUserProfile = request.withUserProfile);
+        userIdentity.user = await UserService.querySelectUser(UserGetRequest()..id = row[7]..onlyIdAndName = true..withUserProfile = request.withUserProfile);
 
         // If password is informed, calc a hash and compare to passward_hash stored
         if (request.hasPassword() && request.password.isNotEmpty) {
@@ -178,6 +177,7 @@ class UserIdentityService extends UserIdentityServiceBase {
               user_identity_m.UserIdentityProvider.directoryService.index) {
 
             if (await OrganizationDirectoryServiceService.authDirectoryService(userIdentity.user.managedByOrganization.id, userIdentity.identification, userIdentity.providerDn, request.password) != organization_directory_service_m.DirectoryServiceStatus.finished.index)
+
               continue;
 
           } else {
@@ -188,10 +188,9 @@ class UserIdentityService extends UserIdentityServiceBase {
         userIdentities.add(userIdentity);
       }
     } catch (e) {
-      print('${e.runtimeType}, ${e}');
+      print('querySelectUserIdentities ${e.runtimeType}, ${e}');
       rethrow;
     }
-
     return userIdentities;
   }
 
@@ -259,7 +258,7 @@ class UserIdentityService extends UserIdentityServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.userIdentity.user.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, user_identity_m.UserIdentity.fromProtoBufToModelMap(request.userIdentity))});
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.userIdentity.toProto3Json() )});
 
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -325,14 +324,10 @@ class UserIdentityService extends UserIdentityServiceBase {
                 "system_function_index": SystemFunction.update.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": request.userIdentity.user.name,
-                "changed_values": history_item_m.HistoryItem
+                "changed_values": history_item_m.HistoryItemHelper
                     .changedValuesJson(
-                    user_identity_m.UserIdentity
-                        .fromProtoBufToModelMap(
-                        previousUserIdentity),
-                    user_identity_m.UserIdentity
-                        .fromProtoBufToModelMap(
-                        request.userIdentity))});
+                        previousUserIdentity.toProto3Json(),
+                        request.userIdentity.toProto3Json() )});
         }
       } catch (e) {
         print('${e.runtimeType}, ${e}');
@@ -386,9 +381,8 @@ class UserIdentityService extends UserIdentityServiceBase {
                 "system_function_index": SystemFunction.delete.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": previousUserIdentity.user.name,
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                    user_identity_m.UserIdentity.fromProtoBufToModelMap(
-                        previousUserIdentity, true), {})});
+                "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                        previousUserIdentity.toProto3Json(), {})});
         }
       } catch (e) {
         print('${e.runtimeType}, ${e}');

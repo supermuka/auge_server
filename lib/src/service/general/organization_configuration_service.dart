@@ -3,12 +3,13 @@
 
 import 'dart:async';
 
-import 'package:auge_shared/protos/generated/general/organization.pb.dart';
+// import 'package:auge_shared/protos/generated/general/organization.pb.dart';
 import 'package:grpc/grpc.dart';
 
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 
+import 'package:auge_shared/protos/generated/general/organization.pb.dart';
 import 'package:auge_shared/protos/generated/general/organization_configuration.pbgrpc.dart';
 
 import 'package:auge_shared/domain/general/organization_configuration.dart' as organization_configuration_m;
@@ -16,8 +17,9 @@ import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
 import 'package:auge_shared/domain/general/authorization.dart' show SystemModule, SystemFunction;
 
 import 'package:auge_server/src/util/db_connection.dart';
-import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/general/organization_service.dart';
+import 'package:auge_server/src/service/general/history_item_service.dart';
+// import 'package:auge_server/src/service/general/organization_service.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -93,13 +95,18 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         if (row[2] != null)
           configuration.domain = row[2];
 
-        if (row[3] != null)
-          configuration.organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[3]);
-
+        if (request.hasWithOrganization() && request.withOrganization) {
+          if (row[3] != null)
+            configuration.organization =
+            await OrganizationService.querySelectOrganization(
+                OrganizationGetRequest()
+                  ..id = row[3]
+                  ..onlyIdAndName = true);
+        }
         configurations.add(configuration);
       }
     } catch (e) {
-      print('${e.runtimeType}, ${e}');
+      print('querySelectOrganizationConfigurations ${e.runtimeType}, ${e}');
       rethrow;
     }
     return configurations;
@@ -137,7 +144,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           "id": request.organizationConfiguration.id,
           "version": request.organizationConfiguration.version,
           "domain": request.organizationConfiguration.hasDomain() ? request.organizationConfiguration.domain : null,
-          "organization_id": request.organizationConfiguration.organization.id,});
+          "organization_id": request.authOrganizationId});
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -152,10 +159,8 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               "system_function_index": SystemFunction.create.index,
               "date_time": DateTime.now().toUtc(),
               "description": null, // without description, at first moment
-              "changed_values": history_item_m.HistoryItem.changedValuesJson({},
-                  organization_configuration_m.OrganizationConfiguration
-                      .fromProtoBufToModelMap(
-                      request.organizationConfiguration, true))});
+              "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({},
+                      request.organizationConfiguration.toProto3Json())});
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -184,7 +189,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
           "id": request.organizationConfiguration.id,
           "version": ++request.organizationConfiguration.version,
           "domain": request.organizationConfiguration.hasDomain() ? request.organizationConfiguration.domain : null,
-          "organization_id": request.organizationConfiguration.organization.id,});
+          "organization_id": request.authOrganizationId});
 
         // Optimistic concurrency control
         if (result.length == 0) {
@@ -203,13 +208,9 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                 "system_function_index": SystemFunction.update.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": null, // without description, at first moment
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                    organization_configuration_m.OrganizationConfiguration
-                        .fromProtoBufToModelMap(
-                        previousConfiguration, true),
-                    organization_configuration_m.OrganizationConfiguration
-                        .fromProtoBufToModelMap(
-                        request.organizationConfiguration, true))});
+                "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                        previousConfiguration.toProto3Json(),
+                        request.organizationConfiguration.toProto3Json())});
       }});
     } catch (e) {
       print('${e.runtimeType}, ${e}');

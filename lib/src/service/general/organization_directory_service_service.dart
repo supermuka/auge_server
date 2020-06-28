@@ -108,7 +108,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
         " organization_directory_service.user_identification_attribute," //19
         " organization_directory_service.user_first_name_attribute," //20
         " organization_directory_service.user_last_name_attribute," //21
-        " organization_directory_service.user_email_attribute, " //22
+        " organization_directory_service.user_email_attribute " //22
         " organization_directory_service.organization_id " //23
         " FROM general.organization_directory_services organization_directory_service";
 
@@ -212,9 +212,14 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
         if (row[22] != null)
           organizationDirectoryService.userEmailAttribute = row[22];
 
-        if (row[23] != null) 
-          organizationDirectoryService.organization = await OrganizationService.querySelectOrganization((OrganizationGetRequest()..id = row[23]));
-
+        if (request.hasWithOrganization() && request.withOrganization) {
+          if (row[23] != null)
+            organizationDirectoryService.organization =
+            await OrganizationService.querySelectOrganization(
+                (OrganizationGetRequest()
+                  ..id = row[23]
+                  ..onlyIdAndName = true));
+        }
         organizationDirectoryServices.add(organizationDirectoryService);
       }
 
@@ -323,8 +328,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
               : null,
           "user_email_attribute": request.organizationDirectoryService.hasUserEmailAttribute()
               ? request.organizationDirectoryService.userEmailAttribute : null,
-          "organization_id": request.organizationDirectoryService.hasOrganization()
-              ? request.organizationDirectoryService.organization.id : null,
+          "organization_id": request.authOrganizationId,
         });
 
         // Create a history item
@@ -340,10 +344,8 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
               "system_function_index": SystemFunction.create.index,
               "date_time": DateTime.now().toUtc(),
               "description": null,
-              "changed_values": history_item_m.HistoryItem.changedValuesJson({},
-                  organization_directory_service_m.OrganizationDirectoryService
-                      .fromProtoBufToModelMap(
-                      request.organizationDirectoryService, true))});
+              "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({},
+                      request.organizationDirectoryService.toProto3Json())});
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -438,9 +440,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
             "user_email_attribute": request.organizationDirectoryService.hasUserEmailAttribute()
                 ? request.organizationDirectoryService.userEmailAttribute
                 : null,
-            "organization_id": request.organizationDirectoryService.hasOrganization()
-              ? request.organizationDirectoryService.organization.id
-              : null,});
+            "organization_id": request.authOrganizationId});
 
       // Optimistic concurrency control
       if (result.length == 0) {
@@ -460,13 +460,9 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
                 "system_function_index": SystemFunction.update.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": null, // without description, at first moment
-                "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                    organization_directory_service_m.OrganizationDirectoryService
-                        .fromProtoBufToModelMap(
-                        previousDirectoryService, true),
-                    organization_directory_service_m.OrganizationDirectoryService
-                        .fromProtoBufToModelMap(
-                        request.organizationDirectoryService, true))});
+                "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                        previousDirectoryService.toProto3Json(),
+                        request.organizationDirectoryService.toProto3Json())});
 
         }
       });
@@ -777,7 +773,8 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
       Organization organization;
       organization =
       await OrganizationService.querySelectOrganization(OrganizationGetRequest()
-        ..id = request.authOrganizationId);
+        ..id = request.authOrganizationId
+        ..onlyIdAndName = true);
 
       int countEntry = 0;
       int countProviderObjectIdAttribute = 0,

@@ -154,19 +154,22 @@ class WorkService extends WorkServiceBase {
         workItems = [];
       }
 
-      if (row[5] != null && (organization == null || organization.id != row[5])) {
+      if (workGetRequest.hasWithOrganization() && workGetRequest.withOrganization) {
+        if (row[5] != null &&
+            (organization == null || organization.id != row[5])) {
+          // organization = await _augeApi.getOrganizationById(row[3]);
 
-        // organization = await _augeApi.getOrganizationById(row[3]);
-
-        organization = await OrganizationService.querySelectOrganization(OrganizationGetRequest()..id = row[5]);
-
-      } else {
-        organization = null;
+          organization = await OrganizationService.querySelectOrganization(
+              OrganizationGetRequest()
+                ..id = row[5]);
+        } else {
+          organization = null;
+        }
       }
 
       // user = (await _augeApi.getUsers(id: row[4])).first;
       if (row[6] != null) {
-        user = await UserService.querySelectUser(UserGetRequest()..id = row[6]..withUserProfile = workGetRequest.withUserProfile);
+        user = await UserService.querySelectUser(UserGetRequest()..id = row[6]..onlyIdAndName = true..withUserProfile = workGetRequest.withUserProfile);
       } else {
         user = null;
       }
@@ -188,7 +191,7 @@ class WorkService extends WorkServiceBase {
       if (row[8] != null) {
         group = row[8] == null ? null : await GroupService.querySelectGroup(
             GroupGetRequest()
-              ..id = row[8]);
+              ..id = row[8]..onlyIdAndName = true);
       } else {
         group = null;
       }
@@ -196,7 +199,7 @@ class WorkService extends WorkServiceBase {
       Work work =
       Work()..id = row[0]..version = row[1]..name = row[2];
 
-      if (row[5] != null) work.description = row[3];
+      if (row[3] != null) work.description = row[3];
 
       if (row[4] != null) work.archived = row[4];
       if (workItems.isNotEmpty) {
@@ -297,10 +300,11 @@ class WorkService extends WorkServiceBase {
           "name": request.work.name,
           "description": request.work.description,
           "archived": request.work.hasArchived() ? request.work.archived : false,
-          "organization_id": request.work.organization.id,
+          "organization_id": request.authOrganizationId,
           "leader_user_id": request.work.hasLeader() ? request.work.leader.id : null,
           "objective_id": request.work.hasObjective() ? request.work.objective.id : null,
           "group_id": request.work.hasGroup() ? request.work.group.id : null });
+
 
         // Create a history item
         historyItemNotificationValues = {"id": Uuid().v4(),
@@ -313,7 +317,7 @@ class WorkService extends WorkServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.work.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, work_m.Work.fromProtoBufToModelMap(request.work))};
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.work.toProto3Json() )};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
       });
@@ -362,7 +366,7 @@ class WorkService extends WorkServiceBase {
               "name": request.work.name,
               "description": request.work.description,
               "archived": request.work.hasArchived() ? request.work.archived : false,
-              "organization_id": request.work.hasOrganization() ? request.work.organization.id : null,
+              "organization_id": request.authOrganizationId,
               "leader_user_id": request.work.hasLeader() ? request.work.leader.id : null,
               "objective_id": request.work.hasObjective() ? request.work.objective.id : null,
               "group_id": request.work.hasGroup() ? request.work.group.id : null });
@@ -384,14 +388,10 @@ class WorkService extends WorkServiceBase {
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
             "description": request.work.name,
-            "changed_values": history_item_m.HistoryItem
+            "changed_values": history_item_m.HistoryItemHelper
                 .changedValuesJson(
-                work_m.Work
-                    .fromProtoBufToModelMap(
-                    previousWork),
-                work_m.Work
-                    .fromProtoBufToModelMap(
-                    request.work)
+                    previousWork.toProto3Json(),
+                    request.work.toProto3Json()
             )};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -442,9 +442,8 @@ class WorkService extends WorkServiceBase {
             "system_function_index": SystemFunction.delete.index,
             "date_time": DateTime.now().toUtc(),
             "description": previousWork.name,
-            "changed_values": history_item_m.HistoryItem.changedValuesJson(
-                work_m.Work.fromProtoBufToModelMap(
-                    previousWork, true), {})};
+            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+                    previousWork.toProto3Json(), {})};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);

@@ -16,7 +16,7 @@ import 'package:auge_shared/route/app_routes_definition.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_shared/protos/generated/general/user.pb.dart';
-import 'package:auge_shared/protos/generated/general/organization.pb.dart';
+// import 'package:auge_shared/protos/generated/general/organization.pb.dart';
 import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart';
 import 'package:auge_shared/protos/generated/general/group.pb.dart';
 
@@ -28,7 +28,7 @@ import 'package:auge_shared/message/rpc_error_message.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/src/service/objective/measure_service.dart';
-import 'package:auge_server/src/service/general/organization_service.dart';
+// import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/group_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
@@ -86,8 +86,8 @@ class ObjectiveService extends ObjectiveServiceBase {
         " objective.archived," //6
         " objective.leader_user_id," //7
         " objective.aligned_to_objective_id," //8
-        " objective.organization_id," //9
-        " objective.group_id"; //10
+     /*   " objective.organization_id,"  */ //9
+        " objective.group_id"; //9
 
     String queryStatementWhere = "";
     Map<String, dynamic> substitutionValues;
@@ -154,7 +154,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
         Map<String, User> usersCache = {};
        // Map<String, Objective> objectivesCache = {};
-        Map<String, Organization> organizationsCache = {};
+  //       Map<String, Organization> organizationsCache = {};
         Map<String, Group> groupsCache = {};
         for (var row in results) {
 
@@ -180,6 +180,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
           if (row[7] != null) objective.leader = await UserService.querySelectUser(UserGetRequest()
               ..id = row[7]
+              ..onlyIdAndName = true
               ..withUserProfile = objectiveGetRequest.withUserProfile, cache: usersCache);
 
           if (row[8] != null && objectiveGetRequest.alignedToRecursive > 0)
@@ -194,14 +195,15 @@ class ObjectiveService extends ObjectiveServiceBase {
               ..groupIds.addAll(objectiveGetRequest.groupIds), cache: objectivesCache */);
 
           // Organization
+         /*
             if (row[9] != null)
               objective.organization = await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
                     ..id = row[9], cache: organizationsCache);
-
-            if (row[10] != null)
+*/
+            if (row[9] != null)
               objective.group = await GroupService.querySelectGroup(GroupGetRequest()
-                ..id = row[10], cache: groupsCache);
+                ..id = row[9]..onlyIdAndName = true, cache: groupsCache);
 
             if (objectiveGetRequest.treeAlignedWithChildren) {
             objectivesTreeMapAux[objective.id] = objective;
@@ -312,7 +314,7 @@ class ObjectiveService extends ObjectiveServiceBase {
               "end_date": request.objective.hasEndDate() ? request.objective.endDate.toDateTime() /* CommonUtils.dateTimeFromTimestamp(request.objective.endDate) */ : null,
               "archived": request.objective.hasArchived() ? request.objective.archived : false,
               "aligned_to_objective_id": request.objective.hasAlignedTo() ? request.objective.alignedTo.id : null,
-              "organization_id": request.objective.hasOrganization() ? request.objective.organization.id : null,
+              "organization_id": request.authOrganizationId,
               "leader_user_id": request.objective.hasLeader() ? request.objective.leader.id : null,
               "group_id": request.objective.hasGroup() ? request.objective.group.id : null,
 
@@ -330,7 +332,7 @@ class ObjectiveService extends ObjectiveServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.objective.name,
-          "changed_values": history_item_m.HistoryItem.changedValuesJson({}, objective_m.Objective.fromProtoBufToModelMap(request.objective, true))};
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.objective.toProto3Json())};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: historyItemNotificationValues);
@@ -380,7 +382,7 @@ class ObjectiveService extends ObjectiveServiceBase {
           "end_date": request.objective.hasEndDate() ? request.objective.endDate.toDateTime() /* CommonUtils.dateTimeFromTimestamp(request.objective.endDate) */ : null,
           "archived": request.objective.hasArchived() ? request.objective.archived : null,
           "aligned_to_objective_id": request.objective.hasAlignedTo() ? request.objective.alignedTo.id : null,
-          "organization_id": request.objective.hasOrganization() ? request.objective.organization.id : null,
+          "organization_id": request.authOrganizationId,
           "leader_user_id": request.objective.hasLeader() ? request.objective.leader.id : null,
           "group_id": request.objective.hasGroup() ? request.objective.group.id : null,
         });
@@ -403,7 +405,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
             "description": request.objective.name,
-            "changed_values": history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), objective_m.Objective.fromProtoBufToModelMap(request.objective, true))};
+            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousObjective.toProto3Json(), request.objective.toProto3Json())};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -460,7 +462,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             "system_function_index": SystemFunction.delete.index,
             "date_time": DateTime.now().toUtc(),
             "description": previousObjective.name,
-            "changed_values":  history_item_m.HistoryItem.changedValuesJson(objective_m.Objective.fromProtoBufToModelMap(previousObjective, true), {})};
+            "changed_values":  history_item_m.HistoryItemHelper.changedValuesJson(previousObjective.toProto3Json(), {})};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);

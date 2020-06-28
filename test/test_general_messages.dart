@@ -1,14 +1,19 @@
+
 import 'package:test/test.dart';
 
 import 'package:auge_shared/protos/generated/general/organization.pb.dart' as organization_pb;
 import 'package:auge_shared/protos/generated/general/user.pb.dart' as user_pb;
 import 'package:auge_shared/protos/generated/general/user_access.pb.dart' as user_access_pb;
 import 'package:auge_shared/protos/generated/general/group.pb.dart' as group_pb;
+import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart' as objective_measure_pb;
 
 import 'package:auge_shared/domain/general/organization.dart' as organization_m;
 import 'package:auge_shared/domain/general/user.dart' as user_m;
 import 'package:auge_shared/domain/general/user_access.dart' as user_access_m;
 import 'package:auge_shared/domain/general/group.dart' as group_m;
+import 'package:auge_shared/domain/objective/objective.dart' as objective_m;
+
+import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
 
 void main() {
 
@@ -38,7 +43,7 @@ void main() {
 
       test('Organization entity. Call writeToProtoBuf.', () async {
 
-        proto = model.writeToProtoBuf();
+        proto = organization_m.OrganizationHelper.writeToProtoBuf(model);
 
         callExcept();
 
@@ -47,20 +52,20 @@ void main() {
       test('Organization entity. Call readToProtoBuf.', () async {
 
         model = organization_m.Organization();
-        model.readFromProtoBuf(proto);
+        model = organization_m.OrganizationHelper.readFromProtoBuf(proto);
 
         callExcept();
 
       });
-
+/*
       test('Organization entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = organization_m.Organization.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = organization_m.OrganizationHelper.fromProtoBufToModelMap(proto);
         expect(m[organization_m.Organization.idField], equals(proto.id));
         expect(m[organization_m.Organization.versionField], equals(proto.version));
         expect(m[organization_m.Organization.nameField], equals(proto.name));
         expect(m[organization_m.Organization.codeField], equals(proto.code));
       });
-
+*/
     });
 
     group('User.', () {
@@ -93,12 +98,12 @@ void main() {
 
       test('User entity. Call writeToProtoBuf', () async {
 
-        proto = model.writeToProtoBuf();
+        proto = user_m.UserHelper.writeToProtoBuf(model);
 
         callExcept();
 
       });
-
+/*
       test('User entity. Call fromProtoBufToModelMap', () async {
         Map<String, dynamic> m = user_m.User.fromProtoBufToModelMap(proto);
         expect(m[user_m.User.idField], equals(proto.id));
@@ -109,6 +114,8 @@ void main() {
         expect(m[user_m.User.userProfileField][user_m.UserProfile.imageField], equals(proto.userProfile.image));
 
       });
+
+ */
     });
 
     group('User Profile Organization.', () {
@@ -133,23 +140,23 @@ void main() {
       });
 
       test('UserProfileOrganization entity. Call writeToProtoBuf.', () async {
-        proto = model.writeToProtoBuf();
+        proto = user_access_m.UserAccessHelper.writeToProtoBuf(model);
         callExcept();
       });
 
       test('UserProfileOrganization entity. Call readToProtoBuf.', () async {
-        model = user_access_m.UserAccess();
-        model.readFromProtoBuf(proto, {});
+        model = user_access_m.UserAccessHelper.readFromProtoBuf(proto, {});
         callExcept();
       });
-
+/*
       test('UserProfileOrganization entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = user_access_m.UserAccess.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = user_access_m.UserAccessHelper.fromProtoBufToModelMap(proto);
         expect(m[user_access_m.UserAccess.idField], equals(proto.id));
         expect(m[user_access_m.UserAccess.versionField], equals(proto.version));
         expect(m[user_access_m.UserAccess.userField][user_m.User.idField], equals(proto.user.id));
         expect(m[user_access_m.UserAccess.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
       });
+*/
     });
 
     group('Group.', () {
@@ -185,7 +192,11 @@ void main() {
 
       test('Group entity. Call writeToProtoBuf.', () async {
 
-        proto = model.writeToProtoBuf();
+        proto = group_m.GroupHelper.writeToProtoBuf(model);
+
+        print('DEBUG 1 - json ${proto.writeToJson()}');
+
+        print('DEBUG 2 - json ${proto.toProto3Json()}');
 
         callExcept();
 
@@ -193,26 +204,105 @@ void main() {
 
       test('Group entity. Call readToProtoBuf.', () async {
 
-        model = group_m.Group();
-        model.readFromProtoBuf(proto, {});
+    //    model = group_m.Group();
+        model = group_m.GroupHelper.readFromProtoBuf(proto, {});
 
         callExcept();
 
       });
-
+/*
       test('Group entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = group_m.Group.fromProtoBufToModelMap(proto);
+        Map<String, dynamic> m = group_m.GroupHelper.fromProtoBufToModelMap(proto);
         expect(m[group_m.Group.idField], equals(proto.id));
         expect(m[group_m.Group.versionField], equals(proto.version));
         expect(m[group_m.Group.nameField], equals(proto.name));
         expect(m[group_m.Group.inactiveField], equals(proto.inactive));
         expect(m[group_m.Group.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
-        expect(m[group_m.Group.groupTypeField][group_m.Group.groupTypeField], equals(proto.groupTypeIndex));
+        expect(m[group_m.Group.groupTypeField], equals(group_m.GroupType.values[proto.groupTypeIndex]));
         expect(m[group_m.Group.superGroupField][group_m.Group.idField], equals(proto.superGroup.id));
         expect(m[group_m.Group.leaderField][user_m.User.idField], equals(proto.leader.id));
         expect(m[group_m.Group.membersField].first[user_m.User.idField], equals(proto.members.first.id));
       });
+  */
 
+    });
+
+    group('Objective.', () {
+
+      objective_m.Objective model = objective_m.Objective();
+      objective_m.Objective model2 = objective_m.Objective();
+      objective_measure_pb.Objective proto;
+      objective_measure_pb.Objective proto2;
+
+      setUp(() {
+
+        model.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
+        model.version = 0;
+        model.name = 'Unit Test Group';
+        model.organization = organization_m.Organization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e'..name = 'Nome da Empresa';
+        model.leader = user_m.User()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e'..name = 'Nome do Usuário';
+        model.startDate = DateTime.now();
+
+        model2.id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
+        model2.version = 1;
+        model2.name = 'Unit Test Group 2';
+        model2.organization = organization_m.Organization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e'..name = 'Nome da Empresa';
+        model2.leader = user_m.User()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e'..name = 'Nome do Usuário';
+        model2.startDate = DateTime.now();
+
+      });
+
+      void callExcept() {
+        expect(model.id, equals(proto.id));
+        expect(model.version, equals(proto.version));
+        expect(model.name, equals(proto.name));
+        expect(model.organization.id, equals(proto.organization.id));
+        expect(model.leader.id, equals(proto.leader.id));
+       // expect(model.startDate, equals(proto.startDate.toDateTime()));
+      }
+
+      test('Group entity. Call writeToProtoBuf.', () async {
+
+        proto = objective_m.ObjectiveHelper.writeToProtoBuf(model);
+
+        //print('DEBUG 1 - json ${proto.writeToJson()}');
+        var json = proto.toProto3Json(/* typeRegistry: TypeRegistry([timestamp_pb.Timestamp()]) */);
+        print('DEBUG a - json ${json}');
+
+        proto2 = objective_m.ObjectiveHelper.writeToProtoBuf(model);
+        var json2 = proto2.toProto3Json(/* typeRegistry: TypeRegistry([timestamp_pb.Timestamp()]) */);
+
+        print('DEBUG b - json ${json2}');
+
+        //
+        var delta = history_item_m.HistoryItemHelper.changedValuesJson(json, json2);
+        print('DEBUG c - delta ${delta}');
+
+        callExcept();
+
+      });
+
+      test('Group entity. Call readToProtoBuf.', () async {
+
+        //    model = group_m.Group();
+        model = objective_m.ObjectiveHelper.readFromProtoBuf(proto, {});
+
+        callExcept();
+
+      });
+/*
+      test('Group entity. Call fromProtoBufToModelMap', () async {
+        Map<String, dynamic> m = objective_m.Objective.fromProtoBufToModelMap(proto);
+
+        expect(m[objective_m.Objective.idField], equals(proto.id));
+        expect(m[objective_m.Objective.versionField], equals(proto.version));
+
+        expect(m[objective_m.Objective.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
+
+        expect(m[objective_m.Objective.leaderField][user_m.User.idField], equals(proto.leader.id));
+        expect(m[objective_m.Objective.startDateField], equals(proto.startDate.toDateTime()));
+      });
+*/
     });
   });
 }
