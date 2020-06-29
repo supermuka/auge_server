@@ -1,23 +1,126 @@
-
+import 'dart:mirrors';
 import 'package:test/test.dart';
 
 import 'package:auge_shared/protos/generated/general/organization.pb.dart' as organization_pb;
+import 'package:auge_shared/protos/generated/general/organization_configuration.pb.dart' as organization_configuration_pb;
+import 'package:auge_shared/protos/generated/general/organization_directory_service.pb.dart' as organization_directory_service_pb;
 import 'package:auge_shared/protos/generated/general/user.pb.dart' as user_pb;
 import 'package:auge_shared/protos/generated/general/user_access.pb.dart' as user_access_pb;
+import 'package:auge_shared/protos/generated/general/user_identity.pb.dart' as user_identity_pb;
 import 'package:auge_shared/protos/generated/general/group.pb.dart' as group_pb;
-import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart' as objective_measure_pb;
+import 'package:auge_shared/protos/generated/general/unit_of_measurement.pb.dart' as unit_of_measurement_pb;
+import 'package:auge_shared/protos/generated/general/history_item.pb.dart' as history_item_pb;
 
 import 'package:auge_shared/domain/general/organization.dart' as organization_m;
+import 'package:auge_shared/domain/general/organization_configuration.dart' as organization_configuration_m;
+import 'package:auge_shared/domain/general/organization_directory_service.dart' as organization_directory_service_m;
 import 'package:auge_shared/domain/general/user.dart' as user_m;
 import 'package:auge_shared/domain/general/user_access.dart' as user_access_m;
+import 'package:auge_shared/domain/general/user_identity.dart' as user_identity_m;
 import 'package:auge_shared/domain/general/group.dart' as group_m;
-import 'package:auge_shared/domain/objective/objective.dart' as objective_m;
-
+import 'package:auge_shared/domain/general/unit_of_measurement.dart' as unit_of_measurement_m;
 import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
 
 void main() {
 
-  group('Test General Messages.', () {
+  group('Test Class and Fields name equivalence.', () {
+
+    void checkEquivalence(Type domain, Type protobuf) {
+      ClassMirror classMirrorDomain;
+
+      classMirrorDomain = reflectClass(domain);
+      // im.type.staticMembers.values.forEach((MethodMirror method) => print(method.simpleName));
+
+      // classMirror.typeVariables.forEach((f) => print(f.qualifiedName));
+
+      const String startSymbol = 'Symbol("';
+      const String containsSymbolField = 'Field';
+      const String endSymbol = '")';
+
+      const String className = 'className';
+
+      Set<String> fields = {};
+      Map<String, String> constants = {};
+
+      classMirrorDomain.declarations.values.forEach((DeclarationMirror declaration) {
+        if (declaration is VariableMirror) {
+          // Constant field description
+          if (declaration.simpleName.toString().endsWith(containsSymbolField + endSymbol) && declaration.isStatic && declaration.isConst) {
+              constants[declaration.simpleName.toString().replaceAll(startSymbol, '').replaceAll(containsSymbolField, '').replaceAll(endSymbol, '')] = classMirrorDomain
+                  .getField(declaration.simpleName)
+                  .reflectee;
+            // Constant class description
+          } else if ((declaration.simpleName.toString() == startSymbol + className + endSymbol) && declaration.isStatic && declaration.isConst) {
+              constants[declaration.simpleName.toString().replaceAll(startSymbol, '').replaceAll(endSymbol, '')] = classMirrorDomain
+                  .getField(declaration.simpleName)
+                  .reflectee;
+          }
+          // Class and Field
+          else {
+            fields.add(declaration.simpleName.toString().replaceAll(startSymbol, '').replaceAll(endSymbol, ''));
+          }
+        }
+      });
+
+      ClassMirror classMirrorProtobuf;
+      classMirrorProtobuf = reflectClass(protobuf);
+      // im.type.staticMembers.values.forEach((MethodMirror method) => print(method.simpleName));
+
+      // classMirror.typeVariables.forEach((f) => print(f.qualifiedName));
+      String classNameProtobuf = classMirrorProtobuf.simpleName.toString().replaceAll(startSymbol, '').replaceAll(endSymbol, '');
+      Set<String> fieldsProtobuf = {};
+      classMirrorProtobuf.instanceMembers.values.forEach((MethodMirror method) {
+        if (method is MethodMirror) {
+          if (method.owner.simpleName == classMirrorProtobuf.simpleName) {
+            if (method
+                .isGetter /* method.isSetter, just get. Needs just one method to identifie a field name */) {
+              fieldsProtobuf.add(method.simpleName.toString().replaceAll(startSymbol, '').replaceAll(endSymbol, ''));
+            }
+          }
+        }
+      });
+
+      expect(classNameProtobuf, equals(constants[className]));
+      for (String field in fields) {
+        expect(field, equals(constants[field]));
+        expect(field, equals(fieldsProtobuf.lookup(field)) );
+      }
+    }
+
+    test('Organization.', () async {
+      checkEquivalence(organization_m.Organization, organization_pb.Organization);
+    });
+    test('Organization Configuration.', () async {
+      checkEquivalence(organization_configuration_m.OrganizationConfiguration, organization_configuration_pb.OrganizationConfiguration);
+    });
+    test('Organization Directory Service.', () async {
+      checkEquivalence(organization_directory_service_m.OrganizationDirectoryService, organization_directory_service_pb.OrganizationDirectoryService);
+    });
+    test('User.', () async {
+      checkEquivalence(user_m.User, user_pb.User);
+    });
+    test('UserProfile.', () async {
+      checkEquivalence(user_m.UserProfile, user_pb.UserProfile);
+    });
+    test('UserAccess.', () async {
+      checkEquivalence(user_access_m.UserAccess, user_access_pb.UserAccess);
+    });
+    test('UserIdentity.', () async {
+      checkEquivalence(user_identity_m.UserIdentity, user_identity_pb.UserIdentity);
+    });
+    test('Group.', () async {
+      checkEquivalence(group_m.Group, group_pb.Group);
+    });
+    test('UnitOfMeasurement.', () async {
+      checkEquivalence(unit_of_measurement_m.UnitOfMeasurement, unit_of_measurement_pb.UnitOfMeasurement);
+    });
+    test('History Item.', () async {
+      checkEquivalence(history_item_m.HistoryItem, history_item_pb.HistoryItem);
+    });
+  });
+
+  /*
+  group('TEST GENERAL MESSAGES.', () {
 
     organization_m.Organization model = organization_m.Organization();
     organization_pb.Organization proto;
@@ -57,15 +160,6 @@ void main() {
         callExcept();
 
       });
-/*
-      test('Organization entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = organization_m.OrganizationHelper.fromProtoBufToModelMap(proto);
-        expect(m[organization_m.Organization.idField], equals(proto.id));
-        expect(m[organization_m.Organization.versionField], equals(proto.version));
-        expect(m[organization_m.Organization.nameField], equals(proto.name));
-        expect(m[organization_m.Organization.codeField], equals(proto.code));
-      });
-*/
     });
 
     group('User.', () {
@@ -103,19 +197,6 @@ void main() {
         callExcept();
 
       });
-/*
-      test('User entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = user_m.User.fromProtoBufToModelMap(proto);
-        expect(m[user_m.User.idField], equals(proto.id));
-        expect(m[user_m.User.versionField], equals(proto.version));
-        expect(m[user_m.User.nameField], equals(proto.name));
-
-        expect(m[user_m.User.userProfileField][user_m.UserProfile.idiomLocaleField], equals(proto.userProfile.idiomLocale));
-        expect(m[user_m.User.userProfileField][user_m.UserProfile.imageField], equals(proto.userProfile.image));
-
-      });
-
- */
     });
 
     group('User Profile Organization.', () {
@@ -148,15 +229,6 @@ void main() {
         model = user_access_m.UserAccessHelper.readFromProtoBuf(proto, {});
         callExcept();
       });
-/*
-      test('UserProfileOrganization entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = user_access_m.UserAccessHelper.fromProtoBufToModelMap(proto);
-        expect(m[user_access_m.UserAccess.idField], equals(proto.id));
-        expect(m[user_access_m.UserAccess.versionField], equals(proto.version));
-        expect(m[user_access_m.UserAccess.userField][user_m.User.idField], equals(proto.user.id));
-        expect(m[user_access_m.UserAccess.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
-      });
-*/
     });
 
     group('Group.', () {
@@ -204,27 +276,12 @@ void main() {
 
       test('Group entity. Call readToProtoBuf.', () async {
 
-    //    model = group_m.Group();
+
         model = group_m.GroupHelper.readFromProtoBuf(proto, {});
 
         callExcept();
 
       });
-/*
-      test('Group entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = group_m.GroupHelper.fromProtoBufToModelMap(proto);
-        expect(m[group_m.Group.idField], equals(proto.id));
-        expect(m[group_m.Group.versionField], equals(proto.version));
-        expect(m[group_m.Group.nameField], equals(proto.name));
-        expect(m[group_m.Group.inactiveField], equals(proto.inactive));
-        expect(m[group_m.Group.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
-        expect(m[group_m.Group.groupTypeField], equals(group_m.GroupType.values[proto.groupTypeIndex]));
-        expect(m[group_m.Group.superGroupField][group_m.Group.idField], equals(proto.superGroup.id));
-        expect(m[group_m.Group.leaderField][user_m.User.idField], equals(proto.leader.id));
-        expect(m[group_m.Group.membersField].first[user_m.User.idField], equals(proto.members.first.id));
-      });
-  */
-
     });
 
     group('Objective.', () {
@@ -258,19 +315,17 @@ void main() {
         expect(model.name, equals(proto.name));
         expect(model.organization.id, equals(proto.organization.id));
         expect(model.leader.id, equals(proto.leader.id));
-       // expect(model.startDate, equals(proto.startDate.toDateTime()));
       }
 
       test('Group entity. Call writeToProtoBuf.', () async {
 
         proto = objective_m.ObjectiveHelper.writeToProtoBuf(model);
 
-        //print('DEBUG 1 - json ${proto.writeToJson()}');
-        var json = proto.toProto3Json(/* typeRegistry: TypeRegistry([timestamp_pb.Timestamp()]) */);
+        var json = proto.toProto3Json();
         print('DEBUG a - json ${json}');
 
         proto2 = objective_m.ObjectiveHelper.writeToProtoBuf(model);
-        var json2 = proto2.toProto3Json(/* typeRegistry: TypeRegistry([timestamp_pb.Timestamp()]) */);
+        var json2 = proto2.toProto3Json();
 
         print('DEBUG b - json ${json2}');
 
@@ -284,25 +339,13 @@ void main() {
 
       test('Group entity. Call readToProtoBuf.', () async {
 
-        //    model = group_m.Group();
+
         model = objective_m.ObjectiveHelper.readFromProtoBuf(proto, {});
 
         callExcept();
 
       });
-/*
-      test('Group entity. Call fromProtoBufToModelMap', () async {
-        Map<String, dynamic> m = objective_m.Objective.fromProtoBufToModelMap(proto);
-
-        expect(m[objective_m.Objective.idField], equals(proto.id));
-        expect(m[objective_m.Objective.versionField], equals(proto.version));
-
-        expect(m[objective_m.Objective.organizationField][organization_m.Organization.idField], equals(proto.organization.id));
-
-        expect(m[objective_m.Objective.leaderField][user_m.User.idField], equals(proto.leader.id));
-        expect(m[objective_m.Objective.startDateField], equals(proto.startDate.toDateTime()));
-      });
-*/
     });
   });
+   */
 }

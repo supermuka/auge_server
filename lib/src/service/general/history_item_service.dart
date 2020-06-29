@@ -114,7 +114,7 @@ class HistoryItemService extends HistoryItemServiceBase {
 
           if (row[7] != null) historyItem.dateTime = CommonUtils.timestampFromDateTime(row[7]);
           if (row[8] != null) historyItem.description = row[8];
-          if (row[9] != null) historyItem.changedValuesJson = row[9];
+          if (row[9] != null) historyItem.changedValues = row[9];
 
           history.add(historyItem);
         }
