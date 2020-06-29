@@ -32,7 +32,7 @@ void main() {
         model.version = 0;
         model.name = 'Name test';
         model.index = 0;
-        model.state = stage_m.State.notStarted;
+        model.stateIndex = stage_m.State.notStarted.index;
       });
 
       void callExcept() {
@@ -40,7 +40,7 @@ void main() {
         expect(model.version, equals(proto.version));
         expect(model.name, equals(proto.name));
         expect(model.index, equals(proto.index));
-        expect(model.state.index, equals(proto.stateIndex));
+        expect(model.stateIndex, equals(proto.stateIndex));
       }
 
       test('Call writeToProtoBuffer.', () async {
