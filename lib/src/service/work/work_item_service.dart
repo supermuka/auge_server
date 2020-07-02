@@ -46,7 +46,7 @@ class WorkItemService extends WorkItemServiceBase {
           await querySelectWorkItems(workItemGetRequest));
     return workItemsResponse;
   }
-
+/*
   @override
   Future<WorkItem> getWorkItem(ServiceCall call,
       WorkItemGetRequest workItemGetRequest) async {
@@ -55,7 +55,7 @@ class WorkItemService extends WorkItemServiceBase {
         RpcErrorDetailMessage.workItemDataNotFoundReason);
     return workItem;
   }
-
+*/
   @override
   Future<StringValue> createWorkItem(ServiceCall call,
       WorkItemRequest request) async {
@@ -185,7 +185,8 @@ class WorkItemService extends WorkItemServiceBase {
       List<WorkItemCheckItem> checkItems;
       WorkItem workItem;
       for (var row in results) {
-        workStage = await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[7]);
+
+        workStage = await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[7]..restrictWork = RestrictWork.workNone);
 
         assignedToUsers = await querySelectWorkItemAssignedToUsers(row[0]);
 
@@ -204,8 +205,14 @@ class WorkItemService extends WorkItemServiceBase {
         if (attachments.isNotEmpty) workItem.attachments.addAll(attachments);
         if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
 
-        if (workItemGetRequest.hasWithWork() && workItemGetRequest.withWork == true && row[8] != null) {
-          workItem.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[8]..withUserProfile = workItemGetRequest.withUserProfile);
+        if (row[8] != null) {
+          if (!workItemGetRequest.hasRestrictWork() ||
+              workItemGetRequest.restrictWork != RestrictWork.workNone) {
+            workItem.work = await WorkService.querySelectWork(WorkGetRequest()
+              ..id = row[8]
+              ..restrictWork = RestrictWork.workIdName
+              ..restrictWorkItem = RestrictWorkItem.workItemNone);
+          }
         }
 
         if (row[9] != null)
@@ -223,6 +230,7 @@ class WorkItemService extends WorkItemServiceBase {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
+
     return workItems;
   }
 
@@ -336,7 +344,9 @@ class WorkItemService extends WorkItemServiceBase {
 
     for (var row in results) {
 
-      user = await UserService.querySelectUser(UserGetRequest()..id = row[0]..onlyIdAndName = true..withUserProfile = true);
+      user = await UserService.querySelectUser(UserGetRequest()..id = row[0]
+        ..restrictUser = RestrictUser.userIdName
+        ..restrictUserProfile = RestrictUserProfile.userProfileImage);
 
       assignedToUsers.add(user);
     }
@@ -390,7 +400,7 @@ class WorkItemService extends WorkItemServiceBase {
     try {
 
       // TODO (this is made just to get a work leader email, found a way to improve the performance)
-      Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId..withUserProfile = true);
+      Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId);
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
@@ -526,10 +536,10 @@ class WorkItemService extends WorkItemServiceBase {
   static Future<Empty> queryUpdateWorkItem(WorkItemRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id..withWork = true);
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id..restrictWork = RestrictWork.workIdName);
 
     // TODO (this is made just to get a user profile email, it needs to find to a way to improve the performance)
-    Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId..withUserProfile = true);
+    Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -752,7 +762,7 @@ class WorkItemService extends WorkItemServiceBase {
   /// Delete a WorkItem by [id]
   static Future<Empty> queryDeleteWorkItem(WorkItemDeleteRequest request, String urlOrigin) async {
 
-    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..withWork = true..withUserProfile = true);
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..restrictWork = RestrictWork.workIdName..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -866,8 +876,16 @@ class WorkItemService extends WorkItemServiceBase {
             workItemValue.comment = row[4];
           }
 
-          if (request.withWorkItem && request.withWorkItem == true && row[5] != null) {
-            workItemValue.workItem = await WorkItemService.querySelectWorkItem(WorkItemGetRequest()..id = row[5]..withWork = request.withWork..withUserProfile = request.withUserProfile);
+          if (row[5] != null) {
+            if (!request.hasRestrictWorkItem() || request.restrictWorkItem != RestrictWorkItem.workItemNone) {
+              WorkItemGetRequest workItemGetRequest = WorkItemGetRequest();
+              workItemGetRequest.id = row[5];
+              if (request.hasRestrictWork()) workItemGetRequest.restrictWork = request.restrictWork;
+              if (request.hasRestrictUserProfile()) workItemGetRequest.restrictUserProfile = request.restrictUserProfile;
+
+              workItemValue.workItem =
+              await WorkItemService.querySelectWorkItem(workItemGetRequest);
+            }
           }
 
           workItemValues.add(workItemValue);
@@ -930,7 +948,7 @@ class WorkItemService extends WorkItemServiceBase {
     try {
 
       // This is made just to recovery email leader from objective, used to notification
-      request.workItemValue.workItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..withWork = true..withUserProfile = true);
+      request.workItemValue.workItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..restrictWork = RestrictWork.workIdName..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
 
       request.workItemValue.version = 0;
 
@@ -993,7 +1011,7 @@ class WorkItemService extends WorkItemServiceBase {
       WorkItemValueRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValue.id..withWorkItem = true..withWork = true..withUserProfile = true);
+    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValue.id..restrictWorkItem = RestrictWorkItem.workItemIdName..restrictWork = RestrictWork.workIdName..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
 
     request.workItemValue.workItem = previousWorkItemValue.workItem;
     // This is made just to recovery email leader from objective, used to notification
@@ -1069,7 +1087,7 @@ class WorkItemService extends WorkItemServiceBase {
   /// Delete a [WorkItemValue] by id
   Future<Empty> queryDeleteWorkItemValue(WorkItemValueDeleteRequest request, String urlOrigin) async {
 
-    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValueId..withWorkItem = true..withWork = true..withUserProfile = true);
+    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValueId..restrictWorkItem = RestrictWorkItem.workItemIdName..restrictWork = RestrictWork.workIdName..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
 
     try {
 

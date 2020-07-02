@@ -65,10 +65,10 @@ class UserControlService extends UserControlServiceBase {
         if (row != null && row.isNotEmpty) {
           userControl = UserControl();
 
-          if (request.hasWithUser() && request.withUser) {
+          if (!request.hasRestrictUser() || request.restrictUser == RestrictUser.userNone) {
             userControl.user =
             await UserService.querySelectUser(UserGetRequest()
-              ..onlyIdAndName = true
+              ..restrictUser = RestrictUser.userIdName
               ..id = row[0]);
           }
 
@@ -78,7 +78,7 @@ class UserControlService extends UserControlServiceBase {
       }
 
     } catch (e) {
-      print('querySelectUserControl ${e.runtimeType}, ${e}');
+      print('querySelectUserControl - ${e.runtimeType}, ${e}');
       rethrow;
     }
 

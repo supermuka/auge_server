@@ -95,18 +95,18 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         if (row[2] != null)
           configuration.domain = row[2];
 
-        if (request.hasWithOrganization() && request.withOrganization) {
+        if (!request.hasRestrictOrganization() || request.restrictOrganization != RestrictOrganization.organizationNone) {
           if (row[3] != null)
             configuration.organization =
             await OrganizationService.querySelectOrganization(
                 OrganizationGetRequest()
                   ..id = row[3]
-                  ..onlyIdAndName = true);
+                  ..restrictOrganization = RestrictOrganization.organizationIdName);
         }
         configurations.add(configuration);
       }
     } catch (e) {
-      print('querySelectOrganizationConfigurations ${e.runtimeType}, ${e}');
+      print('querySelectOrganizationConfigurations - ${e.runtimeType}, ${e}');
       rethrow;
     }
     return configurations;

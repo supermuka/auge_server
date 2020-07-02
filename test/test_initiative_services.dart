@@ -119,9 +119,9 @@ void main() {
       });
 
       test('Call operation getWork', () async {
-        Work work = await workStub
-            .getWork(WorkGetRequest()
-          ..id = id);
+        Work work = (await workStub
+            .getWorks(WorkGetRequest()
+          ..id = id)).works.first;
         expect(work, isNotNull);
 
         expect(work, isNotNull);
@@ -154,9 +154,9 @@ void main() {
             ..organization = (Organization()
               ..id = organizationId)));
 
-        Work work = await workStub
-            .getWork(WorkGetRequest()
-          ..id = workId);
+        Work work = (await workStub
+            .getWorks(WorkGetRequest()
+          ..id = workId)).works.first;
 
         expect(work, isNotNull);
         expect(work.id, workId);
@@ -175,9 +175,9 @@ void main() {
       });
 
       test('Call operation getStage', () async {
-        WorkStage workStage = await stageStub
-            .getWorkStage(WorkStageGetRequest()
-          ..id = stageId);
+        WorkStage workStage = (await stageStub
+            .getWorkStages(WorkStageGetRequest()
+          ..id = stageId)).workStages.first;
         expect(workStage.id, isNotNull);
         expect(workStage.id, stageId);
       });
@@ -202,9 +202,9 @@ void main() {
       });
 
       test('Call operation getWorkItem', () async {
-        WorkItem workItem = await workItemStub
-            .getWorkItem(WorkItemGetRequest()
-          ..id = workItemId);
+        WorkItem workItem = (await workItemStub
+            .getWorkItems(WorkItemGetRequest()
+          ..id = workItemId)).workItems.first;
         expect(workItem, isNotNull);
 
         expect(workItem.id, workItem.id);
@@ -233,9 +233,9 @@ void main() {
             ..description = description
             ..workStage = workStage)..workId = workId);
 
-        WorkItem workItem = await workItemStub
-            .getWorkItem(WorkItemGetRequest()
-          ..id = workItemId);
+        WorkItem workItem = (await workItemStub
+            .getWorkItems(WorkItemGetRequest()
+          ..id = workItemId)).workItems.first;
 
         expect(workItem, isNotNull);
         expect(workItem.id, workItemId);

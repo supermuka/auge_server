@@ -48,7 +48,7 @@ class WorkService extends WorkServiceBase {
           await querySelectWorks(workGetRequest));
     return worksResponse;
   }
-
+/*
   @override
   Future<Work> getWork(ServiceCall call,
       WorkGetRequest workGetRequest) async {
@@ -57,7 +57,7 @@ class WorkService extends WorkServiceBase {
         RpcErrorDetailMessage.workDataNotFoundReason);
     return work;
   }
-
+*/
   @override
   Future<StringValue> createWork(ServiceCall call,
       WorkRequest request) async {
@@ -78,22 +78,44 @@ class WorkService extends WorkServiceBase {
 
   // QUERY
   // *** WORKS ***
-  static Future<List<Work>> querySelectWorks(WorkGetRequest workGetRequest/* {String organizationId, String id, String objectiveId, bool withWorkItems = false, bool withProfile = false} */ ) async {
+  static Future<List<Work>> querySelectWorks(WorkGetRequest workGetRequest) async {
 
     List<List<dynamic>> results;
+    List<Work> works = List<Work>();
 
     String queryStatement;
 
-    queryStatement = "SELECT work.id, " //0
-        "work.version," //1
-        "work.name, " //2
-        "work.description, " //3
-        "work.archived, " //4 +
-        "work.organization_id, " //5
-        "work.leader_user_id, " //6
-        "work.objective_id, " //7
-        "work.group_id " //8
-        "FROM work.works work";
+    queryStatement = "SELECT ";
+
+    if (workGetRequest.hasRestrictWork()) {
+      if (workGetRequest.restrictWork == RestrictWork.workIdName) {
+        queryStatement = queryStatement + "work.id, " //0
+            "work.name, " //1
+            "null," //2
+            "null, " //3
+            "null, " //4 +
+            "null, " //5
+            "null, " //6
+            "null, " //7
+            "null " //8
+            "FROM work.works work";
+
+      } else { // none
+         return works;
+      }
+
+    } else {
+      queryStatement = queryStatement + "work.id, " //0
+          "work.name, " //1
+          "work.version," //2
+          "work.description, " //3
+          "work.archived, " //4 +
+          "work.organization_id, " //5
+          "work.leader_user_id, " //6
+          "work.objective_id, " //7
+          "work.group_id " //8
+          "FROM work.works work";
+    }
 
     Map<String, dynamic> substitutionValues;
 
@@ -130,7 +152,6 @@ class WorkService extends WorkServiceBase {
 
     results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
-    List<Work> works = List<Work>();
     List<WorkItem> workItems;
 
     Objective objective;
@@ -139,12 +160,14 @@ class WorkService extends WorkServiceBase {
     Group group;
     List<WorkStage> workStages;
 
+
     for (var row in results) {
       // Work Items
 
-      if (workGetRequest.withWorkItems) {
+      if (!workGetRequest.hasRestrictWorkItem() || workGetRequest.restrictWorkItem != RestrictWorkItem.workItemNone) {
         WorkItemGetRequest workItemGetRequest = WorkItemGetRequest();
         workItemGetRequest.workId = row[0];
+        workItemGetRequest.restrictWork = (workGetRequest.hasRestrictWork()) ? workGetRequest.restrictWork : workItemGetRequest.restrictWork = RestrictWork.workIdName;
         if (workGetRequest.hasWorkItemWithArchived()) workItemGetRequest.withArchived = workGetRequest.workItemWithArchived;
         if (workGetRequest.workItemAssignedToIds != null && workGetRequest.workItemAssignedToIds.isNotEmpty) {
           workItemGetRequest.assignedToIds.addAll(workGetRequest.workItemAssignedToIds);
@@ -154,14 +177,14 @@ class WorkService extends WorkServiceBase {
         workItems = [];
       }
 
-      if (workGetRequest.hasWithOrganization() && workGetRequest.withOrganization) {
-        if (row[5] != null &&
-            (organization == null || organization.id != row[5])) {
+      if (row[5] != null &&
+          (organization == null || organization.id != row[5])) {
+      if (!workGetRequest.hasRestrictOrganization() || workGetRequest.restrictOrganization != RestrictOrganization.organizationNone) {
           // organization = await _augeApi.getOrganizationById(row[3]);
-
           organization = await OrganizationService.querySelectOrganization(
               OrganizationGetRequest()
-                ..id = row[5]);
+                ..id = row[5]
+                ..restrictOrganization = workGetRequest.hasRestrictOrganization() ? workGetRequest.restrictOrganization : RestrictOrganization.organizationIdName);
         } else {
           organization = null;
         }
@@ -169,20 +192,28 @@ class WorkService extends WorkServiceBase {
 
       // user = (await _augeApi.getUsers(id: row[4])).first;
       if (row[6] != null) {
-        user = await UserService.querySelectUser(UserGetRequest()..id = row[6]..onlyIdAndName = true..withUserProfile = workGetRequest.withUserProfile);
+        UserGetRequest userGetRequest = UserGetRequest();
+        userGetRequest.id = row[6];
+        userGetRequest.restrictUser = RestrictUser.userIdName;
+        userGetRequest.restrictUserProfile = workGetRequest.hasRestrictUserProfile() ? workGetRequest.restrictUserProfile : RestrictUserProfile.userProfileImage;
+
+        user = await UserService.querySelectUser(userGetRequest);
       } else {
         user = null;
       }
 
       //stages = await getStages(row[0]);
-      workStages = await WorkStageService.querySelectWorkStages(WorkStageGetRequest()..workId = row[0]);
+      workStages = await WorkStageService.querySelectWorkStages(WorkStageGetRequest()
+        ..workId = row[0]
+        ..restrictWork = RestrictWork.workNone);
 
       // objective = row[5] == null ? null : await _objectiveAugeApi.getObjectiveById(row[5]);
       if (row[7] != null) {
         objective =
         row[7] == null ? null : await ObjectiveService.querySelectObjective(
             ObjectiveGetRequest()
-              ..id = row[7]);
+              ..id = row[7]
+              ..restrictObjective = RestrictObjective.objectiveIdName);
       } else {
         objective = null;
       }
@@ -191,14 +222,15 @@ class WorkService extends WorkServiceBase {
       if (row[8] != null) {
         group = row[8] == null ? null : await GroupService.querySelectGroup(
             GroupGetRequest()
-              ..id = row[8]..onlyIdAndName = true);
+              ..id = row[8]..restrictGroup = RestrictGroup.groupIdName);
       } else {
         group = null;
       }
 
       Work work =
-      Work()..id = row[0]..version = row[1]..name = row[2];
+      Work()..id = row[0]..name = row[1];
 
+      if (row[2] != null) work.version = row[2];
       if (row[3] != null) work.description = row[3];
 
       if (row[4] != null) work.archived = row[4];
@@ -237,6 +269,54 @@ class WorkService extends WorkServiceBase {
       return null;
     }
   }
+
+
+  static Future<User> querySelectWorkUserLeader(WorkGetRequest workGetRequest) async {
+
+    List<List<dynamic>> results;
+
+    String queryStatement;
+
+    queryStatement = "SELECT work.leader_user_id " //0
+        "FROM work.works work";
+
+    Map<String, dynamic> substitutionValues;
+
+    if (workGetRequest.hasId()) {
+      queryStatement += " WHERE work.id = @id";
+      substitutionValues = {"id": workGetRequest.id};
+    } else {
+      throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workInvalidArgument );
+    }
+
+    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+
+    User user;
+
+    if (results.length != 0) {
+      // Work Items
+
+      var row = results.first;
+
+      // user = (await _augeApi.getUsers(id: row[4])).first;
+      if (row[0] != null) {
+        UserGetRequest userGetRequest = UserGetRequest();
+        userGetRequest.id = row[6];
+        userGetRequest.restrictUser = RestrictUser.userIdName;
+        if (workGetRequest.hasRestrictUserProfile()) {
+          userGetRequest.restrictUserProfile = workGetRequest.restrictUserProfile;
+        } else {
+          userGetRequest.restrictUserProfile = RestrictUserProfile.userProfileImage;
+        }
+        user = await UserService.querySelectUser(userGetRequest);
+      } else {
+        user = null;
+      }
+    }
+
+    return user;
+  }
+
 
   /// Work Notification User
   static void workNotification(Work work, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
@@ -338,7 +418,6 @@ class WorkService extends WorkServiceBase {
     // Recovery to log to history
     Work previousWork = await querySelectWork(WorkGetRequest()
       ..id = request.work.id
-      ..withUserProfile = true
     );
 
     Map<String, dynamic> historyItemNotificationValues;
@@ -411,7 +490,7 @@ class WorkService extends WorkServiceBase {
   /// Delete an work by [id]
   static Future<Empty> queryDeleteWork(WorkDeleteRequest request, String urlOrigin) async {
 
-    Work previousWork = await querySelectWork(WorkGetRequest()..id = request.workId..withUserProfile = true);
+    Work previousWork = await querySelectWork(WorkGetRequest()..id = request.workId);
 
     try {
 

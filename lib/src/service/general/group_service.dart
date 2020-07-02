@@ -53,6 +53,8 @@ class GroupService extends GroupServiceBase {
     }
   }
 
+  /*
+
   @override
   Future<Group> getGroup(ServiceCall call,
       GroupGetRequest request) async {
@@ -60,6 +62,8 @@ class GroupService extends GroupServiceBase {
     if (group == null) throw new GrpcError.notFound("Group not found.");
     return group;
   }
+
+   */
 
   @override
   Future<StringValue> createGroup(ServiceCall call,
@@ -81,27 +85,38 @@ class GroupService extends GroupServiceBase {
 
   // Query
   static Future<List<Group>> querySelectGroups( GroupGetRequest request /* {String id, String organizationId, int alignedToRecursive = 1} */ ) async {
-    List<List> results;
-  //   Map<String, Organization> organizationCache = {};
-    Map<String, User> userCache = {};
-    Map<String, Group> groupCache = {};
-    String queryStatement = '';
 
-    bool allColumns = !(request.hasOnlyIdAndName() && request.onlyIdAndName);
+    List<Group> groups = [];
 
-    queryStatement = "SELECT"
-        " g.id" //0
-        ",g.name" ; //1
+    String queryStatement = "SELECT";
 
-    if (allColumns) {
+    if (request.hasRestrictGroup()) {
+      if (request.restrictGroup == RestrictGroup.groupIdName) {
+        queryStatement = queryStatement +
+            " g.id" //0
+                ",g.name" //1
+                ",null" //2
+                ",null" //3
+                ",null" //4
+                ",null" //5
+                ",null" //6
+                ",null"; //7
+      } else { // no
+        return groups;
+
+      }
+    } else {
       queryStatement = queryStatement +
-        ",g.version" //2
-        ",g.inactive" //3
-        ",g.organization_id" //4
-        ",g.group_type_index" //5
-        ",g.leader_user_id" //6
-        ",g.super_group_id"; //7
-    }
+          " g.id" //0
+          ",g.name"  //1
+          ",g.version" //2
+          ",g.inactive" //3
+          ",g.organization_id" //4
+          ",g.group_type_index" //5
+          ",g.leader_user_id" //6
+          ",g.super_group_id"; //7
+      }
+
     queryStatement = queryStatement + " FROM general.groups g ";
 
     Map<String, dynamic> substitutionValues;
@@ -121,31 +136,41 @@ class GroupService extends GroupServiceBase {
       throw Exception('id or organization id does not informed.');
     }
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
-    List<Group> groups = [];
-    if (results.length > 0) {
+    List<List> results;
+    //   Map<String, Organization> organizationCache = {};
+    Map<String, User> userCache = {};
+    Map<String, Group> groupCache = {};
 
-      User leader;
-      Group superGroup;
-      List<User> members;
-      Organization organization;
-      Map<String, Organization> organizationCache = {};
-      for (var row in results) {
+    try {
+      results = await (await AugeConnection.getConnection()).query(
+          queryStatement, substitutionValues: substitutionValues);
 
-        Group group = Group()
-          ..id = row[0]
-          ..name = row[1];
+      if (results.length > 0) {
+        User leader;
+        Group superGroup;
+        List<User> members;
+        Organization organization;
+        Map<String, Organization> organizationCache = {};
+        for (var row in results) {
+          Group group = Group()
+            ..id = row[0]
+            ..name = row[1];
 
-        if (allColumns) {
-          group.version = row[2];
-          group.inactive = row[3];
-          group.groupTypeIndex = row[5];
-          if (request.hasWithOrganization() && request.withOrganization) {
+          if (row[2] != null) group.version = row[2];
+          if (row[3] != null) group.inactive = row[3];
+          if (row[5] != null) group.groupTypeIndex = row[5];
+
+          if (!request.hasRestrictOrganization() ||
+              request.restrictOrganization !=
+                  RestrictOrganization.organizationNone) {
             if (row[4] != null) {
               organization =
               await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
-                    ..id = row[4]..onlyIdAndName = true, cache: organizationCache);
+                    ..id = row[4]
+                    ..restrictOrganization = request.restrictOrganization ??
+                        RestrictOrganization.organizationIdName,
+                  cache: organizationCache);
             } else {
               organization = null;
             }
@@ -153,8 +178,8 @@ class GroupService extends GroupServiceBase {
           if (row[6] != null) {
             leader =
             await UserService.querySelectUser(UserGetRequest()
-              ..onlyIdAndName = true
-              ..withUserProfile = true
+              ..restrictUser = RestrictUser.userIdName
+              ..restrictUserProfile = RestrictUserProfile.userProfileImage
               ..id = row[6], cache: userCache);
           } else {
             leader = null;
@@ -163,7 +188,7 @@ class GroupService extends GroupServiceBase {
             superGroup =
             await querySelectGroup(GroupGetRequest()
               ..id = row[7]
-              ..onlyIdAndName = true
+              ..restrictGroup = RestrictGroup.groupIdName
               ..alignedToRecursive = --request.alignedToRecursive,
                 cache: groupCache);
           } else {
@@ -190,9 +215,13 @@ class GroupService extends GroupServiceBase {
           if (members.isNotEmpty) {
             group.members.addAll(members);
           }
+
+          groups.add(group);
         }
-        groups.add(group);
       }
+    } catch (e) {
+      print('querySelectGroups - ${e.runtimeType}, ${e}');
+      rethrow;
     }
     return groups;
   }
@@ -482,7 +511,10 @@ class GroupService extends GroupServiceBase {
 
     for (var row in results) {
 
-      users = await UserService.querySelectUsers(UserGetRequest()..id = row[0]..onlyIdAndName = true..withUserProfile = true);
+      users = await UserService.querySelectUsers(UserGetRequest()
+        ..id = row[0]
+        ..restrictUser = RestrictUser.userIdName
+        ..restrictUserProfile = RestrictUserProfile.userProfileImage);
 
       if (users != null && users.length != 0) {
         user = users.first;

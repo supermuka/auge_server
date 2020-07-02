@@ -27,7 +27,7 @@ class OrganizationService extends OrganizationServiceBase {
 
     return OrganizationsResponse()/*..webWorkAround = true*/..organizations.addAll(await querySelectOrganizations(request));
   }
-
+/*
   @override
   Future<Organization> getOrganization(ServiceCall call,
       OrganizationGetRequest request) async {
@@ -35,6 +35,7 @@ class OrganizationService extends OrganizationServiceBase {
     if (organization == null) throw new GrpcError.notFound("Organization not found.");
     return organization;
   }
+*/
 
   @override
   Future<StringValue> createOrganization(ServiceCall call,
@@ -56,19 +57,26 @@ class OrganizationService extends OrganizationServiceBase {
 
   // Query
   static Future<List<Organization>> querySelectOrganizations(OrganizationGetRequest request) async {
-
-    var results;
+    List<Organization> organizations = [];
 
     String queryStatement;
 
-    bool allColumns = !(request.hasOnlyIdAndName() && request.onlyIdAndName);
-
-    queryStatement = "SELECT"
-        " organization.id" //0
-        ",organization.name"; //1
-
-    if (allColumns) {
+    queryStatement = 'SELECT';
+    if (request.hasRestrictOrganization()) {
+      if (request.restrictOrganization ==
+          RestrictOrganization.organizationIdName) {
+        queryStatement = queryStatement +
+            " organization.id" //0
+            ",organization.name" //1
+            ",null" // 2
+            ",null"; // 3
+      } else { // none or others not specified.
+        return organizations;
+      }
+    } else {
       queryStatement = queryStatement +
+          " organization.id" //0
+          ",organization.name"; //1
           ",organization.version" //2
           ",organization.code"; //3
     }
@@ -83,8 +91,8 @@ class OrganizationService extends OrganizationServiceBase {
         "id": request.id,
       };
     }
+    var results;
 
-    List<Organization> organizations = [];
     try {
 
       results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
@@ -94,15 +102,13 @@ class OrganizationService extends OrganizationServiceBase {
           ..id = row[0]
           ..name = row[1];
 
-        if (allColumns) {
-          organization.version = row[2];
-          organization.code = row[3];
-        }
+         if (row[2] != null) organization.version = row[2];
+         if (row[3] != null) organization.code = row[3];
 
         organizations.add(organization);
       }
     } catch (e) {
-      print('querySelectOrganizations ${e.runtimeType}, ${e}');
+      print('querySelectOrganizations - ${e.runtimeType}, ${e}');
       rethrow;
     }
     return organizations;

@@ -3,7 +3,6 @@
 
 import 'dart:async';
 
-import 'package:auge_server/src/service/work/work_service.dart';
 import 'package:grpc/grpc.dart';
 import 'package:auge_server/src/util/mail.dart';
 import 'package:auge_shared/route/app_routes_definition.dart';
@@ -15,10 +14,12 @@ import 'package:auge_shared/domain/work/work.dart' as work_m;
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_shared/protos/generated/work/work_work_item.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/general/user.pb.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_shared/message/rpc_error_message.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
+import 'package:auge_server/src/service/work/work_service.dart';
 
 import 'package:auge_shared/domain/general/authorization.dart' show SystemModule, SystemFunction;
 import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
@@ -38,7 +39,7 @@ class WorkStageService extends WorkStageServiceBase {
           await querySelectWorkStages(stageRequest));
     return workStatesResponse;
   }
-
+/*
   @override
   Future<WorkStage> getWorkStage(ServiceCall call,
       WorkStageGetRequest workStageRequest) async {
@@ -47,7 +48,7 @@ class WorkStageService extends WorkStageServiceBase {
         RpcErrorDetailMessage.stageDataNotFoundReason);
     return workStage;
   }
-
+*/
   @override
   Future<StringValue> createWorkStage(ServiceCall call,
       WorkStageRequest request) async {
@@ -113,15 +114,10 @@ class WorkStageService extends WorkStageServiceBase {
         ..index = row[3]
         ..stateIndex = row[5];
 
-      if (workStageGetRequest.hasWithWork() && workStageGetRequest.withWork) {
-        workStage.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[4]..withUserProfile = workStageGetRequest.withUserProfile);
+      if (!workStageGetRequest.hasRestrictWork() || workStageGetRequest.restrictWork != RestrictWork.workNone) {
+        workStage.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[4]);
       }
 
-/*
-      if (states.isNotEmpty) {
-        workStage.state = states?.first;
-      }
-*/
       workStages.add(workStage);
     }
 
@@ -138,31 +134,34 @@ class WorkStageService extends WorkStageServiceBase {
   }
 
   /// Work Stage Notification User
-  static void workStageNotification(Work relatedWork, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
-
-    // Not send to your-self
-    if (relatedWork.leader.id == authUserId) return;
+  static void workStageNotification(Work work, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
 
     // Leader  - Verify if send e-mail
-    if (!relatedWork.leader.userProfile.eMailNotification) return;
+    // Get leader because normally work associate with stage of the client origin has just work.id and work.name.
+    User userLeader = await WorkService.querySelectWorkUserLeader(WorkGetRequest()..id = work.leader.id);
+
+    // Not send to your-self
+    if (userLeader.id == authUserId) return;
+
+    if (userLeader.userProfile.eMailNotification) return;
 
     // Leader - eMail
-    if (relatedWork.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Stage Leader is null.');
+    if (userLeader.userProfile.eMail == null) throw Exception('e-mail of the Work Stage Leader is null.');
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
-    await CommonUtils.setDefaultLocale(relatedWork.leader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(userLeader.userProfile.idiomLocale);
 
     mailMessages.add(
         AugeMailMessageTo(
-            [relatedWork.leader.userProfile.eMail],
+            [userLeader.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(work_m.Work.leaderField)}',
-            '${ClassNameMsg.label(work_m.Work.className)} ${relatedWork.name}',
-            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${relatedWork.id}'));
+            '${ClassNameMsg.label(work_m.Work.className)} ${work.name}',
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${work.id}'));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -181,7 +180,7 @@ class WorkStageService extends WorkStageServiceBase {
     try {
 
       // TODO (this is made just to get a user profile email, it needs to find to a way to improve the performance)
-      Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId..withUserProfile = true);
+     // Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workStage.work.id);
 
       Map<String, dynamic> historyItemNotificationValues;
 
@@ -201,7 +200,7 @@ class WorkStageService extends WorkStageServiceBase {
           "name": request.workStage.name,
           "index": request.workStage.index,
           "state_index": request.workStage.hasStateIndex() ? request.workStage.stateIndex : null,
-          "work_id": request.workId});
+          "work_id": request.workStage.work.id});
 
         // Create a history item
         historyItemNotificationValues = {"id": Uuid().v4(),
@@ -220,7 +219,7 @@ class WorkStageService extends WorkStageServiceBase {
       });
 
       // Notification
-      workStageNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workStageNotification(request.workStage.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
 
     } catch (e) {
@@ -235,11 +234,11 @@ class WorkStageService extends WorkStageServiceBase {
   Future<Empty> queryUpdateWorkStage(WorkStageRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    WorkStage previousStage = await querySelectWorkStage(WorkStageGetRequest()
+    WorkStage workStagePrevious = await querySelectWorkStage(WorkStageGetRequest()
       ..id = request.workStage.id);
 
     // TODO (this is made just to get a user profile email, it needs to find to a way to improve the performance)
-    Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId..withUserProfile = true);
+  //  Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -263,7 +262,7 @@ class WorkStageService extends WorkStageServiceBase {
               "name": request.workStage.name,
               "index": request.workStage.index,
               "state_index": request.workStage.stateIndex,
-              "work_id": request.workId});
+              "work_id": request.workStage.id});
 
         // Optimistic concurrency control
         if (result.isEmpty) {
@@ -283,7 +282,7 @@ class WorkStageService extends WorkStageServiceBase {
                 "description": request.workStage.name,
                 "changed_values": history_item_m.HistoryItemHelper
                     .changedValuesJson(
-                        previousStage.toProto3Json(),
+                    workStagePrevious.toProto3Json(),
                         request.workStage.toProto3Json()
                 )
               };
@@ -293,7 +292,7 @@ class WorkStageService extends WorkStageServiceBase {
       });
 
       // Notification
-      workStageNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workStageNotification(request.workStage.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
 
     } catch (e) {
@@ -306,7 +305,7 @@ class WorkStageService extends WorkStageServiceBase {
   /// Delete a stage by [id]
   static Future<Empty> queryDeleteWorkStage(WorkStageDeleteRequest request, String urlOrigin) async {
 
-    WorkStage previousStage = await querySelectWorkStage(WorkStageGetRequest()..id = request.workStageId..withWork = true..withUserProfile = true);
+    WorkStage workStagePrevious = await querySelectWorkStage(WorkStageGetRequest()..id = request.workStageId..restrictWork = RestrictWork.workIdName);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -337,15 +336,15 @@ class WorkStageService extends WorkStageServiceBase {
                 "system_module_index": SystemModule.works.index,
                 "system_function_index": SystemFunction.delete.index,
                 "date_time": DateTime.now().toUtc(),
-                "description": previousStage.name,
+                "description": workStagePrevious.name,
                 "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
-                        previousStage.toProto3Json(), {})};
+                    workStagePrevious.toProto3Json(), {})};
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
         }
       });
 
       // Notification
-      workStageNotification(previousStage.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workStageNotification(workStagePrevious.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

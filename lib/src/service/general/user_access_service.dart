@@ -31,14 +31,14 @@ class UserAccessService extends UserAccessServiceBase {
       UserAccessGetRequest UserAccessGetRequest) async {
     return UserAccessesResponse()..userAccesses.addAll(await querySelectUserAccesses(UserAccessGetRequest));
   }
-
+/*
   @override
   Future<UserAccess> getUserAccess(ServiceCall call,
       UserAccessGetRequest request) async {
     //return UserProfileOrganization()..id = '5033aefd-d440-4422-80ef-4d97bae9a06e';
     return querySelectUserAccess(request);
   }
-
+*/
   @override
   Future<StringValue> createUserAccess(ServiceCall call,
       UserAccessRequest request) async {
@@ -131,8 +131,8 @@ class UserAccessService extends UserAccessServiceBase {
               user =
               await UserService.querySelectUser(UserGetRequest()
                 ..id = row[2]
-                ..onlyIdAndName = true
-                ..withUserProfile = true);
+                ..restrictUser = RestrictUser.userIdName
+                ..restrictUserProfile = RestrictUserProfile.userProfileImage);
 
               if (user != null) _userCache[row[2]] = user;
             }
@@ -144,7 +144,7 @@ class UserAccessService extends UserAccessServiceBase {
               organization =
               await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
-                    ..id = row[3]..onlyIdAndName = true);
+                    ..id = row[3]..restrictOrganization = RestrictOrganization.organizationIdName);
 
               if (organization != null)
                 _organizationCache[row[3]] = organization;

@@ -73,9 +73,9 @@ void main() {
       });
 
       test('Call operation getOrganization', () async {
-        Objective objective = await objectiveStub
-            .getObjective(ObjectiveGetRequest()
-          ..id = id);
+        Objective objective = (await objectiveStub
+            .getObjectives(ObjectiveGetRequest()
+          ..id = id)).objectives.first;
         expect(objective, isNotNull);
       });
 
@@ -92,9 +92,9 @@ void main() {
 
         id = idResponsePb.value;
 
-        Objective objective = await objectiveStub
-            .getObjective(ObjectiveGetRequest()
-          ..id = id);
+        Objective objective = (await objectiveStub
+            .getObjectives(ObjectiveGetRequest()
+          ..id = id)).objectives.first;
 
         expect(objective, isNotNull);
         expect(objective.id, id);
@@ -115,9 +115,9 @@ void main() {
             ..archived = false
             ));
 
-        Objective objective = await objectiveStub
-            .getObjective(ObjectiveGetRequest()
-          ..id = id);
+        Objective objective = (await objectiveStub
+            .getObjectives(ObjectiveGetRequest()
+          ..id = id)).objectives.first;
 
         expect(objective, isNotNull);
         expect(objective.id, id);
@@ -156,9 +156,9 @@ void main() {
 
         id = idResponsePb.value;
 
-        Measure measure = await measureStub
-            .getMeasure(MeasureGetRequest()
-          ..id = id);
+        Measure measure = (await measureStub
+            .getMeasures(MeasureGetRequest()
+          ..id = id)).measures.first;
 
         expect(measure, isNotNull);
         expect(measure.id, id);
@@ -177,9 +177,9 @@ void main() {
       });
 
       test('Call operation getMeasure', () async {
-        Measure measure = await measureStub
-            .getMeasure(MeasureGetRequest()
-          ..id = id);
+        Measure measure = (await measureStub
+            .getMeasures(MeasureGetRequest()
+          ..id = id)).measures.first;
         expect(measure, isNotNull);
       });
 
@@ -198,9 +198,9 @@ void main() {
 
         measureId = id;
 
-        Measure measure = await measureStub
-            .getMeasure(MeasureGetRequest()
-          ..id = id);
+        Measure measure = (await measureStub
+            .getMeasures(MeasureGetRequest()
+          ..id = id)).measures.first;
 
         expect(measure, isNotNull);
         expect(measure.id, id);
@@ -218,9 +218,9 @@ void main() {
             ..name = name
             ..description = description)..objectiveId = objectiveId);
 
-        Measure measure = await measureStub
-            .getMeasure(MeasureGetRequest()
-          ..id = id);
+        Measure measure = (await measureStub
+            .getMeasures(MeasureGetRequest()
+          ..id = id)).measures.first;
 
         expect(measure, isNotNull);
         expect(measure.id, id);
@@ -239,9 +239,9 @@ void main() {
 
         id = idResponsePb.value;
 
-        MeasureProgress measureProgress = await measureStub
-            .getMeasureProgress(MeasureProgressGetRequest()
-          ..id = id);
+        MeasureProgress measureProgress = (await measureStub
+            .getMeasureProgresses(MeasureProgressGetRequest()
+          ..id = id)).measureProgresses.first;
 
         expect(measureProgress, isNotNull);
         expect(measureProgress.id, id);

@@ -40,7 +40,7 @@ class UserIdentityService extends UserIdentityServiceBase {
       UserIdentityGetRequest request) async {
     return UserIdentitiesResponse()/*..webWorkAround = true*/..userIdentities.addAll(await querySelectUserIdentities(request));
   }
-
+/*
   @override
   Future<UserIdentity> getUserIdentity(ServiceCall call,
       UserIdentityGetRequest request) async {
@@ -49,7 +49,7 @@ class UserIdentityService extends UserIdentityServiceBase {
     if (userIdentity == null) throw new GrpcError.notFound("User Identity not found.");
     return userIdentity;
   }
-
+*/
   @override
   Future<StringValue> createUserIdentity(ServiceCall call,
       UserIdentityRequest request) async {
@@ -81,7 +81,7 @@ class UserIdentityService extends UserIdentityServiceBase {
   }
 
   // Query
-  static Future<List<UserIdentity>> querySelectUserIdentities([UserIdentityGetRequest request] /* {String id, String eMail, String password, String organizationId, bool withProfile = false} */) async {
+  static Future<List<UserIdentity>> querySelectUserIdentities([UserIdentityGetRequest request]) async {
 
     List<List> results;
     String queryStatement = '';
@@ -154,7 +154,9 @@ class UserIdentityService extends UserIdentityServiceBase {
         if (row[5] != null) userIdentity.provider = row[5];
         if (row[6] != null) userIdentity.providerObjectId = row[6];
 
-        userIdentity.user = await UserService.querySelectUser(UserGetRequest()..id = row[7]..onlyIdAndName = true..withUserProfile = request.withUserProfile);
+        userIdentity.user = await UserService.querySelectUser(UserGetRequest()
+          ..id = row[7]
+          ..restrictUser = RestrictUser.userIdName /*..withUserProfile = UserGetRequest_WithUserProfile.only_image */);
 
         // If password is informed, calc a hash and compare to passward_hash stored
         if (request.hasPassword() && request.password.isNotEmpty) {
@@ -188,18 +190,18 @@ class UserIdentityService extends UserIdentityServiceBase {
         userIdentities.add(userIdentity);
       }
     } catch (e) {
-      print('querySelectUserIdentities ${e.runtimeType}, ${e}');
+      print('querySelectUserIdentities - ${e.runtimeType}, ${e}');
       rethrow;
     }
     return userIdentities;
   }
 
-  static Future<UserIdentity> querySelectUserIdentity(UserIdentityGetRequest request, /*String id,  {bool withProfile = false,*/ {Map<String, UserIdentity> cache}) async {
+  static Future<UserIdentity> querySelectUserIdentity(UserIdentityGetRequest request, {Map<String, UserIdentity> cache}) async {
     if (cache != null && cache.containsKey(request.id)) {
       return cache[request.id];
     } else {
 
-      List<UserIdentity> userIdentities = await querySelectUserIdentities(request /* id: id, withProfile: withProfile */);
+      List<UserIdentity> userIdentities = await querySelectUserIdentities(request);
       if (userIdentities.isNotEmpty) {
         if (cache != null) cache[request.id] = userIdentities.first;
         return userIdentities.first;
@@ -270,7 +272,7 @@ class UserIdentityService extends UserIdentityServiceBase {
 
   static Future<Empty> queryUpdateUserIdentity(UserIdentityRequest request) async {
 
-    UserIdentity previousUserIdentity = await querySelectUserIdentity(UserIdentityGetRequest()..id = request.userIdentity.id..withUserProfile = true);
+    UserIdentity previousUserIdentity = await querySelectUserIdentity(UserIdentityGetRequest()..id = request.userIdentity.id);
 
     // increment version
     ++request.userIdentity.version;
@@ -340,7 +342,7 @@ class UserIdentityService extends UserIdentityServiceBase {
   static Future<Empty> queryUpdateUserIdentityPassword(UserIdentityPasswordRequest request) async {
 
     UserIdentityRequest userIdentityRequest = UserIdentityRequest();
-    userIdentityRequest.userIdentity = await querySelectUserIdentity(UserIdentityGetRequest()..identification = request.identification..withUserProfile = true);
+    userIdentityRequest.userIdentity = await querySelectUserIdentity(UserIdentityGetRequest()..identification = request.identification);
     userIdentityRequest.userIdentity.password = request.password;
 
     // Get organization and user related to UserIdentity

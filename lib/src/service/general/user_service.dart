@@ -10,6 +10,7 @@ import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_shared/protos/generated/general/organization.pbgrpc.dart';
 import 'package:auge_shared/protos/generated/general/user.pbgrpc.dart';
+import 'package:auge_shared/protos/generated/general/user.pbenum.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 
@@ -29,7 +30,7 @@ class UserService extends UserServiceBase {
       UserGetRequest request) async {
     return UsersResponse()/*..webWorkAround = true*/..users.addAll(await querySelectUsers(request));
   }
-
+/*
   @override
   Future<User> getUser(ServiceCall call,
       UserGetRequest request) async {
@@ -38,7 +39,7 @@ class UserService extends UserServiceBase {
     if (user == null) throw new GrpcError.notFound("User not found.");
     return user;
   }
-
+*/
   @override
   Future<StringValue> createUser(ServiceCall call,
       UserRequest request) async {
@@ -60,31 +61,75 @@ class UserService extends UserServiceBase {
   // Query
   static Future<List<User>> querySelectUsers(UserGetRequest request) async {
 
-    bool allColumns = !(request.hasOnlyIdAndName() && request.onlyIdAndName);
-
-    List<List> results;
-
-
-    String queryStatement = "SELECT"
-        " u.id" //0
-        ",u.name" //1
-        ",u.version" //2
-        ",u.inactive" //3
-        ",u.managed_by_organization_id"; //4
-
-    if (request.withUserProfile) {
-
-      queryStatement = queryStatement +
-          " ,user_profile.email" //5
-          " ,user_profile.email_notification" //6
-          " ,user_profile.image" //7
-          " ,user_profile.idiom_locale" //8
-          " FROM general.users u "
-          " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
+    List<User> users = [];
+    String queryStatement = "SELECT";
+    if (request.hasRestrictUser()) {
+      if (request.restrictUser == RestrictUser.userIdName) {
+        queryStatement = queryStatement +
+            " u.id" //0
+            ",u.name" //1
+            ",null" //2
+            ",null" //3
+            ",null"; //4
+      } else { // RestrictSelectUser.node or another not specified here
+        return users;
+      }
     } else {
       queryStatement = queryStatement +
-        " FROM general.users u ";
+      " u.id" //0
+      ",u.name" //1
+      ",u.version" //2
+      ",u.inactive" //3
+      ",u.managed_by_organization_id"; //4
     }
+
+    if (request.hasRestrictUserProfile()) {
+      if (request.restrictUserProfile == RestrictUserProfile.userProfileImage) {
+        queryStatement = queryStatement +
+            ",user_profile.image" //5
+            ",null" //6
+            ",null" //7
+            ",null"; //8
+      } else if (request.restrictUserProfile == RestrictUserProfile.userProfileNotificationEmailIdiom) {
+        queryStatement = queryStatement +
+            ",null" //5
+            ",user_profile.email" //6
+            ",user_profile.email_notification" //7
+            ",user_profile.idiom_locale"; //8
+      } else {
+        queryStatement = queryStatement +
+            ",null" //5
+            ",null" //6
+            ",null" //7
+            ",null"; //8
+        // not return here like normally is made, because it can returns users, without profile.
+        //node or another not specified here
+      }
+    } else {
+      queryStatement = queryStatement +
+      ",user_profile.image" //5
+      ",user_profile.email" //6
+      ",user_profile.email_notification" //7
+      ",user_profile.idiom_locale"; //8
+    }
+    queryStatement = queryStatement +
+    " FROM general.users u "
+        " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
+/*
+    String queryStatement = "SELECT";
+          ",u.id" //0
+          ",u.name" //1
+          ",u.version" //2
+          ",u.inactive" //3
+          ",u.managed_by_organization_id"; //4
+          ",user_profile.image" //5
+          ",user_profile.email" //6
+          ",user_profile.email_notification" //7
+          ",user_profile.idiom_locale" //8
+          " FROM general.users u "
+          " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
+
+ */
 
     String whereAnd = " WHERE";
     Map<String, dynamic> _substitutionValues = Map();
@@ -110,8 +155,8 @@ class UserService extends UserServiceBase {
       _substitutionValues.putIfAbsent("id", () => request.id);
       whereAnd = "AND";
     }
+    List<List> results;
 
-    List<User> users = [];
     try {
       results = await (await AugeConnection.getConnection()).query(
           queryStatement, substitutionValues: _substitutionValues);
@@ -123,47 +168,41 @@ class UserService extends UserServiceBase {
           ..id = row[0]
           ..name = row[1];
 
-        if (allColumns) {
           if (row[4] != null) {
 
             if (organization == null || row[4] != organization.id) {
               organization = await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
                     ..id = row[4]
-                    ..onlyIdAndName = true);
+                    ..restrictOrganization = RestrictOrganization.organizationIdName);
             }
-
+            user.managedByOrganization = organization;
           }
-          user.version = row[2];
-          user.inactive = row[3];
-          user.managedByOrganization = organization;
-        }
-
-        if (request.withUserProfile) {
+          if (row[2] != null) user.version = row[2];
+          if (row[3] != null) user.inactive = row[3];
           user.userProfile = UserProfile();
-          if (row[5] != null) user.userProfile.eMail = row[5];
-          if (row[6] != null) user.userProfile.eMailNotification = row[6];
-          if (row[7] != null) user.userProfile.image = row[7];
+          if (row[5] != null) user.userProfile.image = row[5];
+          if (row[6] != null) user.userProfile.eMail = row[6];
+          if (row[7] != null) user.userProfile.eMailNotification = row[7];
           if (row[8] != null) user.userProfile.idiomLocale = row[8];
-        }
 
         users.add(user);
       }
     } catch (e) {
-      print('querySelectUsers ${e.runtimeType}, ${e}');
+      print('querySelectUsers - ${e.runtimeType}, ${e}');
       rethrow;
     }
 
     return users;
   }
 
-  static Future<User> querySelectUser(UserGetRequest request, /*String id,  {bool withProfile = false,*/ {Map<String, User> cache}) async {
+  static Future<User> querySelectUser(UserGetRequest request, {Map<String, User> cache}) async {
 
     if (cache != null && cache.containsKey(request.id)) {
       return cache[request.id];
     } else {
 
-      List<User> users = await querySelectUsers(request /* id: id, withProfile: withProfile */);
+      List<User> users = await querySelectUsers(request);
       if (users.isNotEmpty) {
         if (cache != null) cache[request.id] = users.first;
         return users.first;
@@ -236,7 +275,7 @@ class UserService extends UserServiceBase {
 
   static Future<Empty> queryUpdateUser(UserRequest request) async {
 
-    User previousUser = await querySelectUser(UserGetRequest()..id = request.user.id..withUserProfile = true);
+    User previousUser = await querySelectUser(UserGetRequest()..id = request.user.id);
 
     // increment version
     ++request.user.version;

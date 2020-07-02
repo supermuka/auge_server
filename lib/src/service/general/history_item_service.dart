@@ -101,8 +101,8 @@ class HistoryItemService extends HistoryItemServiceBase {
         for (var row in results) {
           user = await UserService.querySelectUser(UserGetRequest()
             ..id = row[1]
-            ..onlyIdAndName = true
-            ..withUserProfile = true, cache: userCache);
+            ..restrictUser = RestrictUser.userIdName
+            ..restrictUserProfile = RestrictUserProfile.userProfileImage, cache: userCache);
 
           HistoryItem historyItem = HistoryItem()..id = row[0]
             ..user = user
@@ -120,7 +120,7 @@ class HistoryItemService extends HistoryItemServiceBase {
         }
       }
     } catch (e) {
-      print('${e.runtimeType}, ${e}');
+      print('querySelectHistory - ${e.runtimeType}, ${e}');
       rethrow;
     }
     return history;

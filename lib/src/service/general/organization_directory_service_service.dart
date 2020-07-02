@@ -212,19 +212,19 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
         if (row[22] != null)
           organizationDirectoryService.userEmailAttribute = row[22];
 
-        if (request.hasWithOrganization() && request.withOrganization) {
+        if (!request.hasRestrictOrganization() || request.restrictOrganization != RestrictOrganization.organizationNone) {
           if (row[23] != null)
             organizationDirectoryService.organization =
             await OrganizationService.querySelectOrganization(
                 (OrganizationGetRequest()
                   ..id = row[23]
-                  ..onlyIdAndName = true));
+                  ..restrictOrganization = RestrictOrganization.organizationIdName));
         }
         organizationDirectoryServices.add(organizationDirectoryService);
       }
 
     } catch (e) {
-      print('${e.runtimeType}, ${e}');
+      print('querySelectOrganizationDirectoryServices - ${e.runtimeType}, ${e}');
       rethrow;
     }
 
@@ -760,8 +760,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
 
       List<UserIdentity> usersIdentities = await UserIdentityService
           .querySelectUserIdentities(UserIdentityGetRequest()
-        ..managedByOrganizationId = request.authOrganizationId
-        ..withUserProfile = true);
+        ..managedByOrganizationId = request.authOrganizationId);
 
       List<UserAccess> userAccesses = await UserAccessService
           .querySelectUserAccesses(UserAccessGetRequest()
@@ -774,7 +773,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
       organization =
       await OrganizationService.querySelectOrganization(OrganizationGetRequest()
         ..id = request.authOrganizationId
-        ..onlyIdAndName = true);
+        ..restrictOrganization = RestrictOrganization.organizationIdName);
 
       int countEntry = 0;
       int countProviderObjectIdAttribute = 0,

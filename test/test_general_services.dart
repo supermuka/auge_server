@@ -79,7 +79,7 @@ void main() {
           ..name = name
           ..code = code));
 
-        Organization organizationPb = await stub.getOrganization(OrganizationGetRequest()..id = id);
+        Organization organizationPb = (await stub.getOrganizations(OrganizationGetRequest()..id = id)).organizations.first;
 
         expect(organizationPb.name, equals(name));
         expect(organizationPb.code, equals(code));
@@ -87,20 +87,15 @@ void main() {
 
       });
 
-
       test('Call operation deleteOrganization', () async {
 
         Empty emptyPb = await stub.deleteOrganization(OrganizationDeleteRequest()..organizationId = id);
 
         expect(emptyPb, isNotNull);
+        expect((await stub
+              .getOrganizations(OrganizationGetRequest()
+            ..id = '86ce1031-3df2-4ea4-9c42-05a0974aec4f' /*id*/)).organizations, isEmpty);
 
-        try {
-          await stub
-              .getOrganization(OrganizationGetRequest()
-            ..id = '86ce1031-3df2-4ea4-9c42-05a0974aec4f' /*id*/);
-        } on GrpcError catch (e) {
-            expect(e.code, StatusCode.notFound);
-        }
       });
     });
 
@@ -168,8 +163,7 @@ void main() {
  */
     });
 
-    group('User Organization Access Service.', ()
-    {
+    group('User Organization Access Service.', () {
       UserAccessServiceClient stub;
 
       setUp(() {
@@ -178,26 +172,29 @@ void main() {
 
       UserAccessesResponse userAccessesResponse;
       test('Call operation getUserAccesses', () async {
-         userAccessesResponse = await stub
-            .getUserAccesses(UserAccessGetRequest()..organizationId = organizationId);
+        userAccessesResponse = await stub
+            .getUserAccesses(UserAccessGetRequest()
+          ..organizationId = organizationId);
 
         expect(userAccessesResponse.userAccesses, isNotNull);
       });
 
       test('Call operation deleteUserAccesses - all items', () async {
-
         for (final i in userAccessesResponse.userAccesses) {
-          await stub.deleteUserAccess(UserAccessDeleteRequest()..userAccessId = i.id);
+          await stub.deleteUserAccess(UserAccessDeleteRequest()
+            ..userAccessId = i.id);
         }
       });
 
       test('Call operation createUserAccess', () async {
-
         StringValue idResponse = await stub
-            .createUserAccess(UserAccessRequest()..userAccess = (UserAccess()
-          ..organization = (Organization()..id = organizationId)
-          ..user = (User()..id = userId)
-          ..accessRole = SystemRole.admin.index));
+            .createUserAccess(UserAccessRequest()
+          ..userAccess = (UserAccess()
+            ..organization = (Organization()
+              ..id = organizationId)
+            ..user = (User()
+              ..id = userId)
+            ..accessRole = SystemRole.admin.index));
 
         expect(idResponse.hasValue(), isTrue);
 
@@ -205,36 +202,27 @@ void main() {
       });
 
       test('Call operation updateUserProfileOrganization', () async {
-
         await stub
-            .updateUserAccess(UserAccessRequest()..userAccess = (UserAccess()
-          ..id = id
-          ..organization = (Organization()..id = organizationId)
-          ..user = (User()..id = userId)
-          ..accessRole = SystemRole.standard.index ));
-
+            .updateUserAccess(UserAccessRequest()
+          ..userAccess = (UserAccess()
+            ..id = id
+            ..organization = (Organization()
+              ..id = organizationId)
+            ..user = (User()
+              ..id = userId)
+            ..accessRole = SystemRole.standard.index));
       });
 
       test('Call operation deleteUserProfileOrganization', () async {
-
         Empty emptyPb = await stub
-            .deleteUserAccess(UserAccessDeleteRequest()..userAccessId = id);
+            .deleteUserAccess(UserAccessDeleteRequest()
+          ..userAccessId = id);
 
         expect(emptyPb, isNotNull);
-
-        try {
-          UserAccess userAccess = await stub
-              .getUserAccess(UserAccessGetRequest()
-            ..id = id);
-
-          expect(userAccess, isNotEmpty);
-
-        } on GrpcError catch (e) {
-          expect(e.code, StatusCode.notFound);
-         // rethrow;
-        }
+        expect((await stub
+            .getUserAccesses(UserAccessGetRequest()
+          ..id = id)), isEmpty);
       });
-
     });
 
     group('Group Service.', ()
@@ -262,7 +250,7 @@ void main() {
 
         id = idResponsePb.value;
 
-        Group groupPb = await stub.getGroup(GroupGetRequest()..id = id);
+        Group groupPb = (await stub.getGroups(GroupGetRequest()..id = id)).groups.first;
 
         expect(groupPb.name, equals(name));
         expect(groupPb.inactive, equals(inactive));
@@ -277,8 +265,8 @@ void main() {
       });
 
       test('Call operation getGroup', () async {
-        Group group = await stub
-            .getGroup(GroupGetRequest()..id = id);
+        Group group = (await stub
+            .getGroups(GroupGetRequest()..id = id)).groups.first;
 
         expect(group, isNotNull);
         expect(group.id, id);
@@ -300,7 +288,7 @@ void main() {
           ..organization = (Organization()..id = organizationId)
           ..groupTypeIndex = groupTypeId));
 
-        Group groupPb = await stub.getGroup(GroupGetRequest()..id = id);
+        Group groupPb = (await stub.getGroups(GroupGetRequest()..id = id)).groups.first;
 
         expect(groupPb.name, equals(name));
         expect(groupPb.inactive, equals(inactive));
@@ -313,14 +301,18 @@ void main() {
             .deleteGroup(GroupDeleteRequest()..groupId = id);
 
         expect(emptyPb, isNotNull);
-
+        expect((await stub
+            .getGroups(GroupGetRequest()
+          ..id = id)).groups.first, isNotEmpty);
+/*
         try {
-           await stub
-              .getGroup(GroupGetRequest()
-            ..id = id);
+          (await stub
+              .getGroups(GroupGetRequest()
+            ..id = id)).groups.first;
         } on GrpcError catch (e) {
           expect(e.code, StatusCode.notFound);
         }
+        */
       });
     });
   });
