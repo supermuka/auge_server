@@ -227,6 +227,9 @@ class UserIdentityService extends UserIdentityServiceBase {
           request.userIdentity.passwordHash = base64.encode(sha256
               .convert((request.userIdentity.passwordSalt + request.userIdentity.password).codeUnits)
               .bytes);
+
+          // Not save original password into history.
+          request.userIdentity.password = '*******';
         }
 
         await ctx.query(
@@ -245,9 +248,13 @@ class UserIdentityService extends UserIdentityServiceBase {
           "identification": request.userIdentity.identification,
           "provider": request.userIdentity.provider,
           "provider_object_id": request.userIdentity.providerObjectId,
-          "password_salt": request.userIdentity.passwordSalt,
-          "password_hash": request.userIdentity.passwordHash,
+          "password_salt": request.userIdentity.hasPasswordSalt() ? request.userIdentity.passwordSalt : null,
+          "password_hash": request.userIdentity.hasPasswordHash() ? request.userIdentity.passwordHash : null,
           "user_id": request.userIdentity.user.id});
+
+        // Doesn't save hash and salt into history.
+        request.userIdentity.clearPasswordHash();
+        request.userIdentity.clearPasswordSalt();
 
         // Create a history item
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: {"id": Uuid().v4(),
@@ -284,6 +291,9 @@ class UserIdentityService extends UserIdentityServiceBase {
       request.userIdentity.passwordHash = base64.encode(sha256
           .convert((request.userIdentity.passwordSalt + request.userIdentity.password).codeUnits)
           .bytes);
+
+      // Not save original password into history.
+      request.userIdentity.password = '*******';
     }
 
     await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -305,14 +315,23 @@ class UserIdentityService extends UserIdentityServiceBase {
           "identification": request.userIdentity.identification,
           "provider": request.userIdentity.provider,
           "provider_object_id": request.userIdentity.providerObjectId,
-          "password_salt": request.userIdentity.passwordSalt,
-          "password_hash": request.userIdentity.passwordHash,
+          "password_salt": request.userIdentity.hasPasswordSalt() ? request.userIdentity.passwordSalt : null,
+          "password_hash": request.userIdentity.hasPasswordHash() ? request.userIdentity.passwordHash : null,
           "user_id": request.userIdentity.user.id});
 
         // Optimistic concurrency control
         if (result.length == 0) {
           throw new GrpcError.failedPrecondition('Precondition Failed');
         } else {
+
+          // Doesn't save hash and salt into history.
+          request.userIdentity.clearPasswordHash();
+          request.userIdentity.clearPasswordSalt();
+
+          previousUserIdentity.password = '******';
+          previousUserIdentity.clearPasswordHash();
+          previousUserIdentity.clearPasswordSalt();
+
           // Create a history item
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: {"id": Uuid().v4(),

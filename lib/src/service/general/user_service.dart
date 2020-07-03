@@ -72,7 +72,7 @@ class UserService extends UserServiceBase {
             ",null" //3
             ",null"; //4
       } else { // RestrictSelectUser.node or another not specified here
-        return users;
+        return null;
       }
     } else {
       queryStatement = queryStatement +
@@ -150,7 +150,7 @@ class UserService extends UserServiceBase {
       _substitutionValues.putIfAbsent("organization_id", () => request.managedByOrganizationIdOrAccessedByOrganizationId);
       whereAnd = "AND";
     }
-    if (request != null && request.id != null && request.id.isNotEmpty) {
+    if (request != null && request.hasId()) {
       queryStatement = queryStatement + " ${whereAnd} u.id = @id";
       _substitutionValues.putIfAbsent("id", () => request.id);
       whereAnd = "AND";

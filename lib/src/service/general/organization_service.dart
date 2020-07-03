@@ -71,12 +71,12 @@ class OrganizationService extends OrganizationServiceBase {
             ",null" // 2
             ",null"; // 3
       } else { // none or others not specified.
-        return organizations;
+        return null;
       }
     } else {
       queryStatement = queryStatement +
           " organization.id" //0
-          ",organization.name"; //1
+          ",organization.name" //1
           ",organization.version" //2
           ",organization.code"; //3
     }
@@ -85,11 +85,13 @@ class OrganizationService extends OrganizationServiceBase {
 
     Map<String, dynamic> substitutionValues;
 
-    if (request.id != null && request.id.isNotEmpty) {
+    if (request.hasId()) {
       queryStatement += " WHERE organization.id = @id";
       substitutionValues = {
         "id": request.id,
       };
+    } else {
+       throw Exception('id does not informed.');
     }
     var results;
 

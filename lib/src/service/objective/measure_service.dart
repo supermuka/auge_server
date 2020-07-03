@@ -178,10 +178,10 @@ class MeasureService extends MeasureServiceBase {
 
     Map<String, dynamic> substitutionValues;
 
-    if (request.id != null && request.id.isNotEmpty) {
+    if (request.hasId()) {
       queryStatement += " WHERE id = @id";
       substitutionValues = {"id": request.id};
-    } else if (request.objectiveId != null && request.objectiveId.isNotEmpty) {
+    } else if (request.hasObjectiveId()) {
       queryStatement +=
       " WHERE objective_id = @objective_id";
       substitutionValues =
@@ -233,9 +233,9 @@ class MeasureService extends MeasureServiceBase {
               objectiveGetRequest.restrictObjective = request.restrictObjective;
             measure.objective =
             await ObjectiveService.querySelectObjective(objectiveGetRequest);
-
-            measures.add(measure);
           }
+          measures.add(measure);
+
         }
       }
     } catch (e) {
@@ -621,8 +621,6 @@ class MeasureService extends MeasureServiceBase {
 
   }
 
-
-
   /// Create current value of the [MeasureProgress]
   static Future<StringValue> queryInsertMeasureProgress(
       MeasureProgressRequest request, String urlOrigin) async {
@@ -663,7 +661,7 @@ class MeasureService extends MeasureServiceBase {
           "object_id": request.measureProgress.id,
           "object_version": request.measureProgress.version,
           "object_class_name": measure_m
-              .Measure.className,
+              .MeasureProgress.className,
           "system_module_index": SystemModule.objectives.index,
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),

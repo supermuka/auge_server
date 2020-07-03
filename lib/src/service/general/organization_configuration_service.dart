@@ -67,13 +67,13 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
     Map<String, dynamic> substitutionValues;
 
-    if (request.id != null && request.id.isNotEmpty) {
+    if (request.hasId()) {
       queryStatement +=
       " WHERE organization_configuration.id = @id";
       substitutionValues = {
         "id": request.id,
       };
-    } else if (request.organizationId != null && request.organizationId.isNotEmpty) {
+    } else if (request.hasOrganizationId()) {
       queryStatement +=
       " WHERE organization_configuration.organization_id = @organization_id";
       substitutionValues = {

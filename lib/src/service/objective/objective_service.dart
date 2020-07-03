@@ -106,7 +106,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             " null,"  //9
             " null"; //10
       } else { // none
-        return objectives;
+        return null; // objectives;
       }
     }
     else {
@@ -241,26 +241,32 @@ class ObjectiveService extends ObjectiveServiceBase {
 
             // Organization
           }
+
+          if (row[9] != null) {
+            if (!request.hasRestrictOrganization() || request.restrictOrganization != RestrictOrganization.organizationNone)
+            objective.organization =
+            await OrganizationService.querySelectOrganization(
+                OrganizationGetRequest()
+                  ..id = row[9]
+                  ..restrictOrganization = request.hasRestrictOrganization() ?  request.restrictOrganization : RestrictOrganization.organizationIdName, cache: organizationsCache);
+          }
+
+          if (row[10] != null) {
+            objective.group =
+            await GroupService.querySelectGroup(GroupGetRequest()
+              ..id = row[10]
+              ..restrictGroup = RestrictGroup.groupIdName, cache: groupsCache);
+          }
+
           if (request.treeAlignedWithChildren) {
             objectivesTreeMapAux[objective.id] = objective;
-            if (row[8] == null)
+            if (row[8] == null) {
               // Parent must be present in the list (objectives);
               objectivesTree.add(objective);
-            else {
+            } else {
               objectivesTreeMapAux[row[8]].alignedWithChildren
                   .add(objective);
             }
-
-            if (row[9] != null)
-              objective.organization = await OrganizationService.querySelectOrganization(
-                  OrganizationGetRequest()
-                    ..id = row[9], cache: organizationsCache);
-
-            if (row[10] != null)
-              objective.group = await GroupService.querySelectGroup(GroupGetRequest()
-                ..id = row[10]..restrictGroup = RestrictGroup.groupIdName, cache: groupsCache);
-
-
           } else {
             objectives.add(objective);
           }

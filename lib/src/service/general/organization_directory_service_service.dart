@@ -108,13 +108,13 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
         " organization_directory_service.user_identification_attribute," //19
         " organization_directory_service.user_first_name_attribute," //20
         " organization_directory_service.user_last_name_attribute," //21
-        " organization_directory_service.user_email_attribute " //22
+        " organization_directory_service.user_email_attribute, " //22
         " organization_directory_service.organization_id " //23
         " FROM general.organization_directory_services organization_directory_service";
 
     Map<String, dynamic> substitutionValues;
 
-    if (request.id != null && request.id.isNotEmpty) {
+    if (request.hasId()) {
       queryStatement +=
       " WHERE organization_directory_service.id = @id";
       substitutionValues = {
@@ -804,9 +804,6 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
         // Processing stream of SearchEntry
         // print("DN >>>> " + entry.dn);
         countEntry++;
-        print("DEBUG dn: ${entry.dn}");
-
-
 
         userProviderObjectIdAttributeValue = null;
         userIdentificationAttributeValue = null;

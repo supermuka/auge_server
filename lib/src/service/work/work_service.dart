@@ -101,7 +101,7 @@ class WorkService extends WorkServiceBase {
             "FROM work.works work";
 
       } else { // none
-         return works;
+         return null;
       }
 
     } else {

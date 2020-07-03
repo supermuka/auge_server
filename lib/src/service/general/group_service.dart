@@ -91,18 +91,19 @@ class GroupService extends GroupServiceBase {
     String queryStatement = "SELECT";
 
     if (request.hasRestrictGroup()) {
+
       if (request.restrictGroup == RestrictGroup.groupIdName) {
         queryStatement = queryStatement +
             " g.id" //0
-                ",g.name" //1
-                ",null" //2
-                ",null" //3
-                ",null" //4
-                ",null" //5
-                ",null" //6
-                ",null"; //7
-      } else { // no
-        return groups;
+              ",g.name" //1
+              ",null" //2
+              ",null" //3
+              ",null" //4
+              ",null" //5
+              ",null" //6
+              ",null"; //7
+      } else { // none
+        return null;
 
       }
     } else {
@@ -121,13 +122,13 @@ class GroupService extends GroupServiceBase {
 
     Map<String, dynamic> substitutionValues;
 
-    if (request.id != null && request.id.isNotEmpty) {
+    if (request.hasId()) {
       queryStatement = queryStatement + " WHERE g.id = @id";
       substitutionValues = {
         "id": request.id,
       };
-
-    } else if (request.organizationId != null) {
+    }
+    else if (request.hasOrganizationId()) {
       queryStatement = queryStatement + " WHERE g.organization_id = @organization_id";
       substitutionValues = {
         "organization_id": request.organizationId,
@@ -168,13 +169,13 @@ class GroupService extends GroupServiceBase {
               await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
                     ..id = row[4]
-                    ..restrictOrganization = request.restrictOrganization ??
-                        RestrictOrganization.organizationIdName,
+                    ..restrictOrganization = RestrictOrganization.organizationIdName,
                   cache: organizationCache);
             } else {
               organization = null;
             }
           }
+
           if (row[6] != null) {
             leader =
             await UserService.querySelectUser(UserGetRequest()
@@ -184,13 +185,16 @@ class GroupService extends GroupServiceBase {
           } else {
             leader = null;
           }
+
           if (row[7] != null && request.alignedToRecursive > 0) {
+
             superGroup =
             await querySelectGroup(GroupGetRequest()
               ..id = row[7]
               ..restrictGroup = RestrictGroup.groupIdName
               ..alignedToRecursive = --request.alignedToRecursive,
                 cache: groupCache);
+
           } else {
             superGroup = null;
           }
@@ -432,7 +436,7 @@ class GroupService extends GroupServiceBase {
                 "object_version": request.groupVersion,
                 "object_class_name": group_m.Group.className,
                 "system_module_index": SystemModule.groups.index,
-                "system_function_index": SystemFunction.update.index,
+                "system_function_index": SystemFunction.delete.index,
                 "date_time": DateTime.now().toUtc(),
                 "description": previousGroup.name,
                 "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
