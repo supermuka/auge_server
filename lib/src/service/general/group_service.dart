@@ -92,7 +92,7 @@ class GroupService extends GroupServiceBase {
 
     if (request.hasRestrictGroup()) {
 
-      if (request.restrictGroup == RestrictGroup.groupIdName) {
+      if (request.restrictGroup == RestrictGroup.groupSpecification) {
         queryStatement = queryStatement +
             " g.id" //0
               ",g.name" //1
@@ -169,7 +169,7 @@ class GroupService extends GroupServiceBase {
               await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
                     ..id = row[4]
-                    ..restrictOrganization = RestrictOrganization.organizationIdName,
+                    ..restrictOrganization = RestrictOrganization.organizationSpecification,
                   cache: organizationCache);
             } else {
               organization = null;
@@ -179,7 +179,7 @@ class GroupService extends GroupServiceBase {
           if (row[6] != null) {
             leader =
             await UserService.querySelectUser(UserGetRequest()
-              ..restrictUser = RestrictUser.userIdName
+              ..restrictUser = RestrictUser.userSpecification
               ..restrictUserProfile = RestrictUserProfile.userProfileImage
               ..id = row[6], cache: userCache);
           } else {
@@ -191,7 +191,7 @@ class GroupService extends GroupServiceBase {
             superGroup =
             await querySelectGroup(GroupGetRequest()
               ..id = row[7]
-              ..restrictGroup = RestrictGroup.groupIdName
+              ..restrictGroup = RestrictGroup.groupSpecification
               ..alignedToRecursive = --request.alignedToRecursive,
                 cache: groupCache);
 
@@ -517,7 +517,7 @@ class GroupService extends GroupServiceBase {
 
       users = await UserService.querySelectUsers(UserGetRequest()
         ..id = row[0]
-        ..restrictUser = RestrictUser.userIdName
+        ..restrictUser = RestrictUser.userSpecification
         ..restrictUserProfile = RestrictUserProfile.userProfileImage);
 
       if (users != null && users.length != 0) {

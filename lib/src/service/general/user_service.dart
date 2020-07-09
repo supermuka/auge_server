@@ -64,7 +64,7 @@ class UserService extends UserServiceBase {
     List<User> users = [];
     String queryStatement = "SELECT";
     if (request.hasRestrictUser()) {
-      if (request.restrictUser == RestrictUser.userIdName) {
+      if (request.restrictUser == RestrictUser.userSpecification) {
         queryStatement = queryStatement +
             " u.id" //0
             ",u.name" //1
@@ -174,7 +174,7 @@ class UserService extends UserServiceBase {
               organization = await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
                     ..id = row[4]
-                    ..restrictOrganization = RestrictOrganization.organizationIdName);
+                    ..restrictOrganization = RestrictOrganization.organizationSpecification);
             }
             user.managedByOrganization = organization;
           }

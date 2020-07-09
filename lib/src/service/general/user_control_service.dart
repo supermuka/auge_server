@@ -68,7 +68,7 @@ class UserControlService extends UserControlServiceBase {
           if (!request.hasRestrictUser() || request.restrictUser == RestrictUser.userNone) {
             userControl.user =
             await UserService.querySelectUser(UserGetRequest()
-              ..restrictUser = RestrictUser.userIdName
+              ..restrictUser = RestrictUser.userSpecification
               ..id = row[0]);
           }
 

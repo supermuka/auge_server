@@ -305,7 +305,7 @@ class WorkStageService extends WorkStageServiceBase {
   /// Delete a stage by [id]
   static Future<Empty> queryDeleteWorkStage(WorkStageDeleteRequest request, String urlOrigin) async {
 
-    WorkStage workStagePrevious = await querySelectWorkStage(WorkStageGetRequest()..id = request.workStageId..restrictWork = RestrictWork.workIdName);
+    WorkStage workStagePrevious = await querySelectWorkStage(WorkStageGetRequest()..id = request.workStageId..restrictWork = RestrictWork.workSpecification);
 
     Map<String, dynamic> historyItemNotificationValues;
 

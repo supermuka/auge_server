@@ -101,7 +101,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
             await OrganizationService.querySelectOrganization(
                 OrganizationGetRequest()
                   ..id = row[3]
-                  ..restrictOrganization = RestrictOrganization.organizationIdName);
+                  ..restrictOrganization = RestrictOrganization.organizationSpecification);
         }
         configurations.add(configuration);
       }

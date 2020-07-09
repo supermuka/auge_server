@@ -88,7 +88,7 @@ class WorkService extends WorkServiceBase {
     queryStatement = "SELECT ";
 
     if (workGetRequest.hasRestrictWork()) {
-      if (workGetRequest.restrictWork == RestrictWork.workIdName) {
+      if (workGetRequest.restrictWork == RestrictWork.workSpecification) {
         queryStatement = queryStatement + "work.id, " //0
             "work.name, " //1
             "null," //2
@@ -167,7 +167,7 @@ class WorkService extends WorkServiceBase {
       if (!workGetRequest.hasRestrictWorkItem() || workGetRequest.restrictWorkItem != RestrictWorkItem.workItemNone) {
         WorkItemGetRequest workItemGetRequest = WorkItemGetRequest();
         workItemGetRequest.workId = row[0];
-        workItemGetRequest.restrictWork = (workGetRequest.hasRestrictWork()) ? workGetRequest.restrictWork : workItemGetRequest.restrictWork = RestrictWork.workIdName;
+        workItemGetRequest.restrictWork = (workGetRequest.hasRestrictWork()) ? workGetRequest.restrictWork : workItemGetRequest.restrictWork = RestrictWork.workSpecification;
         if (workGetRequest.hasWorkItemWithArchived()) workItemGetRequest.withArchived = workGetRequest.workItemWithArchived;
         if (workGetRequest.workItemAssignedToIds != null && workGetRequest.workItemAssignedToIds.isNotEmpty) {
           workItemGetRequest.assignedToIds.addAll(workGetRequest.workItemAssignedToIds);
@@ -184,7 +184,7 @@ class WorkService extends WorkServiceBase {
           organization = await OrganizationService.querySelectOrganization(
               OrganizationGetRequest()
                 ..id = row[5]
-                ..restrictOrganization = workGetRequest.hasRestrictOrganization() ? workGetRequest.restrictOrganization : RestrictOrganization.organizationIdName);
+                ..restrictOrganization = workGetRequest.hasRestrictOrganization() ? workGetRequest.restrictOrganization : RestrictOrganization.organizationSpecification);
         } else {
           organization = null;
         }
@@ -194,7 +194,7 @@ class WorkService extends WorkServiceBase {
       if (row[6] != null) {
         UserGetRequest userGetRequest = UserGetRequest();
         userGetRequest.id = row[6];
-        userGetRequest.restrictUser = RestrictUser.userIdName;
+        userGetRequest.restrictUser = RestrictUser.userSpecification;
         userGetRequest.restrictUserProfile = workGetRequest.hasRestrictUserProfile() ? workGetRequest.restrictUserProfile : RestrictUserProfile.userProfileImage;
 
         user = await UserService.querySelectUser(userGetRequest);
@@ -222,7 +222,7 @@ class WorkService extends WorkServiceBase {
       if (row[8] != null) {
         group = row[8] == null ? null : await GroupService.querySelectGroup(
             GroupGetRequest()
-              ..id = row[8]..restrictGroup = RestrictGroup.groupIdName);
+              ..id = row[8]..restrictGroup = RestrictGroup.groupSpecification);
       } else {
         group = null;
       }
@@ -302,7 +302,7 @@ class WorkService extends WorkServiceBase {
       if (row[0] != null) {
         UserGetRequest userGetRequest = UserGetRequest();
         userGetRequest.id = row[6];
-        userGetRequest.restrictUser = RestrictUser.userIdName;
+        userGetRequest.restrictUser = RestrictUser.userSpecification;
         if (workGetRequest.hasRestrictUserProfile()) {
           userGetRequest.restrictUserProfile = workGetRequest.restrictUserProfile;
         } else {

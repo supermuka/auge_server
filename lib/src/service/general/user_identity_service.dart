@@ -156,7 +156,7 @@ class UserIdentityService extends UserIdentityServiceBase {
 
         userIdentity.user = await UserService.querySelectUser(UserGetRequest()
           ..id = row[7]
-          ..restrictUser = RestrictUser.userIdName /*..withUserProfile = UserGetRequest_WithUserProfile.only_image */);
+          ..restrictUser = RestrictUser.userSpecification /*..withUserProfile = UserGetRequest_WithUserProfile.only_image */);
 
         // If password is informed, calc a hash and compare to passward_hash stored
         if (request.hasPassword() && request.password.isNotEmpty) {

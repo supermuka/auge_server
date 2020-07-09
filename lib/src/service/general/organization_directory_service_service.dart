@@ -218,7 +218,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
             await OrganizationService.querySelectOrganization(
                 (OrganizationGetRequest()
                   ..id = row[23]
-                  ..restrictOrganization = RestrictOrganization.organizationIdName));
+                  ..restrictOrganization = RestrictOrganization.organizationSpecification));
         }
         organizationDirectoryServices.add(organizationDirectoryService);
       }
@@ -773,7 +773,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
       organization =
       await OrganizationService.querySelectOrganization(OrganizationGetRequest()
         ..id = request.authOrganizationId
-        ..restrictOrganization = RestrictOrganization.organizationIdName);
+        ..restrictOrganization = RestrictOrganization.organizationSpecification);
 
       int countEntry = 0;
       int countProviderObjectIdAttribute = 0,

@@ -64,7 +64,7 @@ class OrganizationService extends OrganizationServiceBase {
     queryStatement = 'SELECT';
     if (request.hasRestrictOrganization()) {
       if (request.restrictOrganization ==
-          RestrictOrganization.organizationIdName) {
+          RestrictOrganization.organizationSpecification) {
         queryStatement = queryStatement +
             " organization.id" //0
             ",organization.name" //1

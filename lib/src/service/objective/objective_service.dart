@@ -212,7 +212,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
           if (row[7] != null) objective.leader = await UserService.querySelectUser(UserGetRequest()
               ..id = row[7]
-              ..restrictUser = RestrictUser.userIdName
+              ..restrictUser = RestrictUser.userSpecification
               ..restrictUserProfile = RestrictUserProfile.userProfileImage, cache: usersCache);
 
           if (row[8] != null && request.alignedToRecursive > 0) {
@@ -248,14 +248,14 @@ class ObjectiveService extends ObjectiveServiceBase {
             await OrganizationService.querySelectOrganization(
                 OrganizationGetRequest()
                   ..id = row[9]
-                  ..restrictOrganization = request.hasRestrictOrganization() ?  request.restrictOrganization : RestrictOrganization.organizationIdName, cache: organizationsCache);
+                  ..restrictOrganization = request.hasRestrictOrganization() ?  request.restrictOrganization : RestrictOrganization.organizationSpecification, cache: organizationsCache);
           }
 
           if (row[10] != null) {
             objective.group =
             await GroupService.querySelectGroup(GroupGetRequest()
               ..id = row[10]
-              ..restrictGroup = RestrictGroup.groupIdName, cache: groupsCache);
+              ..restrictGroup = RestrictGroup.groupSpecification, cache: groupsCache);
           }
 
           if (request.treeAlignedWithChildren) {

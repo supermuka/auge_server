@@ -131,7 +131,7 @@ class UserAccessService extends UserAccessServiceBase {
               user =
               await UserService.querySelectUser(UserGetRequest()
                 ..id = row[2]
-                ..restrictUser = RestrictUser.userIdName
+                ..restrictUser = RestrictUser.userSpecification
                 ..restrictUserProfile = RestrictUserProfile.userProfileImage);
 
               if (user != null) _userCache[row[2]] = user;
@@ -144,7 +144,7 @@ class UserAccessService extends UserAccessServiceBase {
               organization =
               await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
-                    ..id = row[3]..restrictOrganization = RestrictOrganization.organizationIdName);
+                    ..id = row[3]..restrictOrganization = RestrictOrganization.organizationSpecification);
 
               if (organization != null)
                 _organizationCache[row[3]] = organization;

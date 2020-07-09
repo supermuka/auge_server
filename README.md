@@ -10,9 +10,7 @@ pub global activate discoveryapis_generator
 
 protoc --dart_out=grpc:lib/src/protos/generated -Iprotos protos/general/group.proto --plugin=protoc-gen-dart=c:\Users\samue\AppData\Roaming\Pub\Cache\bin\protoc-gen-dart.bat
 
-cd bin
-
-dart --snapshot=..\auge_server_grpc_web\bin\auge_server.dart.snapshot server.dart
+dart --snapshot=..\auge_server_grpc_web\bin\auge_server.dart.snapshot bin\server.dart
 
 dart2native server.dart -o \auge_server_grpc_web\bin\auge_server.exe
 

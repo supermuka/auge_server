@@ -210,7 +210,7 @@ class WorkItemService extends WorkItemServiceBase {
               workItemGetRequest.restrictWork != RestrictWork.workNone) {
             workItem.work = await WorkService.querySelectWork(WorkGetRequest()
               ..id = row[8]
-              ..restrictWork = RestrictWork.workIdName
+              ..restrictWork = RestrictWork.workSpecification
               ..restrictWorkItem = RestrictWorkItem.workItemNone);
           }
         }
@@ -345,7 +345,7 @@ class WorkItemService extends WorkItemServiceBase {
     for (var row in results) {
 
       user = await UserService.querySelectUser(UserGetRequest()..id = row[0]
-        ..restrictUser = RestrictUser.userIdName
+        ..restrictUser = RestrictUser.userSpecification
         ..restrictUserProfile = RestrictUserProfile.userProfileImage);
 
       assignedToUsers.add(user);
@@ -536,7 +536,7 @@ class WorkItemService extends WorkItemServiceBase {
   static Future<Empty> queryUpdateWorkItem(WorkItemRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id..restrictWork = RestrictWork.workIdName);
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id..restrictWork = RestrictWork.workSpecification);
 
     // TODO (this is made just to get a user profile email, it needs to find to a way to improve the performance)
     Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId);
@@ -762,7 +762,7 @@ class WorkItemService extends WorkItemServiceBase {
   /// Delete a WorkItem by [id]
   static Future<Empty> queryDeleteWorkItem(WorkItemDeleteRequest request, String urlOrigin) async {
 
-    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..restrictWork = RestrictWork.workIdName..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..restrictWork = RestrictWork.workSpecification..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -948,7 +948,7 @@ class WorkItemService extends WorkItemServiceBase {
     try {
 
       // This is made just to recovery email leader from objective, used to notification
-      request.workItemValue.workItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..restrictWork = RestrictWork.workIdName..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+      request.workItemValue.workItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..restrictWork = RestrictWork.workSpecification..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
 
       request.workItemValue.version = 0;
 
@@ -1011,7 +1011,7 @@ class WorkItemService extends WorkItemServiceBase {
       WorkItemValueRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValue.id..restrictWorkItem = RestrictWorkItem.workItemIdName..restrictWork = RestrictWork.workIdName..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValue.id..restrictWorkItem = RestrictWorkItem.workItemSpecification..restrictWork = RestrictWork.workSpecification..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
 
     request.workItemValue.workItem = previousWorkItemValue.workItem;
     // This is made just to recovery email leader from objective, used to notification
@@ -1087,7 +1087,7 @@ class WorkItemService extends WorkItemServiceBase {
   /// Delete a [WorkItemValue] by id
   Future<Empty> queryDeleteWorkItemValue(WorkItemValueDeleteRequest request, String urlOrigin) async {
 
-    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValueId..restrictWorkItem = RestrictWorkItem.workItemIdName..restrictWork = RestrictWork.workIdName..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValueId..restrictWorkItem = RestrictWorkItem.workItemSpecification..restrictWork = RestrictWork.workSpecification..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
 
     try {
 
