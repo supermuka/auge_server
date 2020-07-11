@@ -246,6 +246,11 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
   /// return id
   static Future<StringValue> queryInsertOrganizationDirectoryService(
       OrganizationDirectoryServiceRequest request) async {
+
+    if (!request.organizationDirectoryService.hasId()) {
+      request.organizationDirectoryService.id = Uuid().v4();
+    }
+
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
         await ctx.query(
@@ -357,9 +362,10 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
 
   static Future<Empty> queryUpdateOrganizationDirectoryService(
       OrganizationDirectoryServiceRequest request) async {
+
     OrganizationDirectoryService previousDirectoryService = await querySelectOrganizationDirectoryService(
         OrganizationDirectoryServiceGetRequest()
-          ..organizationId = request.organizationDirectoryService.organization.id);
+          ..id = request.organizationDirectoryService.id);
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
@@ -391,7 +397,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
                   "WHERE id = @id AND version = @version - 1 "
                   "RETURNING true"
               , substitutionValues: {
-            "id": request.organizationDirectoryService.organization.id,
+            "id": request.organizationDirectoryService.id,
             "version": ++request.organizationDirectoryService.version,
             "directory_service_enabled": request.organizationDirectoryService.directoryServiceEnabled,
             "sync_bind_dn": request.organizationDirectoryService.hasSyncBindDn() ? request.organizationDirectoryService.syncBindDn : null,
@@ -452,7 +458,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
               substitutionValues: {"id": Uuid().v4(),
                 "user_id": request.authUserId,
                 "organization_id": request.authOrganizationId,
-                "object_id": request.organizationDirectoryService.organization.id,
+                "object_id": request.organizationDirectoryService.id,
                 "object_version": request.organizationDirectoryService.version,
                 "object_class_name": organization_directory_service_m
                     .OrganizationDirectoryService.className,
