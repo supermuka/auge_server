@@ -65,12 +65,10 @@ class UserControlService extends UserControlServiceBase {
         if (row != null && row.isNotEmpty) {
           userControl = UserControl();
 
-          if (!request.hasRestrictUser() || request.restrictUser == RestrictUser.userNone) {
-            userControl.user =
-            await UserService.querySelectUser(UserGetRequest()
-              ..restrictUser = RestrictUser.userSpecification
-              ..id = row[0]);
-          }
+        userControl.user =
+        await UserService.querySelectUser(UserGetRequest()
+          ..customUser = CustomUser.userOnlySpecification
+          ..id = row[0]);
 
           userControl.dateTimeLastNotification =
               CommonUtils.timestampFromDateTime(row[1]);

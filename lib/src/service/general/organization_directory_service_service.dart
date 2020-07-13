@@ -108,8 +108,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
         " organization_directory_service.user_identification_attribute," //19
         " organization_directory_service.user_first_name_attribute," //20
         " organization_directory_service.user_last_name_attribute," //21
-        " organization_directory_service.user_email_attribute, " //22
-        " organization_directory_service.organization_id " //23
+        " organization_directory_service.user_email_attribute " //22
         " FROM general.organization_directory_services organization_directory_service";
 
     Map<String, dynamic> substitutionValues;
@@ -212,14 +211,6 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
         if (row[22] != null)
           organizationDirectoryService.userEmailAttribute = row[22];
 
-        if (!request.hasRestrictOrganization() || request.restrictOrganization != RestrictOrganization.organizationNone) {
-          if (row[23] != null)
-            organizationDirectoryService.organization =
-            await OrganizationService.querySelectOrganization(
-                (OrganizationGetRequest()
-                  ..id = row[23]
-                  ..restrictOrganization = RestrictOrganization.organizationSpecification));
-        }
         organizationDirectoryServices.add(organizationDirectoryService);
       }
 
@@ -779,7 +770,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
       organization =
       await OrganizationService.querySelectOrganization(OrganizationGetRequest()
         ..id = request.authOrganizationId
-        ..restrictOrganization = RestrictOrganization.organizationSpecification);
+        ..customOrganization = CustomOrganization.organizationSpecification);
 
       int countEntry = 0;
       int countProviderObjectIdAttribute = 0,

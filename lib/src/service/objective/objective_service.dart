@@ -16,7 +16,6 @@ import 'package:auge_shared/route/app_routes_definition.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_shared/protos/generated/general/user.pb.dart';
-import 'package:auge_shared/protos/generated/general/organization.pb.dart';
 import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart';
 import 'package:auge_shared/protos/generated/general/group.pb.dart';
 
@@ -28,7 +27,7 @@ import 'package:auge_shared/message/rpc_error_message.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_server/src/service/objective/measure_service.dart';
-import 'package:auge_server/src/service/general/organization_service.dart';
+
 import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/group_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
@@ -80,20 +79,22 @@ class ObjectiveService extends ObjectiveServiceBase {
     Map<String, Objective> objectivesTreeMapAux = {};
 
     String queryStatementColumns;
-    if (request.hasRestrictObjective()) {
-      if (request.restrictObjective == RestrictObjective.objectiveIdName) {
-        queryStatementColumns = "objective.id," //0
+
+    if (request.hasCustomObjective()) {
+      if (request.customObjective == CustomObjective.objectiveOnlySpecification) {
+        queryStatementColumns =
+             "objective.id," //0
             " objective.name," //1
-            " null, " //1
+            " null, " //2
             " null," //3
             " null," //4
             " null," //5
             " null," //6
             " null," //7
             " null," //8
-            " null,"  //9
-            " null"; //10
-      } else if (request.restrictObjective == RestrictObjective.objectiveIdNameStartDateEndDate) {
+            " null"; //9
+
+      } else if (request.customObjective == CustomObjective.objectiveOnlySpecificationStartDateEndDate) {
         queryStatementColumns = "objective.id," //0
             " objective.name," //1
             " null, " //2
@@ -103,10 +104,34 @@ class ObjectiveService extends ObjectiveServiceBase {
             " null," //6
             " null," //7
             " null," //8
-            " null,"  //9
-            " null"; //10
-      } else { // none
-        return null; // objectives;
+            " null"; //9
+
+      } else if (request.customObjective == CustomObjective.objectiveOnlyWithMeasure) {
+        queryStatementColumns =  "objective.id," //0
+            " null," //1
+            " null, " //2
+            " null," //3
+            " null," //4
+            " null," //5
+            " null," //6
+            " null," //7
+            " null," //8
+            " null"; //9
+
+      } else if (request.customObjective == CustomObjective.objectiveTreeAlignedTo) {
+        queryStatementColumns =  "objective.id," //0
+            " objective.name," //1
+            " null, " //2
+            " objective.description," //3
+            " objective.start_date," //4
+            " objective.end_date," //5
+            " objective.archived," //6
+            " objective.leader_user_id," //7
+            " objective.aligned_to_objective_id," //8
+            " objective.group_id"; //9
+
+      } else {
+        return null;
       }
     }
     else {
@@ -119,8 +144,7 @@ class ObjectiveService extends ObjectiveServiceBase {
           " objective.archived," //6
           " objective.leader_user_id," //7
           " objective.aligned_to_objective_id," //8
-          " objective.organization_id," //9
-          " objective.group_id"; //10
+          " objective.group_id"; //0
     }
 
     String queryStatementWhere = "";
@@ -151,7 +175,7 @@ class ObjectiveService extends ObjectiveServiceBase {
       // queryStatementWhere = queryStatementWhere + " AND objective.leader_user_id in (${ids.toString().substring(1, ids.length-1)})";
     }
     String queryStatement;
-    if (request.hasTreeAlignedWithChildren() && request.treeAlignedWithChildren) {
+    if (request.hasCustomObjective() && request.customObjective ==  CustomObjective.objectiveTreeAlignedTo) {
       queryStatement =
           "WITH RECURSIVE nodes(" + queryStatementColumns.replaceAll("objective.", "") + ") AS ("
               " SELECT " + queryStatementColumns +
@@ -185,15 +209,12 @@ class ObjectiveService extends ObjectiveServiceBase {
         }
 
         Map<String, User> usersCache = {};
-       // Map<String, Objective> objectivesCache = {};
-        Map<String, Organization> organizationsCache = {};
         Map<String, Group> groupsCache = {};
 
-        for (var row in results) {
+        fillFields(Objective objective, var row) async {
 
-          objective = Objective()
-            ..id = row[0]
-            ..name = row[1];
+          objective.id = row[0];
+          objective.name = row[1];
 
           if (row[2] != null) objective.version = row[2];
           if (row[3] != null) objective.description = row[3];
@@ -202,78 +223,79 @@ class ObjectiveService extends ObjectiveServiceBase {
           if (row[5] != null)
             objective.endDate = CommonUtils.timestampFromDateTime(row[5].toUtc());
           if (row[6] != null) objective.archived = row[6];
-
-          if (!request.hasRestrictMeasure() || request.restrictMeasure != RestrictMeasure.measureNone) {
-            objective.measures.addAll(await MeasureService
-                    .querySelectMeasures(MeasureGetRequest()
-                  ..objectiveId = row[0]
-                  ..restrictObjective = RestrictObjective.objectiveNone));
-          }
-
           if (row[7] != null) objective.leader = await UserService.querySelectUser(UserGetRequest()
-              ..id = row[7]
-              ..restrictUser = RestrictUser.userSpecification
-              ..restrictUserProfile = RestrictUserProfile.userProfileImage, cache: usersCache);
+            ..id = row[7]
+            ..customUser = CustomUser.userOnlySpecificationProfileImage, cache: usersCache);
 
           if (row[8] != null && request.alignedToRecursive > 0) {
             //--objectiveSelectRequest.alignedToRecursive;
 
-
             ObjectiveGetRequest objectiveGetRequest = ObjectiveGetRequest();
             objectiveGetRequest.id = row[8];
-            objectiveGetRequest.alignedToRecursive =
-            (request.alignedToRecursive - 1);
-            if (request.hasRestrictUserProfile())
-              objectiveGetRequest.restrictUserProfile =
-                  request.restrictUserProfile;
-            if (request.hasRestrictMeasure())
-              objectiveGetRequest.restrictMeasure = request.restrictMeasure;
-            if (request.hasRestrictObjective())
-              objectiveGetRequest.restrictObjective = request.restrictObjective;
+            objectiveGetRequest.alignedToRecursive = (request.alignedToRecursive - 1);
+            objectiveGetRequest.customObjective = CustomObjective.objectiveOnlySpecification;
 
             objective.alignedTo =
-            await ObjectiveService.querySelectObjective(objectiveGetRequest
-              /*..alignedToRecursive = (objectiveGetRequest.alignedToRecursive-1)
-              ..withArchived = objectiveGetRequest.withArchived
-              ..withMeasures = objectiveGetRequest.withMeasures
-              ..withUserProfile = objectiveGetRequest.withUserProfile
-              ..groupIds.addAll(objectiveGetRequest.groupIds), cache: objectivesCache */);
+            await ObjectiveService.querySelectObjective(objectiveGetRequest);
 
             // Organization
           }
 
           if (row[9] != null) {
-            if (!request.hasRestrictOrganization() || request.restrictOrganization != RestrictOrganization.organizationNone)
-            objective.organization =
-            await OrganizationService.querySelectOrganization(
-                OrganizationGetRequest()
-                  ..id = row[9]
-                  ..restrictOrganization = request.hasRestrictOrganization() ?  request.restrictOrganization : RestrictOrganization.organizationSpecification, cache: organizationsCache);
-          }
-
-          if (row[10] != null) {
             objective.group =
             await GroupService.querySelectGroup(GroupGetRequest()
-              ..id = row[10]
-              ..restrictGroup = RestrictGroup.groupSpecification, cache: groupsCache);
+              ..id = row[9]
+              ..customGroup = CustomGroup.groupOnlySpecification, cache: groupsCache);
+          }
+        }
+
+        if (request.hasCustomObjective() && request.customObjective == CustomObjective.objectiveOnlyWithMeasure) {
+
+
+          MeasureGetRequest measureGetRequest = MeasureGetRequest();
+          fillMeasureField(Objective objective, var row) async {
+            measureGetRequest.objectiveId = row[0];
+            objective.measures.addAll(await MeasureService
+                .querySelectMeasures(measureGetRequest));
           }
 
-          if (request.treeAlignedWithChildren) {
-            objectivesTreeMapAux[objective.id] = objective;
-            if (row[8] == null) {
-              // Parent must be present in the list (objectives);
-              objectivesTree.add(objective);
-            } else {
-              objectivesTreeMapAux[row[8]].alignedWithChildren
-                  .add(objective);
-            }
-          } else {
+          for (var row in results) {
+            objective = Objective();
+
+            //await fillFields(objective, row);
+            await fillMeasureField(objective, row);
+
+            objectives.add(objective);
+          }
+        } else if (request.hasCustomObjective() && request.customObjective ==  CustomObjective.objectiveTreeAlignedTo) {
+            for (var row in results) {
+              objective = Objective();
+
+              await fillFields(objective, row);
+
+              objectivesTreeMapAux[objective.id] = objective;
+              if (row[8] == null) {
+                // Parent must be present in the list (objectives);
+                objectivesTree.add(objective);
+              } else {
+                objectivesTreeMapAux[row[8]].alignedWithChildren
+                    .add(objective);
+              }
+          }
+        }
+        else {
+          for (var row in results) {
+            objective = Objective();
+
+            await fillFields(objective, row);
+
             objectives.add(objective);
           }
         }
+
       }
 
-      return (request.treeAlignedWithChildren)
+      return (request.hasCustomObjective() && request.customObjective ==  CustomObjective.objectiveTreeAlignedTo)
           ? objectivesTree ?? []
           : objectives ?? [];
 
@@ -402,7 +424,8 @@ class ObjectiveService extends ObjectiveServiceBase {
   static Future<Empty> queryUpdateObjective(ObjectiveRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objective.id..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()
+      ..id = request.objective.id);
     Map<String, dynamic> historyItemNotificationValues;
     try {
 
@@ -478,7 +501,7 @@ class ObjectiveService extends ObjectiveServiceBase {
   static Future<Empty> queryDeleteObjective(ObjectiveDeleteRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId);
 
     try {
       Map<String, dynamic> historyItemNotificationValues;

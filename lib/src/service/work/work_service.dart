@@ -12,7 +12,6 @@ import 'package:auge_shared/route/app_routes_definition.dart';
 
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
-import 'package:auge_shared/protos/generated/general/organization.pb.dart';
 import 'package:auge_shared/protos/generated/general/user.pb.dart';
 import 'package:auge_shared/protos/generated/general/group.pb.dart';
 import 'package:auge_shared/protos/generated/work/work_work_item.pbgrpc.dart';
@@ -20,7 +19,6 @@ import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart
 
 import 'package:auge_shared/src/util/common_utils.dart';
 import 'package:auge_shared/message/rpc_error_message.dart';
-import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/group_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
@@ -87,33 +85,42 @@ class WorkService extends WorkServiceBase {
 
     queryStatement = "SELECT ";
 
-    if (workGetRequest.hasRestrictWork()) {
-      if (workGetRequest.restrictWork == RestrictWork.workSpecification) {
+    if (workGetRequest.hasCustomWork()) {
+      if (workGetRequest.customWork == CustomWork.workOnlySpecification) {
         queryStatement = queryStatement + "work.id, " //0
             "work.name, " //1
             "null," //2
             "null, " //3
             "null, " //4 +
+            //"null, " //5
             "null, " //5
             "null, " //6
-            "null, " //7
-            "null " //8
+            "null " //7
             "FROM work.works work";
-
+      } else if (workGetRequest.customWork == CustomWork.workOnlyWithWorkItems) {
+        queryStatement = queryStatement + "work.id, " //0
+            "null, " //1
+            "null," //2
+            "null, " //3
+            "null, " //4 +
+           // "null, " //5
+            "null, " //5
+            "null, " //6
+            "null " //7
+            "FROM work.works work";
       } else { // none
          return null;
       }
-
     } else {
       queryStatement = queryStatement + "work.id, " //0
           "work.name, " //1
           "work.version," //2
           "work.description, " //3
           "work.archived, " //4 +
-          "work.organization_id, " //5
-          "work.leader_user_id, " //6
-          "work.objective_id, " //7
-          "work.group_id " //8
+       //   "work.organization_id, " //5
+          "work.leader_user_id, " //5
+          "work.objective_id, " //6
+          "work.group_id " //7
           "FROM work.works work";
     }
 
@@ -122,7 +129,7 @@ class WorkService extends WorkServiceBase {
     if (workGetRequest.hasId()) {
       queryStatement += " WHERE work.id = @id";
       substitutionValues = {"id": workGetRequest.id};
-    } else if (workGetRequest.hasOrganizationId()){
+    } else if (workGetRequest.hasOrganizationId()) {
       queryStatement += " WHERE work.organization_id = @organization_id";
       substitutionValues = {"organization_id": workGetRequest.organizationId};
     } else {
@@ -150,113 +157,172 @@ class WorkService extends WorkServiceBase {
       // queryStatementWhere = queryStatementWhere + " AND objective.leader_user_id in (${ids.toString().substring(1, ids.length-1)})";
     }
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+    try {
 
-    List<WorkItem> workItems;
+      results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
-    Objective objective;
-    Organization organization;
-    User user;
-    Group group;
-    List<WorkStage> workStages;
+      Objective objective;
+      User user;
+      Group group;
+     // List<WorkStage> workStages;
 
+      fillFields(Work work, var row) async {
+        /*
+        if (!workGetRequest.hasRestrictWorkItem() || workGetRequest.restrictWorkItem != RestrictWorkItem.workItemNone) {
+          WorkItemGetRequest workItemGetRequest = WorkItemGetRequest();
+          workItemGetRequest.workId = row[0];
+          workItemGetRequest.restrictWork = (workGetRequest.hasRestrictWork()) ? workGetRequest.restrictWork : workItemGetRequest.restrictWork = RestrictWork.workSpecification;
+          if (workGetRequest.hasWorkItemWithArchived()) workItemGetRequest.withArchived = workGetRequest.workItemWithArchived;
+          if (workGetRequest.workItemAssignedToIds != null && workGetRequest.workItemAssignedToIds.isNotEmpty) {
+            workItemGetRequest.assignedToIds.addAll(workGetRequest.workItemAssignedToIds);
+          }
+          workItems = await WorkItemService.querySelectWorkItems(workItemGetRequest);
+        } else {
+          workItems = [];
+        }
+  */
+  /*NEEDS ?
+        if (row[5] != null &&
+            (organization == null || organization.id != row[5])) {
+          if (!workGetRequest.hasRestrictOrganization() || workGetRequest.restrictOrganization != RestrictOrganization.organizationNone) {
+            // organization = await _augeApi.getOrganizationById(row[3]);
+            organization = await OrganizationService.querySelectOrganization(
+                OrganizationGetRequest()
+                  ..id = row[5]
+                  ..restrictOrganization = workGetRequest.hasRestrictOrganization() ? workGetRequest.restrictOrganization : RestrictOrganization.organizationSpecification);
+          } else {
+            organization = null;
+          }
+        }
+  */
+        // user = (await _augeApi.getUsers(id: row[4])).first;
+        if (row[5] != null) {
+          UserGetRequest userGetRequest = UserGetRequest();
+          userGetRequest.id = row[5];
+          userGetRequest.customUser = CustomUser.userOnlySpecificationProfileImage;
 
-    for (var row in results) {
-      // Work Items
+          user = await UserService.querySelectUser(userGetRequest);
+        } else {
+          user = null;
+        }
 
-      if (!workGetRequest.hasRestrictWorkItem() || workGetRequest.restrictWorkItem != RestrictWorkItem.workItemNone) {
-        WorkItemGetRequest workItemGetRequest = WorkItemGetRequest();
+        //stages = await getStages(row[0]);
+        /*
+        workStages = await WorkStageService.querySelectWorkStages(WorkStageGetRequest()
+          ..workId = row[0]
+          ..restrictWork = RestrictWork.workNone);
+  */
+
+        // objective = row[5] == null ? null : await _objectiveAugeApi.getObjectiveById(row[5]);
+        if (row[6] != null) {
+          objective = await ObjectiveService.querySelectObjective(
+              ObjectiveGetRequest()
+                ..id = row[6]
+                ..customObjective = CustomObjective.objectiveOnlySpecification);
+        } else {
+          objective = null;
+        }
+
+        // group =  row[6] == null ? null : await _augeApi.getGroupById(row[6]);
+        if (row[7] != null) {
+          group = row[7] == null ? null : await GroupService.querySelectGroup(
+              GroupGetRequest()
+                ..id = row[7]
+                ..customGroup = CustomGroup.groupOnlySpecification);
+        } else {
+          group = null;
+        }
+
+        Work work =
+        Work()..id = row[0]..name = row[1];
+
+        if (row[2] != null) work.version = row[2];
+        if (row[3] != null) work.description = row[3];
+
+        if (row[4] != null) work.archived = row[4];
+        /*
+        if (workItems.isNotEmpty) {
+          work.workItems.addAll(workItems);
+        }
+        */
+
+        /* TODO needs?
+        if (organization != null) {
+          work.organization = organization;
+        }
+
+         */
+        if (user != null) {
+          work.leader = user;
+        }
+        if (objective != null) {
+          work.objective = objective;
+        }
+        if (group != null) {
+          work.group = group;
+        }
+      }
+
+      WorkItemGetRequest workItemGetRequest;
+      fillWorkItems(Work work, var row) async {
         workItemGetRequest.workId = row[0];
-        workItemGetRequest.restrictWork = (workGetRequest.hasRestrictWork()) ? workGetRequest.restrictWork : workItemGetRequest.restrictWork = RestrictWork.workSpecification;
+        workItemGetRequest.customWorkItem = CustomWorkItem.workItemWithoutWork;
         if (workGetRequest.hasWorkItemWithArchived()) workItemGetRequest.withArchived = workGetRequest.workItemWithArchived;
         if (workGetRequest.workItemAssignedToIds != null && workGetRequest.workItemAssignedToIds.isNotEmpty) {
           workItemGetRequest.assignedToIds.addAll(workGetRequest.workItemAssignedToIds);
         }
-        workItems = await WorkItemService.querySelectWorkItems(workItemGetRequest);
-      } else {
-        workItems = [];
+        work.workItems.addAll(await WorkItemService.querySelectWorkItems(workItemGetRequest));
       }
 
-      if (row[5] != null &&
-          (organization == null || organization.id != row[5])) {
-      if (!workGetRequest.hasRestrictOrganization() || workGetRequest.restrictOrganization != RestrictOrganization.organizationNone) {
-          // organization = await _augeApi.getOrganizationById(row[3]);
-          organization = await OrganizationService.querySelectOrganization(
-              OrganizationGetRequest()
-                ..id = row[5]
-                ..restrictOrganization = workGetRequest.hasRestrictOrganization() ? workGetRequest.restrictOrganization : RestrictOrganization.organizationSpecification);
-        } else {
-          organization = null;
+      WorkStageGetRequest workStageGetRequest;
+      fillStages(Work work, var row) async {
+
+        workStageGetRequest..workId = row[0]
+          ..customWorkStage = CustomWorkStage.workStageOnlySpecification;
+
+        work.workStages.addAll(await WorkStageService.querySelectWorkStages(workStageGetRequest));
+      }
+
+      if (workGetRequest.customWork == CustomWork.workOnlySpecification) {
+        for (var row in results) {
+          Work work =
+          Work()..id = row[0]..name = row[1];
+          works.add(work);
+        }
+      } else if (workGetRequest.customWork == CustomWork.workOnlyWithWorkItems) {
+        workItemGetRequest = WorkItemGetRequest();
+        for (var row in results) {
+          Work work = Work();
+          await fillWorkItems(work, row);
+          works.add(work);
+        }
+      } else if (workGetRequest.customWork == CustomWork.workWithWorkItemsAndStages) {
+        workItemGetRequest = WorkItemGetRequest();
+        for (var row in results) {
+          Work work = Work();
+          await fillFields(work, row);
+          await fillWorkItems(work, row);
+          await fillStages(work, row);
+          works.add(work);
+        }
+      } else if (workGetRequest.customWork == CustomWork.workWithWorkItems) {
+        workItemGetRequest = WorkItemGetRequest();
+        for (var row in results) {
+          Work work = Work();
+          await fillFields(work, row);
+          await fillWorkItems(work, row);
+        }
+      } else {
+        for (var row in results) {
+          Work work = Work();
+          await fillFields(work, row);
         }
       }
-
-      // user = (await _augeApi.getUsers(id: row[4])).first;
-      if (row[6] != null) {
-        UserGetRequest userGetRequest = UserGetRequest();
-        userGetRequest.id = row[6];
-        userGetRequest.restrictUser = RestrictUser.userSpecification;
-        userGetRequest.restrictUserProfile = workGetRequest.hasRestrictUserProfile() ? workGetRequest.restrictUserProfile : RestrictUserProfile.userProfileImage;
-
-        user = await UserService.querySelectUser(userGetRequest);
-      } else {
-        user = null;
-      }
-
-      //stages = await getStages(row[0]);
-      workStages = await WorkStageService.querySelectWorkStages(WorkStageGetRequest()
-        ..workId = row[0]
-        ..restrictWork = RestrictWork.workNone);
-
-      // objective = row[5] == null ? null : await _objectiveAugeApi.getObjectiveById(row[5]);
-      if (row[7] != null) {
-        objective =
-        row[7] == null ? null : await ObjectiveService.querySelectObjective(
-            ObjectiveGetRequest()
-              ..id = row[7]
-              ..restrictObjective = RestrictObjective.objectiveIdName);
-      } else {
-        objective = null;
-      }
-
-      // group =  row[6] == null ? null : await _augeApi.getGroupById(row[6]);
-      if (row[8] != null) {
-        group = row[8] == null ? null : await GroupService.querySelectGroup(
-            GroupGetRequest()
-              ..id = row[8]..restrictGroup = RestrictGroup.groupSpecification);
-      } else {
-        group = null;
-      }
-
-      Work work =
-      Work()..id = row[0]..name = row[1];
-
-      if (row[2] != null) work.version = row[2];
-      if (row[3] != null) work.description = row[3];
-
-      if (row[4] != null) work.archived = row[4];
-      if (workItems.isNotEmpty) {
-        work.workItems.addAll(workItems);
-      }
-      if (organization != null) {
-        work.organization = organization;
-      }
-      if (user != null) {
-        work.leader = user;
-      }
-      if (workStages.isNotEmpty) {
-        work.workStages.addAll(workStages);
-      }
-      if (objective != null) {
-        work.objective = objective;
-      }
-      if (group != null) {
-        work.group = group;
-      }
-
-      works.add(work);
+      return works;
+    } catch (e) {
+      print('querySelectWorks - ${e.runtimeType}, ${e}');
+      rethrow;
     }
-
-    return works;
   }
 
   static Future<Work> querySelectWork(WorkGetRequest workGetRequest) async {
@@ -289,32 +355,32 @@ class WorkService extends WorkServiceBase {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workInvalidArgument );
     }
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+    try {
+      results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
-    User user;
+      User user;
 
-    if (results.length != 0) {
-      // Work Items
+      if (results.length != 0) {
+        // Work Items
 
-      var row = results.first;
+        var row = results.first;
 
-      // user = (await _augeApi.getUsers(id: row[4])).first;
-      if (row[0] != null) {
-        UserGetRequest userGetRequest = UserGetRequest();
-        userGetRequest.id = row[6];
-        userGetRequest.restrictUser = RestrictUser.userSpecification;
-        if (workGetRequest.hasRestrictUserProfile()) {
-          userGetRequest.restrictUserProfile = workGetRequest.restrictUserProfile;
+        // user = (await _augeApi.getUsers(id: row[4])).first;
+        if (row[0] != null) {
+          UserGetRequest userGetRequest = UserGetRequest();
+          userGetRequest.id = row[6];
+          userGetRequest.customUser = CustomUser.userOnlySpecificationProfileImage;
+          user = await UserService.querySelectUser(userGetRequest);
         } else {
-          userGetRequest.restrictUserProfile = RestrictUserProfile.userProfileImage;
+          user = null;
         }
-        user = await UserService.querySelectUser(userGetRequest);
-      } else {
-        user = null;
       }
-    }
 
-    return user;
+      return user;
+    } catch (e) {
+      print('querySelectWorkUserLeader - ${e.runtimeType}, ${e}');
+      rethrow;
+    }
   }
 
 

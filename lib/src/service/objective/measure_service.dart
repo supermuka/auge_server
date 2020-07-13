@@ -2,8 +2,7 @@
 // Author: Samuel C. Schwebel
 
 import 'dart:async';
-//import 'package:auge_shared/domain/general/unit_of_measurement.dart';
-import 'package:auge_shared/protos/generated/general/user.pb.dart';
+
 import 'package:auge_shared/src/util/common_utils.dart';
 import 'package:auge_shared/protos/generated/objective/objective_measure.pb.dart';
 import 'package:auge_shared/message/messages.dart';
@@ -163,18 +162,34 @@ class MeasureService extends MeasureServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT id," //0
-        " version, " //1
-        " name," //2
-        " description," //3
-        " metric," //4
-        " decimals_number," //5
-        " start_value::REAL," //6
-        " end_value::REAL," //7
-        " (select current_value from objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //8
-        " unit_of_measurement_id," //9
-        " objective_id" //10
-        " FROM objective.measures measure ";
+    if (request.customMeasure == CustomMeasure.measureWithoutObjective) {
+      queryStatement = "SELECT id," //0
+          " version, " //1
+          " name," //2
+          " description," //3
+          " metric," //4
+          " decimals_number," //5
+          " start_value::REAL," //6
+          " end_value::REAL," //7
+          " (select current_value from objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //8
+          " unit_of_measurement_id, " //9
+          " null" //10
+          " FROM objective.measures measure ";
+
+    } else {
+      queryStatement = "SELECT id," //0
+          " version, " //1
+          " name," //2
+          " description," //3
+          " metric," //4
+          " decimals_number," //5
+          " start_value::REAL," //6
+          " end_value::REAL," //7
+          " (select current_value from objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //8
+          " unit_of_measurement_id, " //9
+          " objective_id" //10
+          " FROM objective.measures measure ";
+    }
 
     Map<String, dynamic> substitutionValues;
 
@@ -190,18 +205,16 @@ class MeasureService extends MeasureServiceBase {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.measureInvalidArgument );
     }
 
-    List<Measure> measures = new List();
+    List<UnitOfMeasurement> unitsOfMeasurement;
+    List<Measure> measures = List();
 
     try {
       results = await (await AugeConnection.getConnection()).query(
           queryStatement, substitutionValues: substitutionValues);
 
-      List<UnitOfMeasurement> unitsOfMeasurement;
-
       if (results != null && results.isNotEmpty) {
-        for (var row in results) {
-          Measure measure = Measure();
 
+        fillFields(Measure measure, var row) async {
           measure
             ..id = row[0]
             ..version = row[1]
@@ -221,21 +234,32 @@ class MeasureService extends MeasureServiceBase {
           if (unitsOfMeasurement != null && unitsOfMeasurement.length != 0) {
             measure.unitOfMeasurement = unitsOfMeasurement.first;
           }
+        }
 
-          if (!request.hasRestrictObjective() ||
-              request.restrictObjective != RestrictObjective.objectiveNone) {
-            ObjectiveGetRequest objectiveGetRequest = ObjectiveGetRequest();
+        if (request.customMeasure == CustomMeasure.measureWithoutObjective) {
+          for (var row in results) {
+            Measure measure = Measure();
+            await fillFields(measure, row);
+            measures.add(measure);
+          }
+
+        } else {
+          ObjectiveGetRequest objectiveGetRequest = ObjectiveGetRequest();
+          fillObjectiveField(Measure measure, var row) async {
+
             objectiveGetRequest.id = row[10];
-            if (request.hasRestricUserProfile())
-              objectiveGetRequest.restrictUserProfile =
-                  request.restricUserProfile;
-            if (request.hasRestrictObjective())
-              objectiveGetRequest.restrictObjective = request.restrictObjective;
+            objectiveGetRequest.customObjective = CustomObjective.objectiveOnlySpecificationStartDateEndDate;
+
             measure.objective =
             await ObjectiveService.querySelectObjective(objectiveGetRequest);
-          }
-          measures.add(measure);
 
+          }
+          for (var row in results) {
+            Measure measure = Measure();
+            await fillFields(measure, row);
+            await fillObjectiveField(measure, row);
+            measures.add(measure);
+          }
         }
       }
     } catch (e) {
@@ -370,7 +394,7 @@ class MeasureService extends MeasureServiceBase {
     try {
 
       // Recovery to log to history
-      Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measure.id..restrictObjective = RestrictObjective.objectiveIdName..restricUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+      Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measure.id);
 
       // TODO (this is made just to get a objective name, found a way to improve the performance)
     //  Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId..restrictObjective = RestrictObjective.objectiveIdName);
@@ -443,7 +467,7 @@ class MeasureService extends MeasureServiceBase {
   /// Delete a [Measure] by id
   Future<Empty> queryDeleteMeasure(MeasureDeleteRequest request, String urlOrigin) async {
 
-    Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId..restrictObjective = RestrictObjective.objectiveIdName..restricUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId);
     Map<String, dynamic> historyItemNotificationValues;
 
     try {
@@ -498,14 +522,25 @@ class MeasureService extends MeasureServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT id," // 0
-        " version," //1
-        " date," //2
-        " current_value," //3
-        " comment," //4
-        " measure_id" //5
-        " FROM objective.measure_progress ";
-
+    if (request.hasCustomMeasureProgress()) {
+      if (request.customMeasureProgress == CustomMeasureProgress.measureProgressWithoutMeasure) {
+        queryStatement = "SELECT id," // 0
+            " version," //1
+            " date," //2
+            " current_value," //3
+            " comment," //4
+            " null" //5
+            " FROM objective.measure_progress ";
+      }
+    } else {
+      queryStatement = "SELECT id," // 0
+          " version," //1
+          " date," //2
+          " current_value," //3
+          " comment," //4
+          " measure_id" //5
+          " FROM objective.measure_progress ";
+    }
     Map<String, dynamic> substitutionValues = {};
 
     if (request.hasId()) {
@@ -520,29 +555,25 @@ class MeasureService extends MeasureServiceBase {
 
     queryStatement += " ORDER BY date DESC";
 
+
+
+
+
+
     List<MeasureProgress> measureProgresses = List();
     try {
       results = await (await AugeConnection.getConnection()).query(
           queryStatement, substitutionValues: substitutionValues);
 
-
-
       if (results != null && results.isNotEmpty) {
-        for (var row in results) {
-          MeasureProgress measureProgress = MeasureProgress()
+        fillFields(MeasureProgress measureProgress, var row) async {
+          measureProgress
             ..id = row[0]
             ..version = row[1];
 
           //  measureProgress.date = row[3]
           if (row[2] != null)
             measureProgress.date = CommonUtils.timestampFromDateTime(row[2]);
-          /*{
-            Timestamp t = Timestamp();
-            int microsecondsSinceEpoch = row[2].toUtc().microsecondsSinceEpoch;
-            t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
-            t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
-            measureProgress.date = t;
-          }*/
 
           if (row[3] != null) {
             measureProgress.currentValue = row[3];
@@ -550,26 +581,32 @@ class MeasureService extends MeasureServiceBase {
           if (row[4] != null) {
             measureProgress.comment = row[4];
           }
+        }
 
-          if (row[5] != null) {
-            if (!request.hasRestrictMeasure() &&
-                request.restrictMeasure != RestrictMeasure.measureNone) {
-              MeasureGetRequest measureGetRequest = MeasureGetRequest();
+        if (request.hasCustomMeasureProgress() && request.customMeasureProgress == CustomMeasureProgress.measureProgressWithoutMeasure) {
+
+          for (var row in results) {
+            MeasureProgress measureProgress = MeasureProgress();
+            await fillFields(measureProgress, row);
+            measureProgresses.add(measureProgress);
+          }
+
+        } else {
+          MeasureGetRequest measureGetRequest = MeasureGetRequest();
+          fillMeasureField(MeasureProgress measureProgress, var row) async {
+            if (row[5] != null) {
 
               measureGetRequest.id = row[5];
-              if (request.hasRestrictObjective()) {
-                measureGetRequest.restrictObjective = request.restrictObjective;
-              } else if (request.hasRestrictUserProfile()) {
-                measureGetRequest.restricUserProfile =
-                    request.restrictUserProfile;
-              }
-
               measureProgress.measure =
               await MeasureService.querySelectMeasure(measureGetRequest);
             }
           }
-
-          measureProgresses.add(measureProgress);
+          for (var row in results) {
+            MeasureProgress measureProgress = MeasureProgress();
+            await fillFields(measureProgress, row);
+            await fillMeasureField(measureProgress, row);
+            measureProgresses.add(measureProgress);
+          }
         }
       }
     } catch (e) {
@@ -628,7 +665,7 @@ class MeasureService extends MeasureServiceBase {
     try {
 
       // This is made just to recovery email leader from objective, used to notification
-      request.measureProgress.measure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId..restrictObjective = RestrictObjective.objectiveIdName..restricUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+      request.measureProgress.measure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId);
 
       request.measureProgress.version = 0;
 
@@ -691,7 +728,7 @@ class MeasureService extends MeasureServiceBase {
       MeasureProgressRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgress.id..restrictObjective = RestrictObjective.objectiveIdName..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgress.id);
 
     request.measureProgress.measure = previousMeasureProgress.measure;
     // This is made just to recovery email leader from objective, used to notification
@@ -767,7 +804,8 @@ class MeasureService extends MeasureServiceBase {
   /// Delete a [MeasureProgress] by id
   Future<Empty> queryDeleteMeasureProgress(MeasureProgressDeleteRequest request, String urlOrigin) async {
 
-    MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()..id = request.measureProgressId..restrictObjective = RestrictObjective.objectiveIdName..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    MeasureProgress previousMeasureProgress = await querySelectMeasureProgress(MeasureProgressGetRequest()
+      ..id = request.measureProgressId);
 
     try {
 

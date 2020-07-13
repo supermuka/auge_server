@@ -9,7 +9,6 @@ import 'package:grpc/grpc.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 
-import 'package:auge_shared/protos/generated/general/organization.pb.dart';
 import 'package:auge_shared/protos/generated/general/organization_configuration.pbgrpc.dart';
 
 import 'package:auge_shared/domain/general/organization_configuration.dart' as organization_configuration_m;
@@ -17,9 +16,7 @@ import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
 import 'package:auge_shared/domain/general/authorization.dart' show SystemModule, SystemFunction;
 
 import 'package:auge_server/src/util/db_connection.dart';
-import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
-// import 'package:auge_server/src/service/general/organization_service.dart';
 
 import 'package:uuid/uuid.dart';
 
@@ -61,8 +58,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
 
     queryStatement = "SELECT organization_configuration.id," //0
         " organization_configuration.version," //1
-        " organization_configuration.domain," //2
-        " organization_configuration.organization_id" //3
+        " organization_configuration.domain" //2
         " FROM general.organization_configurations organization_configuration";
 
     Map<String, dynamic> substitutionValues;
@@ -95,14 +91,6 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
         if (row[2] != null)
           configuration.domain = row[2];
 
-        if (!request.hasRestrictOrganization() || request.restrictOrganization != RestrictOrganization.organizationNone) {
-          if (row[3] != null)
-            configuration.organization =
-            await OrganizationService.querySelectOrganization(
-                OrganizationGetRequest()
-                  ..id = row[3]
-                  ..restrictOrganization = RestrictOrganization.organizationSpecification);
-        }
         configurations.add(configuration);
       }
     } catch (e) {

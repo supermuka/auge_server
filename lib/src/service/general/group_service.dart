@@ -8,13 +8,10 @@ import 'package:grpc/grpc.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_shared/protos/generated/general/user.pb.dart';
-import 'package:auge_shared/protos/generated/general/organization.pb.dart';
 import 'package:auge_shared/protos/generated/general/group.pbgrpc.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
-// import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/user_service.dart';
-import 'package:auge_server/src/service/general/organization_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 
 import 'package:auge_shared/domain/general/authorization.dart' show SystemModule, SystemFunction;
@@ -90,21 +87,28 @@ class GroupService extends GroupServiceBase {
 
     String queryStatement = "SELECT";
 
-    if (request.hasRestrictGroup()) {
+    if (request.hasCustomGroup()) {
 
-      if (request.restrictGroup == RestrictGroup.groupSpecification) {
+      if (request.customGroup == CustomGroup.groupOnlySpecification) {
         queryStatement = queryStatement +
             " g.id" //0
-              ",g.name" //1
-              ",null" //2
-              ",null" //3
-              ",null" //4
-              ",null" //5
-              ",null" //6
-              ",null"; //7
+                ",g.name" //1
+                ",null" //2
+                ",null" //3
+                ",null" //4
+                ",null" //5
+                ",null"; //6
+      } else if (request.customGroup == CustomGroup.groupWithMembers) {
+        queryStatement = queryStatement +
+            " g.id" //0
+            ",g.name"  //1
+            ",g.version" //2
+            ",g.inactive" //3
+            ",g.group_type_index" //4
+            ",g.leader_user_id" //5
+            ",g.super_group_id"; //6
       } else { // none
         return null;
-
       }
     } else {
       queryStatement = queryStatement +
@@ -112,10 +116,9 @@ class GroupService extends GroupServiceBase {
           ",g.name"  //1
           ",g.version" //2
           ",g.inactive" //3
-          ",g.organization_id" //4
-          ",g.group_type_index" //5
-          ",g.leader_user_id" //6
-          ",g.super_group_id"; //7
+          ",g.group_type_index" //4
+          ",g.leader_user_id" //5
+          ",g.super_group_id"; //6
       }
 
     queryStatement = queryStatement + " FROM general.groups g ";
@@ -147,51 +150,35 @@ class GroupService extends GroupServiceBase {
           queryStatement, substitutionValues: substitutionValues);
 
       if (results.length > 0) {
+
         User leader;
         Group superGroup;
         List<User> members;
-        Organization organization;
-        Map<String, Organization> organizationCache = {};
-        for (var row in results) {
-          Group group = Group()
-            ..id = row[0]
-            ..name = row[1];
+
+        fillFields(Group group, row) async {
+
+          group.id = row[0];
+          group.name = row[1];
 
           if (row[2] != null) group.version = row[2];
           if (row[3] != null) group.inactive = row[3];
-          if (row[5] != null) group.groupTypeIndex = row[5];
+          if (row[4] != null) group.groupTypeIndex = row[4];
 
-          if (!request.hasRestrictOrganization() ||
-              request.restrictOrganization !=
-                  RestrictOrganization.organizationNone) {
-            if (row[4] != null) {
-              organization =
-              await OrganizationService.querySelectOrganization(
-                  OrganizationGetRequest()
-                    ..id = row[4]
-                    ..restrictOrganization = RestrictOrganization.organizationSpecification,
-                  cache: organizationCache);
-            } else {
-              organization = null;
-            }
-          }
-
-          if (row[6] != null) {
+          if (row[5] != null) {
             leader =
-            await UserService.querySelectUser(UserGetRequest()
-              ..restrictUser = RestrictUser.userSpecification
-              ..restrictUserProfile = RestrictUserProfile.userProfileImage
-              ..id = row[6], cache: userCache);
+                await UserService.querySelectUser(UserGetRequest()
+              ..customUser = CustomUser.userOnlySpecificationProfileImage
+              ..id = row[5], cache: userCache);
           } else {
             leader = null;
           }
 
-          if (row[7] != null && request.alignedToRecursive > 0) {
+          if (row[6] != null && request.alignedToRecursive > 0) {
 
             superGroup =
-            await querySelectGroup(GroupGetRequest()
-              ..id = row[7]
-              ..restrictGroup = RestrictGroup.groupSpecification
+                await querySelectGroup(GroupGetRequest()
+              ..id = row[6]
+              ..customGroup = CustomGroup.groupOnlySpecification
               ..alignedToRecursive = --request.alignedToRecursive,
                 cache: groupCache);
 
@@ -199,14 +186,6 @@ class GroupService extends GroupServiceBase {
             superGroup = null;
           }
 
-          // No need of the cache. It´s doesn't persist on data base.
-          //groupType = await GroupService.querySelectGroupType(GroupTypeGetRequest()..id = row[5]);
-          //sleep(Duration(seconds: 1));
-          members = await querySelectGroupMembers(row[0]);
-
-          if (organization != null) {
-            group.organization = organization;
-          }
 
           if (superGroup != null) {
             group.superGroup = superGroup;
@@ -215,12 +194,37 @@ class GroupService extends GroupServiceBase {
           if (leader != null) {
             group.leader = leader;
           }
+        }
 
+        fillMembersField(Group group, row) async {
+          members = await querySelectGroupMembers(row[0]);
           if (members.isNotEmpty) {
             group.members.addAll(members);
           }
+        }
 
-          groups.add(group);
+        if (request.hasCustomGroup()) {
+          if (request.customGroup == CustomGroup.groupOnlySpecification) {
+            for (var row in results) {
+              Group group = Group()
+                ..id = row[0]
+                ..name = row[1];
+              groups.add(group);
+            }
+          } else if (request.customGroup == CustomGroup.groupWithMembers) {
+            for (var row in results) {
+              Group group = Group();
+              await fillFields(group, row);
+              await fillMembersField(group, row);
+              groups.add(group);
+            }
+          }
+        } else {
+          for (var row in results) {
+            Group group = Group();
+            await fillFields(group, row);
+            groups.add(group);
+          }
         }
       }
     } catch (e) {
@@ -517,8 +521,7 @@ class GroupService extends GroupServiceBase {
 
       users = await UserService.querySelectUsers(UserGetRequest()
         ..id = row[0]
-        ..restrictUser = RestrictUser.userSpecification
-        ..restrictUserProfile = RestrictUserProfile.userProfileImage);
+        ..customUser = CustomUser.userOnlySpecificationProfileImage);
 
       if (users != null && users.length != 0) {
         user = users.first;

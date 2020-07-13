@@ -101,8 +101,7 @@ class HistoryItemService extends HistoryItemServiceBase {
         for (var row in results) {
           user = await UserService.querySelectUser(UserGetRequest()
             ..id = row[1]
-            ..restrictUser = RestrictUser.userSpecification
-            ..restrictUserProfile = RestrictUserProfile.userProfileImage, cache: userCache);
+            ..customUser = CustomUser.userOnlySpecificationProfileImage, cache: userCache);
 
           HistoryItem historyItem = HistoryItem()..id = row[0]
             ..user = user

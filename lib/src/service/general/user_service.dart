@@ -63,14 +63,40 @@ class UserService extends UserServiceBase {
 
     List<User> users = [];
     String queryStatement = "SELECT";
-    if (request.hasRestrictUser()) {
-      if (request.restrictUser == RestrictUser.userSpecification) {
+    if (request.hasCustomUser()) {
+      if (request.customUser == CustomUser.userOnlySpecification) {
         queryStatement = queryStatement +
             " u.id" //0
             ",u.name" //1
             ",null" //2
             ",null" //3
-            ",null"; //4
+            ",null" //4
+            ",null" //5
+            ",null" //6
+            ",null" //7
+            ",null"; //8
+      } else if (request.customUser == CustomUser.userOnlySpecificationProfileImage)  {
+        queryStatement = queryStatement +
+            " u.id" //0
+            ",u.name" //1
+            ",null" //2
+            ",null" //3
+            ",null" //4
+            ",user_profile.image" //5
+            ",null" //6
+            ",null" //7
+            ",null"; //8
+      } else if (request.customUser == CustomUser.userOnlySpecificationProfileNotificationEmailIdiom)  {
+        queryStatement = queryStatement +
+            " u.id" //0
+            ",u.name" //1
+            ",null" //2
+            ",null" //3
+            ",null" //4
+            ",null" //5
+            ",user_profile.email" //6
+            ",user_profile.email_notification" //7
+            ",user_profile.idiom_locale"; //8
       } else { // RestrictSelectUser.node or another not specified here
         return null;
       }
@@ -80,38 +106,13 @@ class UserService extends UserServiceBase {
       ",u.name" //1
       ",u.version" //2
       ",u.inactive" //3
-      ",u.managed_by_organization_id"; //4
-    }
-
-    if (request.hasRestrictUserProfile()) {
-      if (request.restrictUserProfile == RestrictUserProfile.userProfileImage) {
-        queryStatement = queryStatement +
-            ",user_profile.image" //5
-            ",null" //6
-            ",null" //7
-            ",null"; //8
-      } else if (request.restrictUserProfile == RestrictUserProfile.userProfileNotificationEmailIdiom) {
-        queryStatement = queryStatement +
-            ",null" //5
-            ",user_profile.email" //6
-            ",user_profile.email_notification" //7
-            ",user_profile.idiom_locale"; //8
-      } else {
-        queryStatement = queryStatement +
-            ",null" //5
-            ",null" //6
-            ",null" //7
-            ",null"; //8
-        // not return here like normally is made, because it can returns users, without profile.
-        //node or another not specified here
-      }
-    } else {
-      queryStatement = queryStatement +
+      ",u.managed_by_organization_id" //4
       ",user_profile.image" //5
       ",user_profile.email" //6
       ",user_profile.email_notification" //7
       ",user_profile.idiom_locale"; //8
     }
+
     queryStatement = queryStatement +
     " FROM general.users u "
         " LEFT OUTER JOIN general.user_profiles user_profile on user_profile.user_id = u.id";
@@ -174,7 +175,7 @@ class UserService extends UserServiceBase {
               organization = await OrganizationService.querySelectOrganization(
                   OrganizationGetRequest()
                     ..id = row[4]
-                    ..restrictOrganization = RestrictOrganization.organizationSpecification);
+                    ..customOrganization = CustomOrganization.organizationSpecification);
             }
             user.managedByOrganization = organization;
           }

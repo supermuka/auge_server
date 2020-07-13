@@ -70,58 +70,108 @@ class WorkStageService extends WorkStageServiceBase {
 
   // QUERY
   // *** WORK STAGES ***
-  static Future<List<WorkStage>> querySelectWorkStages(WorkStageGetRequest workStageGetRequest /* {String workId, String id} */) async {
+  static Future<List<WorkStage>> querySelectWorkStages(WorkStageGetRequest request /* {String workId, String id} */) async {
 
     List<List<dynamic>> results;
 
     String queryStatement;
 
-    queryStatement = "SELECT work_stage.id," //0
-        " work_stage.version," //1
-        " work_stage.name," //2
-        " work_stage.index," //3
-        " work_stage.work_id," //4
-        " work_stage.state_index" //5
-        " FROM work.work_stages work_stage";
+    if (request.hasCustomWorkStage()) {
+      if (request.customWorkStage == CustomWorkStage.workStageOnlySpecification) {
+        queryStatement = "SELECT work_stage.id," //0
+            " work_stage.name," //1
+            " null," //2
+            " null," //3
+            " null," //4
+            " null" //5
+            " FROM work.work_stages work_stage";
+
+      } else if (request.customWorkStage == CustomWorkStage.workStageWithoutWork) {
+        queryStatement = "SELECT work_stage.id," //0
+            " work_stage.name," //1
+            " work_stage.version," //2
+            " work_stage.index," //3
+            " work_stage.state_index," //4
+            " null" //5
+            " FROM work.work_stages work_stage";
+      } else {
+        return null;
+      }
+    } else {
+      queryStatement = "SELECT work_stage.id," //0
+          " work_stage.name," //1
+          " work_stage.version," //2
+          " work_stage.index," //3
+          " work_stage.state_index," //4
+          " work_stage.work_id" //5
+          " FROM work.work_stages work_stage";
+    }
 
     Map<String, dynamic> substitutionValues;
 
-    if (workStageGetRequest != null && workStageGetRequest.hasId()) {
+    if (request.hasId()) {
       queryStatement += " WHERE work_stage.id = @id";
-      substitutionValues = {"id": workStageGetRequest.id};
-    } else if (workStageGetRequest != null && workStageGetRequest.hasWorkId() ) {
+      substitutionValues = {"id": request.id};
+    } else if (request.hasWorkId() ) {
       queryStatement += " WHERE work_stage.work_id = @work_id";
-      substitutionValues = {"work_id": workStageGetRequest.workId};
+      substitutionValues = {"work_id": request.workId};
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.stageInvalidArgument );
     }
 
     queryStatement += " ORDER BY work_stage.state_index, work_stage.index";
 
-    results = await (await AugeConnection.getConnection()).query(
-        queryStatement, substitutionValues: substitutionValues);
+    try {
+      results = await (await AugeConnection.getConnection()).query(
+          queryStatement, substitutionValues: substitutionValues);
 
-    List<WorkStage> workStages = new List();
-    WorkStage workStage;
-    for (var row in results) {
+      List<WorkStage> workStages = new List();
 
-     // List<State> states = await StateService.querySelectStates(StateGetRequest()..id = row[5]);
-
-      workStage = WorkStage()
-        ..id = row[0]
-        ..version = row[1]
-        ..name = row[2]
-        ..index = row[3]
-        ..stateIndex = row[5];
-
-      if (!workStageGetRequest.hasRestrictWork() || workStageGetRequest.restrictWork != RestrictWork.workNone) {
-        workStage.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[4]);
+      fillFields(WorkStage workStage, var row) {
+        workStage
+          ..id = row[0]
+          ..name = row[1]
+          ..version = row[2]
+          ..index = row[3]
+          ..stateIndex = row[4];
       }
 
-      workStages.add(workStage);
-    }
+      fillWorkField(WorkStage workStage, var row) async {
+        workStage.work = await WorkService.querySelectWork(WorkGetRequest()..id = row[5]..customWork = CustomWork.workOnlySpecification);
+      }
 
-    return workStages;
+      WorkStage workStage;
+      if (request.hasCustomWorkStage()) {
+        if (request.customWorkStage ==
+            CustomWorkStage.workStageOnlySpecification) {
+
+          for (var row in results) {
+            workStage = WorkStage();
+            workStage..id = row[0]
+          ..name = row[1];
+            workStages.add(workStage);
+          }
+        } else if (request.customWorkStage == CustomWorkStage.workStageWithoutWork) {
+          for (var row in results) {
+            workStage = WorkStage();
+            await fillFields(workStage, row);
+            workStages.add(workStage);
+          }
+        }
+      } else {
+        for (var row in results) {
+          workStage = WorkStage();
+          await fillFields(workStage, row);
+          await fillWorkField(workStage, row);
+          workStages.add(workStage);
+        }
+      }
+
+      return workStages;
+    } catch (e) {
+    print('querySelectWorkStages - ${e.runtimeType}, ${e}');
+    rethrow;
+  }
   }
 
   static Future<WorkStage> querySelectWorkStage(WorkStageGetRequest workStageGetRequest) async {
@@ -223,7 +273,7 @@ class WorkStageService extends WorkStageServiceBase {
 
 
     } catch (e) {
-      print('${e.runtimeType}, ${e}');
+      print('queryInsertWorkStage - ${e.runtimeType}, ${e}');
       rethrow;
     }
 
@@ -296,7 +346,7 @@ class WorkStageService extends WorkStageServiceBase {
 
 
     } catch (e) {
-      print('${e.runtimeType}, ${e}');
+      print('queryUpdateWorkStage - ${e.runtimeType}, ${e}');
       rethrow;
     }
     return Empty()/*..webWorkAround = true*/;
@@ -305,7 +355,7 @@ class WorkStageService extends WorkStageServiceBase {
   /// Delete a stage by [id]
   static Future<Empty> queryDeleteWorkStage(WorkStageDeleteRequest request, String urlOrigin) async {
 
-    WorkStage workStagePrevious = await querySelectWorkStage(WorkStageGetRequest()..id = request.workStageId..restrictWork = RestrictWork.workSpecification);
+    WorkStage workStagePrevious = await querySelectWorkStage(WorkStageGetRequest()..id = request.workStageId);
 
     Map<String, dynamic> historyItemNotificationValues;
 

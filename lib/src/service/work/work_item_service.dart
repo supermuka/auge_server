@@ -136,19 +136,52 @@ class WorkItemService extends WorkItemServiceBase {
     List<List<dynamic>> results;
 
     String queryStatement;
-    queryStatement = "SELECT work_item.id," //0
-        " work_item.version," //1
-        " work_item.name," //2
-        " work_item.description," //3
-        " work_item.due_date," //4
-        " work_item.planned_value," //5
-        " (SELECT sum(actual_value) FROM work.work_item_values work_item_value WHERE work_item_value.work_item_id = work_item.id)::REAL AS actual_value," //6 +
-        " work_item.stage_id," // 7
-        " work_item.work_id, " // 8
-        " work_item.unit_of_measurement_id, " // 9
-        " work_item.archived " // 10
-        " FROM work.work_items work_item";
+    if (workItemGetRequest.hasCustomWorkItem()) {
+      if (workItemGetRequest.customWorkItem == CustomWorkItem.workItemOnlySpecification) {
+        queryStatement = "SELECT work_item.id," //0
+            " work_item.name," //1
+            " null," //2
+            " null," //3
+            " null," //4
+            " null," //5
+            " null," //6
+            " null," // 7
+            " null," // 8
+            " null, " // 9
+            " null " // 10
+            " FROM work.work_items work_item";
+      } else if (workItemGetRequest.customWorkItem == CustomWorkItem.workItemWithoutWork) {
+        queryStatement = "SELECT work_item.id," //0
+            " work_item.name," //1
+            " work_item.version," //2
+            " work_item.description," //3
+            " work_item.due_date," //4
+            " work_item.planned_value," //5
+            " (SELECT sum(actual_value) FROM work.work_item_values work_item_value WHERE work_item_value.work_item_id = work_item.id)::REAL AS actual_value," //6
+            " work_item.stage_id," // 7
+            " null, " // 8
+            " work_item.unit_of_measurement_id, " // 9
+            " work_item.archived " // 10
+            " FROM work.work_items work_item";
+      } else {
+        return null;
+      }
+    } else {
+
+      queryStatement = "SELECT work_item.id," //0
+          " work_item.name," //2
+          " work_item.version," //1
+          " work_item.description," //3
+          " work_item.due_date," //4
+          " work_item.planned_value," //5
+          " (SELECT sum(actual_value) FROM work.work_item_values work_item_value WHERE work_item_value.work_item_id = work_item.id)::REAL AS actual_value," //6
+          " work_item.stage_id," // 7
+          " work_item.work_id, " // 8
+          " work_item.unit_of_measurement_id, " // 9
+          " work_item.archived " // 10
+          " FROM work.work_items work_item";
       //  " JOIN work.work_stages work_stage ON stage.id = work_item.stage_id";
+    }
 
     Map<String, dynamic> substitutionValues;
     if (workItemGetRequest.hasId()) {
@@ -174,46 +207,41 @@ class WorkItemService extends WorkItemServiceBase {
       // queryStatementWhere = queryStatementWhere + " AND objective.group_id in (${ids.toString().substring(1, ids.length-1)})";
     }
     List<WorkItem> workItems = List();
-    List<UnitOfMeasurement> unitsOfMeasurement;
 
     try {
       results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
-      WorkStage workStage;
+      List<UnitOfMeasurement> unitsOfMeasurement;
       List<User> assignedToUsers;
       List<WorkItemAttachment> attachments;
       List<WorkItemCheckItem> checkItems;
       WorkItem workItem;
-      for (var row in results) {
+      WorkStage workStage;
 
-        workStage = await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[7]..restrictWork = RestrictWork.workNone);
+      WorkStageGetRequest workStageGetRequest = WorkStageGetRequest();
+      WorkItemAttachmentGetRequest workItemAttachmentGetRequest = WorkItemAttachmentGetRequest();
+      WorkItemCheckItemGetRequest workItemCheckItemGetRequest = WorkItemCheckItemGetRequest();
+      fillFields(WorkItem workItem, var row) async {
+
+        workStage = await WorkStageService.querySelectWorkStage(workStageGetRequest..id = row[7]..customWorkStage = CustomWorkStage.workStageWithoutWork);
 
         assignedToUsers = await querySelectWorkItemAssignedToUsers(row[0]);
 
-        attachments = await querySelectWorkItemAttachments(WorkItemAttachmentGetRequest()..workItemId = row[0]..withContent = false);
+        attachments = await querySelectWorkItemAttachments(workItemAttachmentGetRequest..workItemId = row[0]..withContent = false);
 
-        checkItems = await querySelectWorkItemCheckItems(WorkItemCheckItemGetRequest()..workItemId = row[0]);
+        checkItems = await querySelectWorkItemCheckItems(workItemCheckItemGetRequest..workItemId = row[0]);
 
-        workItem = WorkItem()..id = row[0]..version = row[1]..name = row[2];
+        workItem..id = row[0]..name = row[1]..version = row[2];
         if (row[3] != null) workItem.description = row[3];
         if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4]);
 
         if (row[5] != null) workItem.plannedValue = row[5];
         if (row[6] != null) workItem.actualValue = row[6];
+
         if (workStage != null) workItem.workStage = workStage; //await WorkStageService.querySelectWorkStage(WorkStageGetRequest()..id = row[7]);
         if (assignedToUsers.isNotEmpty) workItem.assignedTo.addAll(assignedToUsers);
         if (attachments.isNotEmpty) workItem.attachments.addAll(attachments);
         if (checkItems.isNotEmpty) workItem.checkItems.addAll(checkItems);
-
-        if (row[8] != null) {
-          if (!workItemGetRequest.hasRestrictWork() ||
-              workItemGetRequest.restrictWork != RestrictWork.workNone) {
-            workItem.work = await WorkService.querySelectWork(WorkGetRequest()
-              ..id = row[8]
-              ..restrictWork = RestrictWork.workSpecification
-              ..restrictWorkItem = RestrictWorkItem.workItemNone);
-          }
-        }
 
         if (row[9] != null)
           //  measureUnit = await getMeasureUnitById(row[8]);
@@ -223,8 +251,43 @@ class WorkItemService extends WorkItemServiceBase {
         }
 
         workItem.archived = row[10];
-        workItems.add(workItem);
 
+      }
+
+      fillWorkField(WorkItem workItem, var row) async {
+        if (row[8] != null) {
+          workItem.work = await WorkService.querySelectWork(WorkGetRequest()
+            ..id = row[8]
+            ..customWork = CustomWork.workOnlySpecification);
+        }
+      }
+
+      if (workItemGetRequest.hasCustomWorkItem()) {
+
+        if (workItemGetRequest.customWorkItem ==
+            CustomWorkItem.workItemOnlySpecification) {
+
+          for (var row in results) {
+            workItem = WorkItem()..id = row[0]..name = row[1];
+            workItems.add(workItem);
+          }
+        } else if (workItemGetRequest.customWorkItem ==
+            CustomWorkItem.workItemWithoutWork) {
+
+          for (var row in results) {
+            workItem = WorkItem();
+            await fillFields(workItem, row);
+            workItems.add(workItem);
+          }
+        }
+      } else {
+
+        for (var row in results) {
+          workItem = WorkItem();
+          await fillFields(workItem, row);
+          await fillWorkField(workItem, row);
+          workItems.add(workItem);
+        }
       }
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -249,15 +312,20 @@ class WorkItemService extends WorkItemServiceBase {
     queryStatement += " WHERE check_item.work_item_id = @work_item_id";
     substitutionValues = {"work_item_id": workItemCheckItemGetRequest.workItemId};
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+    try {
+      results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
-    List<WorkItemCheckItem> checkItems = new List();
-    for (var row in results) {
+      List<WorkItemCheckItem> checkItems = new List();
+      for (var row in results) {
 
-      checkItems.add(new WorkItemCheckItem()..id = row[0]..name = row[1]..finished = row[2]);
+        checkItems.add(new WorkItemCheckItem()..id = row[0]..name = row[1]..finished = row[2]);
+      }
+
+      return checkItems;
+    } catch (e) {
+      print('querySelectWorkItemCheckItems - ${e.runtimeType}, ${e}');
+      rethrow;
     }
-
-    return checkItems;
   }
 
   // *** ATTACHMENT ***
@@ -286,19 +354,24 @@ class WorkItemService extends WorkItemServiceBase {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workItemAttachmentInvalidArgument );
     }
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+    try {
+      results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
-    List<WorkItemAttachment> attachments =  List();
-    for (var row in results) {
-      WorkItemAttachment workItemAttachment = WorkItemAttachment()..id = row[0]..name = row[1]..type = row[2];
-      if (workItemAttachmentGetRequest.hasWithContent() && workItemAttachmentGetRequest.withContent) {
-        workItemAttachment.content = row[3];
+      List<WorkItemAttachment> attachments =  List();
+      for (var row in results) {
+        WorkItemAttachment workItemAttachment = WorkItemAttachment()..id = row[0]..name = row[1]..type = row[2];
+        if (workItemAttachmentGetRequest.hasWithContent() && workItemAttachmentGetRequest.withContent) {
+          workItemAttachment.content = row[3];
+        }
+
+        attachments.add(workItemAttachment);
       }
 
-      attachments.add(workItemAttachment);
+      return attachments;
+    } catch (e) {
+      print('querySelectWorkItemAttachments - ${e.runtimeType}, ${e}');
+      rethrow;
     }
-
-    return attachments;
   }
 
   static Future<WorkItemAttachment> querySelectWorkItemAttachment(WorkItemAttachmentGetRequest workItemAttachmentGetRequest /* String id */) async {
@@ -336,22 +409,27 @@ class WorkItemService extends WorkItemServiceBase {
     queryStatement += " WHERE work_item_assigned_user.work_item_id = @work_item_id";
     substitutionValues = {"work_item_id": workItemId};
 
-    results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+    try {
+      results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
 
-    List<User> assignedToUsers = List();
+      List<User> assignedToUsers = List();
 
-    User user;
+      User user;
 
-    for (var row in results) {
+      for (var row in results) {
 
-      user = await UserService.querySelectUser(UserGetRequest()..id = row[0]
-        ..restrictUser = RestrictUser.userSpecification
-        ..restrictUserProfile = RestrictUserProfile.userProfileImage);
+        user = await UserService.querySelectUser(UserGetRequest()
+          ..id = row[0]
+          ..customUser = CustomUser.userOnlySpecificationProfileImage);
 
-      assignedToUsers.add(user);
+        assignedToUsers.add(user);
+      }
+
+      return assignedToUsers;
+    } catch (e) {
+      print('querySelectWorkItemAssignedToUsers - ${e.runtimeType}, ${e}');
+      rethrow;
     }
-
-    return assignedToUsers;
   }
 
   /// Workitem Notification User
@@ -536,7 +614,8 @@ class WorkItemService extends WorkItemServiceBase {
   static Future<Empty> queryUpdateWorkItem(WorkItemRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItem.id..restrictWork = RestrictWork.workSpecification);
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()
+      ..id = request.workItem.id);
 
     // TODO (this is made just to get a user profile email, it needs to find to a way to improve the performance)
     Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId);
@@ -762,7 +841,7 @@ class WorkItemService extends WorkItemServiceBase {
   /// Delete a WorkItem by [id]
   static Future<Empty> queryDeleteWorkItem(WorkItemDeleteRequest request, String urlOrigin) async {
 
-    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..restrictWork = RestrictWork.workSpecification..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -827,13 +906,27 @@ class WorkItemService extends WorkItemServiceBase {
 
     String queryStatement;
 
-    queryStatement = "SELECT id," // 0
-        " version," //1
-        " date," //2
-        " actual_value," //3
-        " comment," //4
-        " work_item_id" //5
-        " FROM work.work_item_values ";
+    if (request.hasCustomWorkItemValue()) {
+      if (request.customWorkItemValue == CustomWorkItemValue.workItemValueWithoutWorkItem) {
+        queryStatement = "SELECT id," // 0
+            " version," //1
+            " date," //2
+            " actual_value," //3
+            " comment," //4
+            " work_item_id" //5
+            " FROM work.work_item_values ";
+      } else {
+        return null;
+      }
+    } else {
+      queryStatement = "SELECT id," // 0
+          " version," //1
+          " date," //2
+          " actual_value," //3
+          " comment," //4
+          " work_item_id" //5
+          " FROM work.work_item_values ";
+    }
 
     Map<String, dynamic> substitutionValues = {};
 
@@ -855,19 +948,14 @@ class WorkItemService extends WorkItemServiceBase {
           queryStatement, substitutionValues: substitutionValues);
 
       if (results != null && results.isNotEmpty) {
-        for (var row in results) {
+
+        fillFields(WorkItemValue workItemValue, var row) {
           WorkItemValue workItemValue = WorkItemValue()
             ..id = row[0]
             ..version = row[1];
 
           //  measureProgress.date = row[3]
-          if (row[2] != null) workItemValue.date = CommonUtils.timestampFromDateTime(row[2]); /*{
-              Timestamp t = Timestamp();
-              int microsecondsSinceEpoch = row[2].toUtc().microsecondsSinceEpoch;
-              t.seconds = Int64(microsecondsSinceEpoch ~/ 1000000);
-              t.nanos = ((microsecondsSinceEpoch % 1000000) * 1000);
-              measureProgress.date = t;
-            }*/
+          if (row[2] != null) workItemValue.date = CommonUtils.timestampFromDateTime(row[2]);
 
           if (row[3] != null) {
             workItemValue.actualValue = row[3];
@@ -875,24 +963,40 @@ class WorkItemService extends WorkItemServiceBase {
           if (row[4] != null) {
             workItemValue.comment = row[4];
           }
+        }
 
-          if (row[5] != null) {
-            if (!request.hasRestrictWorkItem() || request.restrictWorkItem != RestrictWorkItem.workItemNone) {
-              WorkItemGetRequest workItemGetRequest = WorkItemGetRequest();
+        if (request.hasCustomWorkItemValue()) {
+          if (request.customWorkItemValue ==
+              CustomWorkItemValue.workItemValueWithoutWorkItem) {
+            for (var row in results) {
+              WorkItemValue workItemValue = WorkItemValue();
+
+              fillFields(workItemValue, row);
+
+              workItemValues.add(workItemValue);
+            }
+          }
+        } else {
+
+          WorkItemGetRequest workItemGetRequest = WorkItemGetRequest();
+          fillWorkItemField(WorkItemValue workItemValue, var row) async {
+            if (row[5] != null) {
               workItemGetRequest.id = row[5];
-              if (request.hasRestrictWork()) workItemGetRequest.restrictWork = request.restrictWork;
-              if (request.hasRestrictUserProfile()) workItemGetRequest.restrictUserProfile = request.restrictUserProfile;
-
               workItemValue.workItem =
               await WorkItemService.querySelectWorkItem(workItemGetRequest);
             }
           }
 
-          workItemValues.add(workItemValue);
+          for (var row in results) {
+            WorkItemValue workItemValue = WorkItemValue();
+            fillFields(workItemValue, row);
+            await fillWorkItemField(workItemValue, row);
+            workItemValues.add(workItemValue);
+          }
         }
       }
     } catch (e) {
-      print('${e.runtimeType}, ${e}');
+      print('querySelectWorkItemValues ${e.runtimeType}, ${e}');
       rethrow;
     }
     return workItemValues;
@@ -948,7 +1052,7 @@ class WorkItemService extends WorkItemServiceBase {
     try {
 
       // This is made just to recovery email leader from objective, used to notification
-      request.workItemValue.workItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId..restrictWork = RestrictWork.workSpecification..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+      request.workItemValue.workItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId);
 
       request.workItemValue.version = 0;
 
@@ -1011,7 +1115,7 @@ class WorkItemService extends WorkItemServiceBase {
       WorkItemValueRequest request, String urlOrigin) async {
 
     // Recovery to log to history
-    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValue.id..restrictWorkItem = RestrictWorkItem.workItemSpecification..restrictWork = RestrictWork.workSpecification..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValue.id);
 
     request.workItemValue.workItem = previousWorkItemValue.workItem;
     // This is made just to recovery email leader from objective, used to notification
@@ -1087,7 +1191,7 @@ class WorkItemService extends WorkItemServiceBase {
   /// Delete a [WorkItemValue] by id
   Future<Empty> queryDeleteWorkItemValue(WorkItemValueDeleteRequest request, String urlOrigin) async {
 
-    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValueId..restrictWorkItem = RestrictWorkItem.workItemSpecification..restrictWork = RestrictWork.workSpecification..restrictUserProfile = RestrictUserProfile.userProfileNotificationEmailIdiom);
+    WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValueId);
 
     try {
 
