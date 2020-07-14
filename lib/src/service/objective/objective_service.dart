@@ -117,11 +117,10 @@ class ObjectiveService extends ObjectiveServiceBase {
             " null," //7
             " null," //8
             " null"; //9
-
-      } else if (request.customObjective == CustomObjective.objectiveTreeAlignedTo) {
+      } else if (request.customObjective == CustomObjective.objectiveWithMeasure) {
         queryStatementColumns =  "objective.id," //0
             " objective.name," //1
-            " null, " //2
+            " objective.version, " //2
             " objective.description," //3
             " objective.start_date," //4
             " objective.end_date," //5
@@ -129,7 +128,17 @@ class ObjectiveService extends ObjectiveServiceBase {
             " objective.leader_user_id," //7
             " objective.aligned_to_objective_id," //8
             " objective.group_id"; //9
-
+      } else if (request.customObjective == CustomObjective.objectiveWithMeasureAndTree) {
+        queryStatementColumns =  "objective.id," //0
+            " objective.name," //1
+            " objective.version, " //2
+            " objective.description," //3
+            " objective.start_date," //4
+            " objective.end_date," //5
+            " objective.archived," //6
+            " objective.leader_user_id," //7
+            " objective.aligned_to_objective_id," //8
+            " objective.group_id"; //9
       } else {
         return null;
       }
@@ -175,7 +184,7 @@ class ObjectiveService extends ObjectiveServiceBase {
       // queryStatementWhere = queryStatementWhere + " AND objective.leader_user_id in (${ids.toString().substring(1, ids.length-1)})";
     }
     String queryStatement;
-    if (request.hasCustomObjective() && request.customObjective ==  CustomObjective.objectiveTreeAlignedTo) {
+    if (request.hasCustomObjective() && request.customObjective ==  CustomObjective.objectiveWithMeasureAndTree) {
       queryStatement =
           "WITH RECURSIVE nodes(" + queryStatementColumns.replaceAll("objective.", "") + ") AS ("
               " SELECT " + queryStatementColumns +
@@ -249,16 +258,15 @@ class ObjectiveService extends ObjectiveServiceBase {
           }
         }
 
+        MeasureGetRequest measureGetRequest;
+        fillMeasureField(Objective objective, var row) async {
+          measureGetRequest.objectiveId = row[0];
+          objective.measures.addAll(await MeasureService
+              .querySelectMeasures(measureGetRequest));
+        }
+
         if (request.hasCustomObjective() && request.customObjective == CustomObjective.objectiveOnlyWithMeasure) {
-
-
-          MeasureGetRequest measureGetRequest = MeasureGetRequest();
-          fillMeasureField(Objective objective, var row) async {
-            measureGetRequest.objectiveId = row[0];
-            objective.measures.addAll(await MeasureService
-                .querySelectMeasures(measureGetRequest));
-          }
-
+          measureGetRequest = MeasureGetRequest();
           for (var row in results) {
             objective = Objective();
 
@@ -267,11 +275,24 @@ class ObjectiveService extends ObjectiveServiceBase {
 
             objectives.add(objective);
           }
-        } else if (request.hasCustomObjective() && request.customObjective ==  CustomObjective.objectiveTreeAlignedTo) {
+        } else if (request.hasCustomObjective() && request.customObjective ==  CustomObjective.objectiveWithMeasure) {
+          measureGetRequest = MeasureGetRequest();
+          for (var row in results) {
+            objective = Objective();
+
+            await fillFields(objective, row);
+            await fillMeasureField(objective, row);
+
+            objectives.add(objective);
+          }
+
+        } else if (request.hasCustomObjective() && request.customObjective ==  CustomObjective.objectiveWithMeasureAndTree) {
+             measureGetRequest = MeasureGetRequest();
             for (var row in results) {
               objective = Objective();
 
               await fillFields(objective, row);
+              await fillMeasureField(objective, row);
 
               objectivesTreeMapAux[objective.id] = objective;
               if (row[8] == null) {
@@ -295,7 +316,7 @@ class ObjectiveService extends ObjectiveServiceBase {
 
       }
 
-      return (request.hasCustomObjective() && request.customObjective ==  CustomObjective.objectiveTreeAlignedTo)
+      return (request.hasCustomObjective() && request.customObjective ==  CustomObjective.objectiveWithMeasureAndTree)
           ? objectivesTree ?? []
           : objectives ?? [];
 
