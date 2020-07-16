@@ -146,9 +146,9 @@ class UserIdentityService extends UserIdentityServiceBase {
       for (var row in results) {
         UserIdentity userIdentity = new UserIdentity()
           ..id = row[0]
-          ..version = row[1]
           ..identification = row[2];
 
+        if (row[1] != null) userIdentity.version = row[1];
         if (row[3] != null) userIdentity.passwordSalt = row[3];
         if (row[4] != null) userIdentity.passwordHash = row[4];
         if (row[5] != null) userIdentity.provider = row[5];

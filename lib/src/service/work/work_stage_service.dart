@@ -79,8 +79,8 @@ class WorkStageService extends WorkStageServiceBase {
     if (request.hasCustomWorkStage()) {
       if (request.customWorkStage == CustomWorkStage.workStageOnlySpecification) {
         queryStatement = "SELECT work_stage.id," //0
-            " work_stage.name," //1
-            " null," //2
+            " null," //1
+            " work_stage.name," //2
             " null," //3
             " null," //4
             " null" //5
@@ -88,8 +88,8 @@ class WorkStageService extends WorkStageServiceBase {
 
       } else if (request.customWorkStage == CustomWorkStage.workStageWithoutWork) {
         queryStatement = "SELECT work_stage.id," //0
-            " work_stage.name," //1
-            " work_stage.version," //2
+            " work_stage.version," //1
+            " work_stage.name," //2
             " work_stage.index," //3
             " work_stage.state_index," //4
             " null" //5
@@ -99,8 +99,8 @@ class WorkStageService extends WorkStageServiceBase {
       }
     } else {
       queryStatement = "SELECT work_stage.id," //0
-          " work_stage.name," //1
-          " work_stage.version," //2
+          " work_stage.version," //1
+          " work_stage.name," //2
           " work_stage.index," //3
           " work_stage.state_index," //4
           " work_stage.work_id" //5
@@ -125,13 +125,13 @@ class WorkStageService extends WorkStageServiceBase {
       results = await (await AugeConnection.getConnection()).query(
           queryStatement, substitutionValues: substitutionValues);
 
-      List<WorkStage> workStages = new List();
+      List<WorkStage> workStages = List();
 
       fillFields(WorkStage workStage, var row) {
         workStage
           ..id = row[0]
-          ..name = row[1]
-          ..version = row[2]
+          ..version = row[1]
+          ..name = row[2]
           ..index = row[3]
           ..stateIndex = row[4];
       }
@@ -148,7 +148,7 @@ class WorkStageService extends WorkStageServiceBase {
           for (var row in results) {
             workStage = WorkStage();
             workStage..id = row[0]
-          ..name = row[1];
+          ..name = row[2];
             workStages.add(workStage);
           }
         } else if (request.customWorkStage == CustomWorkStage.workStageWithoutWork) {
@@ -263,7 +263,7 @@ class WorkStageService extends WorkStageServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.workStage.name,
-          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.workStage.toProto3Json() )};
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.workStage.toProto3Json(), removeUserProfileImageField: true )};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
       });
@@ -333,7 +333,7 @@ class WorkStageService extends WorkStageServiceBase {
                 "changed_values": history_item_m.HistoryItemHelper
                     .changedValuesJson(
                     workStagePrevious.toProto3Json(),
-                        request.workStage.toProto3Json()
+                        request.workStage.toProto3Json(), removeUserProfileImageField: true
                 )
               };
 
@@ -388,7 +388,7 @@ class WorkStageService extends WorkStageServiceBase {
                 "date_time": DateTime.now().toUtc(),
                 "description": workStagePrevious.name,
                 "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
-                    workStagePrevious.toProto3Json(), {})};
+                    workStagePrevious.toProto3Json(), {}, removeUserProfileImageField: true)};
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
         }
       });

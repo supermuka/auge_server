@@ -171,7 +171,7 @@ class MeasureService extends MeasureServiceBase {
           " decimals_number," //5
           " start_value::REAL," //6
           " end_value::REAL," //7
-          " (select current_value from objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //8
+          " (SELECT current_value FROM objective.measure_progress WHERE measure_progress.measure_id = measure.id ORDER BY date desc limit 1)::REAL as current_value," //8
           " unit_of_measurement_id, " //9
           " null" //10
           " FROM objective.measures measure ";
@@ -185,7 +185,7 @@ class MeasureService extends MeasureServiceBase {
           " decimals_number," //5
           " start_value::REAL," //6
           " end_value::REAL," //7
-          " (select current_value from objective.measure_progress where measure_progress.measure_id = measure.id order by date desc limit 1)::REAL as current_value," //8
+          " (SELECT current_value FROM objective.measure_progress WHERE measure_progress.measure_id = measure.id ORDER BY date desc limit 1)::REAL as current_value," //8
           " unit_of_measurement_id, " //9
           " objective_id" //10
           " FROM objective.measures measure ";
@@ -217,9 +217,10 @@ class MeasureService extends MeasureServiceBase {
         fillFields(Measure measure, var row) async {
           measure
             ..id = row[0]
-            ..version = row[1]
+
             ..name = row[2];
 
+          if (row[1] != null) measure.version = row[1];
           if (row[3] != null) measure.description = row[3];
           if (row[4] != null) measure.metric = row[4];
           if (row[5] != null) measure.decimalsNumber = row[5];
@@ -368,7 +369,7 @@ class MeasureService extends MeasureServiceBase {
           "description": '${request.measure.name} @ ${request.measure.objective.name}',
           "changed_values": history_item_m.HistoryItemHelper
               .changedValuesJson({},
-                  request.measure.toProto3Json())};
+                  request.measure.toProto3Json(), removeUserProfileImageField: true)};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: historyItemNotificationValues);
@@ -447,7 +448,7 @@ class MeasureService extends MeasureServiceBase {
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
             "description": '${request.measure.name} @ ${request.measure.objective.name}',
-            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousMeasure.toProto3Json(), request.measure.toProto3Json())};
+            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousMeasure.toProto3Json(), request.measure.toProto3Json(), removeUserProfileImageField: true)};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -498,7 +499,7 @@ class MeasureService extends MeasureServiceBase {
             "date_time": DateTime.now().toUtc(),
             "description": '${previousMeasure.name} @ ${previousMeasure.objective.name}', // previousMeasure.name,
             "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
-                    previousMeasure.toProto3Json(), {})};
+                    previousMeasure.toProto3Json(), {}, removeUserProfileImageField: true)};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -568,8 +569,9 @@ class MeasureService extends MeasureServiceBase {
       if (results != null && results.isNotEmpty) {
         fillFields(MeasureProgress measureProgress, var row) async {
           measureProgress
-            ..id = row[0]
-            ..version = row[1];
+            ..id = row[0];
+
+          if (row[1] != null) measureProgress.version = row[1];
 
           //  measureProgress.date = row[3]
           if (row[2] != null)
@@ -705,7 +707,7 @@ class MeasureService extends MeasureServiceBase {
           "description": '${request.measureProgress.currentValue} @ ${request.measureProgress.measure.name}',
           "changed_values": history_item_m.HistoryItemHelper
               .changedValuesJson({},
-                  request.measureProgress.toProto3Json())};
+                  request.measureProgress.toProto3Json(), removeUserProfileImageField: true)};
 
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -783,7 +785,7 @@ class MeasureService extends MeasureServiceBase {
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
             "description": '${request.measureProgress.currentValue} @ ${request.measureProgress.measure.name}',
-            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousMeasureProgress.toProto3Json(), request.measureProgress.toProto3Json())};
+            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousMeasureProgress.toProto3Json(), request.measureProgress.toProto3Json(), removeUserProfileImageField: true)};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -839,7 +841,7 @@ class MeasureService extends MeasureServiceBase {
               "description": '${previousMeasureProgress.currentValue} @ ${previousMeasureProgress.measure.name}',
               "changed_values": history_item_m.HistoryItemHelper
                   .changedValuesJson(
-                      previousMeasureProgress.toProto3Json(), {})};
+                      previousMeasureProgress.toProto3Json(), {}, removeUserProfileImageField: true)};
 
             await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
                 substitutionValues: historyItemNotificationValues);

@@ -341,7 +341,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
               "date_time": DateTime.now().toUtc(),
               "description": null,
               "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({},
-                      request.organizationDirectoryService.toProto3Json())});
+                      request.organizationDirectoryService.toProto3Json(), removeUserProfileImageField: true)});
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -459,7 +459,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
                 "description": null, // without description, at first moment
                 "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
                         previousDirectoryService.toProto3Json(),
-                        request.organizationDirectoryService.toProto3Json())});
+                        request.organizationDirectoryService.toProto3Json(), removeUserProfileImageField: true)});
 
         }
       });

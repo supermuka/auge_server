@@ -67,8 +67,8 @@ class UserService extends UserServiceBase {
       if (request.customUser == CustomUser.userOnlySpecification) {
         queryStatement = queryStatement +
             " u.id" //0
-            ",u.name" //1
-            ",null" //2
+            ",null" //1
+            ",u.name" //2
             ",null" //3
             ",null" //4
             ",null" //5
@@ -78,8 +78,8 @@ class UserService extends UserServiceBase {
       } else if (request.customUser == CustomUser.userOnlySpecificationProfileImage)  {
         queryStatement = queryStatement +
             " u.id" //0
-            ",u.name" //1
-            ",null" //2
+            ",null" //1
+            ",u.name" //2
             ",null" //3
             ",null" //4
             ",user_profile.image" //5
@@ -89,8 +89,8 @@ class UserService extends UserServiceBase {
       } else if (request.customUser == CustomUser.userOnlySpecificationProfileNotificationEmailIdiom)  {
         queryStatement = queryStatement +
             " u.id" //0
-            ",u.name" //1
-            ",null" //2
+            ",null" //1
+            ",u.name" //2
             ",null" //3
             ",null" //4
             ",null" //5
@@ -103,8 +103,8 @@ class UserService extends UserServiceBase {
     } else {
       queryStatement = queryStatement +
       " u.id" //0
-      ",u.name" //1
-      ",u.version" //2
+      ",u.version" //'1
+      ",u.name" //2
       ",u.inactive" //3
       ",u.managed_by_organization_id" //4
       ",user_profile.image" //5
@@ -167,7 +167,9 @@ class UserService extends UserServiceBase {
 
         User user = User()
           ..id = row[0]
-          ..name = row[1];
+          ..name = row[2];
+
+        if (row[1] != null) user.version = row[1];
 
           if (row[4] != null) {
 
@@ -179,7 +181,7 @@ class UserService extends UserServiceBase {
             }
             user.managedByOrganization = organization;
           }
-          if (row[2] != null) user.version = row[2];
+
           if (row[3] != null) user.inactive = row[3];
           user.userProfile = UserProfile();
           if (row[5] != null) user.userProfile.image = row[5];
@@ -264,8 +266,9 @@ class UserService extends UserServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.user.name,
-          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.user.toProto3Json())});
-
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
+              {},
+              request.user.toProto3Json())});
       } catch (e) {
         print('${e.runtimeType}, ${e}');
         rethrow;
@@ -382,7 +385,8 @@ class UserService extends UserServiceBase {
                 "date_time": DateTime.now().toUtc(),
                 "description": previousUser.name,
                 "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
-                        previousUser.toProto3Json(), {})});
+                    previousUser.toProto3Json(),
+                    {})});
         }
       } catch (e) {
         print('${e.runtimeType}, ${e}');

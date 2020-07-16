@@ -67,8 +67,8 @@ class OrganizationService extends OrganizationServiceBase {
           CustomOrganization.organizationSpecification) {
         queryStatement = queryStatement +
             " organization.id" //0
-            ",organization.name" //1
-            ",null" // 2
+            ",null" // 1
+            ",organization.name" //2
             ",null"; // 3
       } else { // none or others not specified.
         return null;
@@ -76,8 +76,8 @@ class OrganizationService extends OrganizationServiceBase {
     } else {
       queryStatement = queryStatement +
           " organization.id" //0
-          ",organization.name" //1
-          ",organization.version" //2
+          ",organization.version" //1
+          ",organization.name" //2
           ",organization.code"; //3
     }
 
@@ -102,9 +102,9 @@ class OrganizationService extends OrganizationServiceBase {
       for (var row in results) {
         Organization organization = Organization()
           ..id = row[0]
-          ..name = row[1];
+          ..name = row[2];
 
-         if (row[2] != null) organization.version = row[2];
+         if (row[1] != null) organization.version = row[1];
          if (row[3] != null) organization.code = row[3];
 
         organizations.add(organization);
@@ -162,7 +162,7 @@ class OrganizationService extends OrganizationServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.organization.name,
-          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.organization.toProto3Json())});
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.organization.toProto3Json(), removeUserProfileImageField: true)});
 
 
       });
@@ -208,7 +208,7 @@ class OrganizationService extends OrganizationServiceBase {
                 "description": request.organization.name,
                 "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
                         previousOrganization.toProto3Json(),
-                        request.organization.toProto3Json())});
+                        request.organization.toProto3Json(), removeUserProfileImageField: true)});
         }
       });
 
@@ -251,7 +251,7 @@ class OrganizationService extends OrganizationServiceBase {
                 "date_time": DateTime.now().toUtc(),
                 "description": previousOrganization.name,
                 "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
-              previousOrganization.toProto3Json(), {})});
+              previousOrganization.toProto3Json(), {}, removeUserProfileImageField: true)});
         }
       });
     } catch (e) {

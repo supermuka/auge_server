@@ -84,8 +84,8 @@ class ObjectiveService extends ObjectiveServiceBase {
       if (request.customObjective == CustomObjective.objectiveOnlySpecification) {
         queryStatementColumns =
              "objective.id," //0
-            " objective.name," //1
-            " null, " //2
+             " null, " //1
+            " objective.name," //2
             " null," //3
             " null," //4
             " null," //5
@@ -96,8 +96,8 @@ class ObjectiveService extends ObjectiveServiceBase {
 
       } else if (request.customObjective == CustomObjective.objectiveOnlySpecificationStartDateEndDate) {
         queryStatementColumns = "objective.id," //0
-            " objective.name," //1
-            " null, " //2
+            " null, " //1
+            " objective.name," //2
             " null," //3
             " objective.start_date," //4
             " objective.end_date," //5
@@ -119,8 +119,8 @@ class ObjectiveService extends ObjectiveServiceBase {
             " null"; //9
       } else if (request.customObjective == CustomObjective.objectiveWithMeasure) {
         queryStatementColumns =  "objective.id," //0
-            " objective.name," //1
-            " objective.version, " //2
+            " objective.version, " //1
+            " objective.name," //2
             " objective.description," //3
             " objective.start_date," //4
             " objective.end_date," //5
@@ -130,8 +130,8 @@ class ObjectiveService extends ObjectiveServiceBase {
             " objective.group_id"; //9
       } else if (request.customObjective == CustomObjective.objectiveWithMeasureAndTree) {
         queryStatementColumns =  "objective.id," //0
-            " objective.name," //1
-            " objective.version, " //2
+            " objective.version, " //1
+            " objective.name," //2
             " objective.description," //3
             " objective.start_date," //4
             " objective.end_date," //5
@@ -145,8 +145,8 @@ class ObjectiveService extends ObjectiveServiceBase {
     }
     else {
       queryStatementColumns = "objective.id," //0
-          " objective.name," //1
-          " objective.version, " //2
+          " objective.version, " //1
+          " objective.name," //2
           " objective.description," //3
           " objective.start_date," //4
           " objective.end_date," //5
@@ -223,9 +223,9 @@ class ObjectiveService extends ObjectiveServiceBase {
         fillFields(Objective objective, var row) async {
 
           objective.id = row[0];
-          objective.name = row[1];
+          objective.name = row[2];
 
-          if (row[2] != null) objective.version = row[2];
+          if (row[1] != null) objective.version = row[1];
           if (row[3] != null) objective.description = row[3];
           if (row[4] != null)
             objective.startDate = CommonUtils.timestampFromDateTime(row[4].toUtc());
@@ -425,7 +425,7 @@ class ObjectiveService extends ObjectiveServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.objective.name,
-          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.objective.toProto3Json())};
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.objective.toProto3Json(), removeUserProfileImageField: true)};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: historyItemNotificationValues);
@@ -499,7 +499,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
             "description": request.objective.name,
-            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousObjective.toProto3Json(), request.objective.toProto3Json())};
+            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousObjective.toProto3Json(), request.objective.toProto3Json(), removeUserProfileImageField: true)};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -556,7 +556,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             "system_function_index": SystemFunction.delete.index,
             "date_time": DateTime.now().toUtc(),
             "description": previousObjective.name,
-            "changed_values":  history_item_m.HistoryItemHelper.changedValuesJson(previousObjective.toProto3Json(), {})};
+            "changed_values":  history_item_m.HistoryItemHelper.changedValuesJson(previousObjective.toProto3Json(), {}, removeUserProfileImageField: true)};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);

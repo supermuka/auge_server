@@ -83,7 +83,12 @@ class GroupService extends GroupServiceBase {
   // Query
   static Future<List<Group>> querySelectGroups( GroupGetRequest request /* {String id, String organizationId, int alignedToRecursive = 1} */ ) async {
 
+    if (!request.hasSuperGroupRecursive()) {
+      request.superGroupRecursive = 1;
+    }
+
     List<Group> groups = [];
+
 
     String queryStatement = "SELECT";
 
@@ -92,17 +97,17 @@ class GroupService extends GroupServiceBase {
       if (request.customGroup == CustomGroup.groupOnlySpecification) {
         queryStatement = queryStatement +
             " g.id" //0
-                ",g.name" //1
-                ",null" //2
-                ",null" //3
-                ",null" //4
-                ",null" //5
-                ",null"; //6
+            ",null" //1
+            ",g.name" //2
+            ",null" //3
+            ",null" //4
+            ",null" //5
+            ",null"; //6
       } else if (request.customGroup == CustomGroup.groupWithMembers) {
         queryStatement = queryStatement +
             " g.id" //0
-            ",g.name"  //1
-            ",g.version" //2
+            ",g.version" //1
+            ",g.name"  //2
             ",g.inactive" //3
             ",g.group_type_index" //4
             ",g.leader_user_id" //5
@@ -113,8 +118,8 @@ class GroupService extends GroupServiceBase {
     } else {
       queryStatement = queryStatement +
           " g.id" //0
-          ",g.name"  //1
-          ",g.version" //2
+          ",g.version" //1
+          ",g.name"  //2
           ",g.inactive" //3
           ",g.group_type_index" //4
           ",g.leader_user_id" //5
@@ -158,9 +163,9 @@ class GroupService extends GroupServiceBase {
         fillFields(Group group, row) async {
 
           group.id = row[0];
-          group.name = row[1];
+          group.name = row[2];
 
-          if (row[2] != null) group.version = row[2];
+          if (row[1] != null) group.version = row[1];
           if (row[3] != null) group.inactive = row[3];
           if (row[4] != null) group.groupTypeIndex = row[4];
 
@@ -173,19 +178,18 @@ class GroupService extends GroupServiceBase {
             leader = null;
           }
 
-          if (row[6] != null && request.alignedToRecursive > 0) {
+          if (row[6] != null && request.superGroupRecursive > 0) {
 
             superGroup =
                 await querySelectGroup(GroupGetRequest()
               ..id = row[6]
               ..customGroup = CustomGroup.groupOnlySpecification
-              ..alignedToRecursive = --request.alignedToRecursive,
+              ..superGroupRecursive = --request.superGroupRecursive,
                 cache: groupCache);
 
           } else {
             superGroup = null;
           }
-
 
           if (superGroup != null) {
             group.superGroup = superGroup;
@@ -208,7 +212,7 @@ class GroupService extends GroupServiceBase {
             for (var row in results) {
               Group group = Group()
                 ..id = row[0]
-                ..name = row[1];
+                ..name = row[2];
               groups.add(group);
             }
           } else if (request.customGroup == CustomGroup.groupWithMembers) {
@@ -305,7 +309,7 @@ class GroupService extends GroupServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.group.name,
-          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.group.toProto3Json())});
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.group.toProto3Json(), removeUserProfileImageField: true)});
 
       });
 
@@ -319,7 +323,10 @@ class GroupService extends GroupServiceBase {
 
   static Future<Empty> queryUpdateGroup(GroupRequest request) async {
 
-    Group previousGroup = await querySelectGroup(GroupGetRequest()..id = request.group.id);
+    Group previousGroup = await querySelectGroup(
+        GroupGetRequest()
+          ..id = request.group.id
+          ..customGroup = CustomGroup.groupWithMembers);
 
     List<List<dynamic>> result;
 
@@ -395,7 +402,7 @@ class GroupService extends GroupServiceBase {
           "system_function_index": SystemFunction.update.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.group.name,
-          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousGroup.toProto3Json(), request.group.toProto3Json())});
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousGroup.toProto3Json(), request.group.toProto3Json(), removeUserProfileImageField: true)});
 
       });
     } catch (e) {
@@ -407,7 +414,9 @@ class GroupService extends GroupServiceBase {
 
   static Future<Empty> queryDeleteGroup(GroupDeleteRequest request) async {
 
-    Group previousGroup = await querySelectGroup(GroupGetRequest()..id = request.groupId);
+    Group previousGroup = await querySelectGroup(GroupGetRequest()
+      ..id = request.groupId
+      ..customGroup = CustomGroup.groupWithMembers);
 
     List<List<dynamic>> result;
     try {
@@ -445,7 +454,7 @@ class GroupService extends GroupServiceBase {
                 "description": previousGroup.name,
                 "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
                     previousGroup.toProto3Json(),
-                    {})});
+                    {}, removeUserProfileImageField: true)});
         }
 
       });

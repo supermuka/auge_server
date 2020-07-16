@@ -256,7 +256,7 @@ class UserAccessService extends UserAccessServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.userAccess.user.name,
-          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.userAccess.toProto3Json() )});
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.userAccess.toProto3Json(), removeUserProfileImageField: true)});
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -344,7 +344,7 @@ class UserAccessService extends UserAccessServiceBase {
                   "changed_values": history_item_m.HistoryItemHelper
                       .changedValuesJson(
                       previousUserAccess.toProto3Json(),
-                      request.userAccess.toProto3Json())});
+                      request.userAccess.toProto3Json(), removeUserProfileImageField: true)});
           }
       });
     } catch (e) {
@@ -391,7 +391,7 @@ class UserAccessService extends UserAccessServiceBase {
                 "date_time": DateTime.now().toUtc(),
                 "description": previousUserAccess.user.name,
                 "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
-                        previousUserAccess.toProto3Json(), {})});
+                        previousUserAccess.toProto3Json(), {}, removeUserProfileImageField: true)});
         }
       });
     } catch (e) {

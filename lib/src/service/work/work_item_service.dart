@@ -139,8 +139,8 @@ class WorkItemService extends WorkItemServiceBase {
     if (workItemGetRequest.hasCustomWorkItem()) {
       if (workItemGetRequest.customWorkItem == CustomWorkItem.workItemOnlySpecification) {
         queryStatement = "SELECT work_item.id," //0
-            " work_item.name," //1
-            " null," //2
+            " null," //1
+            " work_item.name," //2
             " null," //3
             " null," //4
             " null," //5
@@ -152,8 +152,8 @@ class WorkItemService extends WorkItemServiceBase {
             " FROM work.work_items work_item";
       } else if (workItemGetRequest.customWorkItem == CustomWorkItem.workItemWithoutWork) {
         queryStatement = "SELECT work_item.id," //0
-            " work_item.name," //1
-            " work_item.version," //2
+            " work_item.version," //1
+            " work_item.name," //2
             " work_item.description," //3
             " work_item.due_date," //4
             " work_item.planned_value," //5
@@ -169,8 +169,8 @@ class WorkItemService extends WorkItemServiceBase {
     } else {
 
       queryStatement = "SELECT work_item.id," //0
-          " work_item.name," //2
           " work_item.version," //1
+          " work_item.name," //2
           " work_item.description," //3
           " work_item.due_date," //4
           " work_item.planned_value," //5
@@ -221,6 +221,7 @@ class WorkItemService extends WorkItemServiceBase {
       WorkStageGetRequest workStageGetRequest = WorkStageGetRequest();
       WorkItemAttachmentGetRequest workItemAttachmentGetRequest = WorkItemAttachmentGetRequest();
       WorkItemCheckItemGetRequest workItemCheckItemGetRequest = WorkItemCheckItemGetRequest();
+
       fillFields(WorkItem workItem, var row) async {
 
         workStage = await WorkStageService.querySelectWorkStage(workStageGetRequest..id = row[7]..customWorkStage = CustomWorkStage.workStageWithoutWork);
@@ -231,7 +232,10 @@ class WorkItemService extends WorkItemServiceBase {
 
         checkItems = await querySelectWorkItemCheckItems(workItemCheckItemGetRequest..workItemId = row[0]);
 
-        workItem..id = row[0]..name = row[1]..version = row[2];
+        workItem.id = row[0];
+        workItem.name = row[2];
+
+        if (row[1] != null) workItem.version = row[1];
         if (row[3] != null) workItem.description = row[3];
         if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4]);
 
@@ -289,12 +293,13 @@ class WorkItemService extends WorkItemServiceBase {
           workItems.add(workItem);
         }
       }
+
+      return workItems;
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
     }
 
-    return workItems;
   }
 
   // *** WORK ITEMS CHECKED ITEMS ***
@@ -592,7 +597,7 @@ class WorkItemService extends WorkItemServiceBase {
           "description": request.workItem.name,
           "changed_values": history_item_m.HistoryItemHelper
               .changedValuesJson({},
-                  request.workItem.toProto3Json() )};
+                  request.workItem.toProto3Json(), removeUserProfileImageField: true )};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
             substitutionValues: historyItemNotificationValues);
@@ -820,7 +825,7 @@ class WorkItemService extends WorkItemServiceBase {
             "changed_values": history_item_m.HistoryItemHelper
                 .changedValuesJson(
                     previousWorkItem.toProto3Json(),
-                    request.workItem.toProto3Json() )};
+                    request.workItem.toProto3Json(), removeUserProfileImageField: true )};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -883,7 +888,7 @@ class WorkItemService extends WorkItemServiceBase {
               "date_time": DateTime.now(),
               "description": previousWorkItem.name,
               "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
-                      previousWorkItem.toProto3Json(), {})};
+                      previousWorkItem.toProto3Json(), {}, removeUserProfileImageField: true)};
 
             await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
                 substitutionValues: historyItemNotificationValues);
@@ -951,9 +956,9 @@ class WorkItemService extends WorkItemServiceBase {
 
         fillFields(WorkItemValue workItemValue, var row) {
           WorkItemValue workItemValue = WorkItemValue()
-            ..id = row[0]
-            ..version = row[1];
+            ..id = row[0];
 
+          if (row[1] != null) workItemValue.version = row[1];
           //  measureProgress.date = row[3]
           if (row[2] != null) workItemValue.date = CommonUtils.timestampFromDateTime(row[2]);
 
@@ -1092,7 +1097,7 @@ class WorkItemService extends WorkItemServiceBase {
           "description": '${request.workItemValue.actualValue} @ ${request.workItemValue.workItem.name}',
           "changed_values": history_item_m.HistoryItemHelper
               .changedValuesJson({},
-                  request.workItemValue.toProto3Json())};
+                  request.workItemValue.toProto3Json(), removeUserProfileImageField: true)};
 
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -1170,7 +1175,7 @@ class WorkItemService extends WorkItemServiceBase {
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
             "description": '${request.workItemValue.actualValue} @ ${request.workItemValue.workItem.name}',
-            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousWorkItemValue.toProto3Json(), request.workItemValue.toProto3Json())};
+            "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(previousWorkItemValue.toProto3Json(), request.workItemValue.toProto3Json(), removeUserProfileImageField: true)};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
@@ -1224,7 +1229,7 @@ class WorkItemService extends WorkItemServiceBase {
             "date_time": DateTime.now().toUtc(),
             "description": '${previousWorkItemValue.actualValue} @ ${previousWorkItemValue.workItem.name}',
             "changed_values": history_item_m.HistoryItemHelper
-                .changedValuesJson(previousWorkItemValue.toProto3Json(), {})};
+                .changedValuesJson(previousWorkItemValue.toProto3Json(), {}, removeUserProfileImageField: true)};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);

@@ -148,7 +148,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
               "date_time": DateTime.now().toUtc(),
               "description": null, // without description, at first moment
               "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({},
-                      request.organizationConfiguration.toProto3Json())});
+                      request.organizationConfiguration.toProto3Json(), removeUserProfileImageField: true)});
       });
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -198,7 +198,7 @@ class OrganizationConfigurationService extends OrganizationConfigurationServiceB
                 "description": null, // without description, at first moment
                 "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
                         previousConfiguration.toProto3Json(),
-                        request.organizationConfiguration.toProto3Json())});
+                        request.organizationConfiguration.toProto3Json(), removeUserProfileImageField: true)});
       }});
     } catch (e) {
       print('${e.runtimeType}, ${e}');

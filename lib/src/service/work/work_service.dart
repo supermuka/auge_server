@@ -88,8 +88,8 @@ class WorkService extends WorkServiceBase {
     if (workGetRequest.hasCustomWork()) {
       if (workGetRequest.customWork == CustomWork.workOnlySpecification) {
         queryStatement = queryStatement + "work.id, " //0
-            "work.name, " //1
-            "null," //2
+            "null," //1
+            "work.name, " //2
             "null, " //3
             "null, " //4 +
             //"null, " //5
@@ -108,13 +108,36 @@ class WorkService extends WorkServiceBase {
             "null, " //6
             "null " //7
             "FROM work.works work";
+      } else if (workGetRequest.customWork == CustomWork.workWithWorkItemsAndStages) {
+        queryStatement = queryStatement + "work.id, " //0
+            "work.version," //1
+            "work.name, " //2
+            "work.description, " //3
+            "work.archived, " //4 +
+        //   "work.organization_id, " //5
+            "work.leader_user_id, " //5
+            "work.objective_id, " //6
+            "work.group_id " //7
+            "FROM work.works work";
+
+      } else if (workGetRequest.customWork == CustomWork.workWithWorkItems) {
+        queryStatement = queryStatement + "work.id, " //0
+            "work.version," //1
+            "work.name, " //2
+            "work.description, " //3
+            "work.archived, " //4 +
+        //   "work.organization_id, " //5
+            "work.leader_user_id, " //5
+            "work.objective_id, " //6
+            "work.group_id " //7
+            "FROM work.works work";
       } else { // none
          return null;
       }
     } else {
       queryStatement = queryStatement + "work.id, " //0
-          "work.name, " //1
-          "work.version," //2
+          "work.version," //1
+          "work.name, " //2
           "work.description, " //3
           "work.archived, " //4 +
        //   "work.organization_id, " //5
@@ -167,34 +190,7 @@ class WorkService extends WorkServiceBase {
      // List<WorkStage> workStages;
 
       fillFields(Work work, var row) async {
-        /*
-        if (!workGetRequest.hasRestrictWorkItem() || workGetRequest.restrictWorkItem != RestrictWorkItem.workItemNone) {
-          WorkItemGetRequest workItemGetRequest = WorkItemGetRequest();
-          workItemGetRequest.workId = row[0];
-          workItemGetRequest.restrictWork = (workGetRequest.hasRestrictWork()) ? workGetRequest.restrictWork : workItemGetRequest.restrictWork = RestrictWork.workSpecification;
-          if (workGetRequest.hasWorkItemWithArchived()) workItemGetRequest.withArchived = workGetRequest.workItemWithArchived;
-          if (workGetRequest.workItemAssignedToIds != null && workGetRequest.workItemAssignedToIds.isNotEmpty) {
-            workItemGetRequest.assignedToIds.addAll(workGetRequest.workItemAssignedToIds);
-          }
-          workItems = await WorkItemService.querySelectWorkItems(workItemGetRequest);
-        } else {
-          workItems = [];
-        }
-  */
-  /*NEEDS ?
-        if (row[5] != null &&
-            (organization == null || organization.id != row[5])) {
-          if (!workGetRequest.hasRestrictOrganization() || workGetRequest.restrictOrganization != RestrictOrganization.organizationNone) {
-            // organization = await _augeApi.getOrganizationById(row[3]);
-            organization = await OrganizationService.querySelectOrganization(
-                OrganizationGetRequest()
-                  ..id = row[5]
-                  ..restrictOrganization = workGetRequest.hasRestrictOrganization() ? workGetRequest.restrictOrganization : RestrictOrganization.organizationSpecification);
-          } else {
-            organization = null;
-          }
-        }
-  */
+
         // user = (await _augeApi.getUsers(id: row[4])).first;
         if (row[5] != null) {
           UserGetRequest userGetRequest = UserGetRequest();
@@ -205,13 +201,6 @@ class WorkService extends WorkServiceBase {
         } else {
           user = null;
         }
-
-        //stages = await getStages(row[0]);
-        /*
-        workStages = await WorkStageService.querySelectWorkStages(WorkStageGetRequest()
-          ..workId = row[0]
-          ..restrictWork = RestrictWork.workNone);
-  */
 
         // objective = row[5] == null ? null : await _objectiveAugeApi.getObjectiveById(row[5]);
         if (row[6] != null) {
@@ -233,25 +222,14 @@ class WorkService extends WorkServiceBase {
           group = null;
         }
 
-        Work work =
-        Work()..id = row[0]..name = row[1];
+        work.id = row[0];
+        work.name = row[2];
 
-        if (row[2] != null) work.version = row[2];
+        if (row[1] != null) work.version = row[1];
         if (row[3] != null) work.description = row[3];
 
         if (row[4] != null) work.archived = row[4];
-        /*
-        if (workItems.isNotEmpty) {
-          work.workItems.addAll(workItems);
-        }
-        */
 
-        /* TODO needs?
-        if (organization != null) {
-          work.organization = organization;
-        }
-
-         */
         if (user != null) {
           work.leader = user;
         }
@@ -277,45 +255,52 @@ class WorkService extends WorkServiceBase {
       WorkStageGetRequest workStageGetRequest;
       fillStages(Work work, var row) async {
 
-        workStageGetRequest..workId = row[0]
-          ..customWorkStage = CustomWorkStage.workStageOnlySpecification;
+        workStageGetRequest..workId = row[0];
+         // ..customWorkStage = CustomWorkStage.workStageOnlySpecification;
 
         work.workStages.addAll(await WorkStageService.querySelectWorkStages(workStageGetRequest));
       }
 
-      if (workGetRequest.customWork == CustomWork.workOnlySpecification) {
-        for (var row in results) {
-          Work work =
-          Work()..id = row[0]..name = row[1];
-          works.add(work);
-        }
-      } else if (workGetRequest.customWork == CustomWork.workOnlyWithWorkItems) {
-        workItemGetRequest = WorkItemGetRequest();
-        for (var row in results) {
-          Work work = Work();
-          await fillWorkItems(work, row);
-          works.add(work);
-        }
-      } else if (workGetRequest.customWork == CustomWork.workWithWorkItemsAndStages) {
-        workItemGetRequest = WorkItemGetRequest();
-        for (var row in results) {
-          Work work = Work();
-          await fillFields(work, row);
-          await fillWorkItems(work, row);
-          await fillStages(work, row);
-          works.add(work);
-        }
-      } else if (workGetRequest.customWork == CustomWork.workWithWorkItems) {
-        workItemGetRequest = WorkItemGetRequest();
-        for (var row in results) {
-          Work work = Work();
-          await fillFields(work, row);
-          await fillWorkItems(work, row);
+
+      if (workGetRequest.hasCustomWork()) {
+        if (workGetRequest.customWork == CustomWork.workOnlySpecification) {
+          for (var row in results) {
+            Work work =
+            Work()..id = row[0]..name = row[2];
+            works.add(work);
+          }
+        } else if (workGetRequest.customWork == CustomWork.workOnlyWithWorkItems) {
+          workItemGetRequest = WorkItemGetRequest();
+          for (var row in results) {
+            Work work = Work();
+            await fillWorkItems(work, row);
+            works.add(work);
+          }
+        } else if (workGetRequest.customWork == CustomWork.workWithWorkItemsAndStages) {
+          workItemGetRequest = WorkItemGetRequest();
+          workStageGetRequest = WorkStageGetRequest();
+          for (var row in results) {
+            Work work = Work();
+            await fillFields(work, row);
+            await fillWorkItems(work, row);
+            await fillStages(work, row);
+            works.add(work);
+          }
+        } else if (workGetRequest.customWork == CustomWork.workWithWorkItems) {
+          workItemGetRequest = WorkItemGetRequest();
+          for (var row in results) {
+            Work work = Work();
+            await fillFields(work, row);
+            await fillWorkItems(work, row);
+            works.add(work);
+          }
         }
       } else {
+
         for (var row in results) {
           Work work = Work();
           await fillFields(work, row);
+          works.add(work);
         }
       }
       return works;
@@ -463,7 +448,7 @@ class WorkService extends WorkServiceBase {
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": request.work.name,
-          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.work.toProto3Json() )};
+          "changed_values": history_item_m.HistoryItemHelper.changedValuesJson({}, request.work.toProto3Json(), removeUserProfileImageField: true )};
 
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
       });
@@ -536,7 +521,7 @@ class WorkService extends WorkServiceBase {
             "changed_values": history_item_m.HistoryItemHelper
                 .changedValuesJson(
                     previousWork.toProto3Json(),
-                    request.work.toProto3Json()
+                    request.work.toProto3Json(), removeUserProfileImageField: true
             )};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
@@ -588,7 +573,7 @@ class WorkService extends WorkServiceBase {
             "date_time": DateTime.now().toUtc(),
             "description": previousWork.name,
             "changed_values": history_item_m.HistoryItemHelper.changedValuesJson(
-                    previousWork.toProto3Json(), {})};
+                    previousWork.toProto3Json(), {}, removeUserProfileImageField: true)};
 
           await ctx.query(HistoryItemService.queryStatementCreateHistoryItem,
               substitutionValues: historyItemNotificationValues);
