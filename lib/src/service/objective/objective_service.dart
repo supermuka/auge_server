@@ -341,26 +341,66 @@ class ObjectiveService extends ObjectiveServiceBase {
     }
   }
 
+/*
+  static Future<User> querySelectObjectiveLeaderUser(String objectiveId, {CustomUser customUser}) async {
+
+      String queryStatement;
+
+      queryStatement = "SELECT"
+          " objective.leader_user_id,"
+          " FROM objective.objectives objective"
+          " WHERE objective.id = @id";
+
+      Map<String, dynamic> substitutionValues;
+
+      if (objectiveId != null) {
+        substitutionValues = {
+          "id": objectiveId,
+        };
+      } else {
+        throw Exception('id does not informed.');
+      }
+
+      List<List> results;
+
+      try {
+
+        results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+
+        var row = results.first;
+
+        return UserService.querySelectUser(UserGetRequest()..id = row[0]..customUser = customUser);
+
+      } catch (e) {
+        print('querySelectObjectiveLeaderUser - ${e.runtimeType}, ${e}');
+        rethrow;
+      }
+  }
+  */
+
   /// Objective Notification User
   static void objectiveNotification(Objective objective, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
 
     // Not send to your-self
     if (objective.leader.id == authUserId) return;
 
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = objective.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
     // Leader  - Verify if send e-mail
-    if (!objective.leader.userProfile.eMailNotification) return;
+    if (!leaderNotification.userProfile.eMailNotification) return;
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
     // Leader - eMail
-    if (objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
+    if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
-    await CommonUtils.setDefaultLocale(objective.leader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(leaderNotification.userProfile.idiomLocale);
 
     mailMessages.add(
         AugeMailMessageTo(
-            [objective.leader.userProfile.eMail],
+            [leaderNotification.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,

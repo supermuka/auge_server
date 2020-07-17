@@ -375,20 +375,23 @@ class WorkService extends WorkServiceBase {
     // Not send to your-self
     if (work.leader.id == authUserId) return;
 
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = work.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
     // Leader - Verify if send e-mail
-    if (!work.leader.userProfile.eMailNotification) return;
+    if (!leaderNotification.userProfile.eMailNotification) return;
 
     // Leader - eMail
-    if (work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
+    if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
 
-    await CommonUtils.setDefaultLocale(work.leader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(leaderNotification.userProfile.idiomLocale);
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
     mailMessages.add(
         AugeMailMessageTo(
-            [work.leader.userProfile.eMail],
+            [leaderNotification.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,

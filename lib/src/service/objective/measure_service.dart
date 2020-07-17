@@ -14,6 +14,7 @@ import 'package:auge_shared/route/app_routes_definition.dart';
 
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
+import 'package:auge_shared/protos/generated/general/user.pb.dart';
 import 'package:auge_shared/protos/generated/general/unit_of_measurement.pb.dart';
 import 'package:auge_shared/protos/generated/objective/objective_measure.pbgrpc.dart';
 
@@ -26,9 +27,11 @@ import 'package:auge_shared/domain/general/history_item.dart' as history_item_m;
 import 'package:auge_shared/domain/objective/objective.dart' as objective_m;
 import 'package:auge_shared/domain/objective/measure.dart' as measure_m;
 
+import 'package:auge_server/src/service/general/user_service.dart';
 import 'package:auge_server/src/service/general/unit_of_measurement_service.dart';
 import 'package:auge_server/src/service/general/history_item_service.dart';
 import 'package:auge_server/src/service/objective/objective_service.dart';
+
 
 import 'package:uuid/uuid.dart';
 
@@ -285,20 +288,24 @@ class MeasureService extends MeasureServiceBase {
     // Not send to your-self
     if (relatedObjective.leader.id == authUserId) return;
 
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = relatedObjective.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
+
     // Leader
-    if (!relatedObjective.leader.userProfile.eMailNotification) return;
+    if (!leaderNotification.userProfile.eMailNotification) return;
 
     // Leader - eMail
-    if (relatedObjective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
+    if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
-    await CommonUtils.setDefaultLocale(relatedObjective.leader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(leaderNotification.userProfile.idiomLocale);
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
     mailMessages.add(
         AugeMailMessageTo(
-            [relatedObjective.leader.userProfile.eMail],
+            [leaderNotification.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
@@ -634,20 +641,23 @@ class MeasureService extends MeasureServiceBase {
     // Not send to your-self
     if (measureProgress.measure.objective.leader.id == authUserId) return;
 
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = measureProgress.measure.objective.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
     // Not send to your-self
-    if (!measureProgress.measure.objective.leader.userProfile.eMailNotification) return;
+    if (!leaderNotification.userProfile.eMailNotification) return;
 
     // Leader - eMail
-    if (measureProgress.measure.objective.leader.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
+    if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
 
-    await CommonUtils.setDefaultLocale(measureProgress.measure.objective.leader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(leaderNotification.userProfile.idiomLocale);
 
     mailMessages.add(
         AugeMailMessageTo(
-            [measureProgress.measure.objective.leader.userProfile.eMail],
+            [leaderNotification.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,

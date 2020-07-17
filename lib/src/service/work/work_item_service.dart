@@ -99,7 +99,7 @@ class WorkItemService extends WorkItemServiceBase {
     return
       WorkItemValuesResponse()/*..webWorkAround = true*/..workItemValues.addAll(await querySelectWorkItemValues(request));
   }
-
+/*
   @override
   Future<WorkItemValue> getWorkItemValue(ServiceCall call,
       WorkItemValueGetRequest request) async {
@@ -109,7 +109,7 @@ class WorkItemService extends WorkItemServiceBase {
         RpcErrorDetailMessage.workItemValueDataNotFoundReason);
     return workItemValue;
   }
-
+*/
   @override
   Future<StringValue> createWorkItemValue(ServiceCall call,
       WorkItemValueRequest request) async {
@@ -443,21 +443,24 @@ class WorkItemService extends WorkItemServiceBase {
     // Not send to your-self
     if (relatedWork.leader.id == authUserId) return;
 
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = relatedWork.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
     // Leader  - Verify if send e-mail
-    if (!relatedWork.leader.userProfile.eMailNotification) return;
+    if (!leaderNotification.userProfile.eMailNotification) return;
 
     // Leader - eMail
-    if (relatedWork.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
+    if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
 
-    await CommonUtils.setDefaultLocale(relatedWork.leader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(leaderNotification.userProfile.idiomLocale);
 
     mailMessages.add(
         AugeMailMessageTo(
-            [relatedWork.leader.userProfile.eMail],
+            [leaderNotification.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
@@ -918,7 +921,7 @@ class WorkItemService extends WorkItemServiceBase {
             " date," //2
             " actual_value," //3
             " comment," //4
-            " work_item_id" //5
+            " null" //5
             " FROM work.work_item_values ";
       } else {
         return null;
@@ -955,8 +958,7 @@ class WorkItemService extends WorkItemServiceBase {
       if (results != null && results.isNotEmpty) {
 
         fillFields(WorkItemValue workItemValue, var row) {
-          WorkItemValue workItemValue = WorkItemValue()
-            ..id = row[0];
+          workItemValue.id = row[0];
 
           if (row[1] != null) workItemValue.version = row[1];
           //  measureProgress.date = row[3]
@@ -1024,20 +1026,23 @@ class WorkItemService extends WorkItemServiceBase {
     // Not send to your-self
     if (workItemValue.workItem.work.leader.id == authUserId) return;
 
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = workItemValue.workItem.work.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
     // Leader  - Verify if send e-mail
-    if (!workItemValue.workItem.work.leader.userProfile.eMailNotification) return;
+    if (!leaderNotification.userProfile.eMailNotification) return;
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
     // Leader - eMail
-    if (workItemValue.workItem.work.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
+    if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
 
-    await CommonUtils.setDefaultLocale(workItemValue.workItem.work.leader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(leaderNotification.userProfile.idiomLocale);
 
     mailMessages.add(
         AugeMailMessageTo(
-            [workItemValue.workItem.work.leader.userProfile.eMail],
+            [leaderNotification.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
@@ -1091,7 +1096,7 @@ class WorkItemService extends WorkItemServiceBase {
           "object_version": request.workItemValue.version,
           "object_class_name": work_item_m
               .WorkItemValue.className,
-          "system_module_index": SystemModule.objectives.index,
+          "system_module_index": SystemModule.works.index,
           "system_function_index": SystemFunction.create.index,
           "date_time": DateTime.now().toUtc(),
           "description": '${request.workItemValue.actualValue} @ ${request.workItemValue.workItem.name}',
@@ -1171,7 +1176,7 @@ class WorkItemService extends WorkItemServiceBase {
             "object_version": request.workItemValue.version,
             "object_class_name": work_item_m
                 .WorkItemValue.className,
-            "system_module_index": SystemModule.objectives.index,
+            "system_module_index": SystemModule.works.index,
             "system_function_index": SystemFunction.update.index,
             "date_time": DateTime.now().toUtc(),
             "description": '${request.workItemValue.actualValue} @ ${request.workItemValue.workItem.name}',
@@ -1224,7 +1229,7 @@ class WorkItemService extends WorkItemServiceBase {
             "object_id": request.workItemValueId,
             "object_version": request.workItemValueVersion,
             "object_class_name": work_item_m.WorkItemValue.className,
-            "system_module_index": SystemModule.objectives.index,
+            "system_module_index": SystemModule.works.index,
             "system_function_index": SystemFunction.delete.index,
             "date_time": DateTime.now().toUtc(),
             "description": '${previousWorkItemValue.actualValue} @ ${previousWorkItemValue.workItem.name}',
