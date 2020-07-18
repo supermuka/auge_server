@@ -14,7 +14,6 @@ import 'package:auge_shared/domain/work/work.dart' as work_m;
 import 'package:auge_shared/protos/generated/google/protobuf/empty.pb.dart';
 import 'package:auge_shared/protos/generated/google/protobuf/wrappers.pb.dart';
 import 'package:auge_shared/protos/generated/work/work_work_item.pbgrpc.dart';
-import 'package:auge_shared/protos/generated/general/user.pb.dart';
 
 import 'package:auge_server/src/util/db_connection.dart';
 import 'package:auge_shared/message/rpc_error_message.dart';
@@ -184,33 +183,33 @@ class WorkStageService extends WorkStageServiceBase {
   }
 
   /// Work Stage Notification User
-  static void workStageNotification(Work work, User leaderNotification, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+  static void workStageNotification(Work workLeaderNotification, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
 
     // Leader  - Verify if send e-mail
-    if (leaderNotification == null) return;
+    if (workLeaderNotification.leader == null) return;
 
     // Not send to your-self
-    if (leaderNotification.id == authUserId) return;
+    if (workLeaderNotification.leader.id == authUserId) return;
 
-    if (leaderNotification.userProfile.eMailNotification == false) return;
+    if (workLeaderNotification.leader.userProfile.eMailNotification == false) return;
 
     // Leader - eMail
-    if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Work Stage Leader is null.');
+    if (workLeaderNotification.leader.userProfile.eMail == null) throw Exception('e-mail of the Work Stage Leader is null.');
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
-    await CommonUtils.setDefaultLocale(leaderNotification.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(workLeaderNotification.leader.userProfile.idiomLocale);
 
     mailMessages.add(
         AugeMailMessageTo(
-            [leaderNotification.userProfile.eMail],
+            [workLeaderNotification.leader.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(work_m.Work.leaderField)}',
-            '${ClassNameMsg.label(work_m.Work.className)} ${work.name}',
-            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${work.id}'));
+            '${ClassNameMsg.label(work_m.Work.className)} ${workLeaderNotification.name}',
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${workLeaderNotification.id}'));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -265,10 +264,11 @@ class WorkStageService extends WorkStageServiceBase {
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
       });
 
-      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.workStage.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+      // Recovery eMail and notification from User Id from Leader.
+      Work workLeaderNotification = await WorkService.querySelectWork(WorkGetRequest()..id = request.workStage.work.id..customWork = CustomWork.workOnlySpecificationAndLeaderUserNotificationEmailIdiom);
 
       // Notification
-      workStageNotification(request.workStage.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workStageNotification(workLeaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
 
     } catch (e) {
@@ -340,11 +340,11 @@ class WorkStageService extends WorkStageServiceBase {
         }
       });
 
-      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.workStage.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+      // Recovery eMail and notification from User Id from Leader.
+      Work workLeaderNotification = await WorkService.querySelectWork(WorkGetRequest()..id = request.workStage.work.id..customWork = CustomWork.workOnlySpecificationAndLeaderUserNotificationEmailIdiom);
 
       // Notification
-      workStageNotification(request.workStage.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
-
+      workStageNotification(workLeaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('queryUpdateWorkStage - ${e.runtimeType}, ${e}');
@@ -358,7 +358,8 @@ class WorkStageService extends WorkStageServiceBase {
 
     WorkStage workStagePrevious = await querySelectWorkStage(WorkStageGetRequest()..id = request.workStageId);
 
-    User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: workStagePrevious.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+    // Recovery eMail and notification from User Id from Leader.
+    Work workLeaderNotification = await WorkService.querySelectWork(WorkGetRequest()..id = workStagePrevious.work.id..customWork = CustomWork.workOnlySpecificationAndLeaderUserNotificationEmailIdiom);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -397,7 +398,7 @@ class WorkStageService extends WorkStageServiceBase {
       });
 
       // Notification
-      workStageNotification(workStagePrevious.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workStageNotification(workLeaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

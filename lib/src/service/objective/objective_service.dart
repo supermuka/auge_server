@@ -83,14 +83,26 @@ class ObjectiveService extends ObjectiveServiceBase {
     if (request.hasCustomObjective()) {
       if (request.customObjective == CustomObjective.objectiveOnlySpecification) {
         queryStatementColumns =
-             "objective.id," //0
-             " null, " //1
+        "objective.id," //0
+            " null, " //1
             " objective.name," //2
             " null," //3
             " null," //4
             " null," //5
             " null," //6
             " null," //7
+            " null," //8
+            " null"; //9
+      } else if (request.customObjective == CustomObjective.objectiveOnlySpecificationAndLeaderUserNotificationEmailIdiom) {
+        queryStatementColumns =
+        "objective.id," //0
+            " null, " //1
+            " objective.name," //2
+            " null," //3
+            " null," //4
+            " null," //5
+            " null," //6
+            " objective.leader_user_id," //7
             " null," //8
             " null"; //9
 
@@ -164,6 +176,9 @@ class ObjectiveService extends ObjectiveServiceBase {
     } else if (request.hasOrganizationId() && request.organizationId.isNotEmpty) {
       queryStatementWhere = " objective.organization_id = @organization_id";
       substitutionValues = {"organization_id": request.organizationId};
+    } else if (request.hasMeasureId() && request.measureId.isNotEmpty) {
+      queryStatementWhere = " objective.id in (SELECT measure.objective_id FROM objective.measures measure WHERE measure.id = @measure_id)";
+      substitutionValues = {"measure_id": request.measureId};
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.objectiveInvalidArgument );
     }
@@ -265,7 +280,29 @@ class ObjectiveService extends ObjectiveServiceBase {
               .querySelectMeasures(measureGetRequest));
         }
 
-        if (request.hasCustomObjective() && request.customObjective == CustomObjective.objectiveOnlyWithMeasure) {
+        if (request.hasCustomObjective() && request.customObjective == CustomObjective.objectiveOnlySpecification) {
+          for (var row in results) {
+            objective = Objective();
+
+            objective.id = row[0];
+            objective.name = row[2];
+
+            objectives.add(objective);
+          }
+        } else if (request.hasCustomObjective() && request.customObjective == CustomObjective.objectiveOnlySpecificationAndLeaderUserNotificationEmailIdiom) {
+          for (var row in results) {
+            objective = Objective();
+
+            objective.id = row[0];
+            objective.name = row[2];
+
+            if (row[7] != null) objective.leader = await UserService.querySelectUser(UserGetRequest()
+              ..id = row[7]
+              ..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom, cache: usersCache);
+
+            objectives.add(objective);
+          }
+        } else if (request.hasCustomObjective() && request.customObjective == CustomObjective.objectiveOnlyWithMeasure) {
           measureGetRequest = MeasureGetRequest();
           for (var row in results) {
             objective = Objective();

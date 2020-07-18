@@ -97,6 +97,16 @@ class WorkService extends WorkServiceBase {
             "null, " //6
             "null " //7
             "FROM work.works work";
+      } else if (workGetRequest.customWork == CustomWork.workOnlySpecificationAndLeaderUserNotificationEmailIdiom) {
+        queryStatement = queryStatement + "work.id, " //0
+            "null," //1
+            "work.name, " //2
+            "null, " //3
+            "null, " //4 +
+            "work.leader_user_id, " //5
+            "null, " //6
+            "null " //7
+            "FROM work.works work";
       } else if (workGetRequest.customWork == CustomWork.workOnlyWithWorkItems) {
         queryStatement = queryStatement + "work.id, " //0
             "null, " //1
@@ -155,6 +165,9 @@ class WorkService extends WorkServiceBase {
     } else if (workGetRequest.hasOrganizationId()) {
       queryStatement += " WHERE work.organization_id = @organization_id";
       substitutionValues = {"organization_id": workGetRequest.organizationId};
+    } else if (workGetRequest.hasWorkItemId()) {
+      queryStatement += " WHERE work.id in (SELECT work_item.work_id FROM work.work_items work_item WHERE work_item.id = @work_item_id)";
+      substitutionValues = {"work_item_id": workGetRequest.workItemId};
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workInvalidArgument );
     }
@@ -268,6 +281,20 @@ class WorkService extends WorkServiceBase {
             Work()..id = row[0]..name = row[2];
             works.add(work);
           }
+        } else if (workGetRequest.customWork == CustomWork.workOnlySpecificationAndLeaderUserNotificationEmailIdiom) {
+          workItemGetRequest = WorkItemGetRequest();
+          for (var row in results) {
+            Work work =
+            Work()..id = row[0]..name = row[2];
+            if (row[5] != null) {
+              UserGetRequest userGetRequest = UserGetRequest();
+              userGetRequest.id = row[5];
+              userGetRequest.customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom;
+
+              work.leader = await UserService.querySelectUser(userGetRequest);
+            }
+            works.add(work);
+          }
         } else if (workGetRequest.customWork == CustomWork.workOnlyWithWorkItems) {
           workItemGetRequest = WorkItemGetRequest();
           for (var row in results) {
@@ -320,6 +347,7 @@ class WorkService extends WorkServiceBase {
     }
   }
 
+  /*
   // Inner query, not expost to grpc. Because this, the param is nativa dart type, not protobuf.
   static Future<User> querySelectWorkLeaderUser({String workId, String workItemId, CustomUser customUser}) async {
 
@@ -374,35 +402,36 @@ class WorkService extends WorkServiceBase {
       rethrow;
     }
   }
+*/
 
   /// Work Notification User
-  static void workNotification(Work work, User leaderNotification, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+  static void workNotification(Work workLeaderNotification, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
 
-    if (leaderNotification == null) return;
+    if (workLeaderNotification.leader == null) return;
 
     // Not send to your-self
-    if (leaderNotification.id == authUserId) return;
+    if (workLeaderNotification.leader .id == authUserId) return;
 
     // Leader - Verify if send e-mail
-    if (leaderNotification.userProfile.eMailNotification == false) return;
+    if (workLeaderNotification.leader .userProfile.eMailNotification == false) return;
 
     // Leader - eMail
-    if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
+    if (workLeaderNotification.leader .userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
 
-    await CommonUtils.setDefaultLocale(leaderNotification.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(workLeaderNotification.leader .userProfile.idiomLocale);
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
     mailMessages.add(
         AugeMailMessageTo(
-            [leaderNotification.userProfile.eMail],
+            [workLeaderNotification.leader .userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
             '${WorkDomainMsg.fieldLabel(work_m.Work.leaderField)}',
-            '${ClassNameMsg.label(work_m.Work.className)} ${work.name}',
-            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${work.id}'));
+            '${ClassNameMsg.label(work_m.Work.className)} ${workLeaderNotification.name}',
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${workLeaderNotification.id}'));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -461,10 +490,10 @@ class WorkService extends WorkServiceBase {
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
       });
 
-      // Recovery eMail and notification from User Id.
-      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+      // Recovery eMail and notification from User Id from Leader.
+      Work workLeaderNotification = await WorkService.querySelectWork(WorkGetRequest()..id = request.work.id..customWork = CustomWork.workOnlySpecificationAndLeaderUserNotificationEmailIdiom);
 
-      workNotification(request.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workNotification(workLeaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -540,10 +569,10 @@ class WorkService extends WorkServiceBase {
 
       });
 
-      // Recovery eMail and notification from User Id.
-      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+      // Recovery eMail and notification from User Id from Leader.
+      Work workLeaderNotification = await WorkService.querySelectWork(WorkGetRequest()..id = request.work.id..customWork = CustomWork.workOnlySpecificationAndLeaderUserNotificationEmailIdiom);
 
-      workNotification(request.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workNotification(workLeaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -557,8 +586,8 @@ class WorkService extends WorkServiceBase {
 
     Work previousWork = await querySelectWork(WorkGetRequest()..id = request.workId);
 
-    // Recovery eMail and notification from User Id.
-    User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.workId, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+    // Recovery eMail and notification from User Id from Leader.
+    Work workLeaderNotification = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId..customWork = CustomWork.workOnlySpecificationAndLeaderUserNotificationEmailIdiom);
 
     try {
 
@@ -597,7 +626,7 @@ class WorkService extends WorkServiceBase {
         }
       });
 
-      workNotification(previousWork, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workNotification(workLeaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
