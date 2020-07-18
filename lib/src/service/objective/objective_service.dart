@@ -341,6 +341,52 @@ class ObjectiveService extends ObjectiveServiceBase {
     }
   }
 
+  // Inner query, not expost to grpc. Because this, the param is nativa dart type, not protobuf.
+  static Future<User> querySelectObjectiveLeaderUser(String objectiveId, {CustomUser customUser}) async {
+
+    List<List<dynamic>> results;
+
+    String queryStatement;
+
+    queryStatement = "SELECT objective.leader_user_id " //0
+        "FROM objective.objectives objective";
+
+    Map<String, dynamic> substitutionValues;
+
+    if (objectiveId != null) {
+      queryStatement += " WHERE objective.id = @id";
+      substitutionValues = {"id": objectiveId};
+    } else {
+      throw new GrpcError.invalidArgument( RpcErrorDetailMessage.objectiveInvalidArgument);
+    }
+
+    try {
+      results =  await (await AugeConnection.getConnection()).query(queryStatement, substitutionValues: substitutionValues);
+
+      User user;
+
+      if (results.length != 0) {
+        // Work Items
+
+        var row = results.first;
+
+        // user = (await _augeApi.getUsers(id: row[4])).first;
+        if (row[0] != null) {
+          UserGetRequest userGetRequest = UserGetRequest();
+          userGetRequest.id = row[0];
+          userGetRequest.customUser = customUser;
+          user = await UserService.querySelectUser(userGetRequest);
+        } else {
+          user = null;
+        }
+      }
+      return user;
+    } catch (e) {
+      print('querySelectObjectiveUserLeader - ${e.runtimeType}, ${e}');
+      rethrow;
+    }
+  }
+
 /*
   static Future<User> querySelectObjectiveLeaderUser(String objectiveId, {CustomUser customUser}) async {
 
@@ -379,16 +425,15 @@ class ObjectiveService extends ObjectiveServiceBase {
   */
 
   /// Objective Notification User
-  static void objectiveNotification(Objective objective, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+  static void objectiveNotification(Objective objective, User leaderNotification, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+
+    if (leaderNotification == null) return;
 
     // Not send to your-self
-    if (objective.leader.id == authUserId) return;
-
-    // Recovery eMail and notification from User Id.
-    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = objective.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+    if (leaderNotification.id == authUserId) return;
 
     // Leader  - Verify if send e-mail
-    if (!leaderNotification.userProfile.eMailNotification) return;
+    if (leaderNotification.userProfile.eMailNotification == null) return;
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -472,7 +517,10 @@ class ObjectiveService extends ObjectiveServiceBase {
 
       });
 
-      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      // Recovery eMail and notification from User Id.
+      User leaderNotification = await ObjectiveService.querySelectObjectiveLeaderUser(request.objective.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
+      objectiveNotification(request.objective, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
     } catch (e) {
       print('${e.runtimeType}, ${e}');
       rethrow;
@@ -548,7 +596,11 @@ class ObjectiveService extends ObjectiveServiceBase {
 
       });
 
-      objectiveNotification(request.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      // Recovery eMail and notification from User Id.
+      User leaderNotification = await ObjectiveService.querySelectObjectiveLeaderUser(request.objective.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
+
+      objectiveNotification(request.objective, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -563,6 +615,10 @@ class ObjectiveService extends ObjectiveServiceBase {
 
     // Recovery to log to history
     Objective previousObjective = await querySelectObjective(ObjectiveGetRequest()..id = request.objectiveId);
+
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await ObjectiveService.querySelectObjectiveLeaderUser(request.objectiveId, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
 
     try {
       Map<String, dynamic> historyItemNotificationValues;
@@ -604,7 +660,7 @@ class ObjectiveService extends ObjectiveServiceBase {
         }
       });
 
-      objectiveNotification(previousObjective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      objectiveNotification(previousObjective, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

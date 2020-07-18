@@ -244,7 +244,7 @@ class WorkService extends WorkServiceBase {
       WorkItemGetRequest workItemGetRequest;
       fillWorkItems(Work work, var row) async {
         workItemGetRequest.workId = row[0];
-        workItemGetRequest.customWorkItem = CustomWorkItem.workItemWithoutWork;
+        //workItemGetRequest.customWorkItem = CustomWorkItem.workItemWithoutWork;
         if (workGetRequest.hasWorkItemWithArchived()) workItemGetRequest.withArchived = workGetRequest.workItemWithArchived;
         if (workGetRequest.workItemAssignedToIds != null && workGetRequest.workItemAssignedToIds.isNotEmpty) {
           workItemGetRequest.assignedToIds.addAll(workGetRequest.workItemAssignedToIds);
@@ -260,7 +260,6 @@ class WorkService extends WorkServiceBase {
 
         work.workStages.addAll(await WorkStageService.querySelectWorkStages(workStageGetRequest));
       }
-
 
       if (workGetRequest.hasCustomWork()) {
         if (workGetRequest.customWork == CustomWork.workOnlySpecification) {
@@ -321,21 +320,29 @@ class WorkService extends WorkServiceBase {
     }
   }
 
-
-  static Future<User> querySelectWorkUserLeader(WorkGetRequest workGetRequest) async {
+  // Inner query, not expost to grpc. Because this, the param is nativa dart type, not protobuf.
+  static Future<User> querySelectWorkLeaderUser({String workId, String workItemId, CustomUser customUser}) async {
 
     List<List<dynamic>> results;
 
     String queryStatement;
 
     queryStatement = "SELECT work.leader_user_id " //0
-        "FROM work.works work";
+        "FROM work.works work ";
+
+    if (workItemId != null) {
+      queryStatement = queryStatement + "JOIN work.work_items work_item ON work_item.work_id = work.id ";
+    }
+
 
     Map<String, dynamic> substitutionValues;
 
-    if (workGetRequest.hasId()) {
+    if (workItemId != null) {
+      queryStatement += " WHERE work_item.id = @work_item_id";
+      substitutionValues = {"work_item_id": workItemId};
+    } else if (workId != null) {
       queryStatement += " WHERE work.id = @id";
-      substitutionValues = {"id": workGetRequest.id};
+      substitutionValues = {"id": workId};
     } else {
       throw new GrpcError.invalidArgument( RpcErrorDetailMessage.workInvalidArgument );
     }
@@ -353,8 +360,8 @@ class WorkService extends WorkServiceBase {
         // user = (await _augeApi.getUsers(id: row[4])).first;
         if (row[0] != null) {
           UserGetRequest userGetRequest = UserGetRequest();
-          userGetRequest.id = row[6];
-          userGetRequest.customUser = CustomUser.userOnlySpecificationProfileImage;
+          userGetRequest.id = row[0];
+          userGetRequest.customUser = customUser;
           user = await UserService.querySelectUser(userGetRequest);
         } else {
           user = null;
@@ -363,23 +370,21 @@ class WorkService extends WorkServiceBase {
 
       return user;
     } catch (e) {
-      print('querySelectWorkUserLeader - ${e.runtimeType}, ${e}');
+      print('querySelectWorkLeaderUser - ${e.runtimeType}, ${e}');
       rethrow;
     }
   }
 
-
   /// Work Notification User
-  static void workNotification(Work work, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+  static void workNotification(Work work, User leaderNotification, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+
+    if (leaderNotification == null) return;
 
     // Not send to your-self
-    if (work.leader.id == authUserId) return;
-
-    // Recovery eMail and notification from User Id.
-    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = work.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+    if (leaderNotification.id == authUserId) return;
 
     // Leader - Verify if send e-mail
-    if (!leaderNotification.userProfile.eMailNotification) return;
+    if (leaderNotification.userProfile.eMailNotification == false) return;
 
     // Leader - eMail
     if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
@@ -456,7 +461,10 @@ class WorkService extends WorkServiceBase {
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
       });
 
-      workNotification(request.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      // Recovery eMail and notification from User Id.
+      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
+      workNotification(request.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -532,7 +540,10 @@ class WorkService extends WorkServiceBase {
 
       });
 
-      workNotification(request.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      // Recovery eMail and notification from User Id.
+      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
+      workNotification(request.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -545,6 +556,9 @@ class WorkService extends WorkServiceBase {
   static Future<Empty> queryDeleteWork(WorkDeleteRequest request, String urlOrigin) async {
 
     Work previousWork = await querySelectWork(WorkGetRequest()..id = request.workId);
+
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.workId, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
 
     try {
 
@@ -583,7 +597,7 @@ class WorkService extends WorkServiceBase {
         }
       });
 
-      workNotification(previousWork, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workNotification(previousWork, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

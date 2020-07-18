@@ -193,7 +193,7 @@ void main() {
           ..checkItems.add(WorkItemCheckItem()
             ..id = 'f9ea90d6-79ab-42c2-b238-0323c4b20a78'
             ..name = 'Check Item Test')
-          ..workStage = workStage)..workId = workId);
+          ..workStage = workStage));
 
         expect(idResponsePb.hasValue(), isTrue);
 
@@ -231,7 +231,7 @@ void main() {
             ..version = 0
             ..name = name
             ..description = description
-            ..workStage = workStage)..workId = workId);
+            ..workStage = workStage));
 
         WorkItem workItem = (await workItemStub
             .getWorkItems(WorkItemGetRequest()

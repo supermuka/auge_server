@@ -165,20 +165,37 @@ class MeasureService extends MeasureServiceBase {
 
     String queryStatement;
 
-    if (request.customMeasure == CustomMeasure.measureWithoutObjective) {
-      queryStatement = "SELECT id," //0
-          " version, " //1
-          " name," //2
-          " description," //3
-          " metric," //4
-          " decimals_number," //5
-          " start_value::REAL," //6
-          " end_value::REAL," //7
-          " (SELECT current_value FROM objective.measure_progress WHERE measure_progress.measure_id = measure.id ORDER BY date desc limit 1)::REAL as current_value," //8
-          " unit_of_measurement_id, " //9
-          " null" //10
-          " FROM objective.measures measure ";
-
+    if (request.hasCustomMeasure()) {
+      if (request.customMeasure == CustomMeasure.measureOnlySpecification) {
+        queryStatement = "SELECT id," //0
+            " null, " //1
+            " name," //2
+            " null," //3
+            " null," //4
+            " null," //5
+            " null," //6
+            " null," //7
+            " null," //8
+            " null, " //9
+            " null" //10
+            " FROM objective.measures measure ";
+      } else if (request.customMeasure == CustomMeasure.measureWithoutObjective) {
+        queryStatement = "SELECT id," //0
+            " version, " //1
+            " name," //2
+            " description," //3
+            " metric," //4
+            " decimals_number," //5
+            " start_value::REAL," //6
+            " end_value::REAL," //7
+            " (SELECT current_value FROM objective.measure_progress WHERE measure_progress.measure_id = measure.id ORDER BY date desc limit 1)::REAL as current_value," //8
+            " unit_of_measurement_id, " //9
+            " null" //10
+            " FROM objective.measures measure ";
+      }
+      else {
+        return null;
+      }
     } else {
       queryStatement = "SELECT id," //0
           " version, " //1
@@ -239,29 +256,47 @@ class MeasureService extends MeasureServiceBase {
             measure.unitOfMeasurement = unitsOfMeasurement.first;
           }
         }
+        if (request.hasCustomMeasure()) {
+          if (request.customMeasure == CustomMeasure.measureOnlySpecification) {
 
-        if (request.customMeasure == CustomMeasure.measureWithoutObjective) {
-          for (var row in results) {
-            Measure measure = Measure();
-            await fillFields(measure, row);
-            measures.add(measure);
+            for (var row in results) {
+              Measure measure = Measure();
+              measure.id = row[0];
+              measure.name = row[2];
+              measures.add(measure);
+            }
+          } else if (request.customMeasure == CustomMeasure.measureWithoutObjective) {
+
+            for (var row in results) {
+              Measure measure = Measure();
+              await fillFields(measure, row);
+              measures.add(measure);
+            }
           }
-
-        } else {
+        } else  {
           ObjectiveGetRequest objectiveGetRequest = ObjectiveGetRequest();
-          fillObjectiveField(Measure measure, var row) async {
+          fillObjectiveField(Measure measure, var row, [Objective objectiveCache]) async {
 
-            objectiveGetRequest.id = row[10];
-            objectiveGetRequest.customObjective = CustomObjective.objectiveOnlySpecificationStartDateEndDate;
+            if (objectiveCache != null && objectiveCache.id == row[10]) {
+              measure.objective = objectiveCache;
+            } else {
+              objectiveGetRequest.id = row[10];
+              objectiveGetRequest.customObjective =
+                  CustomObjective.objectiveOnlySpecificationStartDateEndDate;
 
-            measure.objective =
-            await ObjectiveService.querySelectObjective(objectiveGetRequest);
+              measure.objective =
+              await ObjectiveService.querySelectObjective(objectiveGetRequest);
+
+              objectiveCache = measure.objective;
+            }
 
           }
+
+          Objective objectiveCache;
           for (var row in results) {
             Measure measure = Measure();
             await fillFields(measure, row);
-            await fillObjectiveField(measure, row);
+            await fillObjectiveField(measure, row, objectiveCache);
             measures.add(measure);
           }
         }
@@ -283,17 +318,15 @@ class MeasureService extends MeasureServiceBase {
   }
 
   /// Objective Measure Notification User
-  static void measureNotification(Objective relatedObjective, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+  static void measureNotification(Objective objective, User leaderNotification, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+
+    if (leaderNotification == null) return;
 
     // Not send to your-self
-    if (relatedObjective.leader.id == authUserId) return;
-
-    // Recovery eMail and notification from User Id.
-    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = relatedObjective.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
-
+    if (leaderNotification.id == authUserId) return;
 
     // Leader
-    if (!leaderNotification.userProfile.eMailNotification) return;
+    if (leaderNotification.userProfile.eMailNotification == false) return;
 
     // Leader - eMail
     if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Objective Leader is null.');
@@ -310,8 +343,8 @@ class MeasureService extends MeasureServiceBase {
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(objective_m.Objective.leaderField)}',
-            '${ClassNameMsg.label(objective_m.Objective.className)} ${relatedObjective.name}',
-            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.objectivesRoutePath}?${AppRoutesQueryParam.objectiveIdQueryParameter}=${relatedObjective.id}',));
+            '${ClassNameMsg.label(objective_m.Objective.className)} ${objective.name}',
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.objectivesRoutePath}?${AppRoutesQueryParam.objectiveIdQueryParameter}=${objective.id}',));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -331,11 +364,11 @@ class MeasureService extends MeasureServiceBase {
     Map<String, dynamic> historyItemNotificationValues;
 
     try {
-
+/*
       // TODO (this is made just to get a objective name and email, found a way to improve the performance)
       Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()
         ..id = request.objectiveId);
-
+*/
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
@@ -360,7 +393,7 @@ class MeasureService extends MeasureServiceBase {
           "start_value": request.measure.hasStartValue() ? request.measure.startValue : null,
           "end_value": request.measure.hasEndValue() ? request.measure.endValue : null,
           "unit_of_measurement_id": request.measure.hasUnitOfMeasurement() ? request.measure.unitOfMeasurement.id : null,
-          "objective_id": request.hasObjectiveId() ? request.objectiveId : null,
+          "objective_id": request.measure.objective.id,
         });
 
         historyItemNotificationValues =  {"id": Uuid().v4(),
@@ -383,8 +416,12 @@ class MeasureService extends MeasureServiceBase {
 
       });
 
+
+      // Recovery eMail and notification from User Id.
+      User leaderNotification = await ObjectiveService.querySelectObjectiveLeaderUser(request.measure.objective.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
       // Notification
-      measureNotification(objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      measureNotification(request.measure.objective, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -434,7 +471,7 @@ class MeasureService extends MeasureServiceBase {
                 "end_value": request.measure.hasEndValue() ? request.measure.endValue : null,
                 //"current_value": measureRequest.currentValue,
                 "unit_of_measurement_id": request.measure.hasUnitOfMeasurement() ? request.measure.unitOfMeasurement.id : null,
-                "objective_id": request.hasObjectiveId() ? request.objectiveId : null,
+                "objective_id": request.measure.objective.id,
               });
 
         // Optimistic concurrency control
@@ -462,8 +499,11 @@ class MeasureService extends MeasureServiceBase {
         }
       });
 
+      // Recovery eMail and notification from User Id.
+      User leaderNotification = await ObjectiveService.querySelectObjectiveLeaderUser(request.measure.objective.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
       // Notification
-      measureNotification(previousMeasure.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      measureNotification(previousMeasure.objective, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -477,6 +517,10 @@ class MeasureService extends MeasureServiceBase {
 
     Measure previousMeasure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId);
     Map<String, dynamic> historyItemNotificationValues;
+
+
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await ObjectiveService.querySelectObjectiveLeaderUser(previousMeasure.objective.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
 
     try {
       await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -515,7 +559,7 @@ class MeasureService extends MeasureServiceBase {
       });
 
       // Notification
-      measureNotification(previousMeasure.objective, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      measureNotification(previousMeasure.objective, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -676,9 +720,10 @@ class MeasureService extends MeasureServiceBase {
     Map<String, dynamic> historyItemNotificationValues;
     try {
 
+      /*
       // This is made just to recovery email leader from objective, used to notification
       request.measureProgress.measure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId);
-
+*/
       request.measureProgress.version = 0;
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
@@ -700,7 +745,7 @@ class MeasureService extends MeasureServiceBase {
           "date": request.measureProgress.hasDate() ? /* CommonUtils.dateTimeFromTimestamp(request.measureProgress.date) */ request.measureProgress.date.toDateTime() : DateTime.now().toUtc(),
           "current_value": request.measureProgress.hasCurrentValue() ? request.measureProgress.currentValue : null,
           "comment": request.measureProgress.hasComment() ? request.measureProgress.comment : null,
-          "measure_id": request.hasMeasureId() ? request.measureId : null,
+          "measure_id": request.measureProgress.measure.id,
         });
 
         // Create a history item
@@ -774,7 +819,7 @@ class MeasureService extends MeasureServiceBase {
               : /* CommonUtils.dateTimeFromTimestamp(request.measureProgress.date) */ request.measureProgress.date.toDateTime(),
           "current_value": request.measureProgress.hasCurrentValue() ? request.measureProgress.currentValue : null,
           "comment": request.measureProgress.hasComment() ? request.measureProgress.comment : null,
-          "measure_id": request.hasMeasureId() ? request.measureId : null,
+          "measure_id": request.measureProgress.measure.id,
 
         });
 

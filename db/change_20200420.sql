@@ -84,3 +84,6 @@ TABLESPACE pg_default;
 
 ALTER TABLE general.user_controls
     OWNER to postgres;
+
+ALTER TABLE work.work_stages
+    RENAME CONSTRAINT stages_initiative_id_fkey TO stages_work_id_fkey;

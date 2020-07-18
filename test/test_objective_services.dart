@@ -23,7 +23,6 @@ void main() {
     String id;
     String organizationId;
     String objectiveId;
-    String measureId;
 
     setUp(() async {
       channel = ClientChannel('localhost',
@@ -151,7 +150,7 @@ void main() {
         StringValue idResponsePb = await measureStub
             .createMeasure(MeasureRequest()..measure = (Measure()
           ..name = name
-          ..description = description)..objectiveId = objectiveId);
+          ..description = description));
         expect(idResponsePb.hasValue(), isTrue);
 
         id = idResponsePb.value;
@@ -191,12 +190,11 @@ void main() {
             .createMeasure(MeasureRequest()..measure = (Measure()
           ..name = name
           ..description = description
-          )..objectiveId = objectiveId);
+          ));
         expect(idResponsePb.hasValue(), isTrue);
 
         id = idResponsePb.value;
 
-        measureId = id;
 
         Measure measure = (await measureStub
             .getMeasures(MeasureGetRequest()
@@ -216,7 +214,7 @@ void main() {
           ..updateMeasure(MeasureRequest()..measure = (Measure()
             ..id = id
             ..name = name
-            ..description = description)..objectiveId = objectiveId);
+            ..description = description));
 
         Measure measure = (await measureStub
             .getMeasures(MeasureGetRequest()
@@ -234,7 +232,7 @@ void main() {
       test('Call operation createMeasureProgress', () async {
         StringValue idResponsePb = await measureStub
             .createMeasureProgress(MeasureProgressRequest()..measureProgress = (MeasureProgress()
-          ..comment = comment)..measureId = measureId);
+          ..comment = comment));
         expect(idResponsePb.hasValue(), isTrue);
 
         id = idResponsePb.value;

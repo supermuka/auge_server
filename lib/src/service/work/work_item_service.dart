@@ -258,11 +258,16 @@ class WorkItemService extends WorkItemServiceBase {
 
       }
 
-      fillWorkField(WorkItem workItem, var row) async {
+      fillWorkField(WorkItem workItem, var row, [Work workCache]) async {
         if (row[8] != null) {
-          workItem.work = await WorkService.querySelectWork(WorkGetRequest()
-            ..id = row[8]
-            ..customWork = CustomWork.workOnlySpecification);
+          if (workCache != null && workCache.id == row[8]) {
+            workItem.work = workCache;
+          } else {
+            workItem.work = await WorkService.querySelectWork(WorkGetRequest()
+              ..id = row[8]
+              ..customWork = CustomWork.workOnlySpecification);
+            workCache = workItem.work;
+          }
         }
       }
 
@@ -286,10 +291,11 @@ class WorkItemService extends WorkItemServiceBase {
         }
       } else {
 
+        Work workCache;
         for (var row in results) {
           workItem = WorkItem();
           await fillFields(workItem, row);
-          await fillWorkField(workItem, row);
+          await fillWorkField(workItem, row, workCache);
           workItems.add(workItem);
         }
       }
@@ -438,16 +444,16 @@ class WorkItemService extends WorkItemServiceBase {
   }
 
   /// Workitem Notification User
-  static void workItemNotification(Work relatedWork, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+  static void workItemNotification(Work work, User leaderNotification, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+
+
+    if (leaderNotification == null) return;
 
     // Not send to your-self
-    if (relatedWork.leader.id == authUserId) return;
-
-    // Recovery eMail and notification from User Id.
-    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = relatedWork.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+    if (leaderNotification.id == authUserId) return;
 
     // Leader  - Verify if send e-mail
-    if (!leaderNotification.userProfile.eMailNotification) return;
+    if (leaderNotification.userProfile.eMailNotification == false) return;
 
     // Leader - eMail
     if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Work Leader is null.');
@@ -465,8 +471,8 @@ class WorkItemService extends WorkItemServiceBase {
             '${ClassNameMsg.label(className)}',
             description,
             '${ObjectiveDomainMsg.fieldLabel(work_m.Work.leaderField)}',
-            '${ClassNameMsg.label(work_m.Work.className)} ${relatedWork.name}',
-            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${relatedWork.id}'));
+            '${ClassNameMsg.label(work_m.Work.className)} ${leaderNotification.name}',
+            '${urlOrigin}/#/${AppRoutesPath.appLayoutRoutePath}/${AppRoutesPath.worksRoutePath}?${AppRoutesQueryParam.workIdQueryParameter}=${leaderNotification.id}'));
 
     // SEND E-MAIL
     AugeMail().sendNotification(mailMessages);
@@ -486,7 +492,7 @@ class WorkItemService extends WorkItemServiceBase {
     try {
 
       // TODO (this is made just to get a work leader email, found a way to improve the performance)
-      Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId);
+     // Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId);
 
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
@@ -523,7 +529,7 @@ class WorkItemService extends WorkItemServiceBase {
               "planned_value": request.workItem.hasPlannedValue() ? request.workItem.plannedValue : null,
             //  "actual_value": request.workItem.hasActualValue() ? request.workItem.actualValue : null,
               "archived": request.workItem.hasArchived() ? request.workItem.archived : false,
-              "work_id": request.hasWorkId() ? request.workId : null,
+              "work_id": request.workItem.hasWork() ? request.workItem.work.id : null,
               "unit_of_measurement_id": request.workItem.hasUnitOfMeasurement() ? request.workItem.unitOfMeasurement.id : null,
               "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null,
               });
@@ -607,8 +613,12 @@ class WorkItemService extends WorkItemServiceBase {
 
       });
 
+      // Recovery eMail and notification from User Id.
+      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.workItem.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
+
       // Notification
-      workItemNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workItemNotification(request.workItem.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -626,7 +636,7 @@ class WorkItemService extends WorkItemServiceBase {
       ..id = request.workItem.id);
 
     // TODO (this is made just to get a user profile email, it needs to find to a way to improve the performance)
-    Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId);
+   // Work work = await WorkService.querySelectWork(WorkGetRequest()..id = request.workId);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -661,7 +671,7 @@ class WorkItemService extends WorkItemServiceBase {
           //    "actual_value": request.workItem.hasActualValue()
           //        ? request.workItem.actualValue
            //       : null,
-              "work_id": request.workId,
+              "work_id": request.workItem.work.id,
               "stage_id": request.workItem.hasWorkStage() ? request.workItem.workStage.id : null,
               "unit_of_measurement_id": request.workItem.hasUnitOfMeasurement () ? request.workItem.unitOfMeasurement.id : null,
               "archived": request.workItem.archived});
@@ -836,8 +846,13 @@ class WorkItemService extends WorkItemServiceBase {
 
       });
 
+      // Recovery eMail and notification from User Id.
+      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.workItem.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
+
+
       // Notification
-      workItemNotification(work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workItemNotification(request.workItem.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -850,6 +865,9 @@ class WorkItemService extends WorkItemServiceBase {
   static Future<Empty> queryDeleteWorkItem(WorkItemDeleteRequest request, String urlOrigin) async {
 
     WorkItem previousWorkItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId);
+
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: previousWorkItem.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -898,8 +916,9 @@ class WorkItemService extends WorkItemServiceBase {
           }
       });
 
+
       // Notification
-      workItemNotification(previousWorkItem.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workItemNotification(previousWorkItem.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -1021,16 +1040,15 @@ class WorkItemService extends WorkItemServiceBase {
 
 
   /// Objective Work Item Value Notification User
-  static void workItemValueNotification(WorkItemValue workItemValue, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+  static void workItemValueNotification(WorkItemValue workItemValue, User leaderNotification, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+
+    if (leaderNotification == null) return;
 
     // Not send to your-self
-    if (workItemValue.workItem.work.leader.id == authUserId) return;
-
-    // Recovery eMail and notification from User Id.
-    User leaderNotification = await UserService.querySelectUser(UserGetRequest()..id = workItemValue.workItem.work.leader.id..customUser = CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+    if (leaderNotification.id == authUserId) return;
 
     // Leader  - Verify if send e-mail
-    if (!leaderNotification.userProfile.eMailNotification) return;
+    if (leaderNotification.userProfile.eMailNotification == false) return;
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
@@ -1062,7 +1080,7 @@ class WorkItemService extends WorkItemServiceBase {
     try {
 
       // This is made just to recovery email leader from objective, used to notification
-      request.workItemValue.workItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId);
+   //   request.workItemValue.workItem = await querySelectWorkItem(WorkItemGetRequest()..id = request.workItemId);
 
       request.workItemValue.version = 0;
 
@@ -1085,7 +1103,8 @@ class WorkItemService extends WorkItemServiceBase {
           "date": request.workItemValue.hasDate() ? /* CommonUtils.dateTimeFromTimestamp(request.measureProgress.date) */ request.workItemValue.date.toDateTime() : DateTime.now().toUtc(),
           "actual_value": request.workItemValue.hasActualValue() ? request.workItemValue.actualValue : null,
           "comment": request.workItemValue.hasComment() ? request.workItemValue.comment : null,
-          "work_item_id": request.hasWorkItemId() ? request.workItemId : null,
+          //"work_item_id": request.hasWorkItemId() ? request.workItemId : null,
+          "work_item_id": request.workItemValue.hasWorkItem() ? request.workItemValue.workItem.id : null,
         });
 
         // Create a history item
@@ -1110,8 +1129,11 @@ class WorkItemService extends WorkItemServiceBase {
 
       });
 
+      // Recovery eMail and notification from User Id.
+      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.workItemValue.workItem.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
       // Notification
-      workItemValueNotification(request.workItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workItemValueNotification(request.workItemValue, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -1127,7 +1149,7 @@ class WorkItemService extends WorkItemServiceBase {
     // Recovery to log to history
     WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValue.id);
 
-    request.workItemValue.workItem = previousWorkItemValue.workItem;
+   // request.workItemValue.workItem = previousWorkItemValue.workItem;
     // This is made just to recovery email leader from objective, used to notification
     //request.measureProgress.measure = await querySelectMeasure(MeasureGetRequest()..id = request.measureId..withObjective = true..withUserProfile = true);
 
@@ -1159,7 +1181,8 @@ class WorkItemService extends WorkItemServiceBase {
               : request.workItemValue.date.toDateTime(),
           "actual_value": request.workItemValue.hasActualValue() ? request.workItemValue.actualValue : null,
           "comment": request.workItemValue.hasComment() ? request.workItemValue.comment : null,
-          "work_item_id": request.hasWorkItemId() ? request.workItemId : null,
+         // "work_item_id": request.hasWorkItemId() ? request.workItemId : null,
+          "work_item_id": request.hasWorkItemValue() ? request.workItemValue.workItem.id : null,
 
         });
 
@@ -1188,8 +1211,11 @@ class WorkItemService extends WorkItemServiceBase {
 
       });
 
+      // Recovery eMail and notification from User Id.
+      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.workItemValue.workItem.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
       // Notification
-      workItemValueNotification(request.workItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workItemValueNotification(request.workItemValue, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
@@ -1202,6 +1228,10 @@ class WorkItemService extends WorkItemServiceBase {
   Future<Empty> queryDeleteWorkItemValue(WorkItemValueDeleteRequest request, String urlOrigin) async {
 
     WorkItemValue previousWorkItemValue = await querySelectWorkItemValue(WorkItemValueGetRequest()..id = request.workItemValueId);
+
+    // Recovery eMail and notification from User Id.
+    User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: previousWorkItemValue.workItem.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
 
     try {
 
@@ -1242,7 +1272,7 @@ class WorkItemService extends WorkItemServiceBase {
       });
 
       // Notification
-      workItemValueNotification(previousWorkItemValue, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workItemValueNotification(previousWorkItemValue, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

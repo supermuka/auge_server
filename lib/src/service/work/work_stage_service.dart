@@ -184,28 +184,27 @@ class WorkStageService extends WorkStageServiceBase {
   }
 
   /// Work Stage Notification User
-  static void workStageNotification(Work work, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
+  static void workStageNotification(Work work, User leaderNotification, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
 
     // Leader  - Verify if send e-mail
-    // Get leader because normally work associate with stage of the client origin has just work.id and work.name.
-    User userLeader = await WorkService.querySelectWorkUserLeader(WorkGetRequest()..id = work.leader.id);
+    if (leaderNotification == null) return;
 
     // Not send to your-self
-    if (userLeader.id == authUserId) return;
+    if (leaderNotification.id == authUserId) return;
 
-    if (userLeader.userProfile.eMailNotification) return;
+    if (leaderNotification.userProfile.eMailNotification == false) return;
 
     // Leader - eMail
-    if (userLeader.userProfile.eMail == null) throw Exception('e-mail of the Work Stage Leader is null.');
+    if (leaderNotification.userProfile.eMail == null) throw Exception('e-mail of the Work Stage Leader is null.');
 
     // MODEL
     List<AugeMailMessageTo> mailMessages = [];
 
-    await CommonUtils.setDefaultLocale(userLeader.userProfile.idiomLocale);
+    await CommonUtils.setDefaultLocale(leaderNotification.userProfile.idiomLocale);
 
     mailMessages.add(
         AugeMailMessageTo(
-            [userLeader.userProfile.eMail],
+            [leaderNotification.userProfile.eMail],
             '${SystemFunctionMsg.inPastLabel(SystemFunction.values[systemFunctionIndex].toString().split('.').last)}',
             '${ClassNameMsg.label(className)}',
             description,
@@ -224,8 +223,6 @@ class WorkStageService extends WorkStageServiceBase {
     if (!request.workStage.hasId()) {
       request.workStage.id = Uuid().v4();
     }
-
-    request.workStage.version = 0;
 
     try {
 
@@ -268,8 +265,10 @@ class WorkStageService extends WorkStageServiceBase {
         await ctx.query(HistoryItemService.queryStatementCreateHistoryItem, substitutionValues: historyItemNotificationValues);
       });
 
+      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.workStage.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
       // Notification
-      workStageNotification(request.workStage.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workStageNotification(request.workStage.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
 
     } catch (e) {
@@ -312,7 +311,7 @@ class WorkStageService extends WorkStageServiceBase {
               "name": request.workStage.name,
               "index": request.workStage.index,
               "state_index": request.workStage.stateIndex,
-              "work_id": request.workStage.id});
+              "work_id": request.workStage.work.id});
 
         // Optimistic concurrency control
         if (result.isEmpty) {
@@ -341,8 +340,10 @@ class WorkStageService extends WorkStageServiceBase {
         }
       });
 
+      User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: request.workStage.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
+
       // Notification
-      workStageNotification(request.workStage.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workStageNotification(request.workStage.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
 
     } catch (e) {
@@ -356,6 +357,8 @@ class WorkStageService extends WorkStageServiceBase {
   static Future<Empty> queryDeleteWorkStage(WorkStageDeleteRequest request, String urlOrigin) async {
 
     WorkStage workStagePrevious = await querySelectWorkStage(WorkStageGetRequest()..id = request.workStageId);
+
+    User leaderNotification = await WorkService.querySelectWorkLeaderUser(workId: workStagePrevious.work.id, customUser: CustomUser.userOnlySpecificationProfileNotificationEmailIdiom);
 
     Map<String, dynamic> historyItemNotificationValues;
 
@@ -394,7 +397,7 @@ class WorkStageService extends WorkStageServiceBase {
       });
 
       // Notification
-      workStageNotification(workStagePrevious.work, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+      workStageNotification(workStagePrevious.work, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');
