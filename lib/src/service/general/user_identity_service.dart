@@ -93,7 +93,7 @@ class UserIdentityService extends UserIdentityServiceBase {
           " ui.password_salt, " //3
           " ui.password_hash, " //4
           " ui.provider,  " //5
-          " ui.provider_object_id,  " //9
+          " ui.provider_object_id,  " //6
           " ui.user_id " //7
           " FROM general.user_identities ui"
           " JOIN general.users u ON u.id = ui.user_id";
@@ -155,8 +155,8 @@ class UserIdentityService extends UserIdentityServiceBase {
         if (row[6] != null) userIdentity.providerObjectId = row[6];
 
         userIdentity.user = await UserService.querySelectUser(UserGetRequest()
-          ..id = row[7]
-          ..customUser = CustomUser.userOnlySpecification /*..withUserProfile = UserGetRequest_WithUserProfile.only_image */);
+          ..id = row[7]);
+          // Need to get organization managed ..customUser = CustomUser.userOnlySpecification /*..withUserProfile = UserGetRequest_WithUserProfile.only_image */);
 
         // If password is informed, calc a hash and compare to passward_hash stored
         if (request.hasPassword() && request.password.isNotEmpty) {

@@ -1,3 +1,8 @@
+ALTER TABLE objective.objectives
+    ADD COLUMN archived boolean;
+
+UPDATE objective.objectives SET archived = false;
+
 ALTER TABLE work.works
     ADD COLUMN archived boolean;
 
@@ -14,19 +19,18 @@ UPDATE work.work_items SET archived = false;
 ALTER TABLE work.work_items
     ALTER COLUMN archived SET NOT NULL;
 
-
-ALTER TABLE work.work_items
-    ADD COLUMN planned_value real;
-
 ALTER TABLE objective.measures
     RENAME measure_unit_id TO unit_of_measurement_id;
-
-UPDATE work.work_items SET planned_value = 100 where actual_value is not null;
 
 ALTER TABLE work.work_items
     ADD COLUMN unit_of_measurement_id uuid;
 
-UPDATE work.work_items set unit_of_measurement_id = 'f748d3ad-b533-4a2d-b4ae-0ae1e255cf81' where actual_value is not null;
+UPDATE work.work_items set unit_of_measurement_id = 'f748d3ad-b533-4a2d-b4ae-0ae1e255cf81' where completed is not null;
+
+ALTER TABLE work.work_items
+    ADD COLUMN planned_value real;
+
+UPDATE work.work_items SET planned_value = 100 where completed is not null;
 
 -- Table: work.work_item_values
 
