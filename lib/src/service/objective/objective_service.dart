@@ -114,7 +114,7 @@ class ObjectiveService extends ObjectiveServiceBase {
             " objective.start_date," //4
             " objective.end_date," //5
             " null," //6
-            " null," //7
+            " objective.leader_user_id," //7
             " null," //8
             " null"; //9
 
@@ -698,6 +698,7 @@ class ObjectiveService extends ObjectiveServiceBase {
       });
 
       objectiveNotification(previousObjective, leaderNotification, historyItemNotificationValues['object_class_name'], historyItemNotificationValues['system_function_index'], historyItemNotificationValues['description'], urlOrigin, request.authUserId);
+
 
     } catch (e) {
       print('${e.runtimeType}, ${e}');

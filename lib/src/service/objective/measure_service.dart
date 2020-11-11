@@ -289,7 +289,6 @@ class MeasureService extends MeasureServiceBase {
 
               objectiveCache = measure.objective;
             }
-
           }
 
           Objective objectiveCache;
@@ -358,7 +357,6 @@ class MeasureService extends MeasureServiceBase {
       request.measure.id = new Uuid().v4();
     }
 
-
     request.measure.version = 0;
 
     Map<String, dynamic> historyItemNotificationValues;
@@ -369,6 +367,7 @@ class MeasureService extends MeasureServiceBase {
       Objective objective = await ObjectiveService.querySelectObjective(ObjectiveGetRequest()
         ..id = request.objectiveId);
 */
+
       await (await AugeConnection.getConnection()).transaction((ctx) async {
 
         await ctx.query(
@@ -606,11 +605,6 @@ class MeasureService extends MeasureServiceBase {
     }
 
     queryStatement += " ORDER BY date DESC";
-
-
-
-
-
 
     List<MeasureProgress> measureProgresses = List();
     try {

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/dart:2.7.0
+FROM google/dart:2.10.3
 
 # understand a way to inform a directory specific here or implementation. Today configuraion.yaml is read on current directory.
 COPY certificate/cert.pem /etc/auge_server/certificate/cert.pem
