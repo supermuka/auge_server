@@ -676,6 +676,8 @@ class MeasureService extends MeasureServiceBase {
   /// Objective Measure Progress Notification User
   static void measureProgressNotification(MeasureProgress measureProgress, String className, int systemFunctionIndex, String description, String urlOrigin, String authUserId) async {
 
+    if (!measureProgress.measure.objective.hasLeader()) return;
+
     // Not send to your-self
     if (measureProgress.measure.objective.leader.id == authUserId) return;
 
