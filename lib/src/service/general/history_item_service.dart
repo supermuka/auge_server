@@ -111,7 +111,7 @@ class HistoryItemService extends HistoryItemServiceBase {
             ..systemModuleIndex = row[5]
             ..systemFunctionIndex = row[6];
 
-          if (row[7] != null) historyItem.dateTime = CommonUtils.timestampFromDateTime(row[7]);
+          if (row[7] != null) historyItem.dateTime = CommonUtils.timestampFromDateTime(row[7].toUtc());
           if (row[8] != null) historyItem.description = row[8];
           if (row[9] != null) historyItem.changedValues = row[9];
 

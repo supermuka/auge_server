@@ -620,7 +620,7 @@ class MeasureService extends MeasureServiceBase {
 
           //  measureProgress.date = row[3]
           if (row[2] != null)
-            measureProgress.date = CommonUtils.timestampFromDateTime(row[2]);
+            measureProgress.date = CommonUtils.timestampFromDateTime(row[2].toUtc());
 
           if (row[3] != null) {
             measureProgress.currentValue = row[3];

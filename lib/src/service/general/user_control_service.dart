@@ -71,7 +71,7 @@ class UserControlService extends UserControlServiceBase {
           ..id = row[0]);
 
           userControl.dateTimeLastNotification =
-              CommonUtils.timestampFromDateTime(row[1]);
+              CommonUtils.timestampFromDateTime(row[1].toUtc());
         }
       }
 

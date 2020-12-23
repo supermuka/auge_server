@@ -165,7 +165,7 @@ class OrganizationDirectoryServiceService extends OrganizationDirectoryServiceSe
 
         if (row[8] != null)
           organizationDirectoryService.syncLastDateTime =
-              CommonUtils.timestampFromDateTime(row[8]);
+              CommonUtils.timestampFromDateTime(row[8].toUtc());
 
         if (row[9] != null)
           organizationDirectoryService.syncLastResult = row[9];

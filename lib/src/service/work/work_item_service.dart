@@ -237,8 +237,7 @@ class WorkItemService extends WorkItemServiceBase {
 
         if (row[1] != null) workItem.version = row[1];
         if (row[3] != null) workItem.description = row[3];
-        if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4]);
-
+        if (row[4] != null) workItem.dueDate = CommonUtils.timestampFromDateTime(row[4].toUtc());
         if (row[5] != null) workItem.plannedValue = row[5];
         if (row[6] != null) workItem.actualValue = row[6];
 
@@ -976,7 +975,7 @@ class WorkItemService extends WorkItemServiceBase {
 
           if (row[1] != null) workItemValue.version = row[1];
           //  measureProgress.date = row[3]
-          if (row[2] != null) workItemValue.date = CommonUtils.timestampFromDateTime(row[2]);
+          if (row[2] != null) workItemValue.date = CommonUtils.timestampFromDateTime(row[2].toUtc());
 
           if (row[3] != null) {
             workItemValue.actualValue = row[3];
